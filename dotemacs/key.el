@@ -1,0 +1,76 @@
+					;Time-stamp: <2011-07-15 17:13:34 mtk80698>
+;;(global-set-key (kbd "C-x b") 'ido-switch-buffer)
+;; (require 'breadcrumb)
+;; (global-set-key (kbd "S-SPC")         'bc-set)            ;; Shift-SPACE for set bookmark
+;; (global-set-key [(meta j)]              'bc-previous)       ;; M-j for jump to previous
+;; (global-set-key [(shift meta j)]        'bc-next)           ;; Shift-M-j for jump to next
+;; (global-set-key [(meta up)]             'bc-local-previous) ;; M-up-arrow for local previous
+;; (global-set-key [(meta down)]           'bc-local-next)     ;; M-down-arrow for local next
+;; (global-set-key [(control c)(j)]        'bc-goto-current)   ;; C-c j for jump to current bookmark
+;; (global-set-key [(control x)(meta j)]   'bc-list)           ;; C-x M-j for the bookmark menu list
+
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "M-g") 'goto-line)
+(global-set-key (kbd "s-f") '(lambda ()
+			       (interactive)
+			       (switch-to-buffer "*Find*")
+			       )
+		)
+(global-set-key (kbd "RET") 'newline-and-indent)
+(global-set-key (kbd "C-l") 'recenter)
+(global-set-key [(?\M-/)] 'hippie-expand)
+(global-set-key (kbd "C-M-/") 'hippie-expand)
+(global-set-key (kbd "C-x C-d") 'dired)
+(global-set-key (kbd "C-x C-k") 'ido-kill-buffer)
+;;(global-set-key [(meta .)] 'lev/find-tag)
+(global-set-key (kbd "<f11>") 'calendar)
+(global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org/main.org")))
+(global-set-key (kbd "C-c C-o a") 'org-agenda)
+(global-set-key (kbd "s-SPC") 'toggle-eshell)
+
+(require 'hideshow)
+(define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
+(define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
+(define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
+(global-set-key (kbd "M-z") 'wy-go-to-char)
+;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
+;;(global-set-key (kbd "C-\\") 'set-mark-command)
+(defun show-onelevel ()
+  "show entry and children in outline mode"
+  (interactive)
+  (show-entry)
+  (show-children))
+(require 'outline)    
+(defun cjm-outline-bindings ()
+  "sets shortcut bindings for outline minor mode"
+  (interactive)
+  (local-set-key (kbd "C-o C-M-h") 'hide-sublevels)
+  (local-set-key (kbd "C-o C-M-s") 'show-all)
+  (local-set-key (kbd "C-o C-h") 'hide-subtree)
+  (local-set-key (kbd "C-o C-o") 'outline-toggle-children)
+  (local-set-key (kbd "C-o C-s") 'show-subtree)
+  )
+
+(add-hook 'outline-minor-mode-hook
+	  'cjm-outline-bindings)
+
+(add-hook 'sql-interactive-mode-hook
+	  '(lambda ()
+	     (define-key sql-interactive-mode-map (kbd "<up>") 'comint-previous-input)
+	     (define-key sql-interactive-mode-map (kbd "<down>") 'comint-next-input)
+	     ))
+
+;;; WINDOW SPLITING 
+;; (global-set-key (kbd "M-2") 'split-window-vertically)
+;; (global-set-key (kbd "M-1") 'delete-other-windows)
+;; (global-set-key (kbd "M-0") 'delete-window)
+;; (global-set-key (kbd "M-o") 'other-window)
+
+;; (global-set-key (kbd "M-n") (lambda () (interactive) (scroll-up 1)))
+;; (global-set-key (kbd "M-p") (lambda () (interactive) (scroll-down 1)))
+;; (require 'bm)
+;; (global-set-key (kbd "<C-M-return>") 'bm-toggle)
+;; (global-set-key (kbd "<C-return>")   'bm-next)
+;; (global-set-key (kbd "<M-return>") 'bm-previous)
+

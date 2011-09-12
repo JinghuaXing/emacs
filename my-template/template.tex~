@@ -1,0 +1,30 @@
+%%Time-stamp: <2008-11-16 18:05:23 sunway>
+\documentclass[10pt,a4paper]{article}
+\usepackage{CJK}
+\usepackage{listings}
+\usepackage[]{graphicx}
+\usepackage{indentfirst}
+\begin{document}
+\begin{CJK*}{GBK}{song}
+  \CJKindent
+  \pagestyle{headings}
+  %\pagestyle{plain}
+  \title{}
+  \author{ËïÎ°}
+  \maketitle
+% \lstset{language=C}
+% \begin{lstlisting}[float,caption={3 * M/M/1},label=lst:M/M/1]
+
+% \end{lstlisting}
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[height=0.5\textheight]{LeakyBucket.png}
+%     \caption{leaky bucket}
+%     \label{fig:bucket}
+%   \end{figure}
+% \CJKfamily{you}
+  \begin{flushright}
+    \emph{Powered by }\LaTeXe{}
+  \end{flushright}
+\end{CJK*}
+\end{document}
