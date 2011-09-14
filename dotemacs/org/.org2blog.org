@@ -1,5 +1,11 @@
 
 * Posts
+** [[file:/home/sunway/.elisp/dotemacs/org/lightweight_lock.org][Java Lightweight Lock]]
+   :PROPERTIES:
+   :POSTID:   98
+   :POST_DATE: 20110914T15:28:00+0000
+   :Published: Yes
+   :END:
 ** [[id:o2b:ce35f977-0ab5-49b2-9adf-e091096d0dfb][Object.hashCode()]]
    :PROPERTIES:
    :POSTID:   83
