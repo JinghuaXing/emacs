@@ -1,5 +1,11 @@
 
 * Posts
+** [[file:/home/sunway/.elisp/dotemacs/org/visitor_pattern.org][Visitor Pattern]]
+   :PROPERTIES:
+   :POSTID:   102
+   :POST_DATE: 20110917T03:43:00+0000
+   :Published: Yes
+   :END:
 ** [[file:/home/sunway/.elisp/dotemacs/org/lightweight_lock.org][Java Lightweight Lock]]
    :PROPERTIES:
    :POSTID:   98
