@@ -1,0 +1,15 @@
+#+POSTID: 112
+#+DATE: [2011-09-18 日 22:42]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+TAGS:
+#+DESCRIPTION:
+#+TITLE: TODO
+* GC
+  - various GC algorithm
+  - for hotspot:
+    - young, old, perm
+    - eden, survivor
+* memory layout
+
+
+    

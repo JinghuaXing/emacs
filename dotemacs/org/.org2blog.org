@@ -1,5 +1,11 @@
 
 * Posts
+** [[file:/home/sunway/.elisp/dotemacs/org/todo.org][TODO]]
+   :PROPERTIES:
+   :POSTID:   112
+   :POST_DATE: 20110918T14:42:00+0000
+   :Published: Yes
+   :END:
 ** [[file:/home/sunway/.elisp/dotemacs/org/visitor_pattern.org][Visitor Pattern]]
    :PROPERTIES:
    :POSTID:   102

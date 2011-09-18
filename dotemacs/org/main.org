@@ -201,6 +201,8 @@
 ** M-spc M-\
 ** occur
    M-s o
+** org-mode
+   - org-edit-src-code C-c '
 ** re-builder
 ** rectangle操作
    C-x r t,C-x r k,C-x r o
