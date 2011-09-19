@@ -326,3 +326,6 @@
 	 :default-title "Untitled Blog"
 	 :default-category ("org2blog")
 	 :tags-as-categories nil)))
+
+(require 'undo-tree)
+(global-undo-tree-mode)

@@ -35,6 +35,7 @@
 (add-hook 'org-mode-hook (lambda ()
 			   (interactive)
 			   (flyspell-mode)
+			   (org2blog/wp-mode)
 			  ))
 
 (setq org-agenda-sorting-strategy '((agenda time-up priority-down category-keep)
