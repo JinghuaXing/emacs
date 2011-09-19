@@ -170,7 +170,6 @@ interface Visitor {
 #+END_HTML
 
 
-
 ** Visitor Pattern
    Visitor Pattern的目的是将数据结构与算法分离, 当需要对对象添加新的方法时, 不需要修改对象, 只需要修改算法. 
    在上面的例子中, Element指数据结构, Visitor指算法. 
@@ -201,11 +200,67 @@ Animal.accept(runVisitor())即可, 所有的算法都只包含在各个Visitor�
 
 如果要添加一个bark方法,只需要实现一个BarkVisitor即可.  
 
+* Visitor Pattern的具体应用 
+** ASM
+   [[http://asm.ow2.org][ASM Homepage]]
 
-** TODO ASM中使用Visitor Pattern
    ASM (一个动态生成或修改java class的库) 使用 Visitor Pattern 来实现
    其基于事件的模型.
 
    它在解析class时会触发一系列事件, 如解析到一个class, 解析到一个method等, 这些事
    件被做为Element; 对这些事件的处理, 如打印log, 保存到目标class等被做为
    Visitor.在ASM中, Element被看作是事件的提供者, 而Visitor被看作事件的处理者.
+** MultiJava
+   [[http://multijava.sf.net][MultiJava Homepage]]
+#+begin_quote
+MultiJava is an extension to the Java programming language that adds open classes
+and symmetric multiple dispatch. Multiple dispatch allows the code invoked by a 
+method call to depend on the run-time type of all the arguments, instead of just
+the receiver, this is useful for event handlers and for binary methods, like
+equals in Java.
+
+The MultiJava project provides `mjc`, a MultiJava compiler, that translate MultiJava
+programs to regular Java bytecode. 
+#+end_quote   
+
+使用MultiJava进行event dispatching的例子:
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+  public abstract class AbstractHandler {
+      public abstract void handleEvent (Event e);
+  }
+  
+  public class MyJavaHandler extends AbstractHandler {
+      public void handleEvent (Event@Event1 e) {
+          // handle Event1
+      }
+      public void handleEvent (Event@Event2 e) {
+          // handle Event2
+      }
+  }
+</pre>
+#+END_HTML
+
+
+因为`Event@Event1`不是合法的Java语法,所以MultiJava需要使用`mjc`工具对源码进来转换,
+转换的过程实际就是解析这种`Event@Event1`, 然后使用Visitor Pattern生成相应的Element和
+Visitor
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -148,6 +148,7 @@
 	try-expand-whole-kill))
 (setq adaptive-fill-regexp "[ \t]+\\|[ \t]*\\([0-9]+\\.\\|\\*+\\)[ \t]*")
 (setq adaptive-fill-first-line-regexp "^\\* *$")
+
 (custom-reset-variables
  '(mm-inline-override-types nil))
 
@@ -329,3 +330,4 @@
 
 (require 'undo-tree)
 (global-undo-tree-mode)
+(add-hook 'text-mode-hook 'turn-on-auto-fill)

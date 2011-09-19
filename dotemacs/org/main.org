@@ -163,7 +163,6 @@
    查询系统有哪些可用的keysym: /usr/share/X11/xkb/symbols
 ** xset
 * Emacs
-#+CATEGORY:Emacs
 ** align
 ** c-macro-expand C-c C-e
 ** check-parens
@@ -182,6 +181,14 @@
 ** eim
    可以在EMACS中使用的输入法
 ** eshell
+** fill
+   - fill-column
+     C-x f
+   - fill-prefix
+     C-x i
+   - fill-paragraph
+   - auto-fill-mode
+   - refill-mode
 ** find-file时的默认起始路径？
    M-x cd
 ** flush-lines keep-lines
@@ -197,7 +204,6 @@
 ** ibuffer
 ** ido
 ** list-colors-display
-** list-colors-display
 ** M-spc M-\
 ** occur
    M-s o
@@ -210,6 +216,7 @@
 ** reverse-region,sort-lines,sort-columns
 ** scroll-all-mode
 ** toggle-truncate-lines
+** undo-tree-mode
 ** unix2dos & dos2unix
   - dos2unix
    C-x RET f unix
