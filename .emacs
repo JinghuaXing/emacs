@@ -331,3 +331,5 @@
 (require 'undo-tree)
 (global-undo-tree-mode)
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+(require 'git)
