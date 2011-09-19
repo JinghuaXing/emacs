@@ -1,0 +1,129 @@
+#+POSTID: 124
+#+DATE: [2011-09-19 Mon 23:32]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+TAGS: android
+#+DESCRIPTION:
+#+TITLE: Android Instrumentation
+
+* Android Instrumentation
+   see also [[@Android Testing]]
+
+   *instrumentation n. 测试设备*
+
+   Instrumentation is the bridge between ActivityThread and Activity (only *Activity*; Service, broadcast, provider has nothing to do with Instrumentation)
+   e.g.
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+   ActivityThread.scheduleLaunchActivity:
+     mInstrumentation.newActivity(classLoader, component.getClassName(), r.intent)
+       (Activity)cl.loadClass(className).newInstance();
+     activity.attach()
+     mInstrumentation.callActivityOnCreate(activity, r.state);
+     mInstrumentation.callActivityOnStart();
+     mInstrumentation.callActivityOnRestoreInstanceState(activity, r.state);
+     mInstrumentation.callActivityOnPostCreate(activity, r.state);
+</pre>
+#+END_HTML
+
+   Instrumentation.callActivityOnXxx() typically does nothing but call through to activity.onXxx(), e.g.
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+   Instrumentation.callActivityOnStart():
+     activity.onStart();
+</pre>
+#+END_HTML
+
+   Instrumentation should not be that simple!
+   Actually, as a common rule, `indirect is good ...`, that is, Instrumentation is a hook provided by ActivityThread, so that user can replace the default
+   `mInstrumentation` with a user-define Instrumentation instance. with our own `mInstrumentation`, we can track the ActivityThread.
+
+   - how to inject our own mInstrumentation? (1/2)
+
+     suppose we want to hook our instrumentation to package `com.sunway.testwebview`:
+	1. implement a class com.x.y/.MyInstrumentation  which extends `Instrumentation`
+	2. in com.x.y/Manifest.xml, add a new `Instrumentation` rule: name=`com.x.y/.MyInstrumentation`, package=`com.sunway.testwebview`
+	3. `adb shell am instrument -w com.x.y/.MyInstrumentation
+     now, MyInstrumentation is injected to `com.sunway.testwebview`'s running process.
+
+   - more details of Instrumentation injection (1/2)
+
+     after com.x.y application is installed, PMS will maintain info about `MyInstrumentation`, e.g. which package the Instrumentation want to be injected to.
+
+     `adb shell am instrumentation -w xxx` actually invoke AMS.startInstrumentation():
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+     startInstrumentation(ComponentName className,...)  ;; className is the Instrumentation's class name, e.g. `com.x.y/.MyInstrumentation`
+       ;; PMS maintains the instrumentation's info during installation of `com.x.y`
+       ;; and it knows which package the Instrumentation want to hooked to (com.sunway.testwebview)
+       ii=mContext.getPackageManager().getInstrumentationInfo(className);
+       ai= mContext.getPackageManager().getApplicationInfo(ii.targetPackage,...); ;;ii.targetPackage=`com.sunway.testwebview`
+       ;; both package need to be signed with the same signature
+       PMS.checkSignatures(ii.targetPackage,ii.packageName)
+       ;; find or create target ProcessRecord
+       ProcessRecord app = addAppLocked(ai);
+         app = getProcessRecordLocked(info.processName, info.uid);
+	 if app==null:
+	   app = newProcessRecordLocked(null, info, null);
+	 if app.thread==null:
+           startProcessLocked(app, "added application", app.processName);
+       app.instrumentationClass = className; ;; injected!
+</pre>
+#+END_HTML
+
+   - how to inject our own mInstrumentation? (2/2)
+
+     after app.instrumentationClass is set to `com.x.y/.MyInstrumentation`, how is it used?
+     app (ProcessRecord) only resides in AMS side, ActivityThread has no knowledge of it.
+
+     after `com.sunway.testwebview`'s process is ready, it will invoke attachApplication() to attach with AMS:
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+     AMS.attachApplication()
+       thread.bindApplication(...,app.instrumentationClass,...) ;; AMS call back to ActivityThread
+         if instrumentationClass!=null:
+	   mInstrumentation = (Instrumentation)cl.loadClass(instrumentationClass.getClassName()).newInstance(); ;; AHA!
+	   mInstrumentation.init(...,appContext,...) ;; set appContext, so that instrumentation can use the context to interact with AMS, e.g. startActivity()
+	   mInstrumentation.onCreate()
+         else:
+	   mInstrumentation = new Instrumentation();
+</pre>
+#+END_HTML
+
+   - sequence graph
+
+#+BEGIN_EXAMPLE
+|---------------------------------------+------------------------+---------------------------|
+| AMS                                   | PMS                    | ActivityThread            |
+|---------------------------------------+------------------------+---------------------------|
+| startInstrumentation                  |                        |                           |
+|                                       | getInstrumentationInfo |                           |
+| startProcessLocked                    |                        |                           |
+| remember app.instrumentationClass     |                        |                           |
+|                                       |                        | attachApplication         |
+| bindApplication(instrumentationClass) |                        |                           |
+|                                       |                        | set mInstrumentation      |
+|                                       |                        | mInstrumentation.onCreate |
+|---------------------------------------+------------------------+---------------------------|
+#+END_EXAMPLE
+
+   - apart from tracking purpose, Instrumentation also has provided some methods for testing purpose (
+     since it running in the same process with the activity, and it has the most import mContext (set by Instrumentation.init() )):
+     - Instrumentation.onCreate() is call after startInstrumentation() and before any application component is launched.
+     - Instrumentation has provided handy methods like sendKeySync, sendPointerSync, ... which simply encapsulated WMS's correspondant (injectKeyEvent ...)
+     - Activity startActivitySync(), it is implemented similar with context.startActivity(), but this method can wait until activity is created, and
+       return the created activity instance.
+       (Note: the resolved activity must be in the same process with the Instrumentation, or else Exception will be thrown,
+       since Instrumentation can't obtain reference of an inter-process Activity instance)
+
+   To summarize:
+     - mInstrumentation is only a hook of ActivityThread, it runs in the same process with the ActivityThread.
+     - AMS.startInstrumentation will start the Instrumentation's hooked application automatically.
+     - Instrumentation has provided additional methods for testing purpose, and these method can interact with AMS using Instrumentation.getContext()
+   *Above all*:
+     1. Instrumentation has the mContext, and is set by AMS automatically, so that it can interact with AMS, e.g. Instrumentation.startActivitySync()
+     2. Instrumentation provides another way to start java process in android, and it has provided the Instrumentation.onCreate() hook,
+	this ability is especially valuable for testing purpose.

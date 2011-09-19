@@ -1,5 +1,17 @@
 
 * Posts
+** [[file:/home/sunway/.elisp/dotemacs/org/android_instrumentation.org][Android Instrumentation]]
+   :PROPERTIES:
+   :POSTID:   124
+   :POST_DATE: 20110919T15:32:00+0000
+   :Published: Yes
+   :END:
+** [[file:/home/sunway/.elisp/dotemacs/org/emacs_tips.org][Essential Emacs Tips]]
+   :PROPERTIES:
+   :POSTID:   121
+   :POST_DATE: 20110919T15:16:00+0000
+   :Published: Yes
+   :END:
 ** [[file:/home/sunway/.elisp/dotemacs/org/todo.org][TODO]]
    :PROPERTIES:
    :POSTID:   112
