@@ -1,7 +1,7 @@
 #+POSTID: 87
 #+DATE: [2011-09-12 一 14:03]
 #+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
-#+CATEGORY: java
+#+CATEGORY: Java
 #+TAGS: java,android,jvm,hotspot,dalvik,gc
 #+DESCRIPTION:
 #+TITLE: Object.hashCode()

@@ -1,6 +1,7 @@
 #+POSTID: 102
 #+DATE: [2011-09-17 六 11:43]
 #+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: DesignPattern
 #+TAGS: design pattern, ASM, java
 #+DESCRIPTION:
 #+TITLE: Visitor Pattern

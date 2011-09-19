@@ -325,8 +325,8 @@
 	 :url "http://cafebabe.sinaapp.com/xmlrpc.php"
 	 :username "sunway"
 	 :default-title "Untitled Blog"
-	 :default-category ("org2blog")
 	 :tags-as-categories nil)))
+(setq org2blog/wp-default-categories '("Uncategorized"))
 
 (require 'undo-tree)
 (global-undo-tree-mode)
