@@ -24,6 +24,7 @@
    - grep-find
 ** eim
    可以在EMACS中使用的输入法
+** ESC ESC ESC
 ** eshell
 ** fill
    - fill-column
