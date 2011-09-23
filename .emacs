@@ -1,11 +1,10 @@
-(add-to-list 'load-path "~/.elisp")
+(add-to-list 'load-path "~/.elisp") 
 (add-to-list 'load-path "~/.elisp/org-mode/lisp")
 (add-to-list 'load-path "~/.elisp/emacs-w3m")
 (add-to-list 'load-path "~/.elisp/jdee/lisp")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
 (add-to-list 'load-path "~/.elisp/yasnippet")
-(add-to-list 'load-path "~/.elisp/org2blog")
 ;; (add-to-list 'load-path "~/.elisp/ecb-2.40/")
 
 (setq custom-file "~/.elisp/dotemacs/custom.el")
@@ -37,7 +36,9 @@
 (ac-flyspell-workaround)
 (define-globalized-minor-mode real-global-auto-complete-mode
   auto-complete-mode (lambda ()
-		       (if (not (minibufferp (current-buffer)))
+		       (if (and (not (minibufferp (current-buffer)))
+				(not (eq major-mode 'term-mode))
+				)
 			   (auto-complete-mode 1))
 		       ))
 (real-global-auto-complete-mode t)
@@ -148,7 +149,6 @@
 	try-expand-whole-kill))
 (setq adaptive-fill-regexp "[ \t]+\\|[ \t]*\\([0-9]+\\.\\|\\*+\\)[ \t]*")
 (setq adaptive-fill-first-line-regexp "^\\* *$")
-
 (custom-reset-variables
  '(mm-inline-override-types nil))
 
@@ -319,17 +319,19 @@
 (global-set-key [(meta f2)]             'bc-list)
 (cua-mode t)
 
-(require 'org2blog-autoloads)
-(setq org2blog/wp-blog-alist
-      '(("wordpress"
-	 :url "http://cafebabe.sinaapp.com/xmlrpc.php"
-	 :username "sunway"
-	 :default-title "Untitled Blog"
-	 :tags-as-categories nil)))
-(setq org2blog/wp-default-categories '("Uncategorized"))
-
 (require 'undo-tree)
 (global-undo-tree-mode)
-(add-hook 'text-mode-hook 'turn-on-auto-fill)
 
-(require 'git)
+
+(load-file "~/.elisp/dotemacs/escreen.el")
+
+(add-to-list 'load-path "~/.elisp/slime-2011-09-21/") 
+(setq inferior-lisp-program "/usr/bin/sbcl")
+(require 'slime)
+(slime-setup)
+
+(require 'ac-slime)
+(add-hook 'slime-mode-hook 'set-up-slime-ac)
+(add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
+(eval-after-load "auto-complete"
+  '(add-to-list 'ac-modes 'slime-repl-mode))
