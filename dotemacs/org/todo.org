@@ -10,6 +10,18 @@
     - young, old, perm
     - eden, survivor
 * memory layout
+* JIT
+** PrintAssembly
+   - need hsdis.so installed
+#+BEGIN_EXAMPLE
+java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly -Xcomp 
+  -XX:CompileCommand='dontinline Test.foo' -XX:CompileCommand='compileonly Test.foo' Test 
+#+END_EXAMPLE
+
+** reduce virtualcall overhead in JIT
+   google: jvm jit virtualcall
+
+
 
 
     

@@ -5,6 +5,7 @@
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
 (add-to-list 'load-path "~/.elisp/yasnippet")
+(add-to-list 'load-path "~/.elisp/org2blog")
 (add-to-list 'load-path "~/.elisp/ajc-java-complete-git/")
 ;; (add-to-list 'load-path "~/.elisp/ecb-2.40/")
 
@@ -336,3 +337,15 @@
 (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'slime-repl-mode))
+
+(require 'org2blog-autoloads)
+(setq org2blog/wp-blog-alist
+      '(("wordpress"
+	 :url "http://cafebabe.sinaapp.com/xmlrpc.php"
+	 :username "sunway"
+	 :default-title "Untitled Blog"
+	 :tags-as-categories nil)))
+(setq org2blog/wp-default-categories '("Uncategorized"))
+
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+(require 'git)
