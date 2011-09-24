@@ -5,6 +5,7 @@
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
 (add-to-list 'load-path "~/.elisp/yasnippet")
+(add-to-list 'load-path "~/.elisp/ajc-java-complete-git/")
 ;; (add-to-list 'load-path "~/.elisp/ecb-2.40/")
 
 (setq custom-file "~/.elisp/dotemacs/custom.el")
