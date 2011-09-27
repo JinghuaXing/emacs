@@ -29,6 +29,7 @@
  '(cperl-indent-level 4)
  '(cscope-display-cscope-buffer nil)
  '(cscope-display-times nil)
+ '(cua-enable-cua-keys nil)
  '(dired-backup-overwrite t)
  '(dired-find-subdir nil)
  '(dired-garbage-files-regexp "\\.\\(?:aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\|class\\)\\'")

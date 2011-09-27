@@ -58,10 +58,12 @@
 (defun ajc-java-complete-init()
   (ajc-init)
 ;;  (add-to-list 'ac-sources 'ac-source-ajc-keywords)
+  
   (add-to-list 'ac-sources 'ac-source-ajc-method)
   (add-to-list 'ac-sources 'ac-source-ajc-class)
   (add-to-list 'ac-sources 'ac-source-ajc-constructor)
   (add-to-list 'ac-sources 'ac-source-ajc-import)
+
 ;; auto import all Class in source file
 (local-set-key (kbd "C-c i") 'ajc-import-all-unimported-class)
 ;; import Class where under point
