@@ -1,7 +1,7 @@
 (add-to-list 'load-path "~/.elisp") 
 (add-to-list 'load-path "~/.elisp/org-mode/lisp")
 (add-to-list 'load-path "~/.elisp/emacs-w3m")
-(add-to-list 'load-path "~/.elisp/jdee/lisp")
+;; (add-to-list 'load-path "~/.elisp/jdee/lisp")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
 (add-to-list 'load-path "~/.elisp/yasnippet")
@@ -26,8 +26,11 @@
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
 (load-file "~/.elisp/dotemacs/ibuffer.el")
 (load-file "~/.elisp/cedet-1.0/common/cedet.el")
-(semantic-load-enable-minimum-features)
-(load "jde")
+;; (semantic-load-enable-minimum-features)
+(semantic-load-enable-excessive-code-helpers)
+(global-semantic-decoration-mode nil)
+(global-semantic-idle-completions-mode nil)
+;; (load "jde")
 ;;(load-file "~/.elisp/dotemacs/tabbar.el")
 ;; (load-file "~/.elisp/dotemacs/anything.el")
 (add-to-list 'load-path "~/.elisp/ace-jump-mode.el/")
@@ -46,7 +49,7 @@
 (real-global-auto-complete-mode t)
 
 (require 'ajc-java-complete-config)
-(add-hook 'jde-mode-hook (lambda () (ajc-java-complete-mode t)))
+;; (add-hook 'jde-mode-hook (lambda () (ajc-java-complete-mode t)))
 (add-hook 'java-mode-hook (lambda () (ajc-java-complete-mode t)))
 
 (autoload
