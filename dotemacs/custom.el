@@ -79,7 +79,8 @@
  '(tabbar-home-button (quote (("") "")))
  '(tabbar-scroll-left-button (quote (("") "")))
  '(tabbar-scroll-right-button (quote (("") "")))
- '(tramp-remote-path (quote (tramp-default-remote-path "/usr/sbin" "/usr/local/bin" "/local/bin" "/local/freeware/bin" "/local/gnu/bin" "/usr/freeware/bin" "/usr/pkg/bin" "/usr/contrib/bin" "/opt/SunStudio_11/SUNWspro/bin" "/usr/sfw/bin"))))
+ '(tramp-remote-path (quote (tramp-default-remote-path "/usr/sbin" "/usr/local/bin" "/local/bin" "/local/freeware/bin" "/local/gnu/bin" "/usr/freeware/bin" "/usr/pkg/bin" "/usr/contrib/bin" "/opt/SunStudio_11/SUNWspro/bin" "/usr/sfw/bin")))
+ '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify)))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
