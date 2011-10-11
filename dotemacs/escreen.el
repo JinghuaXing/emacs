@@ -48,9 +48,9 @@
 
 (defun create-term()
   (interactive)
+  (setq previous_buffer (current-buffer))
   (ansi-term "/bin/bash")
   (rename-buffer "*SHELL*" t)
-  (setq previous_buffer (current-buffer))
   (setq term_buffers (cons (current-buffer) term_buffers))
   ;; sort
   (setq term_buffers (sort term_buffers '(lambda(buffer1 buffer2)

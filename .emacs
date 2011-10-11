@@ -353,3 +353,13 @@
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 (require 'git)
 (require 'uniquify)
+
+(autoload 'enable-paredit-mode "paredit"
+  "Turn on pseudo-structural editing of Lisp code."
+  t)
+
+
+(add-hook 'slime-mode-hook 'enable-paredit-mode)
+(add-hook 'slime-repl-mode-hook 'enable-paredit-mode)
+(add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
+(add-hook 'c-mode-common-hook 'enable-paredit-mode)
