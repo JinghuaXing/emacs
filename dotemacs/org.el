@@ -43,3 +43,4 @@
  (tags priority-down category-keep)
  (search category-keep)))
 (require 'org-latex)
+(setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")

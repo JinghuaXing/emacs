@@ -1,0 +1,88 @@
+#+POSTID: 144
+#+DATE: [2011-10-28 Fri 11:40]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: Java
+#+TAGS: java,puzzle
+#+DESCRIPTION:
+#+TITLE: Java Puzzle:value not changed?
+* Java Puzzle:value not changed?
+** case 1
+
+TestA.java
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+public class TestA {
+   public static void main(String[] args) {
+       System.out.println(TestB.value);
+   }
+}
+</pre>
+#+END_HTML
+
+TestB.java
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+class TestB {
+    public static final String value="abc"
+}
+</pre>
+#+END_HTML
+
+#+BEGIN_EXAMPLE
+~>javac TestA.java TestB.java
+~>java TestA
+abc
+#+END_EXAMPLE
+
+modify TestB.java:
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+class TestB {
+    public static final String value="abcd"
+}
+</pre>
+#+END_HTML
+
+and recompile the sole TestB.java:
+
+#+BEGIN_EXAMPLE
+~>javac TestB.java
+~>java TestA
+abc
+#+END_EXAMPLE
+
+instead of "abcd"!
+** case 2
+
+    TestB is modified as:
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+class TestB {
+    public static String value="abc";
+}
+</pre>
+#+END_HTML
+
+  when modify "abc" to "abcd" and recompile TestB.java, nothing strange happens: 
+  after value is changed to "abcd", the program will output "abcd" normally.
+
+** case 3
+
+    TestB is modified as:
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+class TestB {
+    public static final String value;
+    static {
+       value="abc";
+    }
+}
+</pre>
+#+END_HTML
+
+  nothing strange happens.

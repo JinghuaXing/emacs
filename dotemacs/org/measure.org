@@ -1,0 +1,195 @@
+#+POSTID: 145
+#+DATE: [2011-10-28 Fri 21:50]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: Android
+#+TAGS: android,ui
+#+DESCRIPTION:
+#+TITLE: Android onMeasure
+* onMeasure
+  see [[@requestLayout]]
+
+  view的drawing分为两个阶段:
+      1. measure
+      2. layout
+  这两步完成后才能进行drawing.
+
+  通过调用view.measure()可以对view进行measure,调用完成后可以得该view期望的宽度和
+  高度. view.measure()主要是对view-tree进行top-down的traversal,在遍历子树的过程
+  中,父节点view会将对子节点view大小的要求通过 View.MeasureSpec 传递给子节点.即:
+  MeasureSpec 是父节点对子节点大小的要求,例如,要求子节点大小不能超过多少dip. 父节
+  点在计算子节点的 MeasureSpec 时, 会综合考虑当前已经measure过的子树的情况,以及要
+  measure的子节点的 LayoutParam, 与 MeasureSpec 相反, LayoutParam 是子节点对父节
+  点的要求, 例如 子节点通过 LayoutParam 告诉父节点, 它希望 FILL_PARENT,父节点在制
+  定 MeasureSpec 时,会考虑子节点的要求.
+
+  MeasureSpec: 父节点的要求
+
+  一个 MeasureSpec 包括两方面信息: measure的模式和大小
+
+  measure模式有三种:
+         - UNSPECIFIED
+         - AT_MOST
+         - EXACTLY
+
+  其中, AT_MOST表示子节点不能超过该大小,EXACTLY表示子节点应该这么大.
+
+  LayoutParam: 子节点的要求
+
+  LayoutParam 关于大小也有三种值:
+         - FILL_PARENT   表示子节点希望充满父节点.
+         - WRAP_CONTENT  表示子节点只希望够用就好.
+         - 固定的大小,如10dip
+
+  父节点会将固定大小的 LayoutParam 映射为 MeasureSpec 的 EXACTLY 模式. 通常会将
+  FILL_PARENT映射为 EXACTLY 模式. 而将 WRAP_CONTENT 映射为 AT_MOST 模式.
+
+  但考虑这个 layout:
+  #+BEGIN_EXAMPLE
+  <LinearLayout layout_height="wrap_content">
+  <MyView layout_height="fill_parent">
+
+  </MyView>
+  </LinearLayout>
+  #+END_EXAMPLE
+  
+  虽然 MyView 使用的是fill_parent, 但因为父节点的高度为wrap_content, 所以子节点的
+  模式也只能是 AT_MOST, 而不能是 EXACTLY
+** LinearLayout.onMeasure
+   以纵向的 LinearLayout 为例:
+   假设该 layout:
+   #+BEGIN_EXAMPLE
+   <LinearLayout layout_height="fill_parent">
+   <Button layout_height="wrap_content"></Button>
+   <Button layout_height="wrap_content"></Button>
+   </LinearLayout>
+   #+END_EXAMPLE
+   则对 Button1 measure 时, 其 spec 为: AT_MOST:483 (483为最大屏幕高度), 然后设 Button1 的 onMeasure 返回的结果为100.
+   接着对Button2进行 measure 时,其 spec 为: AT_MOST: 383 (483-100)
+   注意的是 MeasureSpec 不是强制的, 子节点还是可以在 onMeasure 返回任意值.
+
+   *Note:*
+   when determine how big next child would like to be, If this or previous children have given a weight, then we allow it to
+   use all available space (and we will shrink things later if needed).
+   i.e. if Button1 or Button2 has specified a `weight`, when measure Button2, it's spec will be AT_MOST: 483, instead of 383!
+
+*** Layout.Weight
+    只有LinearLayout的子节点才支持Layout.Weight. 不同的子节点可以有不同的weight, 表示其权重. LinearLayout 在第一次measure过程结束后, 会根据各个子节点的weight
+    重新进行一次measure, 其目的是:将空闲的空间按weight重新分配给各子节点, 或将"按weight将超出的空间从各子节点里除去"
+    对第一种情况:
+    第一次measure后的情况:            再次measure后的情况:
+
+    #+BEGIN_EXAMPLE
+    +-----------------+            +-----------------+
+    | +-------------+ |            | +-------------+ |
+    | | view1 h=2   | |            | | view1       | |
+    | | weight=1    | |            | | weight=1    | |
+    | +-------------+ |            | | h=4         | |
+    | +-------------+ |            | |             | |
+    | | view2 h=3   | | -------->  | +-------------+ |
+    | | weight=0    | |            | +-------------+ |
+    | |             | |            | | view2       | |
+    | +-------------+ |            | | weight=0    | |
+    |   blank=2       |            | | h=3         | |
+    |                 |            | +-------------+ |
+    +-----------------+            +-----------------+
+    #+END_EXAMPLE
+    对第二种情况:
+    #+BEGIN_EXAMPLE
+    +-----------------+            +-----------------+
+    | +-------------+ |            | +-------------+ |
+    | | view1 h=2   | |            | | view1 h=2   | |
+    | | weight=0    | |            | | weight=0    | |
+    | +--------- ---+ |            | +--------- ---+ |
+    | +-------------+ |            | +-------------+ |
+    | | view2 h=7   | | -------->  | | view2 h=6   | |
+    | | weight=1    | |            | | weight=1    | |
+    | |             | |            | |             | |
+    | |             | |            | |             | |
+    | |             | |            | |             | |
+    | |             | |            | +-------------+ |
+    +-+-------------+-+            +- ------------- -+
+      +-------------+
+    #+END_EXAMPLE
+    对比:
+    #+BEGIN_EXAMPLE
+    +-----------------+            +-----------------+
+    | +-------------+ |            | +-------------+ |
+    | | view1 h=2   | |            | | w=1   h=1   | |
+    | | weight=1    | |            | +-------------+ |
+    | +--------- ---+ |            | +--------- ---+ |
+    | +-------------+ |            | |             | |
+    | | view2 h=7   | | -------->  | | view2 h=7   | |
+    | | weight=0    | |            | | weight=0    | |
+    | |             | |            | |             | |
+    | |             | |            | |             | |
+    | |             | |            | |             | |
+    | |             | |            | +-------------+ |
+    +-+-------------+-+            +- ------------- -+
+      +-------------+
+    #+END_EXAMPLE
+
+    即: 第一次measure后剩余的或超出的空间会按各子节点weight的比例加(或减)到各子节点.
+    注: 第二次measure时一定是 `EXACTLY MODE`, 这也决定了 ListView 在 LinearLayout 里因为 WEIGHT  第二次被 measure 时, 不会调用 measureHeightOfChildren
+    (see [[ListView.onMeasure][ListView.onMeasure]])
+    由于weight的存在, LinearLayout 需要 对所有子节点 measure 两次.
+    另外, 若 child 的 LP 为0 dip, 则 child.onMeasure 根本不会被调用,直接设为exactly 0, 例如:
+    两个widget, 第一个为0dip, weight为1, 第二个为fill_parent,weight为0,则:
+    - 第一次measure时:totalHeight=483 (0+483), delta=483-483=0
+    - 第二次measure时:第一个widget onMeasure 时的高度为exactly 0 (orig(0)+delta(0) * weight(1)/totalWeight(1) =0,
+      第二个的为 exactly 483 (orig(483)+delta(0) * 0/1)
+
+** FrameLayout.onMeasure
+** ListView.onMeasure
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+       ListView.onMeasure()
+         heightSize=MeasureSpec.getSize();
+         if (heightMode==AT_MOST) // ListView LayoutParam is `wrap_content`, or it's outer Layout is `wrap_content`
+	   heightSize= measureHeightOfChildren(maxHeight);
+	     for (i=startPos;i<endPos;++i):
+	       obtainView() ;; will invoke adapter.getView()
+	       measureChild();
+	       returnHeight+=childHeight;
+	       if (returnHeight>maxHeight):
+	         return returnHeight;
+	     return returnHeight;
+	 setMeasuredDimension(..,heightSize);
+</pre>
+#+END_HTML
+
+       That is:
+	 1. when ListView's LayoutParam is not `wrap_content`, it will use height as large as possible
+	 2. when ListView's LayoutParam or it's parent layout's LayoutParam is `wrap_content`, it will iterate all it's child through getView()
+	    to determine a suitable size;
+       thus, `wrap_content` LayoutParam for ListView should be considered for performance penalty.
+
+** android:height & android:layout_height & intrinsic height
+   - every view has the android:layout_height property
+   - only some view has android:height property (currently, only TextView and it derivative has this property)
+
+     android:height property is for views that is `variable height`,
+     e.g. TextView by setting the android:height of TextView to 3 lines, the
+     AT_MOST MeasureSpec knows how height the TextView want to be.
+
+   - only some view which hold drawables (ImageView, ImageButton, ...) has the conception of intrinsic height
+     - for ImageView:
+       ImageView has the conception of intrinsic height, but it doesn't has the android:height property (only has max_height, min_height)
+       intrinsic height is the drawable's orig height.
+       ImageView use intrinsic_height/width to calculate a desiredAspect (0..1), ImageView.onMeasure will try to re-size the measure dimensions
+       according to the desiredAspect, if allowed (MeasureSpec is not `EXACTLY`)
+
+       although intrinsic_height/width may be used differently, as a common rule, MeasureSpec.EXACTLY will always override the intrinsic_height/width
+       setting.
+     - for TextView:
+       TextView has the android:height property, it can be measured in px,dp,.. and lines, it is a hint for `AT_MOST` how height it want to be.
+       in details, setHeight(h) just set both MaxHeight and MinHeight to h, during the measure phase, if MeasureSpec is not EXACTLY, the
+       TextView.getDesiredHeight() will calculate desired height as follows:
+       #+BEGIN_EXAMPLE
+       desired = Math.min(desired, mMaximum);
+       desired = Math.max(desired, mMinimum);
+       #+END_EXAMPLE
+       
+  To summarize:
+     - android:height is only for AT_MOST, that is EXACTLY will always override android:height.
+     - currently, only TextView and it derivative has android:height property.

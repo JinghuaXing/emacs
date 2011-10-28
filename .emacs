@@ -1,13 +1,11 @@
 (add-to-list 'load-path "~/.elisp") 
 (add-to-list 'load-path "~/.elisp/org-mode/lisp")
 (add-to-list 'load-path "~/.elisp/emacs-w3m")
-;; (add-to-list 'load-path "~/.elisp/jdee/lisp")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
 (add-to-list 'load-path "~/.elisp/yasnippet")
 (add-to-list 'load-path "~/.elisp/org2blog")
 (add-to-list 'load-path "~/.elisp/ajc-java-complete-git/")
-;; (add-to-list 'load-path "~/.elisp/ecb-2.40/")
 
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
@@ -15,6 +13,7 @@
 (menu-bar-mode t)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
+
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
 (load-file "~/.elisp/dotemacs/my.el")
@@ -27,6 +26,7 @@
 (load-file "~/.elisp/dotemacs/ibuffer.el")
 (load-file "~/.elisp/cedet-1.0/common/cedet.el")
 ;; (semantic-load-enable-minimum-features)
+
 (semantic-load-enable-excessive-code-helpers)
 (global-semantic-decoration-mode nil)
 (global-semantic-idle-completions-mode nil)
@@ -196,7 +196,7 @@
 			     (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
 			     ))
 (modify-syntax-entry ?_ "_")
-(setq transient-mark-mode t)
+(setq transient-mark-mode nil)
 
 ;;---------------------------------------------------------------------
 ;; APPEARANCE
@@ -317,11 +317,11 @@
 (toggle-input-method nil)          ; default is turn off
 (global-set-key ";" 'eim-insert-ascii)
 
-(require 'breadcrumb)
-(global-set-key [(control f2)]          'bc-previous)
-(global-set-key [(f2)]                  'bc-set)
-(global-set-key [(shift f2)]            'bc-next)
-(global-set-key [(meta f2)]             'bc-list)
+;; (require 'breadcrumb)
+;; (global-set-key [(control f2)]          'bc-previous)
+;; (global-set-key [(f2)]                  'bc-set)
+;; (global-set-key [(shift f2)]            'bc-next)
+;; (global-set-key [(meta f2)]             'bc-list)
 (cua-mode t)
 
 (require 'undo-tree)
@@ -337,6 +337,7 @@
 
 (require 'ac-slime)
 (add-hook 'slime-mode-hook 'set-up-slime-ac)
+
 (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'slime-repl-mode))
@@ -352,14 +353,11 @@
 
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 (require 'git)
-(require 'uniquify)
 
+(require 'uniquify)
 (autoload 'enable-paredit-mode "paredit"
   "Turn on pseudo-structural editing of Lisp code."
   t)
 
-
 (add-hook 'slime-mode-hook 'enable-paredit-mode)
-(add-hook 'slime-repl-mode-hook 'enable-paredit-mode)
 (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
-(add-hook 'c-mode-common-hook 'enable-paredit-mode)

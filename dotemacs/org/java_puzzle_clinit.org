@@ -1,0 +1,47 @@
+#+POSTID: 142
+#+DATE: [2011-10-28 Fri 11:40]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: Java
+#+TAGS: java,puzzle
+#+DESCRIPTION:
+#+TITLE: Java Puzzle:class not initialized?
+* Java Puzzle:class not initialized?
+TestA.java
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+public class TestA {
+   public static void main(String[] args) {
+       System.out.println(TestB.value);
+   }
+}
+</pre>
+#+END_HTML
+
+TestB.java
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+class TestB {
+    public static final String value="abc";
+    static {
+        System.out.println("TestB clazz initialized");
+    }
+}
+</pre>
+#+END_HTML
+
+#+BEGIN_EXAMPLE
+~>javac TestA.java TestB.java
+~>java TestA
+# no output
+#+END_EXAMPLE
+
+As we know:
+  - new
+  - getstatic
+  - putstatic
+  - invokestatic
+will trigger the class initialization: Why is TestB clazz not initialized?
+
+

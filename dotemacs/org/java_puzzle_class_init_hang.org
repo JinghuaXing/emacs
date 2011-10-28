@@ -1,0 +1,57 @@
+#+POSTID: 141
+#+DATE: [2011-10-28 Fri 11:40]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: Java
+#+TAGS: java,puzzle
+#+DESCRIPTION:
+#+TITLE: Java Puzzle:class initialization hangs
+* Java Puzzle:class initialization hangs
+
+TestA.java
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+  class TestB {
+      static 
+      {
+          System.out.println("clinit for TestB in "+Thread.currentThread().getName());
+          if (true) {
+              for (;;) {}
+          }
+      }
+  }
+  public class TestA {
+      public static void main(String[] args) {
+          new Thread() {
+              public void run() 
+              {
+                  System.out.println(Thread.currentThread().getName()+" start");
+                  new TestB();
+                  System.out.println(Thread.currentThread().getName()+" end");
+              }
+          }.start();
+          new Thread() {
+              public void run() 
+              {
+                  System.out.println(Thread.currentThread().getName()+" start");
+                  new TestB();
+                  System.out.println(Thread.currentThread().getName()+" end");
+              }
+          }.start();
+          
+     }
+  }
+</pre>
+#+END_HTML
+
+#+BEGIN_EXAMPLE
+~>javac TestA.java
+~>java TestA
+Thread-0 start
+Thread-1 start
+clinit for TestB in Thread-0
+# hangs here
+#+END_EXAMPLE
+
+Note: This puzzle is also a hint for `How lazy singleton can avoid race condition without any lock`
+

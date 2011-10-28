@@ -18,7 +18,7 @@
   (c-set-style "k&r")
   (subword-mode)
   (setq subword-mode t)
-  (c-toggle-auto-state t)
+  ;; (c-toggle-auto-state t)
   (c-toggle-hungry-state t)
   (c-toggle-electric-state t)
   (setq c-basic-offset 4)
@@ -35,33 +35,35 @@
   (local-set-key (kbd "C-c C-c") 'compile)
   
   (setq c-hanging-braces-alist
-	'((brace-list-open)
-	  (brace-list-close)
-	  (brace-entry-open)
-	  (statement-cont)
-	  (substatement-open after)
-	  (block-close . c-snug-do-while)
-	  (extern-lang-open after)
-	  (namespace-open after)
-	  (module-open after)
-	  (defun-open after)
-	  (class-open after)
-	  (class-close)
-	  (composition-open after)
-	  (inexpr-class-open after)
-	  (inexpr-class-close before))
-	)
+  	'((brace-list-open after)
+  	  (brace-list-close)
+  	  (brace-entry-open)
+  	  (statement-cont)
+  	  (substatement-open after)
+  	  (block-close . c-snug-do-while)
+  	  (extern-lang-open after)
+  	  (namespace-open after)
+  	  (module-open after)
+  	  (defun-open after)
+  	  (class-open after)
+  	  (class-close)
+  	  (composition-open after)
+  	  (inexpr-class-open after)
+  	  (inexpr-class-close before))
+  	)
   (setq c-cleanup-list
-	'(
-	  space-before-funcall
-	  brace-else-brace
-	  brace-elseif-brace
-	  brace-catch-brace
-	  one-liner-defun
-	  comment-close-slash
-	  scope-operator
-	  )
-	)
+  	'(
+  	  ;; space-before-funcall
+  	  ;; compact-empty-funcall
+  	  brace-else-brace
+  	  brace-elseif-brace
+  	  brace-catch-brace
+  	  one-liner-defun
+  	  defun-close-semi
+  	  comment-close-slash
+  	  scope-operator
+  	  )
+  	)
   )
 
 (setq compilation-scroll-output t)
@@ -76,52 +78,55 @@
 
 
 
-(add-hook 'java-mode-hook 'my-java-common-hook)
-(add-hook 'jde-mode-hook 'my-java-common-hook)
-(defun my-java-common-hook()
-  (interactive)
-  (c-toggle-auto-state t)
-  (c-toggle-hungry-state t)
-  (c-toggle-electric-state t)
-  (setq c-basic-offset 4)
-  (c-set-style "java")
-  ;;(c-set-offset 'case-label 4)
-  (imenu-add-menubar-index)
-  (hs-minor-mode t)
-  ;;  (fold-mode)
-  (auto-fill-mode 1)
-  (linum-mode 1)
-  (flyspell-prog-mode)
-  (local-set-key (kbd "C-M-a") 'senator-previous-tag)
-  (local-set-key (kbd "C-M-e") 'senator-next-tag)
-  (setq c-hanging-braces-alist
-	'((brace-list-open)
-	  (brace-entry-open)
-	  (statement-cont)
-	  (substatement-open after)
-	  (block-close . c-snug-do-while)
-	  (extern-lang-open after)
-	  (namespace-open after)
-	  (module-open after)
-	  (defun-open after)
-	  (class-open after)
-	  (class-close)
-	  (composition-open after)
-	  (inexpr-class-open after)
-	  (inexpr-class-close before))
-	)
-  (setq c-cleanup-list
-	'(
-	  space-before-funcall
-	  brace-else-brace
-	  brace-elseif-brace
-	  brace-catch-brace
-	  one-liner-defun
-	  comment-close-slash
-	  scope-operator
-	  )
-	)
-  )
+(add-hook 'java-mode-hook 'my-c-common-hook)
+(add-hook 'jde-mode-hook 'my-c-common-hook)
+;; (defun my-java-common-hook()
+;;   (interactive)
+;;   (c-toggle-auto-state t)
+;;   (c-toggle-hungry-state t)
+;;   (c-toggle-electric-state t)
+;;   (setq c-basic-offset 4)
+;;   (c-set-style "java")
+;;   ;;(c-set-offset 'case-label 4)
+;;   (imenu-add-menubar-index)
+;;   (hs-minor-mode t)
+;;   ;;  (fold-mode)
+;;   (auto-fill-mode 1)
+;;   (linum-mode 1)
+;;   (flyspell-prog-mode)
+;;   (local-set-key (kbd "C-M-a") 'senator-previous-tag)
+;;   (local-set-key (kbd "C-M-e") 'senator-next-tag)
+;;   (setq c-hanging-braces-alist
+;; 	'((brace-list-open)
+;; 	  (brace-entry-open)
+;; 	  (statement-cont)
+;; 	  (substatement-open after)
+;; 	  (block-close . c-snug-do-while)
+;; 	  (extern-lang-open after)
+;; 	  (namespace-open after)
+;; 	  (module-open after)
+;; 	  (defun-open after)
+;; 	  (class-open after)
+;; 	  (class-close)
+;; 	  (composition-open after)
+;; 	  (inexpr-class-open after)
+;; 	  (inexpr-class-close before))
+;; 	)
+;;   (setq c-cleanup-list
+;; 	'(
+;; 	  space-before-funcall
+;; 	  compact-empty-funcall
+;; 	  brace-else-brace
+;; 	  brace-elseif-brace
+;; 	  brace-catch-brace
+;; 	  one-liner-defun
+;; 	  empty-defun-braces
+;; 	  defun-close-semi
+;; 	  comment-close-slash
+;; 	  scope-operator
+;; 	  )
+;; 	)
+;;   )
 
 
 (setq imenu-sort-function 'imenu--sort-by-name)
@@ -197,4 +202,5 @@
 (add-hook 'c-mode-common-hook 'jk/c-mode-common-hook)
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-hook 'find-file-hook 'hs-hide-initial-comment-block)
+
 
