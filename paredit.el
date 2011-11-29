@@ -1,3 +1,4 @@
+
 ;;; paredit.el --- minor mode for editing parentheses  -*- Mode: Emacs-Lisp -*-
 
 ;; Copyright (C) 2005--2011 Taylor R. Campbell
