@@ -345,6 +345,7 @@
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'slime-repl-mode))
 
+
 (require 'org2blog-autoloads)
 (setq org2blog/wp-blog-alist
       '(("wordpress"
