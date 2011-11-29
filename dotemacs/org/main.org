@@ -10,6 +10,7 @@
 ** TODO android tombstone
 ** TODO android coredump
 ** TODO PreferenceScreen nesting & notify
+** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
 * Linux App
 #+CATEGORY:Linux app
 ** ditaa

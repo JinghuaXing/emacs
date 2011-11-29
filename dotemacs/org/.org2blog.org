@@ -1,5 +1,29 @@
 
 * Posts
+** [[file:/home/sunway/.elisp/dotemacs/org/delicious_c++.org][Del.icio.us C++]]
+   :PROPERTIES:
+   :POSTID:   165
+   :POST_DATE: 20111125T10:28:00+0000
+   :Published: Yes
+   :END:
+** [[file:/home/sunway/.elisp/dotemacs/org/about_me.org][About me]]
+   :PROPERTIES:
+   :POSTID:   156
+   :POST_DATE: 20111125T10:20:00+0000
+   :Published: Yes
+   :END:
+** [[file:/home/sunway/.elisp/dotemacs/org/invokeinterface.org][Java interface vs. C++ multiple inheritance, the method invocation overhead]]
+   :PROPERTIES:
+   :POSTID:   153
+   :POST_DATE: 20111125T06:40:00+0000
+   :Published: Yes
+   :END:
+** [[file:/home/sunway/.elisp/dotemacs/org/1.org][Test]]
+   :PROPERTIES:
+   :POSTID:   151
+   :POST_DATE: 20111124T08:50:00+0000
+   :Published: Yes
+   :END:
 ** [[file:/home/sunway/.elisp/dotemacs/org/measure.org][Android onMeasure]]
    :PROPERTIES:
    :POSTID:   145
