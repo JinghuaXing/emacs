@@ -1,27 +1,9 @@
-#+POSTID: 112
-#+DATE: [2011-09-18 日 22:42]
+#+POSTID: 172
+#+DATE: [2011-11-29 二 09:50]
 #+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: 
 #+TAGS:
 #+DESCRIPTION:
 #+TITLE: TODO
-* GC
-  - various GC algorithm
-  - for hotspot:
-    - young, old, perm
-    - eden, survivor
-* memory layout
-* JIT
-** PrintAssembly
-   - need hsdis.so installed
-#+BEGIN_EXAMPLE
-java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly -Xcomp 
-  -XX:CompileCommand='dontinline Test.foo' -XX:CompileCommand='compileonly Test.foo' Test 
-#+END_EXAMPLE
+　-　数值类型转换
 
-** reduce virtualcall overhead in JIT
-   google: jvm jit virtualcall
-
-
-
-
-    

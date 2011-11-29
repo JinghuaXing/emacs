@@ -1,0 +1,6 @@
+#name : begin_ditaa
+# --
+#+begin_ditaa `(random)`.png -r -S
+$0
+#+end_ditaa
+

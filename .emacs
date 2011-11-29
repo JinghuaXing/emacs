@@ -47,6 +47,9 @@
 			   (auto-complete-mode 1))
 		       ))
 (real-global-auto-complete-mode t)
+(define-key ac-completing-map "\t" 'nil)
+(define-key ac-completing-map [tab] 'ac-complete)
+(define-key ac-completing-map "<return>" 'nil)
 
 (require 'ajc-java-complete-config)
 ;; (add-hook 'jde-mode-hook (lambda () (ajc-java-complete-mode t)))

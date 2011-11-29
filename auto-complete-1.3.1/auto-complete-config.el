@@ -480,7 +480,7 @@
 ;;   (global-auto-complete-mode t))
 
 (defun ac-config-default ()
-  (setq-default ac-sources '(ac-source-words-in-buffer ac-source-dictionary))
+  (setq-default ac-sources '(ac-source-words-in-buffer ac-source-dictionary ac-source-yasnippet))
   (add-hook 'emacs-lisp-mode-hook 'ac-emacs-lisp-mode-setup)
   (add-hook 'c-mode-common-hook 'ac-cc-mode-setup)
   (add-hook 'ruby-mode-hook 'ac-ruby-mode-setup)
