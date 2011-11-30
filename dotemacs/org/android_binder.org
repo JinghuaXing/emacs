@@ -450,46 +450,42 @@ seq graph:
 **** DONE [#C] binder reference count
      CLOSED: [2011-03-18 Fri 17:57]
      - State "DONE"       [2011-03-18 Fri 17:57]
-
-     Q: how binder_ref is deleted?
-     1. Binder.finalize() @ Binder.java
-#+BEGIN_EXAMPLE
-	Binder.finalize()
-	  android_os_Binder_destroy() // jni
-#+END_EXAMPLE
-     2. binder jni
-#+BEGIN_EXAMPLE
-	android_os_Binder_destroy()
-	  JavaBBinderHolder->decStrong(); // JavaBBinderHolder extends RefBase
-#+END_EXAMPLE
-     3. RefBase.cpp
-#+BEGIN_EXAMPLE
-	RefBase->decStrong()
-	  int32_t c = android_atomic_dec(&refs->mStrong);
-	  const_cast<RefBase*>(this)->onLastStrongRef(id);
-#+END_EXAMPLE
-     4. BpBinder.cpp
-	BpBinder extends RefBase
-#+BEGIN_EXAMPLE
-	BpBinder->onLastStrongRef()
-	  IPCThreadState.decStrongHandle()
-#+END_EXAMPLE
-     5. IPCThreadState.cpp
-#+BEGIN_EXAMPLE
-	IPCThreadState.decStrongHandle()
-	  mOut.writeInt32(BC_RELEASE);
-#+END_EXAMPLE
-     6. Binder.c
-#+BEGIN_EXAMPLE
-	binder_thread_write()
-	  case BC_RELEASE:
-	    binder_dec_ref(ref, 1);
-	      ref->strong--;
-	      if ref->strong == 0:
-	       binder_dec_node(ref->node, strong, 1);
-	     if ref->strong == 0 && ref->weak == 0:
-	       binder_delete_ref(ref);
-#+END_EXAMPLE
+    Binder reference 分为两个方法:
+    　- C++ 层面的RefBase
+    　- driver 层面 binder_ref 的引用计数
+***** When Java Binder is finalized
+#+BEGIN_HTML
+<pre lang="c++" line="1">
+      Binder.finalize() @ Binder.java
+        android_os_Binder_destroy() //jni
+	  JavaBBinderHolder->decStrong();
+	    c = android_atomic_dec(&refs->mStrong)
+	    if (c == 1):
+              const_cast<RefBase*>(this)->onLastStrongRef(id)
+	        {} // nop for BBinder
+</pre>
+#+END_HTML
+***** When Java BinderProxy is finalized
+#+BEGIN_HTML
+<pre lang="c++" line="1">
+      BinderProxy.finalize() @ Binder.java
+        android_os_BinderProxy_destroy(JNIEnv* env, jobject obj)
+	  BinderProxy.decStrong()
+	    c = android_atomic_dec(&refs->mStrong)
+	    if (c == 1):
+              const_cast<RefBase*>(this)->onLastStrongRef(id)
+	        IPCThreadState->decStrongHandle(mHandle);
+		  mOut.writeInt32(BC_RELEASE)
+                    binder_thread_write()
+	              case BC_RELEASE:
+	                binder_dec_ref(ref, 1);
+	                  ref->strong--;
+	                  if ref->strong == 0:
+	                   binder_dec_node(ref->node, strong, 1);
+	                 if ref->strong == 0 && ref->weak == 0:
+	                   binder_delete_ref(ref);
+</pre>
+#+END_HTML
      What's more:
      - binder_dec_ref() will also be called during binder_free_buffer() and the buffer contains BINDER_TYPE_HANDLE.
      - binder_node will be deleted when:
