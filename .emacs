@@ -180,7 +180,7 @@
 (put 'narrow-to-page 'disabled nil)
 (delete-selection-mode nil)
 
-;; (desktop-save-mode 1)
+(desktop-save-mode 1)
 (setq desktop-buffers-not-to-save "\\(^\\*\\|^nn\\.a[0-9]+\\|\\.log\\|(ftp)\\)$")
 (setq history-length 250)
 (setq gdb-many-windows t)
@@ -366,3 +366,5 @@
 (add-hook 'slime-mode-hook 'enable-paredit-mode)
 (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
 (add-hook 'text-mode-hook 'flyspell-mode)
+
+(require 'unicad)
