@@ -1,5 +1,11 @@
 
 * Posts
+** [[file:/home/apuser/.elisp/dotemacs/org/delicious_java.org][Del.icio.us Java]]
+   :PROPERTIES:
+   :POSTID:   177
+   :POST_DATE: 20111209T09:20:00+0000
+   :Published: Yes
+   :END:
 ** [[file:/home/sunway/.elisp/dotemacs/org/joke.org][Joke]]
    :PROPERTIES:
    :POSTID:   176

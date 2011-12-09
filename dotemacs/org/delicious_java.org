@@ -1,0 +1,16 @@
+#+POSTID: 177
+#+DATE: [2011-12-09 Fri 17:20]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: Java
+#+TAGS: java
+#+DESCRIPTION:
+#+TITLE: Del.icio.us Java
+
+- Java Collections Framework
+- [[http://book.douban.com/subject/6522893/][Book:深入理解Java虚拟机]]
+- [[http://java.sun.com/docs/books/jni/][Book:Java Native Interface: Programmer's Guide and Specification]]
+- [[http://www.artima.com/insidejvm/blurb.html][Book:Inside the Java Virtual Machine]]
+- [[http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html][The "Double-Checked Locking is Broken" Declaration ]]
+- [[http://www.cs.umd.edu/~pugh/java/memoryModel/][The Java Memory Model]]
+- [[http://www.javaconcurrencyinpractice.com/][Book:Java Concurrency in Practice]]
+- [[http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html][Java SE Security]]

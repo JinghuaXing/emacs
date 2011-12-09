@@ -1971,22 +1971,6 @@ Disassembly of section .text:
 
 * Android
 #+CATEGORY:android
-** important files
-*** device
-    1. data/system/packages.xml
-    2. /mnt/secure/asec
-    3. /mnt/asec
-    4. /system/etc/permissions/platform.xml
-    5. /system/etc/security/cacerts.bks
-    6. /data/dalvik-cache
-    7. /data/property
-    8. /system/build.prop
-    9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
-    10. /data/system/registered_services/android.content.SyncAdapter.xml
-*** src
-    1. framework/base/core/jni
-    2. system/core/init
-    3. system/core/include/private/android_filesystem_config.h
 ** ActivityManagerService
    :PROPERTIES:
    :ID:       ams
@@ -3804,7 +3788,6 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
    The handler will firstly finish activities, and if the service has crashed >=2 times, the service will be bringDown (service.onDestroy will be called)
    If the service is crashing for the 1st time, doesn't bring it down (service.onDestroy will not be called, although the service will be killed due to the
    process will be killed later), and schedule the restart of the service after the process is killed later.
-** ANT and android project
 ** Alarm
 ** DONE [#A] Android Testing
    SCHEDULED: <2011-03-14 Mon>
@@ -3897,7 +3880,6 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
        (by calling mInstrumentation.launchActivity) will call Instrumentation.startActivitySync to launch the activity, and perform functional testing
      - ActivityUnitTestCase  is for unit testing: the activity under test will be create with minimal connection to the system infrastructure, and you can
        invoke setActivityConetxt() to inject a mock context.
-** Ant & android
 ** Animation
 *** TranslateAnimation
 ** DONE ANR
@@ -3934,6 +3916,8 @@ AMS calls:
      activityThread will call service.onCreate()
      activityThread calls mWindowSession.serviceDone()
 #+END_EXAMPLE
+** Ant & android
+** ANT and android project
 ** Application
    see also [[Context.getApplicationContext()]]
 *** DONE persistent application
@@ -3968,6 +3952,57 @@ AMS calls:
 *** MediaPlayerService
 ** Bionic libc
 *** Prelink
+** CANCELED [#B] Preference
+   SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-26 Tue 16:25]
+   - State "CANCELED"   from "DOING"      [2011-07-26 Tue 16:25]
+*** PreferenceActivity
+    - PreferenceActivity extends ListActivity
+    - Basic usage:
+      1. setContentView(resId)
+	 optional, if called, resId must contain a ListView with id="@+android/List"
+      2. PreferenceActivity.addPreferencesFromResource()
+    - Basically, PreferenceActivity is an Activity contains a ListView, and it delegate anything about the ListView to a inner member: PreferenceManager
+*** PreferenceManager
+    PreferenceManager is a utility functional object
+    - PreferenceManager extends NULL
+    - PreferenceManager mainly does two things:
+      1. maintain the underlying SharedPreference
+      2. maintain the PreferenceScreen (inflate PreferenceScreen from xml)
+*** PreferenceScreen
+    PreferenceScreen is one of the two core concepts of Preference  (another is Preference)
+    *NOTE*: PreferenceScreen vs. ListAdapter
+
+    - PreferenceScreen extends PreferenceGroup
+    - it maintains a PreferenceGroupAdapter (extends ListAdapter), which is shown in the ListView
+      The adapter will map the Preference to ListView item.
+*** Preference
+    *NOTE*: Preference vs. ListView item
+    - when Preference is changed (through Preference.notifyChanged()), it will eventually
+      invoke PreferenceScreen.PreferenceGroupAdapter.notifyDatasetChanged(), thus update the ListView.
+    - when PreferenceGroupAdapter decides to getView(), it will eventually call through to Preference.getView()->Preference.onBindView()
+    - Preference's builtin setTitle()/setSummary() will call notifyChanged() automatically, thus cause onBindView()
+*** KeyEvent dispatch
+#+BEGIN_EXAMPLE
+    ListView.onItemClicked
+      Preference.performClick
+        Preference.mOnClickListener
+	if not intercepted:
+	  PreferenceActivity.OnPreferenceTreeClickListener
+	if not intercepted && mIntent != null:
+	  startActivity(mIntent)
+#+END_EXAMPLE
+*** To summurize:
+    PreferenceScreen vs. ListAdapter
+    Preference vs. ListItem
+** CANCELED PowerManagment
+   SCHEDULED: <2011-05-31 Tue> CLOSED: [2011-07-18 Mon 17:43]
+   - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
+*** WakeLock
+** ClassLoader
+*** DexClassLoader
+*** PathClassLoader
+*** Context.getClassLoader
+    see also [[Context.getClassLoader]]
 ** TODO [#B] ContentObserver
 
 ** ContentProvider , ContentResover & SQLite
@@ -4098,6 +4133,77 @@ AMS calls:
 #+END_EXAMPLE
 
 ** HAL								    :ARCHIVE:
+** important files
+*** device
+    1. data/system/packages.xml
+    2. /mnt/secure/asec
+    3. /mnt/asec
+    4. /system/etc/permissions/platform.xml
+    5. /system/etc/security/cacerts.bks
+    6. /data/dalvik-cache
+    7. /data/property
+    8. /system/build.prop
+    9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
+    10. /data/system/registered_services/android.content.SyncAdapter.xml
+*** src
+    1. framework/base/core/jni
+    2. system/core/init
+    3. system/core/include/private/android_filesystem_config.h
+** init
+*** DOING init.rc
+    SCHEDULED: <2011-08-30 Tue>
+*** DONE System init
+    CLOSED: [2011-03-01 Tue 11:20]
+    - State "DONE"       [2011-03-01 Tue 11:20]
+    init will start some daemon, service_manager, media_service. Then call app_process to call zygoteInit.java to start zygote.
+    ZygoteInit.java, first will fork and start system_server, then listen on one local socket through runSelectLoopMode().
+    SystemServer.java's main() will firstly load 'android_server'.so and call
+    it's init1() to start binderThreadPool and call SystemServer's init2(),
+    which will init an ServerThread and start some java service like AMS, WMS.
+
+    system_server is setuid to `system` uid.
+
+    Note:
+    zygote will keep running with `root` uid, so that zygote can setuid/gid/groups on newly forked progress, so that new java progress will run with
+    proper uid/gid/groups
+*** Zygote init
+    app_process --> app_main.cpp: framework/base/cads/app_process
+    ZygoteInit.java: framework/base/core/java/com/android/internal/os
+#+BEGIN_EXAMPLE
+    app_process::main()
+      runtime.start("com.android.internal.os.ZygoteInit", startSystemServer);
+       ZygoteInit.main()
+         registerZygoteSocket();
+	 startSystemServer();
+	   pid = Zygote.forkSystemServer();
+	   if (pid == 0):
+             handleSystemServerProcess(parsedArgs);
+	       closeServerSocket(); // for newly forked system_server process, close zygote socket inherited from parent
+	       RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
+	         zygoteInitNative();
+		   proc->startThreadPool();
+		   invokeStaticMain(startClass, startArgs); // startClass is "com.android.server.SystemServer"
+		     SystemServer.java:main()
+		       System.loadLibrary("android_servers");
+		       init1(args); // init1 is native method in android_servers.so
+		         android_server_SystemServer_init1(JNIEnv* env, jobject clazz)
+			   system_init();
+			     runtime->callStatic("com/android/server/SystemServer", "init2");
+			       SystemServer.java:init2()
+			         Thread thr = new ServerThread();
+				   // start any system service, e.g. ams, wms..
+				   // prepare the looper and loop in it.
+				   // the looper is TAKEN as the `main` looper  of the `system` process
+				 thr.start();
+			     ProcessState::self()->startThreadPool();
+			     IPCThreadState::self()->joinThreadPool();
+	 runSelectLoopMode();
+#+END_EXAMPLE
+    Q: Why SystemServer.java will call android_server.so:init1(), which will call SystemServer.java:init2()? instead of call init2() directly?
+    A: android_server.so:init1() is needed because it will call `joinThreadPool` to put the process into ThreadPool. There is no java correspondent of
+       joinThreadPool()
+
+** Input Method Framework
 ** IntentSender
    :PROPERTIES:
    :CUSTOM_ID:       @IntentSender
@@ -4538,52 +4644,6 @@ AMS calls:
    That is, if intents' action, data, type, class, and categories are the same.
    This does *not* compare any extra data included in the intents.
 
-** CANCELED PowerManagment
-   SCHEDULED: <2011-05-31 Tue> CLOSED: [2011-07-18 Mon 17:43]
-   - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
-*** WakeLock
-** CANCELED [#B] Preference
-   SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-26 Tue 16:25]
-   - State "CANCELED"   from "DOING"      [2011-07-26 Tue 16:25]
-*** PreferenceActivity
-    - PreferenceActivity extends ListActivity
-    - Basic usage:
-      1. setContentView(resId)
-	 optional, if called, resId must contain a ListView with id="@+android/List"
-      2. PreferenceActivity.addPreferencesFromResource()
-    - Basically, PreferenceActivity is an Activity contains a ListView, and it delegate anything about the ListView to a inner member: PreferenceManager
-*** PreferenceManager
-    PreferenceManager is a utility functional object
-    - PreferenceManager extends NULL
-    - PreferenceManager mainly does two things:
-      1. maintain the underlying SharedPreference
-      2. maintain the PreferenceScreen (inflate PreferenceScreen from xml)
-*** PreferenceScreen
-    PreferenceScreen is one of the two core concepts of Preference  (another is Preference)
-    *NOTE*: PreferenceScreen vs. ListAdapter
-
-    - PreferenceScreen extends PreferenceGroup
-    - it maintains a PreferenceGroupAdapter (extends ListAdapter), which is shown in the ListView
-      The adapter will map the Preference to ListView item.
-*** Preference
-    *NOTE*: Preference vs. ListView item
-    - when Preference is changed (through Preference.notifyChanged()), it will eventually
-      invoke PreferenceScreen.PreferenceGroupAdapter.notifyDatasetChanged(), thus update the ListView.
-    - when PreferenceGroupAdapter decides to getView(), it will eventually call through to Preference.getView()->Preference.onBindView()
-    - Preference's builtin setTitle()/setSummary() will call notifyChanged() automatically, thus cause onBindView()
-*** KeyEvent dispatch
-#+BEGIN_EXAMPLE
-    ListView.onItemClicked
-      Preference.performClick
-        Preference.mOnClickListener
-	if not intercepted:
-	  PreferenceActivity.OnPreferenceTreeClickListener
-	if not intercepted && mIntent != null:
-	  startActivity(mIntent)
-#+END_EXAMPLE
-*** To summurize:
-    PreferenceScreen vs. ListAdapter
-    Preference vs. ListItem
 ** TODO [#A] Scroll
 *** Scroller
 *** GestureDetector
@@ -4591,9 +4651,12 @@ AMS calls:
 ** TODO Service Manager
    see also [[binder]]
 ** SharedPreference
+** DONE Strict Mode
+   SCHEDULED: <2011-06-13 Mon> CLOSED: [2011-06-13 Mon 15:24]
+   - State "DONE"       [2011-06-13 Mon 15:24]
+   see [[ANR]]
+   - use BlockGuard (StrictMode) to detect possible ANR caused by file/network IO in mainThread
 ** Surfacing							    :ARCHIVE:
-** system_server
-*** ServerThread
 ** System Property
    1. android property is by no means related to java property.
    2. android SDK doesn't provide public java API to access android property; However, internal java API is available
@@ -4610,16 +4673,8 @@ AMS calls:
       ...
 *** java property
     System.getProperty() / System.setProperty()
-** ClassLoader
-*** DexClassLoader
-*** PathClassLoader
-*** Context.getClassLoader
-    see also [[Context.getClassLoader]]
-** DONE Strict Mode
-   SCHEDULED: <2011-06-13 Mon> CLOSED: [2011-06-13 Mon 15:24]
-   - State "DONE"       [2011-06-13 Mon 15:24]
-   see [[ANR]]
-   - use BlockGuard (StrictMode) to detect possible ANR caused by file/network IO in mainThread
+** system_server
+*** ServerThread
 ** Toast
 ** Tools
 *** traceview
@@ -4931,9 +4986,9 @@ AMS calls:
 			 focusView.dispatchKeyEvent()
 			   mOnKeyListener.onKey()
 			   if (not handled)
-			     event.dispatch() ;; view also implents Event.Callback
+			     event.dispatch(view) ;; view also implents Event.Callback
 		     if (not handled)
-		         event.dispatch() ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
+		         event.dispatch(activity) ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
 		 else
 		   super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
 		                            ;; does not implents Window.Callback
@@ -5032,60 +5087,6 @@ AMS calls:
 *** WindowManagerImpl
 **** PhoneWindow
 *** UI thread
-** init
-*** DOING init.rc
-    SCHEDULED: <2011-08-30 Tue>
-*** DONE System init
-    CLOSED: [2011-03-01 Tue 11:20]
-    - State "DONE"       [2011-03-01 Tue 11:20]
-    init will start some daemon, service_manager, media_service. Then call app_process to call zygoteInit.java to start zygote.
-    ZygoteInit.java, first will fork and start system_server, then listen on one local socket through runSelectLoopMode().
-    SystemServer.java's main() will firstly load 'android_server'.so and call
-    it's init1() to start binderThreadPool and call SystemServer's init2(),
-    which will init an ServerThread and start some java service like AMS, WMS.
-
-    system_server is setuid to `system` uid.
-
-    Note:
-    zygote will keep running with `root` uid, so that zygote can setuid/gid/groups on newly forked progress, so that new java progress will run with
-    proper uid/gid/groups
-*** Zygote init
-    app_process --> app_main.cpp: framework/base/cads/app_process
-    ZygoteInit.java: framework/base/core/java/com/android/internal/os
-#+BEGIN_EXAMPLE
-    app_process::main()
-      runtime.start("com.android.internal.os.ZygoteInit", startSystemServer);
-       ZygoteInit.main()
-         registerZygoteSocket();
-	 startSystemServer();
-	   pid = Zygote.forkSystemServer();
-	   if (pid == 0):
-             handleSystemServerProcess(parsedArgs);
-	       closeServerSocket(); // for newly forked system_server process, close zygote socket inherited from parent
-	       RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
-	         zygoteInitNative();
-		   proc->startThreadPool();
-		   invokeStaticMain(startClass, startArgs); // startClass is "com.android.server.SystemServer"
-		     SystemServer.java:main()
-		       System.loadLibrary("android_servers");
-		       init1(args); // init1 is native method in android_servers.so
-		         android_server_SystemServer_init1(JNIEnv* env, jobject clazz)
-			   system_init();
-			     runtime->callStatic("com/android/server/SystemServer", "init2");
-			       SystemServer.java:init2()
-			         Thread thr = new ServerThread();
-				   // start any system service, e.g. ams, wms..
-				   // prepare the looper and loop in it.
-				   // the looper is TAKEN as the `main` looper  of the `system` process
-				 thr.start();
-			     ProcessState::self()->startThreadPool();
-			     IPCThreadState::self()->joinThreadPool();
-	 runSelectLoopMode();
-#+END_EXAMPLE
-    Q: Why SystemServer.java will call android_server.so:init1(), which will call SystemServer.java:init2()? instead of call init2() directly?
-    A: android_server.so:init1() is needed because it will call `joinThreadPool` to put the process into ThreadPool. There is no java correspondent of
-       joinThreadPool()
-
 ** Zygote
 *** DONE Java Process Creation
     CLOSED: [2011-03-01 Tue 11:20]
