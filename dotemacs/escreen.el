@@ -17,7 +17,7 @@
       )
     )
   )
-(global-set-key (kbd "s-SPC") 'toggle-escreen)
+;; (global-set-key (kbd "s-SPC") 'toggle-escreen)
 
 (defun switch-to-screen()
   "switch to screen"

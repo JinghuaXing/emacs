@@ -1,16 +1,21 @@
 #+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
+** TODO Webview
+** TODO Android IME 
+** TODO Android coredump
+** TODO Android Span
+** TODO android tombstone
+** TODO browser通过代理访问ftp?
+** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
 ** TODO [#C] org-mode manual
+** TODO PreferenceScreen nesting & notify
 ** TODO [#C] read GTD(200p)
+** TODO res/menu sub-folder
 ** DONE Will HandlerThread create any pipe?
    CLOSED: [2011-07-12 Tue 13:18]
    - State "DONE"       from "TODO"       [2011-07-12 Tue 13:18]
      Nop, Android process will create several pipes for JDWP, but not for other threads.
-** TODO android tombstone
-** TODO android coredump
-** TODO PreferenceScreen nesting & notify
-** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
 * Linux App
 #+CATEGORY:Linux app
 ** ditaa

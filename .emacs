@@ -23,7 +23,6 @@
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/sourcepair.el")
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
-(load-file "~/.elisp/dotemacs/ibuffer.el")
 (load-file "~/.elisp/cedet-1.0/common/cedet.el")
 ;; (semantic-load-enable-minimum-features)
 
@@ -32,7 +31,7 @@
 (global-semantic-idle-completions-mode nil)
 ;; (load "jde")
 ;;(load-file "~/.elisp/dotemacs/tabbar.el")
-;; (load-file "~/.elisp/dotemacs/anything.el")
+(load-file "~/.elisp/dotemacs/anything.el")
 (add-to-list 'load-path "~/.elisp/ace-jump-mode.el/")
 
 (require 'auto-complete-config)
@@ -368,3 +367,6 @@
 (add-hook 'text-mode-hook 'flyspell-mode)
 
 (require 'unicad)
+
+(add-to-list 'load-path "~/.elisp/anything-config/")
+(require 'anything-config)

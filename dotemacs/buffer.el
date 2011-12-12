@@ -2,10 +2,10 @@
           (lambda ()
             (setq ibuffer-filter-groups
                   '(
+		    ("java" (mode . java-mode))
+		    ("c/cpp" (or (mode . c++-mode) (mode . c-mode)))
                     ("dired" (mode . dired-mode))
-                    ("c/cpp" (or (mode . c++-mode) (mode . c-mode)))
                     ("tex" (mode . latex-mode))
-                    ("java" (mode . jde-mode))
 		    ))))
 
 (require 'bs)
