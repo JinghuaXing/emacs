@@ -10,7 +10,6 @@
 ** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
 ** TODO [#C] org-mode manual
 ** TODO PreferenceScreen nesting & notify
-** TODO [#C] read GTD(200p)
 ** TODO res/menu sub-folder
 ** DONE Will HandlerThread create any pipe?
    CLOSED: [2011-07-12 Tue 13:18]

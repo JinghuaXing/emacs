@@ -31,7 +31,7 @@
 (global-semantic-idle-completions-mode nil)
 ;; (load "jde")
 ;;(load-file "~/.elisp/dotemacs/tabbar.el")
-(load-file "~/.elisp/dotemacs/anything.el")
+;; (load-file "~/.elisp/dotemacs/anything.el")
 (add-to-list 'load-path "~/.elisp/ace-jump-mode.el/")
 
 (require 'auto-complete-config)
