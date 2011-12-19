@@ -1,4 +1,4 @@
-					;Time-stamp: <2011-07-15 17:13:34 mtk80698>
+					;Time-stamp: <2011-12-19 10:17:10 apuser>
 ;;(global-set-key (kbd "C-x b") 'ido-switch-buffer)
 ;; (require 'breadcrumb)
 ;; (global-set-key (kbd "S-SPC")         'bc-set)            ;; Shift-SPACE for set bookmark
@@ -74,3 +74,7 @@
 ;; (global-set-key (kbd "<C-return>")   'bm-next)
 ;; (global-set-key (kbd "<M-return>") 'bm-previous)
 
+(global-set-key (kbd "M-s k") 'keep-lines)
+(global-set-key (kbd "M-s f") 'flush-lines)
+
+(global-set-key (kbd "C-x v t") 'git-status)

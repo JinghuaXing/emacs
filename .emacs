@@ -65,42 +65,42 @@
 (require 'w3m)
 ;;(setq w3m-use-cookies t)
 (add-hook 'write-file-hooks 'time-stamp)
-;(if (eq emacs-major-version 22)
-;    (if window-system
-;	(progn
-;	  (create-fontset-from-fontset-spec
-;	   "-*-terminus-bold-r-normal--18-*-*-*-*-*-fontset-gbk,
-;chinese-gb2312:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-;chinese-gbk:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-;chinese-cns11643-5:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-;chinese-cns11643-6:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-;chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
-;	  (setq default-frame-alist
-;		'(
-;		  (font . "fontset-gbk")
-;		  )
-;		)
-;	  ))
-;  )
+(if (eq emacs-major-version 23)
+   (if window-system
+	(progn
+	  (create-fontset-from-fontset-spec
+	   "-*-terminus-medium-r-normal--16-*-*-*-*-*-fontset-gbk,
+chinese-gb2312:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
+chinese-gbk:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
+chinese-cns11643-5:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
+chinese-cns11643-6:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
+chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
+	  (setq default-frame-alist
+		'(
+		  (font . "fontset-gbk")
+		  )
+		)
+	  ))
+ )
 ;
-(if (string= (getenv "HOSTNAME") "sunway-dorm")
-    (setq fontsize 13)
-  (setq fontsize 10)
-  )
-;(if (eq emacs-major-version 23)
-;    (if window-system
-;	(progn
-;	  (set-default-font (concat "consolas-" (number-to-string fontsize)))
-;	  (set-fontset-font (frame-parameter nil 'font)
-;			    'han '("Microsoft YaHei" . "unicode-bmp"))
-;	  (set-fontset-font (frame-parameter nil 'font)
-;			    'cjk-misc '("Microsoft Yahei" . "unicode-bmp"))
-;	  (set-fontset-font (frame-parameter nil 'font)
-;			    'bopomofo '("Microsoft Yahei" . "unicode-bmp"))
-;	  (set-fontset-font (frame-parameter nil 'font)
-;			    'gb18030 '("Microsoft Yahei". "unicode-bmp"))
-;	  ))
-;  )
+;; (if (string= (getenv "HOSTNAME") "sunway-dorm")
+;;     (setq fontsize 13)
+;;   (setq fontsize 13)
+;;   )
+;; (if (eq emacs-major-version 23)
+;;    (if window-system
+;; 	(progn
+;; 	  (set-default-font (concat "consolas-" (number-to-string fontsize)))
+;; 	  ;; (set-fontset-font (frame-parameter nil 'font)
+;; 	  ;; 		    'han '("Microsoft YaHei" . "unicode-bmp"))
+;; 	  ;; (set-fontset-font (frame-parameter nil 'font)
+;; 	  ;; 		    'cjk-misc '("Microsoft Yahei" . "unicode-bmp"))
+;; 	  ;; (set-fontset-font (frame-parameter nil 'font)
+;; 	  ;; 		    'bopomofo '("Microsoft Yahei" . "unicode-bmp"))
+;; 	  ;; (set-fontset-font (frame-parameter nil 'font)
+;; 	  ;; 		    'gb18030 '("Microsoft Yahei". "unicode-bmp"))
+;; 	  ))
+;;  )
 ;
 (global-font-lock-mode t)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
