@@ -3,6 +3,8 @@
 #+CATEGORY:Task
 ** TODO How IME is triggered
 ** TODO PowerManagment, WakeLock
+** TODO WindowManager, layoutWindow
+** TODO Canvas
 ** TODO Android coredump
 ** TODO Android IME 
 ** TODO Android Search
@@ -3906,6 +3908,13 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
 
     when key event is dispatched to ViewRoot, ViewRoot will
     diliverToViewHierachy, then notify WMS that key is dispatched.
+
+    KeyWaiter says:
+#+BEGIN_HTML
+<pre lang="java" line="1">
+    long keyDispatchingTimeout = 10 * 1000;
+</pre>
+#+END_HTML
 *** DONE Service ANR						    :service:
     CLOSED: [2011-06-13 Mon 10:52]
     - State "DONE"       [2011-06-13 Mon 10:52]
@@ -4326,6 +4335,7 @@ AMS calls:
       - State "DONE"       [2011-02-24 Thu 15:00]
       Handy class that starting a thread with a looper, u can call HandlerThread.getLooper() to get the looper.
       note that getLooper() will block until the looper is ready.
+
 ***** Messenger
       see [[@Messenger]]
 ** LowMemoryKiller
@@ -5133,6 +5143,24 @@ AMS calls:
     CLOSED: [2011-06-30 Thu 16:42]
     - State "DONE"       from ""           [2011-06-30 Thu 16:42]
     see also [[System init]]
+** Debug related
+*** hprof & MAT
+    - 在代码中生成
+      Debug.dumpHprofData()
+    - 使用信号on-demand生成
+#+BEGIN_EXAMPLE
+    $ chmod 777 /data/misc -R
+    $ ps # 找到进程号
+    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
+    $ ls /data/misc/*.hprof 
+#+END_EXAMPLE
+    - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
+*** traceview
+*** hierachyviewer
+*** Thread.dumpStack()
+*** logcat
+*** adb am start
+*** monkey
 * Mobile Dev							    :ARCHIVE:
 #+CATEGORY:Mobile Dev
 ** APN
