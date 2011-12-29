@@ -296,7 +296,7 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
   ;; (hide-body)
 )
 
-(require 'bookmark+)
+;; (require 'bookmark+)
 
 
 (add-to-list 'load-path "~/.elisp/eim")
@@ -320,10 +320,19 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (global-set-key ";" 'eim-insert-ascii)
 
 ;; (require 'breadcrumb)
+;; (global-set-key (kbd "S-SPC")         'bc-set)
+;; (global-set-key [(meta j)]              'bc-previous)	    
+;; (global-set-key [(shift meta j)]        'bc-next)	    
+;; (global-set-key [(meta up)]             'bc-local-previous) 
+;; (global-set-key [(meta down)]           'bc-local-next)	    
+;; (global-set-key [(control c)(j)]        'bc-goto-current)   
+;; (global-set-key [(control x)(meta j)]   'bc-list)	    
+
 ;; (global-set-key [(control f2)]          'bc-previous)
 ;; (global-set-key [(f2)]                  'bc-set)
 ;; (global-set-key [(shift f2)]            'bc-next)
 ;; (global-set-key [(meta f2)]             'bc-list)
+
 (cua-mode t)
 
 (require 'undo-tree)
@@ -358,12 +367,12 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (require 'git)
 
 (require 'uniquify)
-(autoload 'enable-paredit-mode "paredit"
-  "Turn on pseudo-structural editing of Lisp code."
-  t)
+;; (autoload 'enable-paredit-mode "paredit"
+;;   "Turn on pseudo-structural editing of Lisp code."
+;;   t)
 
-(add-hook 'slime-mode-hook 'enable-paredit-mode)
-(add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
+;; (add-hook 'slime-mode-hook 'enable-paredit-mode)
+;; (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
 (add-hook 'text-mode-hook 'flyspell-mode)
 
 (require 'unicad)
@@ -374,3 +383,13 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
+
+(require 'bm)
+(global-set-key (kbd "<C-f2>") 'bm-next)
+(global-set-key (kbd "<f2>") (lambda ()
+			       (interactive)
+			       (bm-toggle)
+			       (bm-save)
+			       ))
+(global-set-key (kbd "<S-f2>") 'bm-previous)
+(global-set-key (kbd "<s-f2>") 'bm-show-all)
