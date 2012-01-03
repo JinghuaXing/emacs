@@ -25,9 +25,7 @@
 ** TODO 股票的点数
 * Linux App
 #+CATEGORY:Linux app
-** ditaa
 ** auditd							      :sysadmin:
-** dnotify
 ** basename与dirname							 :shell:
 ** bash
 *** get file name extension and get main file name
@@ -90,6 +88,9 @@
     - last
     - lastlog
     - fingure
+** convmv
+** dnotify
+** expect
 ** gdb
    http://sourceware.org/gdb/current/onlinedocs/gdb_toc.html
 *** gcc -g3
@@ -118,26 +119,20 @@
 *** ni,si
 *** f,up,down,bt
 *** p,x
-** graphivz 静态图,适合图拓朴图,调用图等
-** grep/egrep 中如何匹配tab						  :grep:
-   - input tab with ^v^i(control-v control-i)
-   - grep $'\t' file
-** grep常用的选项							  :grep:
-   - C NUM 显示出匹配行附近的 NUM 行上下文。
-   - n 显示行号。
-   - H 显示文件名。这两个选项对于在一大堆文件里面搜索东 西非常有用。
-   - o 只显示匹配的部分，这对于从一大堆东西中提取某些特殊信息非常有用。
-   - i 忽略大小写
-   - v 反向匹配，即显示不匹配的行。
-** imagemagick
-*** display
-*** import
+** grep
+*** grep/egrep 中如何匹配tab					       :grep:
+    - input tab with ^v^i(control-v control-i)
+    - grep $'\t' file
+*** grep常用的选项						       :grep:
+    - C NUM 显示出匹配行附近的 NUM 行上下文。
+    - n 显示行号。
+    - H 显示文件名。这两个选项对于在一大堆文件里面搜索东 西非常有用。
+    - o 只显示匹配的部分，这对于从一大堆东西中提取某些特殊信息非常有用。
+    - i 忽略大小写
+    - v 反向匹配，即显示不匹配的行。
 ** hdparm							      :sysadmin:
 ** hostname /etc/hostname
-** iconv && convmv
-** import全屏截图
-   import -window root -pause 2 1.jpg
-** rrdtool
+** iconv
 ** inittab
    http://publib.boulder.ibm.com/infocenter/systems/index.jsp?topic=/com.ibm.aix.files/doc/aixfiles/inittab.htm
    - 使一个程序cmd运行,并且程序退出后自动重启
@@ -148,9 +143,11 @@
 ** ion3									  :util:
 ** lsof								      :sysadmin:
 ** mc									  :util:
+** meld
 ** mutt
 *** mutt中用search命令(/,M-b,l..)时经常segment fault?
     ./configure --with-regex
+** nc
 ** rename								 :shell:
 ** screen								  :util:
 *** 改变encoding
@@ -160,11 +157,9 @@
 
 ** shc
    shc -- generic shell script compiler
+** ssh
 ** tex
 ** tilda								  :util:
-** ubigraph
-   http://www.ubietylab.net/ubigraph/content/Downloads/index.php
-** ubigraph 动态图,适合图动态演示的拓朴图,调用图等
 ** ulimit							      :sysadmin:
 ** watch
    make any command has top-like output
@@ -176,6 +171,16 @@
 ** xmodmap								  :util:
    查询系统有哪些可用的keysym: /usr/share/X11/xkb/symbols
 ** xset
+** 画图
+*** ditaa
+*** rrdtool
+*** graphivz 静态图,适合图拓朴图,调用图等
+*** imagemagick
+**** display
+**** import
+**** import全屏截图
+     import -window root -pause 2 1.jpg
+*** ubigraph
 * lisp及函数式语言						    :ARCHIVE:
 ** 严格的函数式语言的特点
    http://en.wikipedia.org/wiki/Functional_program

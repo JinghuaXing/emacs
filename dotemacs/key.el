@@ -1,4 +1,4 @@
-					;Time-stamp: <2011-12-19 10:17:10 apuser>
+					;Time-stamp: <2012-01-03 11:52:21 apuser>
 ;;(global-set-key (kbd "C-x b") 'ido-switch-buffer)
 ;; (require 'breadcrumb)
 ;; (global-set-key (kbd "S-SPC")         'bc-set)            ;; Shift-SPACE for set bookmark
@@ -30,9 +30,9 @@
 (global-set-key (kbd "s-SPC") 'toggle-eshell)
 
 (require 'hideshow)
-(define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
-(define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
-(define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
+;; (define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
+;; (define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
+;; (define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
 (global-set-key (kbd "M-z") 'wy-go-to-char)
 ;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
 ;;(global-set-key (kbd "C-\\") 'set-mark-command)

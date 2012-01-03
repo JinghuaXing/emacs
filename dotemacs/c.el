@@ -16,7 +16,7 @@
   ;; (local-set-key (kbd "C-c , ,") 'semantic-mrub-switch-tags)
   (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
   (c-set-style "k&r")
-  (c-subword-mode)
+  (c-subword-mode t)
   (setq c-subword-mode t)
   (c-toggle-auto-state -1)
   (c-toggle-hungry-state t)
@@ -33,6 +33,11 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
+  (local-set-key (kbd "C-M-a") 'senator-previous-tag)
+  (local-set-key (kbd "C-M-e") 'senator-next-tag)
+  ;; override hs key definition
+  (define-key java-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
+  (define-key c-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
   
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
