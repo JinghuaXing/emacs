@@ -1,19 +1,23 @@
 #+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
-** TODO How IME is triggered
-** TODO PowerManagment, WakeLock
-** TODO WindowManager, layoutWindow
-** TODO Canvas
+** TODO Code snippet to dump message queue
 ** TODO Android coredump
 ** TODO Android IME 
+** TODO android MTD, memory,NAND...etc
 ** TODO Android Search
 ** TODO Android Span
 ** TODO android tombstone
 ** TODO bash `source` usage
 ** TODO browser通过代理访问ftp?
+** TODO can apk for 2.2 be installed on 2.3? and vice-vesa
+** TODO android apk signature
+** TODO Canvas
+** TODO dex & apk & jar 文件格式
+** TODO How IME is triggered
 ** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
 ** TODO [#C] org-mode manual
+** TODO PowerManagment, WakeLock
 ** TODO PreferenceScreen nesting & notify
 ** TODO res/menu sub-folder
 ** TODO shebang
@@ -22,6 +26,7 @@
    CLOSED: [2011-07-12 Tue 13:18]
    - State "DONE"       from "TODO"       [2011-07-12 Tue 13:18]
      Nop, Android process will create several pipes for JDWP, but not for other threads.
+** TODO WindowManager, layoutWindow
 ** TODO 股票的点数
 * Linux App
 #+CATEGORY:Linux app
@@ -174,6 +179,7 @@
 ** 画图
 *** ditaa
 *** rrdtool
+*** gimp
 *** graphivz 静态图,适合图拓朴图,调用图等
 *** imagemagick
 **** display
@@ -4700,20 +4706,18 @@ AMS calls:
 *** ServerThread
 ** Toast
 ** Tools
-*** traceview
-*** hierachyviewer
-*** layouopt
-*** dumpsys
-*** am
-    am start
-    am startservice
-    am broadcast
-    am instrument
-    am monitor
-*** pm
-    pm list instrumentation
 *** aapt
 *** adb
+**** dumpsys
+**** am
+     am start
+     am startservice
+     am broadcast
+     am instrument
+     am monitor
+**** pm
+     pm list instrumentation
+**** sendevent
 *** aidl
 **** in,out
      - void foo(in Foo foo,out Bar bar)
@@ -4722,7 +4726,19 @@ AMS calls:
      - void foo(Foo foo) // compile error, must specify in/out/inout for foo
 **** oneway
      - oneway int foo();
-*** sendevent
+*** android
+*** ddms
+*** decompile
+**** hex2jar
+**** jd-gui
+**** apktool
+*** hierachyviewer
+*** layouopt
+*** sign
+**** jarsigner
+**** signapk.jar
+**** keytool
+*** traceview
 ** Uri
 ** vold
    :PROPERTIES:
