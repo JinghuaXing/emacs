@@ -6,6 +6,7 @@
 (add-to-list 'load-path "~/.elisp/yasnippet")
 (add-to-list 'load-path "~/.elisp/org2blog")
 (add-to-list 'load-path "~/.elisp/cc-mode")
+(add-to-list 'load-path "~/.elisp/magit-1.1.1/")
 ;; (add-to-list 'load-path "~/.elisp/ajc-java-complete-git/")
 
 (setq custom-file "~/.elisp/dotemacs/custom.el")
@@ -367,7 +368,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (setq org2blog/wp-default-categories '("Uncategorized"))
 
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
-(require 'git)
+;; (require 'git)
+(require 'magit)
 
 (require 'uniquify)
 ;; (autoload 'enable-paredit-mode "paredit"
