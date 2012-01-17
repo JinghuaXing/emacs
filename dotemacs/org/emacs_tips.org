@@ -8,6 +8,7 @@
 
 * Essential Emacs Tips
 ** align
+** backward-up-list
 ** c-macro-expand C-c C-e
 ** check-parens
 ** Completion

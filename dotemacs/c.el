@@ -25,6 +25,7 @@
   ;;(c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
+  (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
@@ -33,11 +34,11 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
-  (local-set-key (kbd "C-M-a") 'senator-previous-tag)
-  (local-set-key (kbd "C-M-e") 'senator-next-tag)
+  ;; (local-set-key (kbd "C-M-a") 'senator-previous-tag)
+  ;; (local-set-key (kbd "C-M-e") 'senator-next-tag)
   ;; override hs key definition
-  (define-key java-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
-  (define-key c-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
+  ;; (define-key java-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
+  ;; (define-key c-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
   
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
@@ -207,5 +208,4 @@
 (add-hook 'c-mode-common-hook 'jk/c-mode-common-hook)
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-hook 'find-file-hook 'hs-hide-initial-comment-block)
-
 

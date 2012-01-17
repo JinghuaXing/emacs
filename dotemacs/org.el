@@ -44,3 +44,4 @@
  (search category-keep)))
 (require 'org-latex)
 (setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")
+(setq org-src-fontify-natively t)

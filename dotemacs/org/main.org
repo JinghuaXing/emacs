@@ -1,18 +1,21 @@
 #+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
-** TODO Code snippet to dump message queue
+** TODO [#A] Android eng-mode vs. user-mode
+** TODO [#B] screen manual
+** TODO android apk signature
 ** TODO Android coredump
-** TODO Android IME 
+** TODO Android IMF
+** TODO [#A] adjustPan/adjustResize
 ** TODO android MTD, memory,NAND...etc
-** TODO Android Search
+** TODO [#B] Android Search
 ** TODO Android Span
 ** TODO android tombstone
 ** TODO bash `source` usage
 ** TODO browser通过代理访问ftp?
 ** TODO can apk for 2.2 be installed on 2.3? and vice-vesa
-** TODO android apk signature
 ** TODO Canvas
+** TODO Code snippet to dump message queue
 ** TODO dex & apk & jar 文件格式
 ** TODO How IME is triggered
 ** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
@@ -163,6 +166,7 @@
 ** shc
    shc -- generic shell script compiler
 ** ssh
+** tac
 ** tex
 ** tilda								  :util:
 ** ulimit							      :sysadmin:
@@ -4174,9 +4178,10 @@ AMS calls:
     9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
     10. /data/system/registered_services/android.content.SyncAdapter.xml
 *** src
-    1. framework/base/core/jni
-    2. system/core/init
-    3. system/core/include/private/android_filesystem_config.h
+    1. framework/base/core/res
+    2. framework/base/core/jni
+    3. system/core/init
+    4. system/core/include/private/android_filesystem_config.h
 ** init
 *** DOING init.rc
     SCHEDULED: <2011-08-30 Tue>
@@ -4717,6 +4722,8 @@ AMS calls:
      am monitor
 **** pm
      pm list instrumentation
+     pm setInstallLocation
+     pm getInstallLocation
 **** sendevent
 *** aidl
 **** in,out
@@ -4848,11 +4855,129 @@ AMS calls:
      see [[@HTTP_Cookie]]
 ***** CookieManager
 ***** CookieSyncManager
-** WindowManagerService
-*** Window Manager proxy
-    WindowManagerImpl plays as an Window Manager proxy
-    windowManager.addView, removeView are implemented in WindowManagerImpl
-    Context.getSystemService("window") does not return the WindowManagerService Stub at all, instead, it returns one WindowManagerImpl instance
+** WindowManager
+*** addView
+    2010-11-16
+    window.addView() will firstly gen (viewRoot,view,layout_param) tuple, then call ViewRoot.setView() to ask WMS to add the view.
+    since ViewRoot has an IWindowSession, and it will send IWindow to WMS (as mClient), it can communicate with WMS back and forth.
+
+    2010-11-15
+    window.addView() will add [new viewroot,decorView] tuple to
+    WindowManagerImpl, when WMS want to dispatch event to window, e.g. key event, it will
+    call mClient.dispatchKey() to viewRoot, viewRoot, as a handler, will then dispatch key event to it's looper
+
+    Activity and Dialog will generate decorView automatically, then call
+    WM.addView(decorView) to window.  but PopupWindow will not generate
+    decorView since PopupWindow need not to be `decorated`.
+
+*** Event dispatch
+**** KeyEvent dispatch
+     11/17/10 11:12 am WMS first found the focused WindowState, then dispatch
+     event to WindowState.mClient (this is a IWindow), IWindow , as an AIDL
+     register by viewRoot, will call viewRoot's dispatch() directory
+
+     2010-11-14
+#+BEGIN_EXAMPLE
+     WMS get mClient, and call mClient.dispatch() through binder
+       ViewRoot.dispatchKey()
+         ViewRoot.sendEmptyMessage(DISPATCH_KEY)
+	   message handler: ViewRoot.deliverKeyEvent()
+	     ViewRoot.deliverKeyEventToViewHierarchy()
+	       Decorview.dispatchKeyEvent() ;; mView is the decorView
+	         if (is volume key)
+		   adjust volume
+		 if (has Window.Callback) ;; Activity, Dialog implents Window.Callback
+		   callback.dispatchKeyEvent()
+		     DecorView.superDispatchKeyEvent()
+		       ViewGroup.dispatchKeyEvent() ;; dispatch key event to view hierachy
+		         Travers the focus path, call every ViewGroup's dispatchKeyEvent, then finally,calls:
+			 focusView.dispatchKeyEvent()
+			   mOnKeyListener.onKey()
+			   if (not handled)
+			     event.dispatch(view) ;; view also implents Event.Callback
+		     if (not handled)
+		         event.dispatch(activity) ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
+		 else
+		   super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
+		                            ;; does not implents Window.Callback
+	       if (not handled)
+	         changeFocus()
+		 if not (focus changed)
+		   playSoundEffect
+	       sWindowSession.finishKey(mWindow) to tell AMS that key
+#+END_EXAMPLE
+
+    note that:
+    Activity and Dialog implements Window.Callback and KeyEvent.Callback, so you can override Activity or Dialog's dispatchKeyEvent (implemented in
+    Window.Callback), and you can override onKeyUp, onKeyDown ...( implemented in KeyEvent.Callback)
+    But PopupWindow implements neither Window.Callback nor KeyEvent.Callback.
+
+**** DONE [#A] TouchEvent dispatch
+     SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-27 Thu 11:35]
+     - State "DONE"       [2011-01-27 Thu 11:35]
+
+#+BEGIN_EXAMPLE
+     ViewRoot.dispatchPointer()
+       decorView.dispatchTouchEvent() ;; mView is typically a DecorView
+         if DecorView has callbacks like Activity or Dialog
+	   activity.dispatchTouchEvent()
+	     mDecor.superDispatchTouchEvent()
+	     .... ;; same as the `else` branch
+	     activity.onTouchEvent() if not handled before
+	 else
+	   mDecor.superDispatchTouchEvent()
+	     ViewGroup.dispatchTouchEvent() ; DecorView is a FrameLayout
+               if (action == MotionEvent.ACTION_DOWN):
+                 if (disallowIntercept || !onInterceptTouchEvent(Ev)):
+                   foreach mView of ViewGroup: ;; for each child of the ViewGroup whose rect contains pointer(x,y), note that view's rect is set during view.layout()
+                     if (mView.dispatchTouchEvent()):
+                       mMotionTarget=mView;
+                       return true;
+               if mMotionTarget==null: // DOWN is not handled by any child; or event is up/move, but there is no mMotionTarget,
+                                       // which means last DOWN is handled by ourselves.
+                 return super.dispatchTouchEvent()
+	           mView.onTouchListener().on Touch()
+	           mView.onTouchEvent() ;; if not handled before
+	             mView.onClickListener()
+               // ACTION is up/move, and mMotionTarget is not null, which means we should delegate the up/move to the mMotionTarget,
+               // There is no need to go through child hierarchy to handle it.
+               if (!disallowIntercept && onInterceptTouchEvent(ev)): // touchEvent is intercepted
+                 ev.setAction(MotionEvent.ACTION_CANCEL);
+                 mMotionTarget.dispatchTouchEvent(ev)
+                 return true;
+               // touchEvent is not intercepted
+               return mMotionTarget.dispatchTouchEvent(ev);
+#+END_EXAMPLE
+     To summarize:
+     1. TouchEvent dispatching 的过程和 KeyEvent *相反*:
+	- KeyEvent: 先调用 ViewGroup.superDispatchKeyEvent(), 若没处理,再调用 mFocused.dispatchKeyEvent()
+	- TouchEvent: 先调用 child.dispatchTouchEvent(),若没处理, 再调用 super.dispatchTouchEvent()
+     2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
+     3. onInterceptTouchEvent and mMotionTarget
+***** DONE ListView TouchEvent dispatch
+      SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
+      - State "DONE"       [2011-02-16 Wed 15:04]
+      ListView 首先是一个 ViewGroup, 它使用了
+#+BEGIN_EXAMPLE
+	 ViewGroup.dispatchTouchEvent()
+	   ask_child_to_handle_it()
+	   if not handled:
+	     super(view).dispatchTouchEvent()
+	       AbsListView.onTouchEvent()
+	         if child(list item).hasFocusable(): ;; if the liste_item have any view that is focusable
+		   do_nothing;
+		 else:
+		   onItemClickedListener();
+#+END_EXAMPLE
+
+      To summarize:
+      ListView is just like a common ViewGroup, but:
+      1. ListView's onTouchEvent will not invoke `onClickListener`, but `onItemClickedListener`
+      2. before invoke onItemClickedListener, onTouchEvent will make sure that child.hasFocusable() is false
+
+***** DONE ViewGroup.onInterceptTouchEvent & mMotionTarget
+      SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
+      - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
 *** View
 **** TODO [#A] View life cycle
 ***** DONE requestLayout
@@ -4987,128 +5112,6 @@ AMS calls:
 
 **** getDrawingCache
 **** ViewGroup
-*** addView
-    2010-11-16
-    window.addView() will firstly gen (viewRoot,view,layout_param) tuple, then call ViewRoot.setView() to ask WMS to add the view.
-    since ViewRoot has an IWindowSession, and it will send IWindow to WMS (as mClient), it can communicate with WMS back and forth.
-
-    2010-11-15
-    window.addView() will add [new viewroot,decorView] tuple to
-    WindowManagerImpl, when WMS want to dispatch event to window, e.g. key event, it will
-    call mClient.dispatchKey() to viewRoot, viewRoot, as a handler, will then dispatch key event to it's looper
-
-    Activity and Dialog will generate decorView automatically, then call
-    WM.addView(decorView) to window.  but PopupWindow will not generate
-    decorView since PopupWindow need not to be `decorated`.
-
-*** Event dispatch
-**** KeyEvent dispatch
-     11/17/10 11:12 am WMS first found the focused WindowState, then dispatch
-     event to WindowState.mClient (this is a IWindow), IWindow , as an AIDL
-     register by viewRoot, will call viewRoot's dispatch() directory
-
-     2010-11-14
-#+BEGIN_EXAMPLE
-     WMS get mClient, and call mClient.dispatch() through binder
-       ViewRoot.dispatchKey()
-         ViewRoot.sendEmptyMessage(DISPATCH_KEY)
-	   message handler: ViewRoot.deliverKeyEvent()
-	     ViewRoot.deliverKeyEventToViewHierarchy()
-	       Decorview.dispatchKeyEvent() ;; mView is the decorView
-	         if (is volume key)
-		   adjust volume
-		 if (has Window.Callback) ;; Activity, Dialog implents Window.Callback
-		   callback.dispatchKeyEvent()
-		     DecorView.superDispatchKeyEvent()
-		       ViewGroup.dispatchKeyEvent() ;; dispatch key event to view hierachy
-		         Travers the focus path, call every ViewGroup's dispatchKeyEvent, then finally,calls:
-			 focusView.dispatchKeyEvent()
-			   mOnKeyListener.onKey()
-			   if (not handled)
-			     event.dispatch(view) ;; view also implents Event.Callback
-		     if (not handled)
-		         event.dispatch(activity) ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
-		 else
-		   super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
-		                            ;; does not implents Window.Callback
-	       if (not handled)
-	         changeFocus()
-		 if not (focus changed)
-		   playSoundEffect
-	       sWindowSession.finishKey(mWindow) to tell AMS that key
-#+END_EXAMPLE
-
-    note that:
-    Activity and Dialog implements Window.Callback and KeyEvent.Callback, so you can override Activity or Dialog's dispatchKeyEvent (implemented in
-    Window.Callback), and you can override onKeyUp, onKeyDown ...( implemented in KeyEvent.Callback)
-    But PopupWindow implements neither Window.Callback nor KeyEvent.Callback.
-
-**** DONE [#A] TouchEvent dispatch
-     SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-27 Thu 11:35]
-     - State "DONE"       [2011-01-27 Thu 11:35]
-
-#+BEGIN_EXAMPLE
-     ViewRoot.dispatchPointer()
-       decorView.dispatchTouchEvent() ;; mView is typically a DecorView
-         if DecorView has callbacks like Activity or Dialog
-	   activity.dispatchTouchEvent()
-	     mDecor.superDispatchTouchEvent()
-	     .... ;; same as the `else` branch
-	     activity.onTouchEvent() if not handled before
-	 else
-	   mDecor.superDispatchTouchEvent()
-	     ViewGroup.dispatchTouchEvent() ; DecorView is a FrameLayout
-               if (action == MotionEvent.ACTION_DOWN):
-                 if (disallowIntercept || !onInterceptTouchEvent(Ev)):
-                   foreach mView of ViewGroup: ;; for each child of the ViewGroup whose rect contains pointer(x,y), note that view's rect is set during view.layout()
-                     if (mView.dispatchTouchEvent()):
-                       mMotionTarget=mView;
-                       return true;
-               if mMotionTarget==null: // DOWN is not handled by any child; or event is up/move, but there is no mMotionTarget,
-                                       // which means last DOWN is handled by ourselves.
-                 return super.dispatchTouchEvent()
-	           mView.onTouchListener().on Touch()
-	           mView.onTouchEvent() ;; if not handled before
-	             mView.onClickListener()
-               // ACTION is up/move, and mMotionTarget is not null, which means we should delegate the up/move to the mMotionTarget,
-               // There is no need to go through child hierarchy to handle it.
-               if (!disallowIntercept && onInterceptTouchEvent(ev)): // touchEvent is intercepted
-                 ev.setAction(MotionEvent.ACTION_CANCEL);
-                 mMotionTarget.dispatchTouchEvent(ev)
-                 return true;
-               // touchEvent is not intercepted
-               return mMotionTarget.dispatchTouchEvent(ev);
-#+END_EXAMPLE
-     To summarize:
-     1. TouchEvent dispatching 的过程和 KeyEvent *相反*:
-	- KeyEvent: 先调用 ViewGroup.superDispatchKeyEvent(), 若没处理,再调用 mFocused.dispatchKeyEvent()
-	- TouchEvent: 先调用 child.dispatchTouchEvent(),若没处理, 再调用 super.dispatchTouchEvent()
-     2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
-     3. onInterceptTouchEvent and mMotionTarget
-***** DONE ListView TouchEvent dispatch
-      SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
-      - State "DONE"       [2011-02-16 Wed 15:04]
-      ListView 首先是一个 ViewGroup, 它使用了
-#+BEGIN_EXAMPLE
-	 ViewGroup.dispatchTouchEvent()
-	   ask_child_to_handle_it()
-	   if not handled:
-	     super(view).dispatchTouchEvent()
-	       AbsListView.onTouchEvent()
-	         if child(list item).hasFocusable(): ;; if the liste_item have any view that is focusable
-		   do_nothing;
-		 else:
-		   onItemClickedListener();
-#+END_EXAMPLE
-
-      To summarize:
-      ListView is just like a common ViewGroup, but:
-      1. ListView's onTouchEvent will not invoke `onClickListener`, but `onItemClickedListener`
-      2. before invoke onItemClickedListener, onTouchEvent will make sure that child.hasFocusable() is false
-
-***** DONE ViewGroup.onInterceptTouchEvent & mMotionTarget
-      SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
-      - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
 *** ViewRoot
     2010-11-16
     ViewRoot is the bridge between WMS and View
@@ -5121,11 +5124,44 @@ AMS calls:
 **** IWindow
      when viewRoot is constructed, it will create IWindow, and register the AIDL interface to WMS,  WMS will save the IWindow as 'mClient' in WindowState arrays, through which WMS can communite with ViewRoot for event dispatching.
      IWindow.dispatch() will call viewRoot.dispatch() directly.
-*** WindowState
-**** mClient
-*** WindowManagerImpl
+*** ViewRoot, View (DecorView) and Window
+    - 与WMS直接打交道的是ViewRoot,WMS能直接看到的只有ViewRoot (通过ViewRoot注册到WMS的IWindow mClient)
+
+    - ViewRoot直接管理其顶层View (对于Actity,Dialog, 即DecorView. 对于
+
+      PopupWindow及手动通过WindowManagerImpl.addView添加的view, 其顶层view只是普
+      通的view), 所以一个进程可以有多个ViewRoot
+
+    - Window是和DecorView一一对应的. 
+
+      因为Activity, Dialog项层view是DecorView, 所以有window的概念, 可以通
+      过Window来控制ContextMenu, 调用Window.Callback等;
+
+    - Window与Activity,Dialog对应
+    
+      通过Window.Callback, 可以和Activity和Dialog联系起来,因为它们都实际了
+      Window.Callback接口.而PopupWindow顶层只是普通view,所以没有Window的概念
+
+      综上:
+      - WMS<-->ViewRoot
+      - ViewRoot<-->DecorView
+      - DecorView<-->Window<-->Activity,Dialog
+*** Window
+    对于ViewRoot来说,顶层的`Window`就是一个普通的View, 但有些和`Window`有关的操
+    作,如:
+    - 如何处理一些通用的按键事件, 如Volume, ContextMenu,Camera,Call,Search...,
+    - 如何在顶层View之上再显示一个ContextMenu
+    - 从WMS来的一些事件如何通知给Activity,Dialog, 例如onBackPressed()
+    因为, 提供了一个Window类, 用来处理这些和`Window`有关的操作, 但从WMS及
+    ViewRoot的角度看,并没有`Window`的概念. 
+
+    只有DecorView能和Window关联,来处理`Window`相关操作 (因为DecorView是Window的
+    inner class), 所以只有Activity,Dialog有window的概念
 **** PhoneWindow
-*** UI thread
+*** WindowManagerImpl
+*** WindowManagerService
+**** WindowState
+***** mClient
 ** Zygote
 *** DONE Java Process Creation
     CLOSED: [2011-03-01 Tue 11:20]

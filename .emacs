@@ -5,7 +5,8 @@
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
 (add-to-list 'load-path "~/.elisp/yasnippet")
 (add-to-list 'load-path "~/.elisp/org2blog")
-(add-to-list 'load-path "~/.elisp/ajc-java-complete-git/")
+(add-to-list 'load-path "~/.elisp/cc-mode")
+;; (add-to-list 'load-path "~/.elisp/ajc-java-complete-git/")
 
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
@@ -23,12 +24,14 @@
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/sourcepair.el")
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
-(load-file "~/.elisp/cedet-1.0/common/cedet.el")
+;; (load-file "~/.elisp/cedet-1.0/common/cedet.el")
 ;; (semantic-load-enable-minimum-features)
+;; (load-file "~/.elisp/dotemacs/emms.el")
 
-(semantic-load-enable-excessive-code-helpers)
-(global-semantic-decoration-mode nil)
-(global-semantic-idle-completions-mode nil)
+;; (semantic-load-enable-excessive-code-helpers)
+;; (global-semantic-decoration-mode nil)
+;; (global-semantic-idle-completions-mode nil)
+
 ;; (load "jde")
 ;;(load-file "~/.elisp/dotemacs/tabbar.el")
 ;; (load-file "~/.elisp/dotemacs/anything.el")
@@ -50,9 +53,9 @@
 (define-key ac-completing-map [tab] 'ac-complete)
 (define-key ac-completing-map "<return>" 'nil)
 
-(require 'ajc-java-complete-config)
-;; (add-hook 'jde-mode-hook (lambda () (ajc-java-complete-mode t)))
-(add-hook 'java-mode-hook (lambda () (ajc-java-complete-mode t)))
+;; (require 'ajc-java-complete-config)
+;; ;; (add-hook 'jde-mode-hook (lambda () (ajc-java-complete-mode t)))
+;; (add-hook 'java-mode-hook (lambda () (ajc-java-complete-mode t)))
 
 (autoload
   'ace-jump-mode
@@ -65,7 +68,7 @@
 (require 'w3m)
 ;;(setq w3m-use-cookies t)
 (add-hook 'write-file-hooks 'time-stamp)
-(if (eq emacs-major-version 23)
+;; (if (eq emacs-major-version 23)
    (if window-system
 	(progn
 	  (create-fontset-from-fontset-spec
@@ -81,7 +84,7 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 		  )
 		)
 	  ))
- )
+ ;; )
 ;
 ;; (if (string= (getenv "HOSTNAME") "sunway-dorm")
 ;;     (setq fontsize 13)
@@ -339,19 +342,19 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (global-undo-tree-mode)
 
 
-(load-file "~/.elisp/dotemacs/escreen.el")
+;; (load-file "~/.elisp/dotemacs/escreen.el")
 
-(add-to-list 'load-path "~/.elisp/slime-2011-09-21/") 
-(setq inferior-lisp-program "/usr/bin/sbcl")
-(require 'slime)
-(slime-setup)
+;; (add-to-list 'load-path "~/.elisp/slime-2011-09-21/") 
+;; (setq inferior-lisp-program "/usr/bin/sbcl")
+;; (require 'slime)
+;; (slime-setup)
 
-(require 'ac-slime)
-(add-hook 'slime-mode-hook 'set-up-slime-ac)
+;; (require 'ac-slime)
+;; (add-hook 'slime-mode-hook 'set-up-slime-ac)
 
-(add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
-(eval-after-load "auto-complete"
-  '(add-to-list 'ac-modes 'slime-repl-mode))
+;; (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
+;; (eval-after-load "auto-complete"
+;;   '(add-to-list 'ac-modes 'slime-repl-mode))
 
 
 (require 'org2blog-autoloads)
@@ -377,8 +380,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (require 'unicad)
 
-(add-to-list 'load-path "~/.elisp/anything-config/")
-(require 'anything-config)
+;; (add-to-list 'load-path "~/.elisp/anything-config/")
+;; (require 'anything-config)
 
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
@@ -394,3 +397,4 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (global-set-key (kbd "<S-f2>") 'bm-previous)
 (global-set-key (kbd "<s-f2>") 'bm-show-all)
 (require 'color-moccur)
+
