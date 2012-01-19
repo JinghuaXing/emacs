@@ -1,14 +1,15 @@
 #+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
-** TODO [#A] Android eng-mode vs. user-mode
+** TODO [#A] Android Search
+** TODO URI
+** TODO [#B] Android eng-mode vs. user-mode
 ** TODO [#B] screen manual
 ** TODO android apk signature
 ** TODO Android coredump
 ** TODO Android IMF
-** TODO [#A] adjustPan/adjustResize
+** TODO [#B] adjustPan/adjustResize
 ** TODO android MTD, memory,NAND...etc
-** TODO [#B] Android Search
 ** TODO Android Span
 ** TODO android tombstone
 ** TODO bash `source` usage
@@ -4900,7 +4901,10 @@ AMS calls:
 		 else
 		   super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
 		                            ;; does not implents Window.Callback
-	       if (not handled)
+                 if (still not handled):
+                   Window.onKeyDown() or onKeyUp()
+                     // cope with MENU,CAMERA,VOLUME,MEDIA,CALL,SEARCH...
+               if (not handled)
 	         changeFocus()
 		 if not (focus changed)
 		   playSoundEffect

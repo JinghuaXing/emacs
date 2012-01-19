@@ -382,8 +382,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (require 'unicad)
 
-;; (add-to-list 'load-path "~/.elisp/anything-config/")
-;; (require 'anything-config)
+(add-to-list 'load-path "~/.elisp/anything-config/")
+(require 'anything-config)
 
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
