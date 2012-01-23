@@ -1,5 +1,11 @@
 
 * Posts
+** [[file:/home/sunway/.elisp/dotemacs/org/sed_tips.org][sed tips]]
+   :PROPERTIES:
+   :POSTID:   178
+   :POST_DATE: 20120123T13:03:00+0000
+   :Published: Yes
+   :END:
 ** [[file:/home/apuser/.elisp/dotemacs/org/delicious_java.org][Del.icio.us Java]]
    :PROPERTIES:
    :POSTID:   177

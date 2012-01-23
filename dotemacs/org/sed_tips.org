@@ -1,0 +1,52 @@
+#+POSTID: 178
+#+DATE: [2012-01-23 Mon 21:03]
+#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
+#+CATEGORY: LinuxToy
+#+TAGS:sed
+#+DESCRIPTION:
+#+TITLE: sed tips
+* sed tips
+** command pattern
+#+BEGIN_EXAMPLE
+   sed -options '[range]command;[range]command' file
+   sed -options '[range]{command;command}' file
+#+END_EXAMPLE
+** options
+*** -i: to modify the file directly
+    - sed -i 's/abc/xyz/' file
+*** -n: no printing
+    The "-n" option will not print anything unless an explicit request to print
+    is found.
+    e.g. the `p` command
+** pattern
+** range
+*** range with line number
+    sed '1d' 
+    sed '1,10d'
+    sed '$d'
+*** range with pattern
+    sed '/pattern/d'
+    sed '/pattern1/,/pattern2/d'
+*** gnu sed extendtion
+**** first~step 
+     sed '0~2d' # will match lines 0,2,4,6
+**** addr,+N
+     sed '/pattern/,+10' # will match lines from pattern and the following 10 lines
+*** reverse the range
+** command
+*** s       :substitution
+**** any delimiter
+*** d,D     :deletion
+*** p,P     :print
+*** y       :translate
+*** n,N     :next
+*** h,H     :hold
+*** g,G     :get
+*** x       :exchange
+*** i,a,c   :add,insert,change line
+*** e       :eval
+*** w,r     :write/read file
+*** q       :quit
+*** =       :line num
+*** :,b,t   :branch
+
