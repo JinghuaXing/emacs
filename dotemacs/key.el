@@ -76,7 +76,7 @@
 (global-set-key (kbd "M-s k") 'keep-lines)
 (global-set-key (kbd "M-s f") 'flush-lines)
 
-(global-set-key (kbd "C-x v t") 'magit-status)
-(global-set-key (kbd "<f10>") 'magit-status)
+;; (global-set-key (kbd "C-x v t") 'magit-status)
+(global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
   
