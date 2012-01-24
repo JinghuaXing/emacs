@@ -1,6 +1,8 @@
 #+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
+** TODO magit
+   http://zagadka.vm.bytemark.co.uk/magit/magit.html
 ** TODO Contact lookup (name_lookup, phone_lookup), db index
 ** TODO StringBuffer vs. StringBuilder
 ** TODO Unicode Normalize

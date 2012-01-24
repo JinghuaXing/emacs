@@ -400,3 +400,4 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (global-set-key (kbd "<s-f2>") 'bm-show-all)
 (require 'color-moccur)
 
+(require 'midnight)
