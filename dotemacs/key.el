@@ -1,4 +1,3 @@
-					;Time-stamp: <2012-01-09 14:04:22 apuser>
 ;;(global-set-key (kbd "C-x b") 'ido-switch-buffer)
 ;; (require 'breadcrumb)
 ;; (global-set-key (kbd "S-SPC")         'bc-set)            ;; Shift-SPACE for set bookmark
@@ -77,6 +76,7 @@
 (global-set-key (kbd "M-s k") 'keep-lines)
 (global-set-key (kbd "M-s f") 'flush-lines)
 
-(global-set-key (kbd "C-x v t") 'git-status)
+(global-set-key (kbd "C-x v t") 'magit-status)
+(global-set-key (kbd "<f10>") 'magit-status)
 (defalias 'occur 'moccur)
   
