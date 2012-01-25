@@ -10,7 +10,7 @@
 
 ;;;###autoload
 (defun beagle-dired (search-term)
-  (interactive (list (read-string "Search terms: " beagle-queries
+  (interactive (list (read-string "Search terms: " (find-tag-default)
 				  '(beagle-queries-history . 1))))
   (let ()
     (switch-to-buffer (get-buffer-create "*Beagle*"))
