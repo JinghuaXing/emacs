@@ -20,7 +20,7 @@
     (erase-buffer)
     (setq beagle-queries search-term)
 
-    (dired-mode)
+    (dired-mode search-term)
     (use-local-map (append (make-sparse-keymap) (current-local-map)))
     (define-key (current-local-map) "g" 'undefined)
     (define-key (current-local-map) "f" 'beagle-dired)
@@ -42,6 +42,9 @@
     ;; subdir-alist points there.
     ;; ``wildcard'' line. 
     ;; Start the process that pipes the results of the beagle search through ls -ld.
+    (set (make-local-variable 'revert-buffer-function)
+	 `(lambda (a b)
+	    (beagle-dired ,search-term)))
     (let ((proc (start-process-shell-command "Beagle Search" (current-buffer)
 					     (concat "beagle-query '" search-term "'|sed 's|^file://| |'|xargs ls -ld")
 					     )))
