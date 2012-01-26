@@ -1,9 +1,13 @@
 #+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
+<<<<<<< HEAD
 ** TODO [#B] Programmer Dvorak Keyboard Layout
    http://www.kaufmann.no/roland/dvorak/index.html
 ** TODO beagrep
+** TODO write a `find-beagle` lisp function
+** TODO magit
+   http://zagadka.vm.bytemark.co.uk/magit/magit.html
 ** TODO Contact lookup (name_lookup, phone_lookup), db index
 ** TODO StringBuffer vs. StringBuilder
 ** TODO Unicode Normalize
@@ -32,10 +36,6 @@
 ** TODO res/menu sub-folder
 ** TODO shebang
 ** TODO Webview
-** DONE Will HandlerThread create any pipe?
-   CLOSED: [2011-07-12 Tue 13:18]
-   - State "DONE"       from "TODO"       [2011-07-12 Tue 13:18]
-     Nop, Android process will create several pipes for JDWP, but not for other threads.
 ** TODO WindowManager, layoutWindow
 ** TODO 股票的点数
 * Linux App

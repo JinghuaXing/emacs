@@ -51,6 +51,7 @@
 ** ido
 ** list-colors-display
 ** M-spc M-\
+** magit.el
 ** occur
    M-s o
 ** org-mode

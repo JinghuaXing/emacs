@@ -1,4 +1,3 @@
-					;Time-stamp: <2012-01-09 14:04:22 apuser>
 ;;(global-set-key (kbd "C-x b") 'ido-switch-buffer)
 ;; (require 'breadcrumb)
 ;; (global-set-key (kbd "S-SPC")         'bc-set)            ;; Shift-SPACE for set bookmark
@@ -14,9 +13,16 @@
 (global-set-key (kbd "M-g") 'goto-line)
 (global-set-key (kbd "s-f") '(lambda ()
 			       (interactive)
-			       (switch-to-buffer "*Find*")
-			       )
-		)
+			       (if (get-buffer "*Find*")
+				   (switch-to-buffer "*Find*"))
+			       ))
+(global-set-key (kbd "s-l") '(lambda ()
+			       (interactive)
+			       (if (get-buffer "*Beagle*")
+				   (switch-to-buffer "*Beagle*")
+				 )))
+(global-set-key (kbd "s-.") 'beagle-dired)
+
 (global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-l") 'recenter)
 (global-set-key [(?\M-/)] 'hippie-expand)
@@ -77,6 +83,7 @@
 (global-set-key (kbd "M-s k") 'keep-lines)
 (global-set-key (kbd "M-s f") 'flush-lines)
 
-(global-set-key (kbd "C-x v t") 'git-status)
+;; (global-set-key (kbd "C-x v t") 'magit-status)
+(global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
   
