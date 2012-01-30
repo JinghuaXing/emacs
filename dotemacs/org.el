@@ -45,3 +45,17 @@
 (require 'org-latex)
 (setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")
 (setq org-src-fontify-natively t)
+
+(setq org-latex-to-pdf-process 
+  '("xelatex -interaction nonstopmode %f"
+     "xelatex -interaction nonstopmode %f"))
+
+
+(add-to-list 'org-export-latex-default-packages-alist
+	     '("slantfont, boldfont, CJKtextspaces, CJKmathspaces" "xeCJK" nil)
+	     t
+	     )
+(add-to-list 'org-export-latex-default-packages-alist
+	     "\\setCJKmainfont{SimSun}"
+	     t
+	     )
