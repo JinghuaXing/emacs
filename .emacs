@@ -1,5 +1,5 @@
 (add-to-list 'load-path "~/.elisp") 
-(add-to-list 'load-path "~/.elisp/org-mode/lisp")
+(add-to-list 'load-path "~/.elisp/org-7.8.03/lisp/")
 (add-to-list 'load-path "~/.elisp/emacs-w3m")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")

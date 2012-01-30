@@ -1,11 +1,9 @@
-#+DATE: [2011-09-12 一 13:07]
 * Tasks
 #+CATEGORY:Task
-<<<<<<< HEAD
+** TODO ContactsSource 如何保存数据；点头像弹出快捷操作 
+** DONE lookup filed in contact table
 ** TODO [#B] Programmer Dvorak Keyboard Layout
    http://www.kaufmann.no/roland/dvorak/index.html
-** TODO beagrep
-** TODO write a `find-beagle` lisp function
 ** TODO magit
    http://zagadka.vm.bytemark.co.uk/magit/magit.html
 ** TODO Contact lookup (name_lookup, phone_lookup), db index
