@@ -2,27 +2,17 @@
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
-  ;; (setq hippie-expand-try-functions-list
-  ;; 	'(
-  ;; 	  senator-try-expand-semantic
-  ;; 	  try-expand-dabbrev
-  ;; 	  ;; try-expand-dabbrev-visible
-  ;; 	  ;; try-expand-dabbrev-from-kill
-  ;; 	  ;; try-expand-dabbrev-all-buffers
-  ;; 	  ))
-  ;; (local-set-key (kbd "C-c , s") 'semantic-ia-show-summary)
-  ;; (local-set-key (kbd "C-c , d") 'semantic-ia-show-doc)
-  ;; (local-set-key (kbd "C-c , j") 'semantic-ia-fast-jump)
-  ;; (local-set-key (kbd "C-c , ,") 'semantic-mrub-switch-tags)
+
   (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
   (c-set-style "k&r")
   (c-subword-mode t)
+  (electric-pair-mode t)
   (setq c-subword-mode t)
   (c-toggle-auto-state -1)
   (c-toggle-hungry-state t)
   (c-toggle-electric-state t)
   (setq c-basic-offset 4)
-  ;;(c-set-offset 'case-label 4)
+  (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
   (add-to-list 'which-func-modes 'java-mode)
@@ -34,12 +24,7 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
-  ;; (local-set-key (kbd "C-M-a") 'senator-previous-tag)
-  ;; (local-set-key (kbd "C-M-e") 'senator-next-tag)
   ;; override hs key definition
-  ;; (define-key java-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
-  ;; (define-key c-mode-map (kbd "C-o C-o") 'senator-fold-tag-toggle)
-  
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
   	  (brace-list-close)

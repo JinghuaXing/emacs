@@ -1,12 +1,11 @@
 * Tasks
 #+CATEGORY:Task
-** TODO ContactsSource 如何保存数据；点头像弹出快捷操作 
-** DONE lookup filed in contact table
+** TODO [#A] org-remember
 ** TODO [#B] Programmer Dvorak Keyboard Layout
    http://www.kaufmann.no/roland/dvorak/index.html
 ** TODO magit
    http://zagadka.vm.bytemark.co.uk/magit/magit.html
-** TODO Contact lookup (name_lookup, phone_lookup), db index
+** TODO db index
 ** TODO StringBuffer vs. StringBuilder
 ** TODO Unicode Normalize
 ** TODO [#A] Android Search
