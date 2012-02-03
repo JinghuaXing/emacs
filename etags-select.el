@@ -405,7 +405,7 @@ Use the C-u prefix to prevent the etags-select window from closing."
       (define-key map "8" (lambda () (interactive) (etags-select-by-tag-number "8")))
       (define-key map "9" (lambda () (interactive) (etags-select-by-tag-number "9")))
       (setq etags-select-mode-map map)))
-d
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Mode startup
 
