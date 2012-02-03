@@ -271,7 +271,6 @@ to do."
            (goto-char (point-min))
            (etags-select-next-tag)
            (set-buffer-modified-p nil)
-           (setq buffer-read-only t)
            (setq etags-select-opened-window (selected-window))
            (select-window (split-window-vertically))
            (switch-to-buffer etags-select-buffer-name)
@@ -326,54 +325,6 @@ Use the C-u prefix to prevent the etags-select window from closing."
       (when etags-select-highlight-tag-after-jump
         (etags-select-highlight (match-beginning 0) (match-end 0))))))
 
-(defun etags-select-goto-tag-readonly (&optional arg other-window)
-  "Goto the file/line of the tag under the cursor.
-Use the C-u prefix to prevent the etags-select window from closing."
-  (interactive "P")
-  (let ((case-fold-search (etags-select-case-fold-search))
-        tagname tag-point text-to-search-for filename filename-point (search-count 1))
-    (save-excursion
-      (goto-char (point-min))
-      (re-search-forward "Finding tag: \\(.*\\)$")
-      (setq tagname (etags-select-match-string 1)))
-    (beginning-of-line)
-    (if (looking-at etags-select-non-tag-regexp)
-        (message "Please put the cursor on a line with the tag.")
-      (setq tag-point (point))
-      (setq overlay-arrow-position (point-marker))
-      (re-search-forward "\\]\\s-+\\(.+?\\)\\s-*$")
-      (setq text-to-search-for (regexp-quote (etags-select-match-string 1)))
-      (goto-char tag-point)
-      (re-search-backward "^In: \\(.*\\)$")
-      (setq filename (etags-select-match-string 1))
-      (setq filename-point (point))
-      (goto-char tag-point)
-      (while (re-search-backward (concat "^.*?\\]\\s-+" text-to-search-for) filename-point t)
-        (setq search-count (1+ search-count)))
-      (goto-char tag-point)
-      (unless arg
-        (kill-buffer etags-select-buffer-name)
-        (when etags-select-opened-window
-          (delete-window (selected-window))
-          (select-window etags-select-opened-window)))
-      (switch-to-buffer etags-select-source-buffer)
-      (if etags-select-use-xemacs-etags-p
-          (push-tag-mark)
-        (ring-insert find-tag-marker-ring (point-marker)))
-      (if other-window
-          (find-file-read-only-other-window filename)
-        (find-file-read-only filename))
-      (goto-char (point-min))
-      (while (> search-count 0)
-        (unless (re-search-forward (concat "^\\s-*" text-to-search-for) nil t)
-          (message "TAGS file out of date ... stopping at closest match")
-          (setq search-count 1))
-        (setq search-count (1- search-count)))
-      (beginning-of-line)
-      (re-search-forward tagname)
-      (goto-char (match-beginning 0))
-      (when etags-select-highlight-tag-after-jump
-        (etags-select-highlight (match-beginning 0) (match-end 0))))))
 (defun etags-select-highlight (beg end)
   "Highlight a region temporarily."
   (if (featurep 'xemacs)
@@ -436,10 +387,8 @@ Use the C-u prefix to prevent the etags-select window from closing."
 (defvar etags-select-mode-map nil "'etags-select-mode' keymap.")
 (if (not etags-select-mode-map)
     (let ((map (make-keymap)))
-      (define-key map [(return)] 'etags-select-goto-tag-readonly)
-      (define-key map [(meta return)] 'etags-select-goto-tag)
-      (define-key map [(control return)] 'etags-select-goto-tag)
-      ;; (define-key map [(meta return)] 'etags-select-goto-tag-other-window)
+      (define-key map [(return)] 'etags-select-goto-tag)
+      (define-key map [(control return)] 'etags-select-goto-tag-other-window)
       (define-key map [(down)] 'etags-select-next-tag)
       (define-key map [(up)] 'etags-select-previous-tag)
       (define-key map "n" 'etags-select-next-tag)
@@ -456,7 +405,7 @@ Use the C-u prefix to prevent the etags-select window from closing."
       (define-key map "8" (lambda () (interactive) (etags-select-by-tag-number "8")))
       (define-key map "9" (lambda () (interactive) (etags-select-by-tag-number "9")))
       (setq etags-select-mode-map map)))
-
+d
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Mode startup
 
