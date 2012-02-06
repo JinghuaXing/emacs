@@ -131,6 +131,15 @@
 *** ni,si
 *** f,up,down,bt
 *** p,x
+** git
+*** magit
+    The best emacs git extension
+    http://philjackson.github.com/magit/magit.html
+*** topgit
+    git extension for patch queue management
+*** ref
+    - Git Community Book
+    - Pro Git
 ** grep
 *** grep/egrep 中如何匹配tab					       :grep:
     - input tab with ^v^i(control-v control-i)

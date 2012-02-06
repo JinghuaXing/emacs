@@ -370,7 +370,9 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 ;; (require 'git)
 (require 'magit)
-
+(require 'magit-topgit)
+(add-hook 'magit-mode-hook
+	  'turn-on-magit-topgit)
 (require 'uniquify)
 ;; (autoload 'enable-paredit-mode "paredit"
 ;;   "Turn on pseudo-structural editing of Lisp code."

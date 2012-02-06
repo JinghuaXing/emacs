@@ -37,11 +37,22 @@
   :type 'string)
 
 (defface magit-topgit-current
-  '((t :weight bold :inherit magit-branch))
+  '((t :weight bold))
   "Face for section titles."
   :group 'magit-faces)
 
+(defface magit-topgit-deprecate
+  '((t :underline t))
+  "Face for section titles."
+  :group 'magit-faces)
 ;;; Topic branches (using topgit)
+
+(defface magit-topgit-current-deprecate
+  '((t :weight bold :underline t))
+  "Face for section titles."
+  :group 'magit-faces)
+;;; Topic branches (using topgit)
+
 
 (defun magit-topgit-in-topic-p ()
   (and (file-exists-p ".topdeps")
@@ -95,6 +106,7 @@
   (let ((flags (string-to-list flags-string))
         (void-flag ?\ ))
     (list :current (not (eq (nth 0 flags) void-flag))
+	  :d  (eq (nth 4 flags) 68)
           :empty (not (eq (nth 1 flags) void-flag)))))
 
 (defun magit-topgit-wash-topic ()
@@ -112,8 +124,11 @@
                   (end (line-end-position)))
               (when (plist-get flags :current)
                 (put-text-property beg end 'face 'magit-topgit-current))
-              (when (plist-get flags :empty)
-                (put-text-property beg end 'face `(:strike-through t :inherit ,(get-text-property beg 'face)))))
+	      (when (plist-get flags :d)
+                (put-text-property beg end 'face 'magit-topgit-deprecate))
+	      (when (and (plist-get flags :current) (plist-get flags :d))
+                (put-text-property beg end 'face 'magit-topgit-current-deprecate))
+	      )
             (forward-line)))
       (delete-region (line-beginning-position) (1+ (line-end-position))))
     t))
