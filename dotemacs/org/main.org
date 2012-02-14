@@ -38,6 +38,8 @@
 * Linux App
 #+CATEGORY:Linux app
 ** auditd							      :sysadmin:
+** htop
+   交互式 top
 ** basename与dirname							 :shell:
 ** bash
 *** get file name extension and get main file name
@@ -5229,6 +5231,8 @@ AMS calls:
 #+END_EXAMPLE
     - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
 *** traceview
+**** dmtracedump
+     dmtracedump -g out.png -t 30% test.trace
 *** hierachyviewer
 *** Thread.dumpStack()
 *** logcat

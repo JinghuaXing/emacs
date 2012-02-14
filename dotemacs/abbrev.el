@@ -25,6 +25,13 @@
 		     )
   )
 
+(define-skeleton skeleton-log-func
+  "generate int main(int argc, char * argc[]) automatic" nil
+  >"Log.e (\"sunway\","_");")
+
+(define-abbrev-table 'java-mode-abbrev-table '(
+    ("log" "" skeleton-log-func 1)
+    ))
 
 (define-skeleton skeleton-c-mode-main-func
   "generate int main(int argc, char * argc[]) automatic" nil
@@ -47,6 +54,23 @@
 (define-abbrev-table 'java-mode-abbrev-table '(
     ("main" "" skeleton-java-mode-main-func 1)
     ))
+
+(define-skeleton skeleton-c-mode-ret
+  "ret" nil
+  >"return "_";"
+ )
+
+(define-abbrev-table 'c-mode-abbrev-table '(
+    ("ret" "" skeleton-c-mode-ret 1)
+    )
+  )
+(define-abbrev-table 'c++-mode-abbrev-table '(
+    ("ret" "" skeleton-c-mode-ret 1)
+    ))
+(define-abbrev-table 'java-mode-abbrev-table '(
+    ("ret" "" skeleton-c-mode-ret 1)
+    )
+  )
 
 (define-skeleton skeleton-c-mode-for
   "if" nil

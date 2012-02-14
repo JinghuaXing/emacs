@@ -25,6 +25,7 @@
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/sourcepair.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
+(load-file "~/.elisp/dotemacs/dict.el")
 ;; (load-file "~/.elisp/cedet-1.0/common/cedet.el")
 ;; (semantic-load-enable-minimum-features)
 ;; (load-file "~/.elisp/dotemacs/emms.el")
@@ -368,11 +369,11 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (setq org2blog/wp-default-categories '("Uncategorized"))
 
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
-;; (require 'git)
+
 (require 'magit)
 (require 'magit-topgit)
 (add-hook 'magit-mode-hook
-	  'turn-on-magit-topgit)
+	  'magit-topgit-mode)
 (require 'uniquify)
 ;; (autoload 'enable-paredit-mode "paredit"
 ;;   "Turn on pseudo-structural editing of Lisp code."
@@ -384,8 +385,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (require 'unicad)
 
-(add-to-list 'load-path "~/.elisp/anything-config/")
-(require 'anything-config)
+;; (add-to-list 'load-path "~/.elisp/anything-config/")
+;; (require 'anything-config)
 
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
@@ -403,4 +404,4 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (require 'color-moccur)
 
 (require 'midnight)
-(require 'beagle-dired)
+;; (require 'beagle-dired)

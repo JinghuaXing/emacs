@@ -194,8 +194,8 @@
         (remove-hook 'magit-log-remotes-color-hook
                      'magit-topgit-get-remote-top-bases-color)
         (delete magit-topgit-ignored-namespace magit-refs-namespaces)))
-  (when (called-interactively-p 'any)
-    (magit-refresh)))
+  
+    (magit-refresh))
 
 ;;;###autoload
 (defun turn-on-magit-topgit ()

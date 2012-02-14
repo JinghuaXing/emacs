@@ -6,7 +6,7 @@
   (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
   (c-set-style "k&r")
   (c-subword-mode t)
-  (electric-pair-mode t)
+  ;; (electric-pair-mode t)
   (setq c-subword-mode t)
   (c-toggle-auto-state -1)
   (c-toggle-hungry-state t)
