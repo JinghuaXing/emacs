@@ -13,9 +13,6 @@
 (autoload 'dictionary-tooltip-mode "dictionary"
   "Display tooltips for the current word" t)
 (setq dictionary-server "localhost")
-(setq dictionary-tooltip-dictionary "xdict")
 (require 'dictionary)
-(global-dictionary-tooltip-mode t)
 (global-set-key (kbd "<mouse-3>") 'dictionary-mouse-popup-matching-words)
-(add-hook 'text-mode-hook 'dictionary-tooltip-mode)
-(global-set-key (kbd "C-c C-s") 'dictionary-search)
+(global-set-key (kbd "<f8>") 'dictionary-search)

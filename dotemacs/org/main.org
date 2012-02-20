@@ -1,8 +1,10 @@
 * Tasks
 #+CATEGORY:Task
 ** TODO [#A] org-remember
+** TODO javacc
 ** TODO [#B] Programmer Dvorak Keyboard Layout
-   http://www.kaufmann.no/roland/dvorak/index.html
+   - http://www.kaufmann.no/roland/dvorak/index.html
+   - dvorak7min
 ** TODO magit
    http://zagadka.vm.bytemark.co.uk/magit/magit.html
 ** TODO db index

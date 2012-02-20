@@ -51,7 +51,7 @@
  '(ecb-tip-of-the-day nil)
  '(ecb-tree-buffer-style (quote image))
  '(ecb-windows-width 0.3)
- '(find-grep-options "-q --exclude=*svn* -I")
+ '(find-grep-options "-q --exclude=*svn* -I -i")
  '(gdb-enable-debug t)
  '(icicle-command-abbrev-alist nil)
  '(icicle-reminder-prompt-flag 0)
