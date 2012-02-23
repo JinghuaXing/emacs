@@ -33,8 +33,8 @@
 (global-set-key (kbd "<f11>") 'calendar)
 (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org/main.org")))
 (global-set-key (kbd "C-c C-o a") 'org-agenda)
-(global-set-key (kbd "s-SPC") 'toggle-eshell)
-
+(global-set-key (kbd "s-SPC") 'ace-jump-mode)
+(define-key global-map (kbd "C-c SPC") 'toggle-eshell)
 (require 'hideshow)
 ;; (define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
 ;; (define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)

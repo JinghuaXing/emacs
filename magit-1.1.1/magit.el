@@ -2590,6 +2590,11 @@ in the corresponding directories."
         (t
          nil)))
 
+(defcustom magit-diff-options ""
+  "The options of git diff ."
+  :group 'magit
+  :type 'string)
+
 (defvar magit-diff-options nil)
 
 (defun magit-insert-diff (file status)

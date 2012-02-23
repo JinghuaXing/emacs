@@ -1,5 +1,6 @@
 * Tasks
 #+CATEGORY:Task
+** TODO handleSmsReceived @ SmsReceiverService
 ** TODO [#A] org-remember
 ** TODO javacc
 ** TODO [#B] Programmer Dvorak Keyboard Layout
@@ -39,6 +40,7 @@
 ** TODO 股票的点数
 * Linux App
 #+CATEGORY:Linux app
+** indent && astyle
 ** auditd							      :sysadmin:
 ** htop
    交互式 top
@@ -4753,7 +4755,7 @@ AMS calls:
 *** android
 *** ddms
 *** decompile
-**** hex2jar
+**** dex2jar
 **** jd-gui
 **** apktool
 *** hierachyviewer
