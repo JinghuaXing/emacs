@@ -127,7 +127,7 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (put 'narrow-to-page 'disabled nil)
 (delete-selection-mode nil)
 
-(desktop-save-mode 1)
+;; (desktop-save-mode 1)
 (setq desktop-buffers-not-to-save "\\(^\\*\\|^nn\\.a[0-9]+\\|\\.log\\|(ftp)\\)$")
 (setq history-length 250)
 (setq gdb-many-windows t)
@@ -285,3 +285,5 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (add-hook 'nxml-mode-hook '(lambda () (auto-fill-mode -1)))
 
 (setq ace-jump-mode-move-keys (loop for i from ?a to ?z collect i))
+
+(load-file "~/.elisp/mydesktop.el")
