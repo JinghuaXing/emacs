@@ -4,6 +4,10 @@
   (concat (getenv "HOME") "/.emacs.d/desktop-sessions/")
   "*Directory to save desktop sessions in")
 
+(defvar my-desktop-last-session-file
+  (concat (getenv "HOME") "/.emacs.d/desktop-last-session")
+  "*Directory to save desktop sessions in")
+
 (defvar my-desktop-session-name-hist nil
   "Desktop session name history")
 
@@ -27,12 +31,28 @@
   "Read desktop by name."
   (interactive)
   (unless name
-    (setq name (my-desktop-get-session-name "Load session")))
-  (when name
+    (setq name (my-desktop-get-session-name (concat "Load session (" (my-desktop-get-current-name) ")"))))
+  (when (and name (not (string= name "")))
     (desktop-clear)
-    (desktop-read (concat my-desktop-session-dir name))))
+    (desktop-read (concat my-desktop-session-dir name))
+    (setq bm-repository-file (concat my-desktop-session-dir name "/bm_repository"))
+    (bm-load-and-restore)
+    ))
 
-(defun my-desktop-change (&optional name)
+(defun remove-session ()
+  (interactive)
+  (setq name (my-desktop-get-session-name (concat "Remove session (" (my-desktop-get-current-name) ")")))
+  (setq current (my-desktop-get-current-name))
+  (if (and name (or (not current) (not (string= name current))))
+      (unless (or (string= name "") (string= name "tmp"))
+	(delete-directory (concat my-desktop-session-dir name) t)
+	(message (concat name " removed"))
+	)
+    (message "Can't remove desktop")
+    )
+  )
+
+(defun switch-session (&optional name)
   "Change desktops by name."
   (interactive)
   (let ((name (my-desktop-get-current-name)))
@@ -61,17 +81,57 @@
          (full-prompt (concat prompt (if default
                                          (concat " (default " default "): ")
                                        ": "))))
-    (completing-read full-prompt (and (file-exists-p my-desktop-session-dir)
-                                      (directory-files my-desktop-session-dir))
-                     nil nil nil my-desktop-session-name-hist default)))
+    (ido-completing-read full-prompt (and (file-exists-p my-desktop-session-dir)
+					  (cdr (cdr (directory-files my-desktop-session-dir))))
+			 nil nil nil my-desktop-session-name-hist default)))
 
 (defun my-desktop-kill-emacs-hook ()
   "Save desktop before killing emacs."
-  (when (file-exists-p (concat my-desktop-session-dir "last-session"))
-    (setq desktop-file-modtime
-          (nth 5 (file-attributes (desktop-full-file-name (concat my-desktop-session-dir "last-session"))))))
-  (my-desktop-save "last-session"))
+  (let ((current (my-desktop-get-current-name)))
+	(if current
+	    (my-desktop-save current)
+	  (progn
+	    (when (file-exists-p (concat my-desktop-session-dir "tmp"))
+	      (setq desktop-file-modtime
+		    (nth 5 (file-attributes (desktop-full-file-name (concat my-desktop-session-dir "tmp"))))))
+	    (my-desktop-save "tmp")
+	    )
+	  )
+	(let ((buf (find-file-noselect my-desktop-last-session-file)))
+	  (with-current-buffer buf
+			       (kill-region (point-min) (point-max))
+			       (if current
+				   (insert current)
+				 (insert "tmp")
+				 )
+			       (write-file my-desktop-last-session-file)
+			       )
+	  )
+	)
+  )
 
 (add-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
+(add-to-list 'desktop-globals-to-save 'bm-repository-file)
 
-(desktop-read (concat my-desktop-session-dir "last-session"))
+(defun reload-last-session ()
+  (let ((buf (find-file-noselect my-desktop-last-session-file)))
+    (setq last-session (with-current-buffer buf
+			 (buffer-substring (point-min) (point-max))
+			 ))
+    (if last-session
+	(progn
+	  (setq last-session (replace-regexp-in-string "\n" "" last-session))
+	  (if (string-match last-session " +")
+	    (setq last-session "tmp")	    
+	    )
+	  )
+      (setq last-session "tmp")
+      )
+      
+    (desktop-read (concat my-desktop-session-dir last-session))
+    (setq bm-repository-file (concat my-desktop-session-dir last-session "/bm_repository"))
+    (bm-load-and-restore)
+    )
+  )
+(global-set-key (kbd "s-l") 'switch-session)
+(reload-last-session)
