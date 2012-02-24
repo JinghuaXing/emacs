@@ -37,6 +37,8 @@
     (desktop-read (concat my-desktop-session-dir name))
     (setq bm-repository-file (concat my-desktop-session-dir name "/bm_repository"))
     (bm-load-and-restore)
+    (setq my-desktop-mode-indicator (my-desktop-get-current-name))
+    (force-mode-line-update)
     ))
 
 (defun remove-session ()
@@ -110,8 +112,7 @@
 	)
   )
 
-(add-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
-(add-to-list 'desktop-globals-to-save 'bm-repository-file)
+
 
 (defun reload-last-session ()
   (let ((buf (find-file-noselect my-desktop-last-session-file)))
@@ -127,11 +128,43 @@
 	  )
       (setq last-session "tmp")
       )
-      
     (desktop-read (concat my-desktop-session-dir last-session))
     (setq bm-repository-file (concat my-desktop-session-dir last-session "/bm_repository"))
     (bm-load-and-restore)
+    (kill-buffer buf)
+    (setq my-desktop-mode-indicator last-session)
+    (force-mode-line-update)
     )
   )
-(global-set-key (kbd "s-l") 'switch-session)
-(reload-last-session)
+
+(add-to-list 'desktop-globals-to-save 'bm-repository-file)
+(add-to-list 'desktop-locals-to-save 'default-directory)
+
+(defvar my-desktop-mode-indicator "")
+
+(add-hook
+  'after-init-hook
+  (lambda ()
+    (when my-desktop-mode
+      (reload-last-session)      
+      )))
+
+
+(define-minor-mode my-desktop-mode
+  ""
+  :global t
+  :group 'my-desktop-mode
+  (if my-desktop-mode
+;;; ON
+      (progn 
+	(add-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
+	(global-set-key (kbd "s-l") 'switch-session)
+	(add-to-list 'default-mode-line-format '(:eval (concat "[" my-desktop-mode-indicator "]")))
+	)
+;;; OFF
+    (remove-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
+    (global-unset-key (kbd "s-l"))
+    (setq default-mode-line-format (remove '(:eval (concat "[" my-desktop-mode-indicator "]")) default-mode-line-format))
+    ))
+
+(provide 'my-desktop)
