@@ -4734,7 +4734,7 @@ restore the window state that was saved before ediff was called."
   (set-window-configuration magit-ediff-windows)
   (remove-hook 'ediff-quit-hook 'magit-ediff-restore))
 
-(defun magit-refresh-diff-buffer (range args)
+(defun magit-refresh-diff-buffer (range args &optional restrict-dir)
   (let ((magit-current-diff-range (cond
                                    ((stringp range)
                                     (cons range 'working))
@@ -4747,7 +4747,7 @@ restore the window state that was saved before ediff was called."
       (magit-git-section 'diffbuf
                          (magit-rev-range-describe range "Changes")
                          'magit-wash-diffs
-                         "diff" (magit-diff-U-arg) args))))
+                         "diff" (magit-diff-U-arg) args "--" restrict-dir))))
 
 (define-derived-mode magit-diff-mode magit-mode "Magit"
   "Mode for looking at a git diff.
@@ -4755,19 +4755,22 @@ restore the window state that was saved before ediff was called."
 \\{magit-diff-mode-map}"
   :group 'magit)
 
-(magit-define-command diff (range)
-  (interactive (list (magit-read-rev-range "Diff")))
+(magit-define-command diff (range &optional tmp)
+  (interactive (list (magit-read-rev-range "Diff") current-prefix-arg))
   (if range
       (let* ((dir default-directory)
              (args (magit-rev-range-to-git range))
              (buf (get-buffer-create "*magit-diff*")))
+	(if tmp
+	    (setq restrict-dir (read-directory-name "Directory:" dir))
+	  (setq restrict-dir dir))
         (display-buffer buf)
         (with-current-buffer buf
-          (magit-mode-init dir 'magit-diff-mode #'magit-refresh-diff-buffer range args)))))
+          (magit-mode-init dir 'magit-diff-mode #'magit-refresh-diff-buffer range args restrict-dir)))))
 
-(magit-define-command diff-working-tree (rev)
-  (interactive (list (magit-read-rev "Diff with" (magit-default-rev))))
-  (magit-diff (or rev "HEAD")))
+(magit-define-command diff-working-tree (rev &optional tmp)
+  (interactive (list (magit-read-rev "Diff with" (magit-default-rev)) current-prefix-arg))
+  (magit-diff (or rev "HEAD") tmp))
 
 (defun magit-diff-with-mark ()
   (interactive)
