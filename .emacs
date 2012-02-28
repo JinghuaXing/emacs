@@ -292,3 +292,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (add-hook 'find-file-hook '(lambda()
 			     (setq minor-mode-alist nil)
 			     ))
+
+(require 'saveplace)
+(setq-default save-place t)
+
+(savehist-mode t)

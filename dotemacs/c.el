@@ -122,25 +122,16 @@
 
 
 (setq imenu-sort-function 'imenu--sort-by-name)
+
 ;; (setq compilation-finish-function 
 ;;       (lambda (buf str) 
 ;;         (save-excursion 
 ;;           (with-current-buffer buf 
 ;;             (goto-char (point-min)) 
-;;             (if (re-search-forward "error:" nil t) 
+;;             (if (re-search-forward "abnormally" nil t) 
 ;;                 (message "compilation errors, press C-x ` to visit") 
 ;;               (run-at-time 0.5 nil 'delete-windows-on buf) 
 ;;               (message "NO COMPILATION ERRORS!"))))))
-
-(setq compilation-finish-function 
-      (lambda (buf str) 
-        (save-excursion 
-          (with-current-buffer buf 
-            (goto-char (point-min)) 
-            (if (re-search-forward "abnormally" nil t) 
-                (message "compilation errors, press C-x ` to visit") 
-              (run-at-time 0.5 nil 'delete-windows-on buf) 
-              (message "NO COMPILATION ERRORS!"))))))
 
 
 ;; (add-hook 'c-mode-hook
