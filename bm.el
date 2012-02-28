@@ -535,7 +535,7 @@ before bm is loaded.")
 (defconst bm-show-buffer-name "*bm-bookmarks*"
   "The name of the buffer used to show bookmarks by `bm-show'.")
 
-(defconst bm-show-line-format "%-20s %-20s %s"
+(defconst bm-show-line-format "%-40s %-40s %s"
   "The format string used by `bm-header' and `bm-show-extract-bookmarks'.")
 
 (defvar bm-marker 'bm-marker-left

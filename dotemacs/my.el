@@ -1,6 +1,3 @@
-;;Time-stamp: <2011-09-12 19:33:42 sunway>
-;;my function
-;;;;;;;;;;;ascii
 (defun ascii-table-show ()
   "Print the ascii table"
   (interactive)
@@ -430,22 +427,8 @@ occurence of CHAR."
       (setq last_buffer current_buffer)
       (eshell)
       )
-  )
+    )
   )
 
-
-
-(defun org-insert-beamer-header ()
-  "input beamer header"
-  (interactive)
-  (insert "#+STARTUP: beamer
-#+LaTeX_CLASS: beamer
-#+TITLE: 
-#+AUTHOR:
-#+LATEX_HEADER: \\AtBeginSection[]{\\begin{frame}<beamer>\\frametitle{Topic}\\tableofcontents[currentsection]\\end{frame}}
-#+BEAMER_FRAME_LEVEL: 2
-#+BEAMER_HEADER_EXTRA:\\usetheme{Antibes}"
-	  )
-  )
 
 
