@@ -30,6 +30,7 @@
  '(company-idle-delay 0.2)
  '(company-minimum-prefix-length 2)
  '(company-show-numbers t)
+ '(compilation-skip-threshold 2)
  '(cperl-electric-keywords t)
  '(cperl-highlight-variables-indiscriminately t)
  '(cperl-indent-level 4)
