@@ -61,7 +61,7 @@
  '(ido-auto-merge-work-directories-length -1)
  '(ido-enable-dot-prefix t)
  '(ido-enable-tramp-completion nil)
- '(ido-use-filename-at-point (quote guess))
+ '(ido-use-filename-at-point nil)
  '(ispell-personal-dictionary "/home/sunway/.elisp/dict_my")
  '(ispell-query-replace-choices t)
  '(magit-completing-read-function (quote magit-ido-completing-read))
