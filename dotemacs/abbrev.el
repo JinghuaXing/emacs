@@ -54,23 +54,24 @@
 (define-abbrev-table 'java-mode-abbrev-table '(
     ("main" "" skeleton-java-mode-main-func 1)
     ))
-
-(define-skeleton skeleton-c-mode-ret
-  "ret" nil
-  >"return "_";"
+(define-skeleton skeleton-c-mode-for
+  "fori" "Boundary? "
+  >"for (int i=0; i<"str"; ++i) {" \n \n
+  -4 "} "
  )
 
 (define-abbrev-table 'c-mode-abbrev-table '(
-    ("ret" "" skeleton-c-mode-ret 1)
+    ("fori" "" skeleton-c-mode-fori 1)
     )
   )
 (define-abbrev-table 'c++-mode-abbrev-table '(
-    ("ret" "" skeleton-c-mode-ret 1)
+    ("fori" "" skeleton-c-mode-fori 1)
     ))
 (define-abbrev-table 'java-mode-abbrev-table '(
-    ("ret" "" skeleton-c-mode-ret 1)
+    ("fori" "" skeleton-c-mode-fori 1)
     )
   )
+
 
 (define-skeleton skeleton-c-mode-for
   "if" nil
