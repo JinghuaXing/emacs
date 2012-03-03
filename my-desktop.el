@@ -35,8 +35,10 @@
   (when (and name (not (string= name "")))
     (desktop-clear)
     (desktop-read (concat my-desktop-session-dir name))
+    ;; bm
     (setq bm-repository-file (concat my-desktop-session-dir name "/bm_repository"))
     (bm-load-and-restore)
+    ;; indicator
     (setq my-desktop-mode-indicator (my-desktop-get-current-name))
     (force-mode-line-update)
     ))
@@ -137,8 +139,17 @@
     )
   )
 
-(add-to-list 'desktop-globals-to-save 'bm-repository-file)
+(add-to-list 'desktop-globals-to-save 'kill-ring)
+(add-to-list 'desktop-globals-to-save 'search-ring)
+(add-to-list 'desktop-globals-to-save 'extended-command-history)
+(add-to-list 'desktop-globals-to-save 'command-history)
+(add-to-list 'desktop-globals-to-save 'minibuffer-history)
+(add-to-list 'desktop-globals-to-save 'register-alist)
+
 (add-to-list 'desktop-locals-to-save 'default-directory)
+
+(make-variable-buffer-local 'compile-command)
+(add-to-list 'desktop-locals-to-save 'compile-command)
 
 (defvar my-desktop-mode-indicator "")
 

@@ -227,8 +227,7 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (toggle-input-method nil)          ; default is turn off
 (global-set-key ";" 'eim-insert-ascii)
 
-(cua-mode t)
-
+;; (cua-mode t)
 (require 'undo-tree)
 (global-undo-tree-mode)
 
@@ -295,6 +294,4 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (require 'saveplace)
 (setq-default save-place t)
-
-(savehist-mode t)
 
