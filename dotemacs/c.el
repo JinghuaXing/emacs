@@ -23,7 +23,6 @@
   ;; (hide-ifdefs)
   (auto-fill-mode 1)
   (linum-mode 1)
-  (paredit-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
   ;; override hs key definition

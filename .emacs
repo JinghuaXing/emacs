@@ -298,4 +298,3 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (savehist-mode t)
 
-(require 'paredit)
