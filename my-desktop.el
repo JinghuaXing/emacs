@@ -1,3 +1,18 @@
+;; Installation:
+;; (require 'my-desktop)
+;; (my-desktop-mode t)
+;;
+;; Usage:
+;; M-x switch-session
+;; M-x remove-session
+;;
+;; note:
+;; you should turn `desktop-save-mode` off before tunring on my-desktop-mode
+;;
+;; Acknowledgement:
+;; http://stackoverflow.com/questions/847962/what-alternate-session-managers-are-available-for-emacs
+;; 
+
 (require 'desktop)
 
 (defvar my-desktop-session-dir
