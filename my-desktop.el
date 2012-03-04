@@ -86,32 +86,32 @@
                                          (concat " (default " default "): ")
                                        ": "))))
     (ido-completing-read full-prompt (and (file-exists-p my-desktop-session-dir)
-					  (cdr (cdr (directory-files my-desktop-session-dir))))
+					  (remove (my-desktop-get-current-name) (cdr (cdr (directory-files my-desktop-session-dir)))))
 			 nil nil nil my-desktop-session-name-hist default)))
 
 (defun my-desktop-kill-emacs-hook ()
   "Save desktop before killing emacs."
   (let ((current (my-desktop-get-current-name)))
-	(if current
-	    (my-desktop-save current)
-	  (progn
-	    (when (file-exists-p (concat my-desktop-session-dir "tmp"))
-	      (setq desktop-file-modtime
-		    (nth 5 (file-attributes (desktop-full-file-name (concat my-desktop-session-dir "tmp"))))))
-	    (my-desktop-save "tmp")
-	    )
-	  )
-	(let ((buf (find-file-noselect my-desktop-last-session-file)))
-	  (with-current-buffer buf
-			       (kill-region (point-min) (point-max))
-			       (if current
-				   (insert current)
-				 (insert "tmp")
-				 )
-			       (write-file my-desktop-last-session-file)
-			       )
-	  )
+    (if current
+	(my-desktop-save current)
+      (progn
+	(when (file-exists-p (concat my-desktop-session-dir "tmp"))
+	  (setq desktop-file-modtime
+		(nth 5 (file-attributes (desktop-full-file-name (concat my-desktop-session-dir "tmp"))))))
+	(my-desktop-save "tmp")
 	)
+      )
+    (let ((buf (find-file-noselect my-desktop-last-session-file)))
+      (with-current-buffer buf
+	(kill-region (point-min) (point-max))
+	(if current
+	    (insert current)
+	  (insert "tmp")
+	  )
+	(write-file my-desktop-last-session-file)
+	)
+      )
+    )
   )
 
 
@@ -125,7 +125,7 @@
 	(progn
 	  (setq last-session (replace-regexp-in-string "\n" "" last-session))
 	  (if (string-match last-session " +")
-	    (setq last-session "tmp")	    
+	      (setq last-session "tmp")	    
 	    )
 	  )
       (setq last-session "tmp")
@@ -154,11 +154,11 @@
 (defvar my-desktop-mode-indicator "")
 
 (add-hook
-  'after-init-hook
-  (lambda ()
-    (when my-desktop-mode
-      (reload-last-session)      
-      )))
+ 'after-init-hook
+ (lambda ()
+   (when my-desktop-mode
+     (reload-last-session)      
+     )))
 
 
 (define-minor-mode my-desktop-mode
@@ -170,12 +170,15 @@
       (progn 
 	(add-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
 	(global-set-key (kbd "s-l") 'switch-session)
-	(add-to-list 'default-mode-line-format '(:eval (concat "[" my-desktop-mode-indicator "]")))
+	(setq default-mode-line-format (insert-after default-mode-line-format 6 '(:eval (concat "[" my-desktop-mode-indicator "] "))))
+	;; (add-to-list 'default-mode-line-format '(:eval (concat "[" my-desktop-mode-indicator "]")))
 	)
 ;;; OFF
     (remove-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
     (global-unset-key (kbd "s-l"))
     (setq default-mode-line-format (remove '(:eval (concat "[" my-desktop-mode-indicator "]")) default-mode-line-format))
     ))
+
+(defun insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)
 
 (provide 'my-desktop)
