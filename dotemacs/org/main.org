@@ -14,7 +14,6 @@
 ** TODO [#A] Android Search
 ** TODO URI
 ** TODO [#B] Android eng-mode vs. user-mode
-** TODO [#B] screen manual
 ** TODO android apk signature
 ** TODO Android coredump
 ** TODO Android IMF
@@ -37,7 +36,6 @@
 ** TODO shebang
 ** TODO Webview
 ** TODO WindowManager, layoutWindow
-** TODO 股票的点数
 * Linux App
 #+CATEGORY:Linux app
 ** indent && astyle
@@ -2297,8 +2295,7 @@ This is called in 2 scen:
 **** NativeActivity
 **** Activity Result
 
-**** DOING [#A] Launcher
-     SCHEDULED: <2011-09-08 Thu>
+**** TODO [#A] Launcher
      see also [[Launcher & Task]]
 **** Task
 ***** why relaunch an activity A from launcher will bring the task to foreground
@@ -3435,8 +3432,7 @@ This is called in 2 scen:
 	 deliverNewIntent will occurs in two cases:
 	 1. SINGLE\_TOP, w/ or w/o NEW\_TASK
 	 2. REORDER\_TO\_FRONT
-***** DOING Launcher & Task
-      SCHEDULED: <2011-09-08 Thu>
+***** TODO Launcher & Task
 ***** resetTaskIfNeededLocked
       FLAG\_ACTIVITY\_NEW\_TAKS && FLAG\_ACTIVITY\_RESET\_TASK\_IF\_NEEDED will trigger resetTaskIfNeededLocked
 
@@ -4006,7 +4002,6 @@ AMS calls:
 ** Bionic libc
 *** Prelink
 ** CANCELED [#B] Preference
-   SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-26 Tue 16:25]
    - State "CANCELED"   from "DOING"      [2011-07-26 Tue 16:25]
 *** PreferenceActivity
     - PreferenceActivity extends ListActivity
@@ -4202,8 +4197,7 @@ AMS calls:
     3. system/core/init
     4. system/core/include/private/android_filesystem_config.h
 ** init
-*** DOING init.rc
-    SCHEDULED: <2011-08-30 Tue>
+*** TODO init.rc
 *** DONE System init
     CLOSED: [2011-03-01 Tue 11:20]
     - State "DONE"       [2011-03-01 Tue 11:20]
@@ -4555,8 +4549,7 @@ AMS calls:
       Step 3 is essential: android use `device-mapper crypto` as the `encrypt file system` behind secure container, which can mount a encrypted image file
       to a mapped device (dm-0)
 **** SharedUserId
-**** DOING [#A] Signature & Certificate
-     SCHEDULED: <2011-08-30 Tue>
+**** TODO [#A] Signature & Certificate
      :PROPERTIES:
      :ID:       c5ca7d63-57fd-407a-8275-3266f925d386
      :END:
@@ -4780,7 +4773,6 @@ AMS calls:
 **** TODO FrameLayout
 **** GridLayout
 **** CANCELED RelativeLayout
-     SCHEDULED: <2011-04-27 Wed> CLOSED: [2011-07-18 Mon 17:43]
      - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
 *** ListView
 **** convertView
@@ -5093,7 +5085,7 @@ AMS calls:
 	- for horizontal LinearLayout:
 	  vice-versa
 
-***** DOING [#B] invalidate
+***** TODO [#B] invalidate
 **** view padding and margin
      padding = 内边距
      margin =  外边距
@@ -5419,7 +5411,6 @@ AMS calls:
      - java -client
      - java -server
 ** CANCELED [#B] Java Language Specification (jls)
-   SCHEDULED: <2011-08-24 Wed> DEADLINE: <2011-09-16 Fri> CLOSED: [2011-08-29 Mon 17:20]
    - State "CANCELED"   from "DOING"      [2011-08-29 Mon 17:20]
    CLOCK: [2011-02-16 Wed 17:38]--[2011-02-16 Wed 18:01] =>  0:23
 *** String
@@ -5967,7 +5958,6 @@ AMS calls:
 *** LockSupport
 *** Callable vs. Runnable
 *** CANCELED Future & FutureTask
-    SCHEDULED: <2011-07-04 Mon> CLOSED: [2011-07-18 Mon 17:43]
     - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
     see also [[Callable vs. Runnable]]
 *** CountDownLatch
@@ -6133,13 +6123,11 @@ AMS calls:
 ** Security
 *** ClassLoader
 *** SecurityManager
-*** DOING Policy
-    SCHEDULED: <2011-09-09 Fri>
+*** TODO Policy
 *** How To Run Beanshell in Sandbox?
 *** keystore
     keystore 中同时包含公钥,私钥及证书
-*** DOING keytool & jarsigner
-    SCHEDULED: <2011-08-31 Wed>
+*** TODO keytool & jarsigner
     see also [[数字签名]] [[数字证书]]
     http://download.oracle.com/javase/1.3/docs/tooldocs/win32/jarsigner.html
 
@@ -6279,8 +6267,7 @@ AMS calls:
 ** DONE uuid
    SCHEDULED: <2011-05-31 Tue> CLOSED: [2011-07-01 Fri 13:44]
    - State "DONE"       from "DOING"      [2011-07-01 Fri 13:44]
-** DOING 同步,互斥,信号量
-   SCHEDULED: <2011-08-30 Tue>
+** TODO 同步,互斥,信号量
 ** pthread_mutex_lock 开销
 ** 关于ctors,init...
    main.cpp:
