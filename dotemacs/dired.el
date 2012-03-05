@@ -100,7 +100,7 @@
 ;; 					     )) 
 (define-key dired-mode-map (kbd "f") (lambda(wildcard)
 				       (interactive "MWildcard: ")
-				       (find-dired "./" (concat "-iname " "\"" wildcard "\"" ))
+				       (find-dired "./" (concat "-iname " "\"*" wildcard "*\"" ))
 				       )
   )
 (define-key dired-mode-map (kbd "F") (lambda(reg)
