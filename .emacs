@@ -295,3 +295,14 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (require 'saveplace)
 (setq-default save-place t)
 (transient-mark-mode t)
+
+(require 'quick-jump)
+(global-set-key (kbd "C-,") 'quick-jump-go-back)
+(global-set-key (kbd "C-.") 'quick-jump-push-marker)
+(add-hook 
+ 'flyspell-mode-hook 
+ '(lambda ()
+    (define-key flyspell-mode-map (kbd "C-.") nil)
+    (define-key flyspell-mode-map (kbd "C-,") nil))
+ )
+

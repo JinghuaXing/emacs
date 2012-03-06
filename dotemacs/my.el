@@ -429,6 +429,3 @@ occurence of CHAR."
       )
     )
   )
-
-
-
