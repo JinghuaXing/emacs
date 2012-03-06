@@ -146,7 +146,6 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 			     (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
 			     ))
 (modify-syntax-entry ?_ "_")
-(setq transient-mark-mode nil)
 
 ;; allow for color prompt in shell
 (ansi-color-for-comint-mode-on)
@@ -295,4 +294,4 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (require 'saveplace)
 (setq-default save-place t)
-
+(transient-mark-mode t)

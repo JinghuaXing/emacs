@@ -39,7 +39,6 @@
  '(cua-enable-cua-keys nil)
  '(desktop-lazy-idle-delay 2)
  '(desktop-load-locked-desktop t)
- '(desktop-restore-eager 10)
  '(dired-backup-overwrite t)
  '(dired-find-subdir nil)
  '(dired-garbage-files-regexp "\\.\\(?:aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\|class\\)\\'")
