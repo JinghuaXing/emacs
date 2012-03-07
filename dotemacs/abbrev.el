@@ -54,7 +54,7 @@
 (define-abbrev-table 'java-mode-abbrev-table '(
     ("main" "" skeleton-java-mode-main-func 1)
     ))
-(define-skeleton skeleton-c-mode-for
+(define-skeleton skeleton-c-mode-fori
   "fori" "Boundary? "
   >"for (int i=0; i<"str"; ++i) {" \n \n
   -4 "} "
