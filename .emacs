@@ -257,16 +257,6 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
 
-(require 'bm)
-;; (global-set-key (kbd "<C-f2>") 'bm-next)
-(global-set-key (kbd "C-c m") (lambda ()
-			       (interactive)
-			       (bm-toggle)
-			       (bm-save)
-			       ))
-;; (global-set-key (kbd "<S-f2>") 'bm-previous)
-(global-set-key (kbd "C-c l") 'bm-show-all)
-
 (require 'color-moccur)
 
 (require 'midnight)

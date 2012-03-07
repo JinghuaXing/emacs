@@ -50,9 +50,6 @@
   (when (and name (not (string= name "")))
     (desktop-clear)
     (desktop-read (concat my-desktop-session-dir name))
-    ;; bm
-    (setq bm-repository-file (concat my-desktop-session-dir name "/bm_repository"))
-    (bm-load-and-restore)
     ;; indicator
     (setq my-desktop-mode-indicator (my-desktop-get-current-name))
     (force-mode-line-update)
@@ -146,8 +143,6 @@
       (setq last-session "tmp")
       )
     (desktop-read (concat my-desktop-session-dir last-session))
-    (setq bm-repository-file (concat my-desktop-session-dir last-session "/bm_repository"))
-    (bm-load-and-restore)
     (kill-buffer buf)
     (setq my-desktop-mode-indicator last-session)
     (force-mode-line-update)
@@ -191,7 +186,7 @@
 ;;; OFF
     (remove-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
     (global-unset-key (kbd "s-l"))
-    (setq default-mode-line-format (remove '(:eval (concat "[" my-desktop-mode-indicator "]")) default-mode-line-format))
+    (setq default-mode-line-format (remove '(:eval (concat "[" my-desktop-mode-indicator "] ")) default-mode-line-format))
     ))
 
 (defun insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)
