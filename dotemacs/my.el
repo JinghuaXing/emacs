@@ -146,7 +146,7 @@ occurence of CHAR."
 					       )
 					     )
 			    )
-		  
+	     
 	     )
 	  )
 
@@ -164,7 +164,7 @@ occurence of CHAR."
 	 (progn
 ;;; 	   (insert-file "~/.elisp/my-template/template.c")
 ;;; 	   (end-of-buffer)
-;;	   (doxymacs-insert-file-comment)
+	   ;;	   (doxymacs-insert-file-comment)
 	   (end-of-buffer)
 	   (insert "\n")
 	   )
@@ -210,7 +210,7 @@ occurence of CHAR."
 	   (setq DEF (replace-regexp-in-string "\\." "_" str))
 	   (insert "#ifndef _" DEF "\n")
 	   (insert "#define _" DEF " 1\n\n\n")
-						     
+	   
 	   (insert "#endif\n")
 	   (if (y-or-n-p "cpp?")
 	       (insert "\n// Local Variables:\n// mode:C++\n// End:\n")
@@ -220,7 +220,7 @@ occurence of CHAR."
 	 )
 	)
   )
- 
+
 (defvar find-file-root-prefix (if (featurep 'xemacs) "/[sudo/root@localhost]" "/sudo:root@localhost:" )
   "*The filename prefix used to open a file with `find-file-root'.")
 
@@ -368,7 +368,7 @@ occurence of CHAR."
 			       )
 			   )
 			 )
-			 buffer-to-delete
+		       buffer-to-delete
 		       )
 	       )
 	     )
@@ -386,7 +386,7 @@ occurence of CHAR."
                       nil
                       :height
                       (floor (* 0.9
-                                  (face-attribute 'default :height)))))
+				(face-attribute 'default :height)))))
 (global-set-key (kbd "<C-mouse-4>") 'sacha/increase-font-size)
 (global-set-key (kbd "<C-mouse-5>") 'sacha/decrease-font-size)
 
@@ -429,3 +429,22 @@ occurence of CHAR."
       )
     )
   )
+
+(defun open-next-line (arg)
+  "Move to the next line and then opens a line.
+    See also `newline-and-indent'."
+  (interactive "p")
+  (end-of-line)
+  (open-line arg)
+  (next-line 1)
+    (indent-according-to-mode))
+(global-set-key (kbd "C-o") 'open-next-line)
+;; Behave like vi's O command
+(defun open-previous-line (arg)
+  "Open a new line before the current one. 
+     See also `newline-and-indent'."
+  (interactive "p")
+  (beginning-of-line)
+  (open-line arg)
+    (indent-according-to-mode))
+(global-set-key (kbd "M-o") 'open-previous-line)
