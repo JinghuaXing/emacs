@@ -196,11 +196,13 @@
 (defun autopair-insert (arg)
   (interactive "P")
   (let (pair)
-    (cond
-     ((assq last-command-char skeleton-pair-alist)
-      (autopair-open arg))
-     (t
-      (autopair-close arg)))))
+    (if (nth 8 (syntax-ppss (point))) 
+	(self-insert-command (prefix-numeric-value arg))
+      (cond
+       ((assq last-command-char skeleton-pair-alist)
+	(autopair-open arg))
+       (t
+	(autopair-close arg))))))
 (defun autopair-open (arg)
   (interactive "P")
   (let ((pair (assq last-command-char
