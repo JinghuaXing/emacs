@@ -31,10 +31,6 @@
 (define-key org-mode-map (kbd "C-c t") 'org-todo)
 ;; (define-key org-mode-map (kbd "C-c C-n") 'outline-forward-same-level)
 ;; (define-key org-mode-map (kbd "C-c C-p") 'outline-backward-same-level)
-(add-hook 'org-mode-hook (lambda ()
-			   (interactive)
-			   (flyspell-mode)
-			  ))
 
 (setq org-agenda-sorting-strategy '((agenda time-up priority-down category-keep)
  (todo todo-state-down priority-down category-keep)
