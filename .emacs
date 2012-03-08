@@ -250,6 +250,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (add-hook 'text-mode-hook 'flyspell-mode)
 (add-hook 'emacs-lisp-mode-hook 'flyspell-mode)
+(add-hook 'text-mode-hook '(lambda () (abbrev-mode t)))
+(add-hook 'emacs-lisp-mode-hook '(lambda () (abbrev-mode t)))
 
 (require 'unicad)
 

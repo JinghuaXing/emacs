@@ -352,3 +352,9 @@
     ("function" "" skeleton-sh-mode-func 1)
     )
   )
+
+
+(define-abbrev-table 'global-abbrev-table '(
+    ("tets" "test" nil 0)
+    )
+  )
