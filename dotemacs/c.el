@@ -1,4 +1,6 @@
 ;;;something about C program
+(require 'dtrt-indent)
+
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
@@ -6,6 +8,7 @@
   (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
   (c-set-style "k&r")
   (c-subword-mode t)
+  (dtrt-indent-mode t)
   ;; (electric-pair-mode t)
   (setq c-subword-mode t)
   (c-toggle-auto-state -1)
@@ -71,55 +74,6 @@
 
 
 (add-hook 'java-mode-hook 'my-c-common-hook)
-(add-hook 'jde-mode-hook 'my-c-common-hook)
-;; (defun my-java-common-hook()
-;;   (interactive)
-;;   (c-toggle-auto-state t)
-;;   (c-toggle-hungry-state t)
-;;   (c-toggle-electric-state t)
-;;   (setq c-basic-offset 4)
-;;   (c-set-style "java")
-;;   ;;(c-set-offset 'case-label 4)
-;;   (imenu-add-menubar-index)
-;;   (hs-minor-mode t)
-;;   ;;  (fold-mode)
-;;   (auto-fill-mode 1)
-;;   (linum-mode 1)
-;;   (flyspell-prog-mode)
-;;   (local-set-key (kbd "C-M-a") 'senator-previous-tag)
-;;   (local-set-key (kbd "C-M-e") 'senator-next-tag)
-;;   (setq c-hanging-braces-alist
-;; 	'((brace-list-open)
-;; 	  (brace-entry-open)
-;; 	  (statement-cont)
-;; 	  (substatement-open after)
-;; 	  (block-close . c-snug-do-while)
-;; 	  (extern-lang-open after)
-;; 	  (namespace-open after)
-;; 	  (module-open after)
-;; 	  (defun-open after)
-;; 	  (class-open after)
-;; 	  (class-close)
-;; 	  (composition-open after)
-;; 	  (inexpr-class-open after)
-;; 	  (inexpr-class-close before))
-;; 	)
-;;   (setq c-cleanup-list
-;; 	'(
-;; 	  space-before-funcall
-;; 	  compact-empty-funcall
-;; 	  brace-else-brace
-;; 	  brace-elseif-brace
-;; 	  brace-catch-brace
-;; 	  one-liner-defun
-;; 	  empty-defun-braces
-;; 	  defun-close-semi
-;; 	  comment-close-slash
-;; 	  scope-operator
-;; 	  )
-;; 	)
-;;   )
-
 
 (setq imenu-sort-function 'imenu--sort-by-name)
 
@@ -134,20 +88,6 @@
               (message "NO COMPILATION ERRORS!"))))))
 
 
-;; (add-hook 'c-mode-hook
-;; 	  '(lambda ()
-;;               (setq yas/buffer-local-condition
-;;                     '(if (nth 8 (syntax-ppss (point)))
-;;                          '(require-snippet-condition . force-in-comment)
-;;                        t))))
-;; (add-hook 'c++-mode-hook
-;; 	  '(lambda ()
-;;               (setq yas/buffer-local-condition
-;;                     '(if (nth 8 (syntax-ppss (point)))
-;;                          '(require-snippet-condition . force-in-comment)
-;;                        t))))
-
-					; syntax-highlighting for Qt
 ;; (based on work by Arndt Gulbrandsen, Troll Tech)
 (defun jk/c-mode-common-hook ()
   ;; base-style
@@ -248,3 +188,4 @@
 	     (local-set-key "}"  'autopair-insert)
 	     ;; (local-set-key "\"" 'autopair-insert)
 	     ))
+
