@@ -184,7 +184,6 @@
 
 (add-hook 'c-mode-common-hook 'jk/c-mode-common-hook)
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.aidl\\'" . java-mode))
 (add-hook 'find-file-hook 'hs-hide-initial-comment-block)
 
 (setq skeleton-pair t)
