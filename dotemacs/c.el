@@ -189,3 +189,8 @@
 	     ;; (local-set-key "\"" 'autopair-insert)
 	     ))
 
+
+(require 'hideshow)
+(define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
+(define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
+(define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)

@@ -35,10 +35,7 @@
 (global-set-key (kbd "C-c C-o a") 'org-agenda)
 (global-set-key (kbd "s-SPC") 'ace-jump-mode)
 (define-key global-map (kbd "C-c SPC") 'toggle-eshell)
-(require 'hideshow)
-;; (define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
-;; (define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
-;; (define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
+
 (global-set-key (kbd "M-z") 'wy-go-to-char)
 ;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
 ;;(global-set-key (kbd "C-\\") 'set-mark-command)

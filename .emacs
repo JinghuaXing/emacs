@@ -300,3 +300,4 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 
 (require 'find-file-in-project)
 (global-set-key (kbd "C-x F") 'find-file-in-project)
+
