@@ -438,5 +438,6 @@ occurence of CHAR."
   (open-line arg)
   (next-line 1)
     (indent-according-to-mode))
-(global-set-key (kbd "C-o") 'open-next-line)
+(global-set-key (kbd "M-o") 'open-next-line)
+(global-unset-key (kbd "C-o"))
 ;; Behave like vi's O command
