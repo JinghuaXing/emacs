@@ -64,7 +64,7 @@
  '(ispell-personal-dictionary "/home/sunway/.elisp/dict_my")
  '(ispell-query-replace-choices t)
  '(magit-completing-read-function (quote magit-ido-completing-read))
- '(magit-set-upstream-on-push (quote refuse))
+ '(magit-set-upstream-on-push t)
  '(mail-host-address nil)
  '(midnight-mode t nil (midnight))
  '(mm-inline-text-html-with-images t)

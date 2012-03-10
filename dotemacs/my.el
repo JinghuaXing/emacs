@@ -256,7 +256,7 @@ occurence of CHAR."
       (setq find-file-root-history file-name-history)
       ;; allow some user customization
       (run-hooks 'find-file-root-hook))))
-(global-set-key [(control x) (control r)] 'find-file-root)
+;; (global-set-key [(control x) (control r)] 'find-file-root)
 
 
 (setq my-shebang-patterns

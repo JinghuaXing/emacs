@@ -1,5 +1,7 @@
 * Tasks
 #+CATEGORY:Task
+** TODO [#A] never rebase from tracking branch
+** TODO add batch unstage and revert for magit
 ** TODO handleSmsReceived @ SmsReceiverService
 ** TODO [#A] org-remember
 ** TODO javacc
