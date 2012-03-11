@@ -11,7 +11,7 @@
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "M-g") 'goto-line)
-(global-set-key (kbd "C-c f") '(lambda ()
+(global-set-key (kbd "C-x F") '(lambda ()
 			       (interactive)
 			       (if (get-buffer "*Find*")
 				   (switch-to-buffer "*Find*"))
