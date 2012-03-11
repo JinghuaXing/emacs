@@ -11,7 +11,7 @@
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "M-g") 'goto-line)
-(global-set-key (kbd "s-f") '(lambda ()
+(global-set-key (kbd "C-c f") '(lambda ()
 			       (interactive)
 			       (if (get-buffer "*Find*")
 				   (switch-to-buffer "*Find*"))
@@ -21,7 +21,7 @@
 ;; 			       (if (get-buffer "*Beagle*")
 ;; 				   (switch-to-buffer "*Beagle*")
 ;; 				 )))
-(global-set-key (kbd "s-.") 'beagle-dired)
+;;(global-set-key (kbd "s-.") 'beagle-dired)
 
 (global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-l") 'recenter)
@@ -33,8 +33,8 @@
 (global-set-key (kbd "<f11>") 'calendar)
 (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org/main.org")))
 (global-set-key (kbd "C-c C-o a") 'org-agenda)
-(global-set-key (kbd "s-SPC") 'ace-jump-mode)
-(define-key global-map (kbd "C-c SPC") 'toggle-eshell)
+(global-set-key (kbd "C-c SPC") 'ace-jump-mode)
+;;(define-key global-map (kbd "C-c SPC") 'toggle-eshell)
 
 (global-set-key (kbd "M-z") 'wy-go-to-char)
 ;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
@@ -65,10 +65,11 @@
 	     ))
 
 ;;; WINDOW SPLITING 
-;; (global-set-key (kbd "M-2") 'split-window-vertically)
-;; (global-set-key (kbd "M-1") 'delete-other-windows)
-;; (global-set-key (kbd "M-0") 'delete-window)
-;; (global-set-key (kbd "M-o") 'other-window)
+ (global-set-key (kbd "M-2") 'split-window-vertically)
+ (global-set-key (kbd "M-3") 'split-window-horizontally)
+ (global-set-key (kbd "M-1") 'delete-other-windows)
+ (global-set-key (kbd "M-0") 'delete-window)
+ (global-set-key (kbd "M-o") 'other-window)
 
 ;; (global-set-key (kbd "M-n") (lambda () (interactive) (scroll-up 1)))
 ;; (global-set-key (kbd "M-p") (lambda () (interactive) (scroll-down 1)))
@@ -80,7 +81,7 @@
 (global-set-key (kbd "M-s k") 'keep-lines)
 (global-set-key (kbd "M-s f") 'flush-lines)
 
-;; (global-set-key (kbd "C-x v t") 'magit-status)
-(global-set-key (kbd "<s-return>") 'magit-status)
+(global-set-key (kbd "C-x v t") 'magit-status)
+;;(global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
   

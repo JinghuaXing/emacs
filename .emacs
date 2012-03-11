@@ -303,3 +303,7 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (require 'find-file-in-project)
 (global-set-key (kbd "C-x F") 'find-file-in-project)
 
+(if window-system
+    (add-to-list 'exec-path "C:/Program Files/Aspell/bin/")
+    (setq ispell-program-name "aspell")
+)
