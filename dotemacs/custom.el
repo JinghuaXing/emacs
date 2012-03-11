@@ -69,6 +69,8 @@
  '(midnight-mode t nil (midnight))
  '(mm-inline-text-html-with-images t)
  '(mm-text-html-renderer (quote w3m-standalone))
+ '(mo-git-blame-blame-window-width 60)
+ '(mo-git-blame-use-ido (quote always))
  '(newsticker-url-list-defaults nil)
  '(nxml-slash-auto-complete-flag t)
  '(org-export-latex-emphasis-alist (quote (("*" "\\textbf{%s}" nil) ("/" "\\emph{%s}" nil) ("_" "\\underline{%s}" nil) ("+" "\\st{%s}" nil) ("=" "\\protectedtexttt" t) ("~" "\\verb" t))))

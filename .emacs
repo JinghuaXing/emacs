@@ -33,7 +33,7 @@
 
 
 (require 'diff-mode-)
-(require 'w3m)
+;;(require 'w3m)
 ;;(setq w3m-use-cookies t)
 (add-hook 'write-file-hooks 'time-stamp)
    (if window-system
@@ -246,6 +246,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (add-hook 'magit-mode-hook
 	  'magit-topgit-mode)
 
+(require 'mo-git-blame)
+(global-set-key (kbd "C-x v b") 'mo-git-blame-current)
 (require 'uniquify)
 
 (add-hook 'text-mode-hook 'flyspell-mode)
