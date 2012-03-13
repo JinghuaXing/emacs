@@ -88,8 +88,8 @@
   "Get the current desktop name."
   (when desktop-dirname
     (let ((dirname (substring desktop-dirname 0 -1)))
-      (when (string= (file-name-directory dirname) my-desktop-session-dir)
-        (file-name-nondirectory dirname)))))
+      ;; (when (string= (file-name-directory dirname) my-desktop-session-dir)
+        (file-name-nondirectory dirname))))
 
 (defun my-desktop-get-session-name (prompt &optional use-default)
   "Get a session name."
@@ -155,6 +155,7 @@
 (add-to-list 'desktop-globals-to-save 'command-history)
 (add-to-list 'desktop-globals-to-save 'minibuffer-history)
 (add-to-list 'desktop-globals-to-save 'register-alist)
+(add-to-list 'desktop-globals-to-save 'file-cache-alist) 
 
 (add-to-list 'desktop-locals-to-save 'default-directory)
 
