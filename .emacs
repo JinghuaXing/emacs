@@ -6,6 +6,7 @@
 (add-to-list 'load-path "~/.elisp/cc-mode")
 (add-to-list 'load-path "~/.elisp/magit-1.1.1/")
 (add-to-list 'load-path "~/.elisp/eim")
+(add-to-list 'load-path "~/.elisp/slime")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
 (load custom-file)
@@ -22,6 +23,7 @@
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/sourcepair.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
+(load-file "~/.elisp/dotemacs/w32.el")
 ;; (load-file "~/.elisp/dotemacs/dict.el")
 
 
@@ -251,7 +253,6 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (require 'uniquify)
 
 (add-hook 'text-mode-hook 'flyspell-mode)
-(add-hook 'emacs-lisp-mode-hook 'flyspell-mode)
 (add-hook 'text-mode-hook '(lambda () (abbrev-mode t)))
 (add-hook 'emacs-lisp-mode-hook '(lambda () (abbrev-mode t)))
 
@@ -303,7 +304,7 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (require 'find-file-in-project)
 (global-set-key (kbd "C-x f") 'find-file-in-project)
 
-(if window-system
-    (add-to-list 'exec-path "C:/Program Files/Aspell/bin/")
-    (setq ispell-program-name "aspell")
-)
+(setq inferior-lisp-program "sbcl") 
+(require 'slime)
+(slime-setup)
+(add-to-list 'auto-mode-alist '("\\.lisp\\'" . slime-mode))
