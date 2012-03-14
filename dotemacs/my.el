@@ -356,23 +356,6 @@ occurence of CHAR."
 		)
 
 
-(require 'timer)
-(setq buffer-to-delete '("*Shell Command Output*" "*Completions*" "*Backtrace*" "*vc*" "*Kill Ring*" "*compilation*"))
-(run-at-time "1" 30 
-	     (lambda ()
-	       (mapcar (lambda (buffer)
-			 (interactive)
-			 (if (get-buffer buffer)
-			     (if (not (get-buffer-window buffer))
-				 (kill-buffer buffer)
-			       )
-			   )
-			 )
-		       buffer-to-delete
-		       )
-	       )
-	     )
-
 (defun sacha/increase-font-size ()
   (interactive)
   (set-face-attribute 'default
