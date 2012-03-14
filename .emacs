@@ -300,13 +300,14 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
     (define-key flyspell-mode-map (kbd "C-,") nil))
  )
 
-(require 'find-file-in-project)
-(global-set-key (kbd "C-x f") 'find-file-in-project)
+;; (require 'find-file-in-project)
+;; (global-set-key (kbd "C-x f") 'find-file-in-project)
 
 (setq inferior-lisp-program "sbcl") 
 (require 'slime)
 (slime-setup)
 (add-to-list 'auto-mode-alist '("\\.lisp\\'" . slime-mode))
+(add-hook 'slime-mode-hook '(lambda () (flyspell-mode -1)))
 
 (require 'filecache)
 (defun file-cache-ido-find-file (file)

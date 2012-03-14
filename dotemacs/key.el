@@ -11,11 +11,7 @@
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "M-g") 'goto-line)
-(global-set-key (kbd "C-x F") '(lambda ()
-			       (interactive)
-			       (if (get-buffer "*Find*")
-				   (switch-to-buffer "*Find*"))
-			       ))
+
 ;; (global-set-key (kbd "s-l") '(lambda ()
 ;; 			       (interactive)
 ;; 			       (if (get-buffer "*Beagle*")

@@ -110,6 +110,23 @@
   )
 
 
+(defun my-find-dired()
+  (interactive)
+  (if (get-buffer "*Find*")
+      (switch-to-buffer "*Find*")
+    (call-interactively 'find-dired)
+    )
+  )
+(global-set-key (kbd "C-x f") 'my-find-dired)
+
+(global-set-key (kbd "C-x F") '(lambda ()
+			       (interactive)
+			       (if (get-buffer "*Find*")
+				   (switch-to-buffer "*Find*")
+				 (call-interactively 'find-grep-dired)
+				 )
+			       ))
+
 ;;(define-key dired-mode-map (kbd "h") 'dired-hide-subdir)
 ;;(define-key dired-mode-map (kbd "H") 'dired-hide-all)
 ;;(define-key dired-mode-map (kbd "j") 'dired-goto-file)
