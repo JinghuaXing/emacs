@@ -82,6 +82,7 @@
 (global-set-key (kbd "M-s f") 'flush-lines)
 
 (global-set-key (kbd "C-x v t") 'magit-status)
+(defalias 'mt 'magit-status)
 ;;(global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
   

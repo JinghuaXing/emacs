@@ -355,6 +355,6 @@
 
 
 (define-abbrev-table 'global-abbrev-table '(
-    ("tets" "test" nil 0)
+    ("filer" "filter" nil 0)
     )
   )
