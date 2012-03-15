@@ -6,7 +6,7 @@
   "toggle escreen"
   (interactive)
   (setq current_buffer (current-buffer))
-  (if (eq major-mode 'term-mode)
+  (if (eq major-mode 'eshell-mode)
       (progn
 	(setq last_term_buffer current_buffer)
 	(switch-to-normal)
@@ -17,7 +17,7 @@
       )
     )
   )
-;; (global-set-key (kbd "s-SPC") 'toggle-escreen)
+(global-set-key (kbd "C-x C-x") 'toggle-escreen)
 
 (defun switch-to-screen()
   "switch to screen"
@@ -43,14 +43,13 @@
     )
   )
 
-(setq screen-key-map (make-keymap))
-(define-key term-raw-map "\C-o" screen-key-map)
+(require 'eshell)
 
 (defun create-term()
   (interactive)
   (setq previous_buffer (current-buffer))
-  (ansi-term "/bin/bash")
-  (rename-buffer "*SHELL*" t)
+  (eshell)
+  (rename-buffer "ESH" t)
   (setq term_buffers (cons (current-buffer) term_buffers))
   ;; sort
   (setq term_buffers (sort term_buffers '(lambda(buffer1 buffer2)
@@ -64,38 +63,67 @@
 	)
   )
 
-(define-key screen-key-map "\C-c" 'create-term)
 (setq next_buffer nil)
-(define-key screen-key-map "\C-n" '(lambda()
-				     (interactive)
-				     (let (
-					   (length (- (length term_buffers) 1))
-					   (buffer (current-buffer))
-					   )
-				       (setq n (find-element-in-list buffer term_buffers))
-				       (if (eq n length)
-					   (setq n 0)
-					 (incf n)
-					 )
-				       (setq previous_buffer buffer)
-				       (switch-to-buffer (nth n term_buffers))
-				       )
-				     )
-  )
+(add-hook 'eshell-mode-hook
+	  (lambda()
+	    (define-key eshell-mode-map (kbd "C-x b") 'term-switch-buffer)
+	    (define-key eshell-mode-map (kbd "C-o C-c") 'create-term)
+	    (define-key eshell-mode-map (kbd "C-o C-n") '(lambda()
+							   (interactive)
+							   (let (
+								 (length (- (length term_buffers) 1))
+								 (buffer (current-buffer))
+								 )
+							     (setq n (find-element-in-list buffer term_buffers))
+							     (if (eq n length)
+								 (setq n 0)
+							       (incf n)
+							       )
+							     (setq previous_buffer buffer)
+							     (switch-to-buffer (nth n term_buffers))
+							     )
+							   )
+	      )
+	    (define-key eshell-mode-map (kbd "C-o C-o") '(lambda()
+							   "goto previous buffer"
+							   (interactive)
+							   (let (
+								 (next_buffer previous_buffer)
+								 (buffer (current-buffer))
+								 )
 
-(define-key screen-key-map "\C-o" '(lambda()
-				     "goto previous buffer"
-				     (interactive)
-				     (let (
-					   (next_buffer previous_buffer)
-					   (buffer (current-buffer))
-					   )
+							     (setq previous_buffer buffer)
+							     (switch-to-buffer next_buffer)
+							     )
+							   )
+	      )
 
-				       (setq previous_buffer buffer)
-				       (switch-to-buffer next_buffer)
-				       )
-				     )
-  )
+
+	  (define-key eshell-mode-map (kbd "C-o C-p") '(lambda()
+							 (interactive)
+							 ;; (setq term_buffers (purge-dead-buffer term_buffers))
+							 (let (
+							       (length (- (length term_buffers) 1))
+							       (buffer (current-buffer))
+							       )
+							   (setq n (find-element-in-list buffer term_buffers))
+							   (if (eq n 0)
+							       (setq n length)
+							     (decf n)
+							     )
+							   (setq previous_buffer buffer)
+							   (switch-to-buffer (nth n term_buffers))
+							   )
+							 )
+	    )
+	  (define-key eshell-mode-map (kbd  "C-o C-a") 'term-rename)
+	  )
+	  )
+
+
+
+
+
 
 (defun term-switch-buffer()
   "switch term buffer"
@@ -120,43 +148,17 @@
     )
   )
 
-(define-key term-raw-escape-map "b" 'term-switch-buffer) 
 
-(define-key screen-key-map "\C-p" '(lambda()
-				     (interactive)
-				     ;; (setq term_buffers (purge-dead-buffer term_buffers))
-				     (let (
-					   (length (- (length term_buffers) 1))
-					   (buffer (current-buffer))
-					   )
-				       (setq n (find-element-in-list buffer term_buffers))
-				       (if (eq n 0)
-					   (setq n length)
-					 (decf n)
-					 )
-				       (setq previous_buffer buffer)
-				       (switch-to-buffer (nth n term_buffers))
-				       )
-				     )
-  )
 
-(define-key screen-key-map "[" '(lambda()
-				  (interactive)
-				  (term-line-mode)
-				  )
-  )
-(define-key screen-key-map "]" '(lambda()
-				  (interactive)
-				  (term-char-mode)
-				  )
-  )
+
+
+
 
 (defun term-rename(name)
   (interactive "MName: ")
   (rename-buffer (concat (buffer-name)  "@" name ))
   )
-(define-key screen-key-map "\C-a" 'term-rename)
-(define-key screen-key-map "a" 'term-rename)
+
 
 (defun find-element-in-list (element list)
   (if (or (eq list nil) (equal element (car list)))

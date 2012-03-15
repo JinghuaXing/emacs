@@ -20,6 +20,7 @@
 (load-file "~/.elisp/dotemacs/c.el")
 (load-file "~/.elisp/dotemacs/key.el")
 (load-file "~/.elisp/dotemacs/eshell.el")
+;;(load-file "~/.elisp/dotemacs/escreen.el")
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/sourcepair.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")

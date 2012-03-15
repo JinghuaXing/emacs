@@ -30,7 +30,7 @@
 (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org/main.org")))
 (global-set-key (kbd "C-c C-o a") 'org-agenda)
 (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
-;;(define-key global-map (kbd "C-c SPC") 'toggle-eshell)
+;;(define-key global-map (kbd "C-x C-x") 'toggle-eshell)
 
 (global-set-key (kbd "M-z") 'wy-go-to-char)
 ;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
