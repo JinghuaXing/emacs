@@ -11,7 +11,7 @@
 (require 'bs)
 (require 'ibuffer)
 (global-set-key (kbd "C-x b") 'ido-switch-buffer)
-(setq ido-ignore-buffers (quote ("\\` \\|\\(^\\*\\)\\|\\(TAGS.*\\)\\|ESH.*")))
+(setq ido-ignore-buffers (quote ("\\` \\|\\(^\\*\\)\\|\\(TAGS.*\\)\\|*ESH.*")))
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
 (add-to-list 'bs-configurations

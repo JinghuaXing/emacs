@@ -8,23 +8,14 @@
 (add-hook 'eshell-mode-hook
 	  '(lambda ()
 	     (define-key eshell-mode-map "\C-l" 'my-eshell-clear-buffer)
-	     (define-key eshell-mode-map "\t" 'ac-complete)
 	     (define-key eshell-mode-map "\C-u" 'eshell-kill-input)
 	     ))
-;; (defun eshell-maybe-bol ()
-;;   (interactive)
-;;   (let ((p (point)))
-;;     (eshell-bol)
-;;     (if (= p (point))
-;; 	(beginning-of-line))))
-;; (add-hook 'eshell-mode-hook
-;; 	  '(lambda () (define-key eshell-mode-map "\C-a" 'eshell-maybe-bol)))
 
-(setq eshell-cp-interactive-query t
-      eshell-ln-interactive-query t
-      eshell-mv-interactive-query t
-      eshell-rm-interactive-query t
-      eshell-mv-overwrite-files nil)
+;;(setq eshell-cp-interactive-query t
+;;      eshell-ln-interactive-query t
+;;      eshell-mv-interactive-query t
+;;      eshell-rm-interactive-query t
+;;      eshell-mv-overwrite-files nil)
 
 (defun my-eshell-prompt-function ()
   "Return the prompt for eshell."
@@ -38,7 +29,9 @@
       eshell-ask-to-save-history 'always
       )
 ;;(set-face-foreground 'eshell-prompt-face "light blue")
+
 (setq eshell-cmpl-cycle-completions nil)
+
 (add-hook
  'eshell-first-time-mode-hook
  (lambda ()
@@ -47,9 +40,12 @@
     (append
      '("vim" "mutt" "vi" "telnet" "ssh" "alsamixer")
      eshell-visual-commands))))
+
 (setq eshell-save-history-on-exit t)
+
 (require 'ansi-color)
 (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+
 (add-hook 'eshell-preoutput-filter-functions
           'ansi-color-apply)
 
@@ -97,3 +93,28 @@
             (my-eshell-music-list . my-eshell-music-face)
             (my-eshell-ps-list    . my-eshell-ps-face))))
 
+;; time
+(setq last-command-start-time (time-to-seconds))
+(add-hook 'eshell-pre-command-hook
+          (lambda()(setq last-command-start-time (time-to-seconds))))
+(add-hook 'eshell-before-prompt-hook
+          (lambda()
+              (message "spend %g seconds"
+                       (- (time-to-seconds) last-command-start-time))))
+
+;; ignore some history
+(setq eshell-histignore  '("\\`\\(ls\\|ll\\|cd\\|clear
+\\|hs
+\\)\\'"  "\\`\\s-*\\'"))
+(setq eshell-input-filter  
+      #'(lambda (str)  
+	  (let ((regex eshell-histignore))  
+	    (not  
+	     (catch 'break  
+	       (while regex  
+		 (if (string-match (pop regex) str)  
+		     (throw 'break t))))))))
+(setq eshell-hist-ignoredups t)
+
+;; alias
+(defalias 'ff 'find-file)

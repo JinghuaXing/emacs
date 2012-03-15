@@ -20,7 +20,7 @@
 (load-file "~/.elisp/dotemacs/c.el")
 (load-file "~/.elisp/dotemacs/key.el")
 (load-file "~/.elisp/dotemacs/eshell.el")
-;;(load-file "~/.elisp/dotemacs/escreen.el")
+(load-file "~/.elisp/dotemacs/escreen.el")
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/sourcepair.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
@@ -274,7 +274,8 @@ chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
 (global-set-key "\C-cci" 'clipper-insert)
 (global-set-key "\C-ccc" 'clipper-create)
 (global-set-key "\C-ccd" 'clipper-delete)
-(defalias 'vc-diff 'vc-ediff)
+
+;;(defalias 'vc-diff 'vc-ediff)
 
 (add-hook 'nxml-mode-hook '(lambda () (auto-fill-mode -1)))
 
