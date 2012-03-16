@@ -58,6 +58,7 @@
  '(ecb-tree-buffer-style (quote image))
  '(ecb-windows-width 0.3)
  '(eshell-aliases-file "d:/home/.elisp/alias")
+ '(file-cache-filter-regexps (quote ("~$" "\\.o$" "\\.exe$" "\\.a$" "\\.elc$" ",v$" "\\.output$" "\\.$" "#$" "\\.class$" "\\.git")))
  '(find-grep-options "-q  -I -i")
  '(gdb-enable-debug t)
  '(icicle-command-abbrev-alist nil)

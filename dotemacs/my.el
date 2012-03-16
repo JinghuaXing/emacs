@@ -420,7 +420,75 @@ occurence of CHAR."
   (end-of-line)
   (open-line arg)
   (next-line 1)
-    (indent-according-to-mode))
+  (indent-according-to-mode))
 ;;(global-set-key (kbd "M-o") 'open-next-line)
 (global-unset-key (kbd "C-o"))
 ;; Behave like vi's O command
+
+
+
+(defun beginning-of-string(&optional arg)
+  "  "
+  (re-search-backward "[ \t(]" (line-beginning-position) 3 1)
+  (if (looking-at "[\t (]")  (goto-char (+ (point) 1)) )
+  )
+(defun end-of-string(&optional arg)
+  " "
+  (re-search-forward "[ \t()]" (line-end-position) 3 arg)
+  (if (looking-back "[\t ()]") (goto-char (- (point) 1)) )
+  )
+
+(defun thing-kil-string-to-mark(&optional arg)
+  " Try to copy a string and paste it to the mark
+     When used in shell-mode, it will paste string on shell prompt by default "
+  (interactive "P")
+  (beginning-of-string)
+  (setq a (point))
+  (end-of-string)
+  (setq b (point))
+  (kill-region a b)
+  )
+
+(defun thing-copy-string-to-mark(&optional arg)
+  " Try to copy a string and paste it to the mark
+     When used in shell-mode, it will paste string on shell prompt by default "
+  (interactive "P")
+  (copy-thing 'beginning-of-string 'end-of-string arg)
+  )
+
+(global-set-key (kbd "<M-S-backspace>") (quote thing-kil-string-to-mark))
+(global-set-key (kbd "C-c s") (quote thing-copy-string-to-mark))
+(defun beginning-of-parenthesis(&optional arg)
+  "  "
+  (re-search-backward "[[<(?\"]" (line-beginning-position) 3 1)
+  (if (looking-at "[[<(?\"]")  (goto-char (+ (point) 1)) )
+  )
+
+(defun end-of-parenthesis(&optional arg)
+  " "
+  (re-search-forward "[]>)?\"]" (line-end-position) 3 arg)
+  (if (looking-back "[]>)?\"]") (goto-char (- (point) 1)) )
+  )
+
+(defun thing-copy-parenthesis-to-mark(&optional arg)
+  " Try to copy a parenthesis and paste it to the mark
+     When used in shell-mode, it will paste parenthesis on shell prompt by default "
+  (interactive "P")
+  (copy-thing 'beginning-of-parenthesis 'end-of-parenthesis arg)
+  )
+
+(global-set-key (kbd "C-c a")         (quote thing-copy-parenthesis-to-mark))
+
+(defun get-point (symbol &optional arg)
+  "get the point"
+  (funcall symbol arg)
+  (point)
+  )
+
+(defun copy-thing (begin-of-thing end-of-thing &optional arg)
+  "copy thing between beg & end into kill ring"
+  (let ((beg (get-point begin-of-thing 1))
+	(end (get-point end-of-thing arg)))
+    (copy-region-as-kill beg end))
+  )
+
