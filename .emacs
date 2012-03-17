@@ -7,6 +7,7 @@
 (add-to-list 'load-path "~/.elisp/magit-1.1.1/")
 (add-to-list 'load-path "~/.elisp/eim")
 (add-to-list 'load-path "~/.elisp/slime")
+(add-to-list 'load-path "~/.elisp/evil")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
 (load custom-file)
@@ -22,11 +23,8 @@
 (load-file "~/.elisp/dotemacs/eshell.el")
 (load-file "~/.elisp/dotemacs/escreen.el")
 (load-file "~/.elisp/dotemacs/org.el")
-(load-file "~/.elisp/sourcepair.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
 (load-file "~/.elisp/dotemacs/w32.el")
-;; (load-file "~/.elisp/dotemacs/dict.el")
-
 
 (autoload
   'ace-jump-mode
@@ -121,7 +119,7 @@
 (setq calendar-longitude +116.46)
 (setq calendar-location-name "Beijing")
 
-(setq diary-file "~/.diary")
+(setq diary-file "~/.elisp/.diary")
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   (flet ((process-list ())) ad-do-it))
 
@@ -310,8 +308,20 @@
 (setq inferior-lisp-program "sbcl") 
 (require 'slime)
 (slime-setup)
-(add-to-list 'auto-mode-alist '("\\.lisp\\'" . slime-mode))
-(add-hook 'slime-mode-hook '(lambda () (flyspell-mode -1)))
+(add-to-list 'auto-mode-alist '("\\.lisp\\'" . lisp-mode))
+(add-hook 'lisp-mode-hook '(lambda () (flyspell-mode -1)))
+(add-hook 'lisp-mode-hook '(lambda()
+			     (if (not (slime-connected-p))
+				 (save-excursion
+				   (slime)
+				   )
+			       )
+			     )
+	  )
+
+(require 'paredit)
+(add-hook 'lisp-mode-hook '(lambda() (paredit-mode t)))
+(add-hook 'emacs-lisp-mode-hook '(lambda() (paredit-mode t)))
 
 (require 'filecache)
 (defun file-cache-ido-find-file (file)
@@ -340,4 +350,7 @@ directory, select directory. Lastly the file is opened."
     (ido-read-buffer prompt)))
 
 (global-set-key (kbd "C-x f") 'file-cache-ido-find-file)
-(global-set-key (kbd "C-x R") 'file-cache-add-directory-recursively)
+
+(require 'evil)
+(evil-mode t)
+
