@@ -117,7 +117,7 @@
     (call-interactively 'find-dired)
     )
   )
-(global-set-key (kbd "C-x f") 'my-find-dired)
+;;(global-set-key (kbd "C-x f") 'my-find-dired)
 
 (global-set-key (kbd "C-x F") '(lambda ()
 			       (interactive)
