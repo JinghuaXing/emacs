@@ -76,6 +76,7 @@
 (put 'downcase-region 'disabled nil)
 
 (load "auctex.el" nil t t)
+(add-to-list 'auto-mode-alist '("\\.bmer\\'" . latex-mode))
 ;; (load "preview-latex.el" nil t t)
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)

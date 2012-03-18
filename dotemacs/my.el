@@ -169,11 +169,12 @@ occurence of CHAR."
 	   (insert "\n")
 	   )
 	 )
+	((string= ext "bmer") (progn
+				(insert-file "~/.elisp/my-template/beamer_template.tex")
+				)
+	 )
 	((string= ext "tex") (progn
-			       (if (y-or-n-p "beamer?")
-				   (insert-file "~/.elisp/my-template/beamer_template.tex")
-				 (insert-file "~/.elisp/my-template/template.tex")
-				 )
+			       (insert-file "~/.elisp/my-template/template.tex")
 			       )
 	 )
 	((string= ext "xml") (progn
