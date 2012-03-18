@@ -87,7 +87,7 @@
 	     (outline-minor-mode)
 	     (turn-on-auto-fill)
 	     ;;(flyspell-mode nil)
-	     (hide-sublevels 2)
+	     ;;(hide-sublevels 2)
 	     (LaTeX-item-indent 0)
 	     )
 	  )
@@ -362,4 +362,3 @@ directory, select directory. Lastly the file is opened."
 
 (require 'evil)
 (evil-mode t)
-

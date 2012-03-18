@@ -19,10 +19,10 @@
 	    ))
 (autoload 'wdired-change-to-wdired-mode "wdired")
 ;; 进入退出不同 dir 时，不生成新的 dired buffer
-(define-key dired-mode-map (kbd "RET") 'joc-dired-single-buffer)
+;;(define-key dired-mode-map (kbd "RET") 'joc-dired-single-buffer)
 ;; (define-key dired-mode-map (kbd "<C-return>") 'dired-advertised-find-file)
-(define-key dired-mode-map (kbd "C-x C-j") '(lambda () (interactive) (joc-dired-single-buffer "..")))
-(define-key dired-mode-map (kbd "^") '(lambda () (interactive) (joc-dired-single-buffer "..")))
+;;(define-key dired-mode-map (kbd "C-x C-j") '(lambda () (interactive) (joc-dired-single-buffer "..")))
+;;(define-key dired-mode-map (kbd "^") '(lambda () (interactive) (joc-dired-single-buffer "..")))
 
 ;; 对文件夹操作时, 使支持递归
 (setq dired-recursive-copies 'always
