@@ -322,3 +322,5 @@
 ;; 	  (subst-char-in-region (point) end-pos ?\n ?\r)))
 ;;       ;;(dired-next-subdir 1 t))
 ;;     (restore-buffer-modified-p modflag))))
+
+(setq dired-garbage-files-regexp "\\.\\(?:aux\\|out\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\|class\\)\\'")

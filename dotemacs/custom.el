@@ -44,7 +44,6 @@
  '(desktop-load-locked-desktop t)
  '(dired-backup-overwrite t)
  '(dired-find-subdir nil)
- '(dired-garbage-files-regexp "\\.\\(?:aux\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\|class\\)\\'")
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
  '(display-time-default-load-average nil)

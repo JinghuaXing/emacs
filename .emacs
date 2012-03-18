@@ -89,6 +89,7 @@
 	     (turn-on-auto-fill)
 	     ;;(flyspell-mode nil)
 	     ;;(hide-sublevels 2)
+	     (set-buffer-file-coding-system 'utf-8)
 	     (LaTeX-item-indent 0)
 	     )
 	  )
@@ -352,6 +353,13 @@ directory, select directory. Lastly the file is opened."
           (car (cdr record))
         (file-cache-ido-read
          (format "Find %s in dir: " file) (cdr record)))))))
+
+;; file-cache
+(defun file-cache-add-this-file ()
+  (and buffer-file-name
+       (file-exists-p buffer-file-name)
+       (file-cache-add-file buffer-file-name)))
+(add-hook 'kill-buffer-hook 'file-cache-add-this-file)
 
 (defun file-cache-ido-read (prompt choices)
   (let ((ido-make-buffer-list-hook
