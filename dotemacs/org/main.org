@@ -40,6 +40,11 @@
 ** TODO WindowManager, layoutWindow
 ** TODO bugzilla 4.0
    http://dev.spreadst.com/lion/
+** TODO [#A] java auto import
+   SCHEDULED: <2012-03-20 Tue>
+** TODO some funcy notification for `compilation`?
+   
+   SCHEDULED: <2012-03-20 Tue>
 * Linux App
 #+CATEGORY:Linux app
 ** indent && astyle
