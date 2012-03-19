@@ -1001,7 +1001,7 @@ before that it will use y-or-n-p ask user to confirm "
 				       (dolist (ele class-items)
 					 (insert (concat "import "
 							 (car (ajc-split-pkg-item-by-pkg-ln  (nth 1 ele )))
-							 "." (car  ele) ";")))))))
+							 "." (car  ele) ";\n")))))))
 			  
 			  (ajc-orgonize-imports)
 
