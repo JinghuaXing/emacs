@@ -17,7 +17,7 @@
       )
     )
   )
-(global-set-key (kbd "C-x C-x") 'toggle-escreen)
+;;(global-set-key (kbd "C-x C-x") 'toggle-escreen)
 
 (defun switch-to-screen()
   "switch to screen"

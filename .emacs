@@ -363,3 +363,5 @@ directory, select directory. Lastly the file is opened."
     (ido-read-buffer prompt)))
 
 (global-set-key (kbd "C-x f") 'file-cache-ido-find-file)
+(global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
+

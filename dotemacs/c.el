@@ -75,6 +75,17 @@
 
 (add-hook 'java-mode-hook 'my-c-common-hook)
 
+(require 'ajc-java-complete)
+(add-hook 'java-mode-hook
+	  '(lambda ()
+	     (define-key java-mode-map (kbd "C-c i") '(lambda ()
+							(interactive)
+							(ajc-reload-tag-buffer-maybe)
+							(ajc-import-class-under-point)
+							))
+	     )
+	  )
+
 (setq imenu-sort-function 'imenu--sort-by-name)
 
 (setq compilation-finish-function 
