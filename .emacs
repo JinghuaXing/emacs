@@ -7,7 +7,6 @@
 (add-to-list 'load-path "~/.elisp/magit-1.1.1/")
 (add-to-list 'load-path "~/.elisp/eim")
 (add-to-list 'load-path "~/.elisp/slime")
-(add-to-list 'load-path "~/.elisp/evil")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
 (load custom-file)
@@ -15,6 +14,7 @@
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 
+(load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
 (load-file "~/.elisp/dotemacs/my.el")
@@ -24,7 +24,7 @@
 (load-file "~/.elisp/dotemacs/escreen.el")
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
-(load-file "~/.elisp/dotemacs/w32.el")
+
 
 (autoload
   'ace-jump-mode
@@ -309,7 +309,10 @@
 
 (setq inferior-lisp-program "sbcl") 
 (require 'slime)
-(slime-setup)
+(slime-setup '(slime-fancy slime-asdf slime-banner))
+(setq slime-complete-symbol*-fancy t)
+(setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
+
 (add-to-list 'auto-mode-alist '("\\.lisp\\'" . lisp-mode))
 (defun lisp-indent-or-complete (&optional arg)
   (interactive "p")
@@ -321,14 +324,6 @@
      (define-key lisp-mode-map (kbd "TAB") 'lisp-indent-or-complete)))
 
 (add-hook 'lisp-mode-hook '(lambda () (flyspell-mode -1)))
-(add-hook 'lisp-mode-hook '(lambda()
-			     (if (not (slime-connected-p))
-				 (save-excursion
-				   (slime)
-				   )
-			       )
-			     )
-	  )
 
 (require 'paredit)
 (add-hook 'lisp-mode-hook '(lambda() (paredit-mode t)))
@@ -368,6 +363,3 @@ directory, select directory. Lastly the file is opened."
     (ido-read-buffer prompt)))
 
 (global-set-key (kbd "C-x f") 'file-cache-ido-find-file)
-
-(require 'evil)
-(evil-mode t)

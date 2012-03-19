@@ -2,5 +2,10 @@
     (progn 
       (add-to-list 'exec-path "c:/Program Files/Git/bin")
       (setenv "PATH" (concat "c:/Program Files/Git/bin;" (getenv "PATH")))
-    )
+      (setq browse-url-browser-function (quote browse-url-default-windows-browser))
+      (add-hook  'window-setup-hook ' (lambda ()
+					(interactive)
+					(w32-send-sys-command #xf030)
+					) )
+      )
   )
