@@ -40,9 +40,16 @@
 ** TODO WindowManager, layoutWindow
 ** TODO bugzilla 4.0
    http://dev.spreadst.com/lion/
-** TODO [#A] java auto import
-   SCHEDULED: <2012-03-20 Tue>
 ** TODO some funcy notification for `compilation`?
+   
+   SCHEDULED: <2012-03-20 Tue>
+** TODO ImportVCardActivity use NIO?
+   
+   SCHEDULED: <2012-03-20 Tue>
+** TODO activity orientation change?
+   
+   SCHEDULED: <2012-03-22 Thu>
+** TODO sqlite single-thread model
    
    SCHEDULED: <2012-03-20 Tue>
 * Linux App

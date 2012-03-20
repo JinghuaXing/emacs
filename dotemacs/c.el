@@ -27,7 +27,15 @@
   (auto-fill-mode 1)
   (linum-mode 1)
   (flyspell-prog-mode)
-  (local-set-key (kbd "C-c C-c") 'compile)
+  (local-set-key (kbd "C-c C-c")
+		 '(lambda ()
+		    (interactive)
+		    (if (get-buffer "*compilation*")
+			(popwin:popup-buffer "*compilation*")
+		      (call-interactively 'compile)
+		      )
+		    )
+		 )
   ;; override hs key definition
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
@@ -95,7 +103,7 @@
             (goto-char (point-min)) 
             (if (re-search-forward "abnormally" nil t) 
                 (message "compilation errors, press C-x ` to visit") 
-              (run-at-time 0.5 nil 'delete-windows-on buf) 
+              (run-at-time 0.5 nil 'kill-buffer buf)
               (message "NO COMPILATION ERRORS!"))))))
 
 

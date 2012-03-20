@@ -365,3 +365,5 @@ directory, select directory. Lastly the file is opened."
 (global-set-key (kbd "C-x f") 'file-cache-ido-find-file)
 (global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
 
+(require 'popwin)
+(setq display-buffer-function 'popwin:display-buffer)

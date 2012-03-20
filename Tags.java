@@ -580,7 +580,7 @@ public class Tags {
                            );
         try {
             System.out.println("sleep 20 seconds...");
-            Thread.sleep(20000);
+            Thread.sleep(1000);
         } catch (Exception ex) {}
 
         Tags tags = new Tags();

@@ -156,11 +156,9 @@
 (add-to-list 'desktop-globals-to-save 'minibuffer-history)
 (add-to-list 'desktop-globals-to-save 'register-alist)
 (add-to-list 'desktop-globals-to-save 'file-cache-alist) 
+(add-to-list 'desktop-globals-to-save 'compile-command)
 
 (add-to-list 'desktop-locals-to-save 'default-directory)
-
-(make-variable-buffer-local 'compile-command)
-(add-to-list 'desktop-locals-to-save 'compile-command)
 
 (defvar my-desktop-mode-indicator "")
 

@@ -1003,7 +1003,7 @@ before that it will use y-or-n-p ask user to confirm "
 							 (car (ajc-split-pkg-item-by-pkg-ln  (nth 1 ele )))
 							 "." (car  ele) ";\n")))))))
 			  
-			  (ajc-orgonize-imports)
+			  ;; (ajc-orgonize-imports)
 
 			  (dolist (ele class-items)
 			    (message (concat 
@@ -1423,7 +1423,7 @@ then this function split it to
 ;; End
 
 
-(defun ajc-orgonize-imports ()
+(defun organize-imports ()
   (interactive)
   (let ((begin) (end))
     (save-excursion
