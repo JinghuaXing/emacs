@@ -504,4 +504,27 @@ occurence of CHAR."
               (goto-char start)
               (re-search-forward "^\\(.*\\)\n\\(\\(.*\n\\)*\\)\\1\n" end t))
           (replace-match "\\1\n\\2")))))
-  
+
+ (defun isearch-save-and-exit ()
+     "Exit search normally. and save the `search-string' on kill-ring."
+    (interactive)
+    (isearch-done)
+    (isearch-clean-overlays)
+    (kill-new isearch-string))
+ 
+(define-key isearch-mode-map    "\M-w" 'isearch-save-and-exit)
+(define-key isearch-mode-map    "\C-y" 'isearch-yank-kill)
+
+(add-hook 'isearch-mode-end-hook 'my-goto-match-beginning)
+(defun my-goto-match-beginning ()
+  (when isearch-forward (goto-char isearch-other-end)))
+
+(defadvice isearch-exit (after my-goto-match-beginning activate)
+  "Go to beginning of match."
+  (when isearch-forward (goto-char isearch-other-end)))
+
+(defun isearch-yank-sexp ()
+  "Pull next word from buffer into search string."
+  (interactive)
+  (isearch-yank-internal (lambda () (forward-sexp 1) (point))))
+(define-key isearch-mode-map    "\C-w" 'isearch-yank-sexp)
