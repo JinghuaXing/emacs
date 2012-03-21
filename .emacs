@@ -292,7 +292,7 @@
 
 (require 'saveplace)
 (setq-default save-place t)
-;;(transient-mark-mode t)
+(transient-mark-mode t)
 
 (require 'quick-jump)
 (global-set-key (kbd "C-,") 'quick-jump-go-back)
@@ -355,6 +355,9 @@ directory, select directory. Lastly the file is opened."
        (file-exists-p buffer-file-name)
        (file-cache-add-file buffer-file-name)))
 (add-hook 'kill-buffer-hook 'file-cache-add-this-file)
+
+(defalias 'ffca 'file-cache-add-directory-recursively)
+(defalias 'ffcc 'file-cache-clear-cache)
 
 (defun file-cache-ido-read (prompt choices)
   (let ((ido-make-buffer-list-hook
