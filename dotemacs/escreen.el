@@ -8,16 +8,22 @@
   (setq current_buffer (current-buffer))
   (if (eq major-mode 'eshell-mode)
       (progn
-	(setq last_term_buffer current_buffer)
-	(switch-to-normal)
+	;; (setq last_term_buffer current_buffer)
+	;; (switch-to-normal)
+	(if (get-register 255)
+	    (jump-to-register 255)
+	  )
 	)
     (progn
-      (setq last_normal_buffer current_buffer)
+      ;; (setq last_normal_buffer current_buffer)
+      ;; (switch-to-screen)
+      (window-configuration-to-register 255)
+      (delete-other-windows)
       (switch-to-screen)
       )
     )
   )
-;;(global-set-key (kbd "C-x C-x") 'toggle-escreen)
+(global-set-key (kbd "C-x C-x") 'toggle-escreen)
 
 (defun switch-to-screen()
   "switch to screen"
@@ -31,15 +37,6 @@
 	(create-term)
 	)
       )
-    )
-  )
-
-(defun switch-to-normal()
-  "switch to back to normal buffer"
-  (interactive)
-  (if (buffer-live-p last_normal_buffer)
-      (switch-to-buffer last_normal_buffer)
-    (ibuffer)
     )
   )
 
@@ -66,6 +63,32 @@
 (setq next_buffer nil)
 (add-hook 'eshell-mode-hook
 	  (lambda()
+	    (define-key eshell-mode-map (kbd "C-x C-k") 
+	      '(lambda ()
+		 (interactive)
+		 (if (= (length term_buffers) 1)
+		     (progn
+		       (kill-buffer)
+		       (jump-to-register 255)
+		       )
+		   (kill-buffer)
+		   (switch-to-buffer (car term_buffers))
+		   )
+		 )
+	      )
+	    (define-key eshell-mode-map (kbd "C-x k") 
+	      '(lambda ()
+		 (interactive)
+		 (if (= (length term_buffers) 1)
+		     (progn
+		       (kill-buffer)
+		       (jump-to-register 255)
+		       )
+		   (kill-buffer)
+		   (switch-to-buffer (car term_buffers))
+		   )
+		 )
+	      )
 	    (define-key eshell-mode-map (kbd "C-x b") 'term-switch-buffer)
 	    (define-key eshell-mode-map (kbd "C-o C-c") 'create-term)
 	    (define-key eshell-mode-map (kbd "C-o C-n") '(lambda()
@@ -120,11 +143,6 @@
 	    )
 	  )
 
-
-
-
-
-
 (defun term-switch-buffer()
   "switch term buffer"
   (interactive)
@@ -148,12 +166,6 @@
     )
   )
 
-
-
-
-
-
-
 (defun term-rename(name)
   (interactive "MName: ")
   (rename-buffer (concat (buffer-name)  "@" name ))
@@ -166,19 +178,6 @@
     (+ 1 (find-element-in-list element (cdr list)))
     )
   )
-
-;; (defun purge-dead-buffer(buffers)
-;;   (if (eq buffers nil)
-;;       nil
-;;     (let ((buffer (car buffers))
-;; 	  (other (cdr buffers))
-;; 	  )
-;;       (if (buffer-live-p buffer)
-;; 	  (cons buffer (purge-dead-buffer other))
-;; 	(purge-dead-buffer other))
-;;       )
-;;     )
-;;   )
 
 (defun purge-dead-buffer(buffers)
   (if (eq buffers nil)
@@ -196,7 +195,7 @@
   )
 
 (add-hook 'kill-buffer-hook '(lambda()
-			       (setq term_buffers (purge-dead-buffer term_buffers))		       
+			       (setq term_buffers (purge-dead-buffer term_buffers))
 			       )
 	  )
 

@@ -3,7 +3,6 @@
 ** TODO [#A] never rebase from tracking branch
 ** TODO add batch unstage and revert for magit
 ** TODO handleSmsReceived @ SmsReceiverService
-** TODO [#A] org-remember
 ** TODO javacc
 ** TODO [#B] Programmer Dvorak Keyboard Layout
    - http://www.kaufmann.no/roland/dvorak/index.html
@@ -42,16 +41,19 @@
    http://dev.spreadst.com/lion/
 ** TODO some funcy notification for `compilation`?
    
-   SCHEDULED: <2012-03-20 Tue>
+   SCHEDULED: <2012-03-25 Sun>
 ** TODO ImportVCardActivity use NIO?
    
-   SCHEDULED: <2012-03-20 Tue>
+   SCHEDULED: <2012-03-21 Wed>
 ** TODO activity orientation change?
    
    SCHEDULED: <2012-03-22 Thu>
 ** TODO sqlite single-thread model
    
-   SCHEDULED: <2012-03-20 Tue>
+   SCHEDULED: <2012-03-23 Fri>
+** TODO fast swith window in emacs?
+   
+   SCHEDULED: <2012-03-21 Wed>
 * Linux App
 #+CATEGORY:Linux app
 ** indent && astyle
