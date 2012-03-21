@@ -105,7 +105,10 @@
  '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify))
  '(vc-follow-symlinks nil)
  '(wg-morph-hsteps 50)
- '(wg-morph-vsteps 30))
+ '(wg-morph-vsteps 30)
+ '(wg-no-confirm t)
+ '(wg-query-for-save-on-emacs-exit nil)
+ '(wg-query-for-save-on-workgroups-mode-exit nil))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.

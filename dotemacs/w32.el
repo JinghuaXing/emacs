@@ -5,7 +5,7 @@
       (setq browse-url-browser-function (quote browse-url-default-windows-browser))
       (add-hook  'window-setup-hook ' (lambda ()
 					(interactive)
-					(w32-send-sys-command #xf030)
+;;					(w32-send-sys-command #xf030)
 					) )
       )
   )

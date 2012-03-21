@@ -33,7 +33,11 @@
     (setq name (my-desktop-get-session-name "Save session" t)))
   (when name
     (make-directory (concat my-desktop-session-dir name) t)
-    (desktop-save (concat my-desktop-session-dir name) t)))
+    (desktop-save (concat my-desktop-session-dir name) t)
+    (if wg-list
+	(wg-update-all-workgroups-and-save)
+	)
+    ))
 
 (defun my-desktop-save-and-clear ()
   "Save and clear desktop."
@@ -53,6 +57,11 @@
     ;; indicator
     (setq my-desktop-mode-indicator (my-desktop-get-current-name))
     (force-mode-line-update)
+    (wg-reset)
+    (setq wg-file (concat my-desktop-session-dir name "/wg"))
+    (if (file-exists-p wg-file)
+	(wg-load wg-file)
+	)
     ))
 
 (defun remove-session ()
@@ -143,6 +152,8 @@
       (setq last-session "tmp")
       )
     (desktop-read (concat my-desktop-session-dir last-session))
+    (setq wg-file (concat my-desktop-session-dir last-session "/wg"))
+    (wg-load wg-file)
     (kill-buffer buf)
     (setq my-desktop-mode-indicator last-session)
     (force-mode-line-update)

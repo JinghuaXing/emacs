@@ -373,3 +373,8 @@ directory, select directory. Lastly the file is opened."
 
 (require 'workgroups)
 (workgroups-mode)
+
+(require 'follow-mouse)
+(turn-on-follow-mouse)
+
+(require 'switch-window)
