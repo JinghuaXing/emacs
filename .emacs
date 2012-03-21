@@ -370,3 +370,6 @@ directory, select directory. Lastly the file is opened."
 
 (require 'popwin)
 (setq display-buffer-function 'popwin:display-buffer)
+
+(require 'workgroups)
+(workgroups-mode)

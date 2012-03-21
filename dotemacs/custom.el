@@ -103,7 +103,9 @@
  '(tramp-default-method "scp")
  '(tramp-remote-path (quote (tramp-default-remote-path "/usr/sbin" "/usr/local/bin" "/local/bin" "/local/freeware/bin" "/local/gnu/bin" "/usr/freeware/bin" "/usr/pkg/bin" "/usr/contrib/bin" "/opt/SunStudio_11/SUNWspro/bin" "/usr/sfw/bin")))
  '(uniquify-buffer-name-style (quote post-forward-angle-brackets) nil (uniquify))
- '(vc-follow-symlinks nil))
+ '(vc-follow-symlinks nil)
+ '(wg-morph-hsteps 50)
+ '(wg-morph-vsteps 30))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
