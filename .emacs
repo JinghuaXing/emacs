@@ -367,14 +367,13 @@ directory, select directory. Lastly the file is opened."
 
 (global-set-key (kbd "C-x f") 'file-cache-ido-find-file)
 (global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
+(defalias 'fcc 'file-cache-clear-cache)
+(defalias 'fca 'file-cache-add-directory-recursively)
 
 (require 'popwin)
 (setq display-buffer-function 'popwin:display-buffer)
 
 (require 'workgroups)
 (workgroups-mode)
-
-(require 'follow-mouse)
-(turn-on-follow-mouse)
 
 (require 'switch-window)

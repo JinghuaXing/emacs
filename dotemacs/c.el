@@ -27,15 +27,8 @@
   (auto-fill-mode 1)
   (linum-mode 1)
   (flyspell-prog-mode)
-  (local-set-key (kbd "C-c C-c")
-		 '(lambda ()
-		    (interactive)
-		    (if (get-buffer "*compilation*")
-			(popwin:popup-buffer "*compilation*")
-		      (call-interactively 'compile)
-		      )
-		    )
-		 )
+  (local-set-key (kbd "C-c C-c") 'compile)
+
   ;; override hs key definition
   (setq c-hanging-braces-alist
   	'((brace-list-open after)

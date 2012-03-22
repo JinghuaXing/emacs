@@ -55,6 +55,9 @@
 ** TODO fast swith window in emacs?
    
    SCHEDULED: <2012-03-21 Wed>
+** TODO 线段树
+   
+   SCHEDULED: <2012-03-22 Thu>
 * Linux App
 #+CATEGORY:Linux app
 ** indent && astyle
