@@ -55,7 +55,7 @@
 (defgroup switch-window nil "switch-window customization group"
   :group 'convenience)
 
-(defcustom switch-window-increase 12
+(defcustom switch-window-increase 15
   "How much to increase text size in the window numbering, maximum"
   :type 'integer
   :group 'switch-window)
@@ -70,6 +70,7 @@
   :type 'boolean
   :group 'switch-window)
 
+(setq switch-window-shortcut-style 'alphabet)
 (defcustom switch-window-shortcut-style 'quail
   "Use either keyboard layout or alphabet shortcut style"
   :type '(choice (const :tag "Alphabet" 'alphabet)
