@@ -108,7 +108,8 @@
  '(wg-morph-vsteps 30)
  '(wg-no-confirm t)
  '(wg-query-for-save-on-emacs-exit nil)
- '(wg-query-for-save-on-workgroups-mode-exit nil))
+ '(wg-query-for-save-on-workgroups-mode-exit nil)
+ '(wg-use-faces nil))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
