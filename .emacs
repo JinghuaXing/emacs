@@ -377,3 +377,5 @@ directory, select directory. Lastly the file is opened."
 (workgroups-mode)
 
 (require 'switch-window)
+
+(setq backup-inhibited t)
