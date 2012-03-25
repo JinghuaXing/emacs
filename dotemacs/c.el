@@ -20,7 +20,12 @@
   (imenu-add-menubar-index)
   (which-function-mode 1)
   ;; (add-to-list 'which-func-modes 'java-mode)
-  (hs-minor-mode t)
+;;  (hs-minor-mode t)
+  (define-key c-subword-mode-map (kbd "<C-left>") nil)
+  (define-key c-subword-mode-map (kbd "<C-right>") nil)
+  (define-key c-subword-mode-map (kbd "<M-left>") nil)
+  (define-key c-subword-mode-map (kbd "<M-right>") nil)
+  
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)
@@ -28,7 +33,7 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
-
+  (outline-minor-mode t)
   ;; override hs key definition
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
@@ -136,9 +141,40 @@
 
 (add-hook 'c-mode-common-hook 'jk/c-mode-common-hook)
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-hook 'find-file-hook 'hs-hide-initial-comment-block)
+;;(add-hook 'find-file-hook 'hs-hide-initial-comment-block)
 
-(require 'hideshow)
-(define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
-(define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
-(define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
+;;(require 'hideshow)
+;;(define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
+;;(define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
+;;(define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
+
+(defun show-onelevel ()
+  "show entry and children in outline mode"
+  (interactive)
+  (show-entry)
+  (show-children))
+(require 'outline)    
+(defun cjm-outline-bindings ()
+      "sets shortcut bindings for outline minor mode"
+      (interactive)
+      (local-set-key [C-up] 'outline-previous-visible-heading)
+      (local-set-key [C-down] 'outline-next-visible-heading)
+      (local-set-key [C-left] 'hide-subtree)
+      (local-set-key [C-right] 'show-onelevel)
+      (local-set-key [M-up] 'outline-backward-same-level)
+      (local-set-key [M-down] 'outline-forward-same-level)
+      (local-set-key [M-left] 'hide-subtree)
+      (local-set-key [M-right] 'show-subtree))
+
+;; (defun cjm-outline-bindings ()
+;;   "sets shortcut bindings for outline minor mode"
+;;   (interactive)
+;;   (local-set-key (kbd "C-o C-M-h") 'hide-sublevels)
+;;   (local-set-key (kbd "C-o C-M-s") 'show-all)
+;;   (local-set-key (kbd "C-o C-h") 'hide-subtree)
+;;   (local-set-key (kbd "C-o C-o") 'outline-toggle-children)
+;;   (local-set-key (kbd "C-o C-s") 'show-subtree)
+;;   )
+
+(add-hook 'outline-minor-mode-hook
+	  'cjm-outline-bindings)

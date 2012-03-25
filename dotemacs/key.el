@@ -35,24 +35,6 @@
 (global-set-key (kbd "M-z") 'wy-go-to-char)
 ;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
 ;;(global-set-key (kbd "C-\\") 'set-mark-command)
-(defun show-onelevel ()
-  "show entry and children in outline mode"
-  (interactive)
-  (show-entry)
-  (show-children))
-(require 'outline)    
-(defun cjm-outline-bindings ()
-  "sets shortcut bindings for outline minor mode"
-  (interactive)
-  (local-set-key (kbd "C-o C-M-h") 'hide-sublevels)
-  (local-set-key (kbd "C-o C-M-s") 'show-all)
-  (local-set-key (kbd "C-o C-h") 'hide-subtree)
-  (local-set-key (kbd "C-o C-o") 'outline-toggle-children)
-  (local-set-key (kbd "C-o C-s") 'show-subtree)
-  )
-
-(add-hook 'outline-minor-mode-hook
-	  'cjm-outline-bindings)
 
 (add-hook 'sql-interactive-mode-hook
 	  '(lambda ()
@@ -81,8 +63,3 @@
 (defalias 'mt 'magit-status)
 ;;(global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
-
-(global-set-key (kbd "C-x <up>") 'windmove-up)
-(global-set-key (kbd "C-x <down>") 'windmove-down)
-(global-set-key (kbd "C-x <right>") 'windmove-right)
-(global-set-key (kbd "C-x <left>") 'windmove-left)
