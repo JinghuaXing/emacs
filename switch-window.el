@@ -70,7 +70,6 @@
   :type 'boolean
   :group 'switch-window)
 
-(setq switch-window-shortcut-style 'alphabet)
 (defcustom switch-window-shortcut-style 'quail
   "Use either keyboard layout or alphabet shortcut style"
   :type '(choice (const :tag "Alphabet" 'alphabet)
@@ -88,7 +87,7 @@
   "Return a list of keys to use depending on `switch-window-shortcut-style'"
   (if (eq switch-window-shortcut-style 'alphabet)
       (loop for i from 0 to 25
-	    collect (byte-to-string (+ (string-to-char "a") i)))
+	    collect (byte-to-position (+ (string-to-char "a") i)))
     (switch-window-list-keyboard-keys)))
 
 (defun switch-window-enumerate ()
