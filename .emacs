@@ -169,6 +169,8 @@
 (setq-default cursor-type 'box)
 (set-cursor-color "red")
 (setq default-line-spacing 0.2)
+
+(setq tramp-syntax 'url)
 (require 'tramp)
 (add-to-list 'tramp-default-user-alist '("ssh" "solaris" "sunway_bupt"))
 (add-to-list 'tramp-default-user-alist '("ssh" "matlab" "sunway"))
@@ -182,9 +184,9 @@
   (setq linum-format (propertize "%5d " 'face 'fringe)))
 (setq ediff-split-window-function 'split-window-horizontally)
 
-(require 'etags-select)
-(global-set-key "\M-?" 'etags-select-find-tag-at-point)
-(global-set-key "\M-." 'etags-select-find-tag)
+;; (require 'etags-select)
+;; (global-set-key "\M-?" 'etags-select-find-tag-at-point)
+;; (global-set-key "\M-." 'etags-select-find-tag)
 
 (setq sentence-end "\\([¡££¡£¿]\\|¡­¡­\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]
 *")    

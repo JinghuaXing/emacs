@@ -58,6 +58,9 @@
 ** TODO 线段树
    
    SCHEDULED: <2012-03-22 Thu>
+** TODO getActivity() of fragment
+   
+   SCHEDULED: <2012-03-27 Tue>
 * Linux App
 #+CATEGORY:Linux app
 ** indent && astyle

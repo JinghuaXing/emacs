@@ -31,7 +31,7 @@
  '(company-idle-delay 0.2)
  '(company-minimum-prefix-length 2)
  '(company-show-numbers t)
- '(compilation-scroll-output (quote first-error) t)
+ '(compilation-scroll-output (quote first-error))
  '(compilation-skip-threshold 2)
  '(compilation-window-height 10)
  '(cperl-electric-keywords t)
@@ -98,7 +98,6 @@
  '(sr-avfs-root "~/.avfs")
  '(sr-virtual-listing-switches "--time-style=long-iso  -aldpgG")
  '(switch-window-increase 15)
- '(switch-window-shortcut-style (quote alphabet))
  '(tabbar-home-button (quote (("") "")))
  '(tabbar-scroll-left-button (quote (("") "")))
  '(tabbar-scroll-right-button (quote (("") "")))
@@ -112,7 +111,8 @@
  '(wg-no-confirm t)
  '(wg-query-for-save-on-emacs-exit nil)
  '(wg-query-for-save-on-workgroups-mode-exit nil)
- '(wg-use-faces nil))
+ '(wg-use-faces nil)
+ '(xgtags-overwrite-complete-bindings t))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
