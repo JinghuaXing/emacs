@@ -1,6 +1,6 @@
 ;;;something about C program
 (require 'dtrt-indent)
-(require 'gtags)
+
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
@@ -16,7 +16,6 @@
   (c-toggle-electric-state t)
   (setq c-basic-offset 4)
   (glasses-mode t)
-  (gtags-mode t)
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
@@ -179,7 +178,3 @@
 
 (add-hook 'outline-minor-mode-hook
 	  'cjm-outline-bindings)
-(define-key gtags-mode-map (kbd "C-c g c") 'gtags-find-rtag)
-(define-key gtags-mode-map (kbd "C-c g f") 'gtags-find-file)
-(define-key gtags-mode-map (kbd "C-c g p") 'gtags-find-pattern)
-(define-key gtags-mode-map (kbd "C-c g s") 'gtags-find-symbol)

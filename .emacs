@@ -169,8 +169,6 @@
 (setq-default cursor-type 'box)
 (set-cursor-color "red")
 (setq default-line-spacing 0.2)
-
-(setq tramp-syntax 'url)
 (require 'tramp)
 (add-to-list 'tramp-default-user-alist '("ssh" "solaris" "sunway_bupt"))
 (add-to-list 'tramp-default-user-alist '("ssh" "matlab" "sunway"))
@@ -184,9 +182,11 @@
   (setq linum-format (propertize "%5d " 'face 'fringe)))
 (setq ediff-split-window-function 'split-window-horizontally)
 
-;; (require 'etags-select)
-;; (global-set-key "\M-?" 'etags-select-find-tag-at-point)
-;; (global-set-key "\M-." 'etags-select-find-tag)
+(require 'etags-select)
+(global-set-key "\M-." 'etags-select-find-tag)
+
+(require 'etags-stack)
+(global-set-key "\M-*" 'etags-stack-show)
 
 (setq sentence-end "\\([¡££¡£¿]\\|¡­¡­\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]
 *")    
@@ -373,6 +373,8 @@ directory, select directory. Lastly the file is opened."
 
 (require 'popwin)
 (setq display-buffer-function 'popwin:display-buffer)
+(push '(dired-mode :position bottom :height 25 ) popwin:special-display-config)
+(global-set-key (kbd "C-x C-d") 'dired-jump-other-window)
 
 (require 'workgroups)
 (workgroups-mode)
