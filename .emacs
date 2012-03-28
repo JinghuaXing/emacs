@@ -373,8 +373,7 @@ directory, select directory. Lastly the file is opened."
 
 (require 'popwin)
 (setq display-buffer-function 'popwin:display-buffer)
-(push '(dired-mode :position bottom :height 25 ) popwin:special-display-config)
-(global-set-key (kbd "C-x C-d") 'dired-jump-other-window)
+(push '("\*magit.*"  :regexp t :position right :width 70 ) popwin:special-display-config)
 
 (require 'workgroups)
 (workgroups-mode)
