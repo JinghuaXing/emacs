@@ -98,7 +98,6 @@
  '(sr-avfs-root "~/.avfs")
  '(sr-virtual-listing-switches "--time-style=long-iso  -aldpgG")
  '(switch-window-increase 15)
- '(switch-window-shortcut-style (quote alphabet))
  '(tabbar-home-button (quote (("") "")))
  '(tabbar-scroll-left-button (quote (("") "")))
  '(tabbar-scroll-right-button (quote (("") "")))

@@ -494,24 +494,24 @@ occurence of CHAR."
   )
 
 
- (defun uniquify-all-lines-region (start end)
-    "Find duplicate lines in region START to END keeping first occurrence."
-    (interactive "*r")
-    (save-excursion
-      (let ((end (copy-marker end)))
-        (while
-            (progn
-              (goto-char start)
-              (re-search-forward "^\\(.*\\)\n\\(\\(.*\n\\)*\\)\\1\n" end t))
-          (replace-match "\\1\n\\2")))))
+(defun uniquify-all-lines-region (start end)
+  "Find duplicate lines in region START to END keeping first occurrence."
+  (interactive "*r")
+  (save-excursion
+    (let ((end (copy-marker end)))
+      (while
+	  (progn
+	    (goto-char start)
+	    (re-search-forward "^\\(.*\\)\n\\(\\(.*\n\\)*\\)\\1\n" end t))
+	(replace-match "\\1\n\\2")))))
 
- (defun isearch-save-and-exit ()
-     "Exit search normally. and save the `search-string' on kill-ring."
-    (interactive)
-    (isearch-done)
-    (isearch-clean-overlays)
-    (kill-new isearch-string))
- 
+(defun isearch-save-and-exit ()
+  "Exit search normally. and save the `search-string' on kill-ring."
+  (interactive)
+  (isearch-done)
+  (isearch-clean-overlays)
+  (kill-new isearch-string))
+
 (define-key isearch-mode-map    "\M-w" 'isearch-save-and-exit)
 (define-key isearch-mode-map    "\C-y" 'isearch-yank-kill)
 

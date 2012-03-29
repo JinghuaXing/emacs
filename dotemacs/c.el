@@ -166,15 +166,5 @@
       (local-set-key [M-left] 'hide-subtree)
       (local-set-key [M-right] 'show-subtree))
 
-;; (defun cjm-outline-bindings ()
-;;   "sets shortcut bindings for outline minor mode"
-;;   (interactive)
-;;   (local-set-key (kbd "C-o C-M-h") 'hide-sublevels)
-;;   (local-set-key (kbd "C-o C-M-s") 'show-all)
-;;   (local-set-key (kbd "C-o C-h") 'hide-subtree)
-;;   (local-set-key (kbd "C-o C-o") 'outline-toggle-children)
-;;   (local-set-key (kbd "C-o C-s") 'show-subtree)
-;;   )
-
 (add-hook 'outline-minor-mode-hook
 	  'cjm-outline-bindings)
