@@ -4874,6 +4874,9 @@ AMS calls:
 **** signapk.jar
 **** keytool
 *** traceview
+**** set traceview buffer size in ddms
+     .android/ddms.cfg:
+       profilerBufferSizeMb=100
 ** Uri
 ** vold
    :PROPERTIES:
