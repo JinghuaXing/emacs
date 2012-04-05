@@ -371,9 +371,6 @@ directory, select directory. Lastly the file is opened."
 (defalias 'fcc 'file-cache-clear-cache)
 (defalias 'fca 'file-cache-add-directory-recursively)
 
-(require 'popwin)
-(setq display-buffer-function 'popwin:display-buffer)
-
 (require 'workgroups)
 (workgroups-mode)
 
@@ -383,3 +380,4 @@ directory, select directory. Lastly the file is opened."
 
 (require 'tracker-dired)
 (global-set-key (kbd "C-x C-t") 'tracker-dired)
+

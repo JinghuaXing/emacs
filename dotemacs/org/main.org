@@ -3849,6 +3849,7 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
    5. Intent.FLAG_RECEIVER_REGISTERED_ONLY
 **** BroadcastRecord
 **** Sticky
+*** TODO [#A] ContentProvider
 *** ProcessRecord
 **** processName
 *** DONE AppDeathRecipient
