@@ -137,7 +137,6 @@
     - State "DONE"       [2011-02-09 Wed 17:42]
     java 主线程退出后,子线程仍成执行
     linux 主线程退出后,子线程也在执行
-*** TODO [#A] HttpClient 连接的关闭 (close & shutdown) 与 InputStream, OutputStream 的关闭
 *** Java Service Wrapper
 ** Java Criticism
    see also [[Immutable Collection]]

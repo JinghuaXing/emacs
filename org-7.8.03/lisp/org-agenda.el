@@ -7810,7 +7810,7 @@ TAB   Visit marked entry in other window
 The cursor may be at a date in the calendar, or in the Org agenda."
   (interactive)
   (let (ans)
-    (message "Select action: [m]ark | [s]chedule [d]eadline [r]emember [c]apture [ ]show")
+    (message "Select action: [m]ark | [s]chedule [d]eadline [r]emember [c]apture [k]ill [ ]show")
     (setq ans (read-char-exclusive))
     (cond
      ((equal ans ?m)
@@ -7833,6 +7833,8 @@ The cursor may be at a date in the calendar, or in the Org agenda."
       (org-agenda-do-action '(org-remember) t))
      ((equal ans ?c)
       (org-agenda-do-action '(org-capture) t))
+     ((equal ans ?k)
+      (org-agenda-kill))
      ((equal ans ?\ )
       (let ((cw (selected-window)))
 	(org-switch-to-buffer-other-window

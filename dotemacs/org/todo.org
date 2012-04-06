@@ -40,9 +40,6 @@
 ** TODO WindowManager, layoutWindow
 ** TODO bugzilla 4.0
    http://dev.spreadst.com/lion/
-** TODO some funcy notification for `compilation`?
-   
-   SCHEDULED: <2012-03-25 Sun>
 ** TODO ImportVCardActivity use NIO?
    
    SCHEDULED: <2012-03-21 Wed>
@@ -55,7 +52,3 @@
 ** TODO fast swith window in emacs?
    
    SCHEDULED: <2012-03-21 Wed>
-** TODO 线段树
-   
-   SCHEDULED: <2012-03-22 Thu>
-

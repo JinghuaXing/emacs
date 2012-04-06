@@ -169,9 +169,3 @@
 (add-hook 'outline-minor-mode-hook
 	  'cjm-outline-bindings)
 
-(setq skeleton-pair t)
-(global-set-key "(" 'skeleton-pair-insert-maybe)
-(global-set-key "[" 'skeleton-pair-insert-maybe)
-(global-set-key "{" 'skeleton-pair-insert-maybe)
-(global-set-key "\"" 'skeleton-pair-insert-maybe)
-(global-set-key "'" 'skeleton-pair-insert-maybe)
