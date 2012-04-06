@@ -1,0 +1,3225 @@
+* Android
+#+CATEGORY:android
+** ActivityManagerService
+   :PROPERTIES:
+   :ID:       ams
+   :END:
+*** Intent and IntentFilter					     :intent:
+**** Intent.setPackage(pkg)
+     only match Activities in this `pkg`
+**** Intent.component
+**** IntentFilter.priority
+     candidates ARE sorted by IntentFilter.priority when resolving intent, but
+     - when resolve activity, ResolveActivity will reorder candidates in alphabet order....so nothing
+     - when resolve service, only candidate with the highest priority are selected
+     - when resolve broadcast, candidate priority are considered for OrderedBroadcast
+**** DONE [#A] IntentFilter matching
+     CLOSED: [2011-01-19 Wed 16:07]
+     - State "DONE"       [2011-01-19 Wed 16:07]
+     how startActivity(or startService, sendBrocast) use Intent.{category,action,data} to find the correct intent receiver?
+     AMS use [[PackageManager][PackageManager]] to resolve intent to get intent's component
+***** startActivity
+#+BEGIN_EXAMPLE lang:c
+      AMS:startActivity()
+          AMS:startActivityMayWait()
+	      PM:resolveIntent()
+	          PM:queryIntentActivities()
+		      // explicit intent
+		      if (intent.getCommponent())
+		          return the component
+		      // implicit intent
+		      if (intent.getPackage()==null)
+		          PM:mActivities.queryIntent()
+			      foreach activity:
+			       	buildResolveList()
+			           foreach IntentFilter:
+                                     filter.match()
+                                     make sure filter has DEFAULT category
+		      else
+		          PM:mActivities.queryIntentForPackage()
+                            foreach activity:
+			       	buildResolveList()
+			           foreach IntentFilter:
+                                     filter.match()
+                                     make sure filter has DEFAULT category
+		  PM:chooseBestActivity()
+		      // candidates here are sorted by [[IntentFilter.priority][IntentFilter.priority]]
+                      if (candidates.size() == 1)
+		          return it;
+		      if we have saved a preference for a preferred activity
+		          return findPreferredActivity()
+		      else
+                          return ResolverActivity // although candidates are sorted by IntentFilter.priority, ResolverActivity will
+			                          // reorder them in alphabet order...weired~~
+	      Intent.setComponent()
+	      AMS:startActivityLocked()
+	        checkComponentPermission();
+	      ...
+#+END_EXAMPLE
+      - PM:resolveIntent
+       	when PackagetManager need to detect whether there are activities in a certain package matching the Intent, it will resolve the inent as:
+       	1) PM calls queryIntentForPackage, which will take a List of activities in the package as param
+       	2) for every activity, call buildResolveList, which take a List of all IntentFilters of the activity as param
+       	3) for every IntentFilter, call filter.match( intent.getAction(), resolvedType, scheme, intent.getData(), categories, TAG); to determine whether
+	   the IntentFilter matches the Intent, if so, add the activity to the candidates.  Note that categories is a list of Category in the intent, since
+	   intent can call addCategory() to add serveral categories requirement
+       	4) filter.match() will check
+	   1) action
+	      intent action mustn't be null and must be in the IntentFilter's actions list
+	   2) data
+	      data must be a subset of IntentFilter's data list
+	   3) category
+	      if intent's categories is a subset of filter's categories, or intent's category is null , return ok
+       	5) if filter.match() match, there is still one last check:
+	   1) if the defaultOnly flag is set (in fact, startActivity will always set the flag when resolveIntent), and the candidate intentFilter also
+	      has the DEFAULT category, returns ok.  this is just as if the Intent has added the DEFAULT category by default. BUT, since it is restriction
+	      imposed by AMS, we can't override the behaviour by calling intent.removeCategory(DEFAULT)
+	   2) note: the DEFAULT_ONLY flag and intentFilter's default category is mainly used by startActivity, use PM standalone (e.g. resolveActivity) doesn't
+	      impose this restriction.
+      - PM:chooseBestActivity
+       	after PM:resolveIntent, a list of candidates are available, PM will choose the best activity
+       	1) if there is only ONE candidates, return it
+       	2) else, call findPreferredActivity to find if we have saved a preference for a preferred activity for this intent
+       	3) else, return a ResolverActivity, which will show a ResolverActivity and promp user for the prefered activity. ResolverActivity will sort candidates
+	   in alphabet order, regardless of IntentFilter's priority.
+      - At last, if PM returns a ResolverActivity, AMS will actually start ResolverActivity, ResolverActivity's onClick will call startActivity() to start the real user prefered activity.
+
+***** startService
+#+BEGIN_EXAMPLE
+      AMS:startServiceLocked()
+        AMS:retrieveServiceLocked()
+	    if ret=mServicesByIntent.get(intent)
+	        return ret; //      * All currently running services indexed by the Intent used to start them.
+	    else
+                PM:resolveService()  // just like resolveActivity
+		    PM:queryIntentServices()
+		        if intent.getComponent()
+			    use it;
+			else
+			    PM:queryIntent() // return a list of candidates, note that the list is sorted according to [[IntentFilter.priority][IntentFilter.priority]]
+		    if candidates>1      // more than ONE candidate
+		        use candidate.get(0)  // pick the first one. because the candidates are sorted according
+			                         // to IntentFilter.priority, so the candidate with the highest priority is selected.
+            checkComponentPermission()
+#+END_EXAMPLE
+
+***** sendBroadcast
+      just as startService, priority are considered, and a list of all candidates are return to support OrderedBroadcast
+*** Activity							   :activity:
+**** AMS side
+***** finishedActivityLocked
+      finishCurrentActivity eventually will not stop and destroy activity at once, it will pose it in an array, when idle, it will call activityIdle to purge the activities.
+      When is idle? There are 2 scen:
+      1) thread.scheduleResumeActivity will pose one 'Idler' in the msg queue after onResume is finished. Idler will invoke AMS.activityIdle
+	 2)AMS is smart enough to pose on one delayed IDLE_TIMEOUT_MSG to the handler in case there is no Idler since onResume hangs. The delayed timeout is 10s.
+
+	 That is, onStop and onDestroy may be delayed for 10s after another activity's onResume is called.
+	 11/23/10 11:40 am
+	 finishActivityLocked
+	 startPausing
+
+	 ...
+
+	 activityPaused
+	 finishCurrentActivity --> mark the activity for destroy
+	 resumeTopActivity
+	 ...
+	 activity resumed --> pose idler timer to destroy activity marked befored
+
+	 11/17/10 6:46 pm
+	 assume that when A is finished and B will be resumed: first, A is paused, then B is resumed, and A is stopped and destroyed at last
+
+
+	 11/17/10 6:37 pm
+	 To prevent if activity.onPause doesn't return in a period of time(500ms), AMS will call sendMessageDelayed() in startPausingLocked() to send itself one PAUSE_TIMEOUT msg to force itself call activityPaused().
+
+	 That is, although activity.onPause() may block, AMS is assured to resume	next activity in 500ms.
+
+	 11/17/10 5:47 pm
+      1. activity.finish() will call AMS's finishActivity() through AIDL, providing activity's IBinder as parameter so that AMS can recognize the corresponding HistoryRecord in AMS.
+
+      2. AMS calls
+	 finishActivityLocked()
+	 startPausingLocked()
+	 thread.schedulePauseActivity()
+
+      3. thread.schedulePauseActivity() will call activity.onPause(), then notify AMS that activity is paused through AMS.activityPaused()
+
+      4. activityPaused()
+	 completePauseActivity()
+	 mark activity for stop when idle
+	 resumeTopActivity()
+***** attachApplication
+
+attachApplication is the 3rd step to start a new activity. (1. startPausing, 2. activityPaused.)
+When one new activityThread is created, after calling onCreate, activityThread will invoke AMS.attachApplication to notify AMS that process is OK, then AMS can call realStartActivity to launch the activity.
+
+***** activityPaused
+activityPaused is called by ActivityThread to notity AMS that the mResumed activity is paused(or onPause is timeout)
+after that, if prev should be finished (when finish activity), it will call finishCurrentActivity to finish prev activity. Then resumeTopActivity will be called again to really resume another activity.
+
+***** startActivityLocked
+
+11/22/10 2:08 pm
+AMS.startActivityLocked() is the very begining  entry to start activity.
+
+Stack trace:
+AMS side:
+#+BEGIN_EXAMPLE
+startActivity
+  startActivityUnchecked
+     moveTaskToFront
+        finishTaskMoved
+            resumeTopActivity
+#+END_EXAMPLE
+
+when resumeTopActivity, it will firstly call startPausing to pause mResumedActivity A.
+
+after A's onPause return, ActivityThread will notify AMS through AMS.ActivityPaused, which will then call resumeTopActivity again to resume  activity.
+
+When invoked for the 2nd time, it will try call r.app.thread.scheduleResumeActivity to resume our activity,  then return. but before calling onResume, AMS
+will firstly invoke mWindowManager.setAppVisibility(next, true) if the activity is invisible, which will call onRestart and onStart before onResume.
+
+If exception occurs, it means the activity is already finished, or it's process is not started at all, it will call
+#+BEGIN_EXAMPLE
+startSpecificActivityLocked,
+  realStartActivityLocked
+    thread.scheduleLaunchActivity
+
+or
+startSpecificActivityLocked,
+  startProcessLocked
+#+END_EXAMPLE
+
+for the 2nd scenero, when activityThread is started in startProcessLocked, it will call AMS.attachApplication to notify AMS that the process is ready, attachApplication will then call realStartActivity again to real kaunch the activity.
+
+***** resumeTopActivityLocked
+
+11/22/10 6:38 pm
+resumeTopActivity will firstly call startPausing to pause the mResumedActivity, then return directory.
+
+When mResumedActivity is paused or timeout (500ms), AMS.activityPaused will be called, which will invoke resumeTopActivity again to finally resume(or launch) the activity.
+
+***** Timeout
+****** Pause timeout
+****** Idle timeout
+       11/23/10 3:49 pm
+       idle timeout is the timeout to stop and destroy activity A after activity B is resumed.
+       in the normal case, B's scheduleResumeActivity will pose an Idler after onResume to ensure that A will be finish via activityIdle.
+       Howerer, if B's onResume hangs, a delay IDLE_TIMEOUT_MSG is a must for AMS to make sure A will be finished in 10s.
+
+***** HistoryRecord
+      HistoryRecord is used in two ways:
+      - it is the shadow structure of `Activity` in AMS
+      - it is used as a IBinder token by AMS, e.g. when AMS want to resume activity, it will send the activity's corresponding HistoryRecord as a token to
+	ActivityThread, so that ActivityThread knows which activity to resume.
+	- r.app.thread
+	- r.resultRecord
+	- r.sourceRecord
+	- r.intent
+****** AMS.mHistory stores all the HistoryRecord of AMS.
+***** startPausingLocked
+11/22/10 6:43 pm
+startPausing is called in resumeTopActivity to pause the mResumed activity before resume or launch the target activity
+***** startSpecificActivity
+11/23/10 1:06 pm
+it is called when resumeTopActivity (2nd time when prev is paused) to start (instead of resume) target activity.
+
+It may call realStartActivity to start the activity or call startProcess to start a new process.
+****** startProcess
+****** realStartActiviry
+11/23/10 1:10 pm
+real start an activity instead of resume or start a new process.
+
+This is called in 2 scen:
+1) startSpecificActivity in resumeTopActivity
+2) attachApplication, since when attachApplication, the process definitly exist and activity is surely not started yet. resumeTopActivity is redunctant, calling realStartActivity is enough.
+**** ActivityThread side
+***** ActivityRecord
+      12/28/10 7:50 pm
+      ActivityRecord will save the real Activity instance and some other info.  It corresponds to AMS::HistoryRecord.
+      ActivityRecord use one Map<IBinder,ActivityRecord> to save process's all activities.
+      Evey ActivityThread.scheduleXxx ()  takes  an 'Token' (an IBinder)  as para so that ActivityThread can get the corres ActivityRecord from the map.
+***** IApplicationThread
+****** schedulePausingActivity
+       schedulePausingActivity will firstly call activity.onPaused, and wait for
+       return, then it will notify AMS through AMS.activityPaused that the
+       activity is paused.
+****** scheduleResumeActivity
+       it will call onResume, when onResume returns, it will add one Idler to
+       AMS's queue, to make sure AMS will be norified when queue is idle to stop
+       and destroy pending need-to-finish act ivies
+****** scheduleLaunchActivity
+       when called by AMS.realStartActivity, scheduleLaunchActivity will
+       sequencially call onCreate, onStart,
+       onRestoreInstanceState,onPostCreate,onResume.
+**** Activity side
+     - onStop, onRestart is only related to activity visibility. they are invoked by mWindowManager.setAppVisibility() due to visibility change.
+     - onStart may be called due to visibility change or life cycle change.
+     - onPause, onDestroy, onResume is the core concept related to activity life cycle, they are called only when life cycle is changed.
+***** finish
+***** onPause
+      only when starting another *Activity*, will the former activity's  onPause be called;
+      that is, Dialog, PopupWindow will not trigger activity's onPause
+***** onStop
+      may only be called after onPause
+      if the paused activity is totally invisible to the user, onStop will be called
+      that is, if the resumed activity is opaque, the paused activity's onStop would not be called
+
+      resumeTopActivity will call mWindowManager.setAppVisibility(prev, false); // cause prev.onStop be called
+      to stop prev activity
+
+***** onDestroy
+***** onResume
+***** onRestart
+      resumeTopActivity will cal  mWindowManager.setAppVisibility(next, true);  // cause next.onRestart and next.onStart be called
+      to call onRestart and onStart
+***** onStart
+***** onCreate
+**** Task stack
+**** NativeActivity
+**** Activity Result
+
+**** TODO [#A] Launcher
+     see also [[Launcher & Task]]
+**** Task
+***** why relaunch an activity A from launcher will bring the task to foreground
+       note that: startActivity from launcher will always use Intent flags of NEW_TASK
+
+#+BEGIN_EXAMPLE
+       startActivityUnchecked()
+         if NEW_TASK && ((MULTIPLE_TASK not set)||...): // see MULTIPLE_TASK flag later, true
+	   taskTop = findTaskLocked(intent, r.info)
+	     // findTaskLocked will return the top activity in any existing task matching the given intent
+	     // typically, the search will compare taskAffinity, but sometimes, taskAffinity could be null, if so, componentName is considered
+	     // How taskAffinity is null? if activity's taskAffinity property is set to "" (see [[Notification]]), then it's taskAffinity will be set to null
+
+           if (taskTop != null): // there is already an existing task for the activity A, true
+	     if (r.realActivity.equals(taskTop.task.realActivity)): // activity A is the same as the matching task's root activity, true
+	       if FLAG_ACTIVITY_SINGLE_TOP is set:
+	         deliverNewIntentLocked(taskTop, r.intent);  // onNewIntent is called
+		 resumeTopActivityLocked(null);
+		   mWindowManager.setAppVisibility(prev, false); // cause onStop be called
+		   mWindowManager.setAppVisibility(next, true);  // cause onRestart and onStart be called
+                 return START_DELIVERED_TO_TOP;
+	       else if r.intent.filterEquals(taskTop.task.intent):  // if activity A's calling intent is equal with the intent used to start
+	                                                            // the task's root activity, intent equality will consider intent action,category,
+								    // data,type,component..., but *excluding any intent extra*, true
+                 resumeTopActivity()
+		   if resumedActivity == topRunningActivity:        // need not resume, in this case, resumedActivity is launcher, while topRunningActivity
+		                                                    // is Activity A, false
+		     return;
+		   else:
+		     pause resumeActivity and resume topRunningActivity  // true
+		     mWindowManager.setAppVisibility(prev, false); // cause onStop be called
+		     mWindowManager.setAppVisibility(next, true);  // cause onRestart and onStart be called
+
+		 return START_TASK_TO_FRONT;                        // move the task to foreground
+         else: // if NEW_TASK
+	   if (top.realActivity.equals(r.realActivity)):
+	     if ((launchFlags&Intent.FLAG_ACTIVITY_SINGLE_TOP) != 0
+               or r.launchMode == ActivityInfo.LAUNCH_SINGLE_TOP
+               or r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK):
+	       resumeTopActivityLocked(null);
+               deliverNewIntentLocked(top, r.intent);
+               return START_DELIVERED_TO_TOP;
+	   create or start the activity                           // false
+
+#+END_EXAMPLE
+
+      To summarize:
+      when relaunching an activity from launcher, because the intent used to relaunch the activity is the same as the former task's root activity's intent
+      (both are MAIN & LAUNCHER..), AMS will try to resume the activity instead of relaunching it.
+      startActivity with *NEW\_TASK* and the *same* intent as the task's intent will bring the task to foreground (through resumeTopActivity) instead of
+      launching it. this behavior is similar with that the task's top activity has the SINGLE\_TOP launchMode.
+
+      Note about MULTIPLE\_TASK intent flag:
+      Used in conjunction with FLAG\_ACTIVITY\_NEW_TASK to disable the behavior of bringing an existing task to the foreground.  When set,
+      a new task is always started to host the Activity for the Intent, regardless of whether there is already an existing task running
+      the same thing.
+
+***** DONE [#A] startActivityUnchecked & affinity, launchMode, intentFlags
+      SCHEDULED: <2011-05-13 Fri> CLOSED: [2011-05-13 Fri 15:05]
+      - State "DONE"       [2011-05-13 Fri 15:05]
+      *FLAG\_ACTIVITY\_NEW\_TASK* is defininitly the most important property related to android task management.
+****** source code comment
+#+BEGIN_EXAMPLE
+     1	       private final int startActivityUncheckedLocked(HistoryRecord r,
+     2	            HistoryRecord sourceRecord, Uri[] grantedUriPermissions,
+     3	            int grantedMode, boolean onlyIfNeeded, boolean doResume) {
+     4		Slog.e("sunway","flag");
+     5	        final Intent intent = r.intent;
+     6	        final int callingUid = r.launchedFromUid;
+     7	        int launchFlags = intent.getFlags();
+     8
+     9	        // We'll invoke onUserLeaving before onPause only if the launching
+    10	        // activity did not explicitly state that this is an automated launch.
+    11	        mUserLeaving = (launchFlags&Intent.FLAG_ACTIVITY_NO_USER_ACTION) == 0;
+    12	        if (DEBUG_USER_LEAVING) Slog.v(TAG,
+    13	                "startActivity() => mUserLeaving=" + mUserLeaving);
+    14
+    15	        // If the caller has asked not to resume at this point, we make note
+    16	        // of this in the record so that we can skip it when trying to find
+    17	        // the top running activity.
+    18	        if (!doResume) {
+    19	            r.delayedResume = true;
+    20	        }
+    21
+    22	        HistoryRecord notTop = (launchFlags&Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP)
+    23	                != 0 ? r : null;
+    24
+    25	        // If the onlyIfNeeded flag is set, then we can do this if the activity
+    26	        // being launched is the same as the one making the call...  or, as
+    27	        // a special case, if we do not know the caller then we count the
+    28	        // current top activity as the caller.
+    29	        if (onlyIfNeeded) {
+    30	            HistoryRecord checkedCaller = sourceRecord;
+    31	            if (checkedCaller == null) {
+    32	                checkedCaller = topRunningNonDelayedActivityLocked(notTop);
+    33	            }
+    34	            if (!checkedCaller.realActivity.equals(r.realActivity)) {
+    35	                // Caller is not the same as launcher, so always needed.
+    36	                onlyIfNeeded = false;
+    37	            }
+    38	        }
+    39
+    40	        if (grantedUriPermissions != null && callingUid > 0) {
+    41	            for (int i=0; i<grantedUriPermissions.length; i++) {
+    42	                grantUriPermissionLocked(callingUid, r.packageName,
+    43	                        grantedUriPermissions[i], grantedMode, r);
+    44	            }
+    45	        }
+    46
+    47	        grantUriPermissionFromIntentLocked(callingUid, r.packageName,
+    48	                intent, r);
+    49
+    50	        if (sourceRecord == null) {
+    51	            // This activity is not being started from another...  in this
+    52	            // case we -always- start a new task.
+    53	            if ((launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) == 0) {
+    54	                Slog.w(TAG, "startActivity called from non-Activity context; forcing Intent.FLAG_ACTIVITY_NEW_TASK for: "
+    55	                      + intent);
+    56	                launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+    57	            }
+    58	        } else if (sourceRecord.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE) {
+    59	            // The original activity who is starting us is running as a single
+    60	            // instance...  this new activity it is starting must go on its
+    61	            // own task.
+    62	            launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+    63	        } else if (r.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE
+    64	                || r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK) {
+    65	            // The activity being started is a single instance...  it always
+    66	            // gets launched into its own task.
+    67	            launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+    68	        }
+    69
+    70	        if (r.resultTo != null && (launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
+    71	            // For whatever reason this activity is being launched into a new
+    72	            // task...  yet the caller has requested a result back.  Well, that
+    73	            // is pretty messed up, so instead immediately send back a cancel
+    74	            // and let the new task continue launched as normal without a
+    75	            // dependency on its originator.
+    76	            Slog.w(TAG, "Activity is launching as a new task, so cancelling activity result.");
+    77	            sendActivityResultLocked(-1,
+    78	                    r.resultTo, r.resultWho, r.requestCode,
+    79	                Activity.RESULT_CANCELED, null);
+    80	            r.resultTo = null;
+    81	        }
+    82
+    83	        boolean addingToTask = false;
+    84	        if (((launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0 &&
+    85	                (launchFlags&Intent.FLAG_ACTIVITY_MULTIPLE_TASK) == 0)
+    86	                || r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK
+    87	                || r.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE) {
+    88	            // If bring to front is requested, and no result is requested, and
+    89	            // we can find a task that was started with this same
+    90	            // component, then instead of launching bring that one to the front.
+    91	            if (r.resultTo == null) {
+    92	                // See if there is a task to bring to the front.  If this is
+    93	                // a SINGLE_INSTANCE activity, there can be one and only one
+    94	                // instance of it in the history, and it is always in its own
+    95	                // unique task, so we do a special search.
+    96
+    97			// sunway:
+    98			// 对于launchMode不为SINGLE_INSTANCE的情况, taskTop是根
+    99			// 据affinity(或activity component)查找到的已存在的task的top activity; 对于
+   100			// SINGLE_INSTANCE的情况, taskTop为该single activity
+   101			// Q: 系统如何在NEW_TASK时查找是否已经存在一个`密切`的task?
+   102
+   103	                HistoryRecord taskTop = r.launchMode != ActivityInfo.LAUNCH_SINGLE_INSTANCE
+   104	                        ? findTaskLocked(intent, r.info)
+   105	                        : findActivityLocked(intent, r.info);
+   106
+   107			// sunway:
+   108			// 对于NEW_TASK, 已经找到一个已经存在的TASK或single instance
+   109			// activity
+   110
+   111	                if (taskTop != null) {
+   112	                    if (taskTop.task.intent == null) {
+   113	                        // This task was started because of movement of
+   114	                        // the activity based on affinity...  now that we
+   115	                        // are actually launching it, we can assign the
+   116	                        // base intent.
+   117	                        taskTop.task.setIntent(intent, r.info);
+   118	                    }
+   119	                    // If the target task is not in the front, then we need
+   120	                    // to bring it to the front...  except...  well, with
+   121	                    // SINGLE_TASK_LAUNCH it's not entirely clear.  We'd like
+   122	                    // to have the same behavior as if a new instance was
+   123	                    // being started, which means not bringing it to the front
+   124	                    // if the caller is not itself in the front.
+   125
+   126
+   127	                    HistoryRecord curTop = topRunningNonDelayedActivityLocked(notTop);
+   128
+   129			    // sunway:
+   130			    // our task or single_instance activity is in background,
+   131			    // move it to front
+   132
+   133	                    if (curTop.task != taskTop.task) {
+   134	                        r.intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+   135	                        boolean callerAtFront = sourceRecord == null
+   136	                                || curTop.task == sourceRecord.task;
+   137
+   138				// sunway:
+   139				// 如果: 1. new task 2. task在后台 3. caller在前台 (或
+   140				// sourceRecord==null),则将task移到前台, 所以, 一个后台的
+   141				// task里的一个thread无法通过 new_task &
+   142				// activity.startActivity将task移动到前台
+   143
+   144	                        if (callerAtFront) {
+   145	                            // We really do want to push this one into the
+   146	                            // user's face, right now.
+   147	                            moveTaskToFrontLocked(taskTop.task, r);
+   148	                        }
+   149	                    }
+   150	                    // If the caller has requested that the target task be
+   151	                    // reset, then do so.
+   152	                    if ((launchFlags&Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) != 0) {
+   153				// sunway:
+   154				// reset task ... take a deep breath;
+   155	                        taskTop = resetTaskIfNeededLocked(taskTop, r);
+   156	                    }
+   157	                    if (onlyIfNeeded) {
+   158	                        // We don't need to start a new activity, and
+   159	                        // the client said not to do anything if that
+   160	                        // is the case, so this is it!  And for paranoia, make
+   161	                        // sure we have correctly resumed the top activity.
+   162	                        if (doResume) {
+   163	                            resumeTopActivityLocked(null);
+   164	                        }
+   165	                        return START_RETURN_INTENT_TO_CALLER;
+   166	                    }
+   167
+   168	                    if ((launchFlags&Intent.FLAG_ACTIVITY_CLEAR_TOP) != 0
+   169	                            || r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK
+   170	                            || r.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE) {
+   171	                        // In this situation we want to remove all activities
+   172	                        // from the task up to the one being started.  In most
+   173	                        // cases this means we are resetting the task to its
+   174	                        // initial state.
+   175
+   176				// sunway:
+   177				// 在大多数情况下, task或single instance activity
+   178				// 在此之前已经被移动到前台,performClearTaskLocked只会
+   179				// finish该task中位于r之上的activity, 除非...移动到前台
+   180				// 时失败(例如callerAtFront为假,这时会有意想不到的效
+   181				// 果)
+   182
+   183				// sunway:
+   184				// performClearTaskLocked会finish位于r,top之间的所有
+   185				// activity,一般情况下不会finish `基准`activity (对于
+   186				// CLEAR_TOP,即是r,对于SINGLE_TASK,SINGLE_INSTANCE,即是
+   187				// task的root activity, 除非...基准activity是MULTIPLE
+   188				// launch mode且其SINGLE_TOP为假
+   189
+   190				// 总结: 对于一般的startActivity(不包含
+   191				// RESET_TASK_IF_NEEDED intent flag), CLEAR_TOP是可以
+   192				// finish某些activity的机会,如果想让一个activity在每次
+   193				// startActivity时finish掉之前的并create新的且只有一个实
+   194				// 例 (例如某些通知功能的activity),可以:
+   195				// 1. 使用NEW_TASK和CLEAR_TOP
+   196				// 2. launchMode为MULTIPLE,且SINGLE_TOP为假
+   197				// 3. 为防止CLEAR_TOP误杀同task的其他activity, 可以设其
+   198				// affinity为其他唯一值或者直接使用空串, 确保task中只有
+   199				// 它一个activity (类似于singleInstance)
+   200
+   201				// Q: 看起来start SINGLE_TASK 的 root activity 也会导致
+   202				// performClearTask .... 并perforClearTask并不
+   203				// 能保证developer中声称的SINGLE_TASK的属性:SINGLE_TASK必
+   204				// 须是task的root activity; 实际上这段代码的效果是: 设
+   205				// A,B的affinity相同, A启动B,其中B是
+   206				// SINGLE_TASK,则结果是A,B; B再启动A,结果A,B,A; A再启动
+   207				// B, 结果是A,B, 和CLEAR_TOP有啥区别?
+   208				// 若想达到文档中声称的SINGLE_TASK效果,必须保证B一开始就
+   209				// 是task的root activity.....那只能给它设一个唯一的
+   210				// affinity(或affinity为null)才行
+   211				// Q: 为什么会有这个问题?
+   212				// A: 相比之下,SINGLE_INSTANCE的行为是正常的,根本原因是
+   213				// 因为前面对taskTop的查找: 对于SINGLE_INSTANCE, 是从整
+   214				// 个mHistory去找唯一的一个activity实例. 而对于
+   215				// SINGLE_TASK, 则是从上到下根据affinity找\emph{第一个}
+   216				// 匹配的task, 考虑这种情况:
+   217				// 有A,B,C,D四个activity, 使用相同的affinity, 其中的A是
+   218				// SINGLE_TASK, 设当前有两个task, 'A,C,D'和'B'. 然后另外
+   219				// 某处startActivity(B), 假设系统找到第一个匹配的
+   220				// task是'A,C,D'... 是否要为B生成一个new task?
+   221				// 所以根本原因是task的管理还是过于简单, \emph{task的查找方法
+   222				// 无法满足SINGLE_TASK语义}.
+   223				// 做为workaround,可以通过确保SINGLE_TASK的activity为唯
+   224				// 一的affinity来弥补task查找方法的不足.
+   225
+   226
+   227	                        HistoryRecord top = performClearTaskLocked(
+   228	                                taskTop.task.taskId, r, launchFlags, true);
+   229
+   230				// sunway:
+   231				// 若top不为null, 说明CLEAR_TOP真的只是 `clear top`, 则需
+   232				// 要调用top的onNewIntent
+   233
+   234
+   235	                        if (top != null) {
+   236	                            if (top.frontOfTask) {
+   237	                                // Activity aliases may mean we use different
+   238	                                // intents for the top activity, so make sure
+   239	                                // the task now has the identity of the new
+   240	                                // intent.
+   241	                                top.task.setIntent(r.intent, r.info);
+   242	                            }
+   243	                            logStartActivity(EventLogTags.AM_NEW_INTENT, r, top.task);
+   244	                            deliverNewIntentLocked(top, r.intent);
+   245	                        } else {
+   246				    // sunway:
+   247				    // 若top为null,说明CLEAR_TOP把`基准`activity也clear掉
+   248				    // 了...这种情况的发生只有一种可能:`基准`activity是
+   249				    // MULTIPLE & SINGLE_TOP, `基准`activity被clear掉后,
+   250				    // 需要通过addingToTask标记通知后续代码:该activity需
+   251				    // 要重新添加一个新的实例到task中, addingToTask的意思
+   252				    // 是:addNewInstanceToTask
+   253
+   254	                            // A special case: we need to
+   255	                            // start the activity because it is not currently
+   256	                            // running, and the caller has asked to clear the
+   257	                            // current task to have this activity at the top.
+   258	                            addingToTask = true;
+   259	                            // Now pretend like this activity is being started
+   260	                            // by the top of its task, so it is put in the
+   261	                            // right place.
+   262	                            sourceRecord = taskTop;
+   263	                        }
+   264	                    } else if (r.realActivity.equals(taskTop.task.realActivity)) {
+   265				// sunway:
+   266	                        // 我们想要start的是task的root activity, 若使用的intent
+   267	                        // 也是相同的, 系统认为我们只是想moveTaskToFront, 所以不
+   268	                        // 生新create一个activity,则只是resume这个task的top
+   269	                        // activity.
+   270				// 实际上,这段代码反映的是launcher的行为: laucher每次点
+   271	                        // 击桌面图标时,对同一个图标,使用的intent是一样的,且要启
+   272	                        // 动的activity也必然是task的root activity
+   273				// 通过模拟launcher的这种行为,我们也可以只是将某个task移
+   274	                        // 动到前台,而不做其他任何事
+   275
+   276
+   277
+   278	                        // In this case the top activity on the task is the
+   279	                        // same as the one being launched, so we take that
+   280	                        // as a request to bring the task to the foreground.
+   281	                        // If the top activity in the task is the root
+   282	                        // activity, deliver this new intent to it if it
+   283	                        // desires.
+   284	                        if ((launchFlags&Intent.FLAG_ACTIVITY_SINGLE_TOP) != 0
+   285	                                && taskTop.realActivity.equals(r.realActivity)) {
+   286	                            logStartActivity(EventLogTags.AM_NEW_INTENT, r, taskTop.task);
+   287	                            if (taskTop.frontOfTask) {
+   288	                                taskTop.task.setIntent(r.intent, r.info);
+   289	                            }
+   290	                            deliverNewIntentLocked(taskTop, r.intent);
+   291	                        } else if (!r.intent.filterEquals(taskTop.task.intent)) {
+   292	                            // In this case we are launching the root activity
+   293	                            // of the task, but with a different intent.  We
+   294	                            // should start a new instance on top.
+   295	                            addingToTask = true;
+   296	                            sourceRecord = taskTop;
+   297	                        }
+   298	                    } else if ((launchFlags&Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) == 0) {
+   299				// sunway:
+   300	                        // 这里基本上是NEW_TASK所判断的最后一个条件了: 若
+   301	                        // RESET_TASK_IF_NEED设置, 则addingToTask为false,阻止了
+   302	                        // 后续的处理. 效果和前面提到的launcher行为类似,但要启动
+   303	                        // 的activity不必是root activity.
+   304				// 一般情况下,只有launcher会使用这个标志
+   305
+   306
+   307	                        // In this case an activity is being launched in to an
+   308	                        // existing task, without resetting that task.  This
+   309	                        // is typically the situation of launching an activity
+   310	                        // from a notification or shortcut.  We want to place
+   311	                        // the new activity on top of the current task.
+   312	                        addingToTask = true;
+   313	                        sourceRecord = taskTop;
+   314	                    } else if (!taskTop.task.rootWasReset) {
+   315	                        // In this case we are launching in to an existing task
+   316	                        // that has not yet been started from its front door.
+   317	                        // The current task has been brought to the front.
+   318	                        // Ideally, we'd probably like to place this new task
+   319	                        // at the bottom of its stack, but that's a little hard
+   320	                        // to do with the current organization of the code so
+   321	                        // for now we'll just drop it.
+   322	                        taskTop.task.setIntent(r.intent, r.info);
+   323	                    }
+   324	                    if (!addingToTask) {
+   325	                        // We didn't do anything...  but it was needed (a.k.a., client
+   326	                        // don't use that intent!)  And for paranoia, make
+   327	                        // sure we have correctly resumed the top activity.
+   328	                        if (doResume) {
+   329	                            resumeTopActivityLocked(null);
+   330	                        }
+   331	                        return START_TASK_TO_FRONT;
+   332	                    }
+   333	                }
+   334	            }
+   335	        }
+   336
+   337		// sunway:
+   338	        // finally we are here....
+   339	        // 在三种情况下代码会走到这里:
+   340	        // case 1. NEW_TASK为真, 但taskTop为null...说明现在系统里找不到一个已经存在的
+   341	        // `密切`的task, 真的需要`new`一个task了
+   342	        // case 2. NEW_TASK==true, taskTop!=null, 但addingToTask为真, 即需要在taskTop
+   343	        // 上 new activity instance
+   344	        // case 3. 根本没有指定NEW_TASK标志,新的activity使用当前的task (使用当前的
+   345	        // task并不意味着要直接new activity instance, 因为SINGLE_TOP,
+   346	        // CLEAR_TOP...还要考虑)
+   347		//
+   348	        //
+   349	        //
+   350	        //String uri = r.intent.toURI();
+   351	        //Intent intent2 = new Intent(uri);
+   352	        //Slog.i(TAG, "Given intent: " + r.intent);
+   353	        //Slog.i(TAG, "URI is: " + uri);
+   354	        //Slog.i(TAG, "To intent: " + intent2);
+   355	        if (r.packageName != null) {
+   356	            // If the activity being launched is the same as the one currently
+   357	            // at the top, then we need to check if it should only be launched
+   358	            // once.
+   359	            HistoryRecord top = topRunningNonDelayedActivityLocked(notTop);
+   360	            if (top != null && r.resultTo == null) {
+   361	                if (top.realActivity.equals(r.realActivity)) {
+   362	                    if (top.app != null && top.app.thread != null) {
+   363				// sunway:
+   364				// case 2,3;
+   365				// SINGLE_TOP并非NEW_TASK的专利
+   366				// A,B,C (c single top)
+   367	                        if ((launchFlags&Intent.FLAG_ACTIVITY_SINGLE_TOP) != 0
+   368	                            || r.launchMode == ActivityInfo.LAUNCH_SINGLE_TOP
+   369	                            || r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK) {
+   370	                            logStartActivity(EventLogTags.AM_NEW_INTENT, top, top.task);
+   371	                            // For paranoia, make sure we have correctly
+   372	                            // resumed the top activity.
+   373	                            if (doResume) {
+   374	                                resumeTopActivityLocked(null);
+   375	                            }
+   376	                            if (onlyIfNeeded) {
+   377	                                // We don't need to start a new activity, and
+   378	                                // the client said not to do anything if that
+   379	                                // is the case, so this is it!
+   380	                                return START_RETURN_INTENT_TO_CALLER;
+   381	                            }
+   382	                            deliverNewIntentLocked(top, r.intent);
+   383	                            return START_DELIVERED_TO_TOP;
+   384	                        }
+   385	                    }
+   386	                }
+   387	            }
+   388
+   389	        } else {
+   390	            if (r.resultTo != null) {
+   391	                sendActivityResultLocked(-1,
+   392	                        r.resultTo, r.resultWho, r.requestCode,
+   393	                    Activity.RESULT_CANCELED, null);
+   394	            }
+   395	            return START_CLASS_NOT_FOUND;
+   396	        }
+   397
+   398	        boolean newTask = false;
+   399
+   400	        // Should this be considered a new task?
+   401	        if (r.resultTo == null && !addingToTask
+   402	                && (launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
+   403		    // sunway:
+   404		    // case 1, 新建一个task, NEW_TASK
+   405
+   406	            // todo: should do better management of integers.
+   407	            mCurTask++;
+   408	            if (mCurTask <= 0) {
+   409	                mCurTask = 1;
+   410	            }
+   411	            r.task = new TaskRecord(mCurTask, r.info, intent,
+   412	                    (r.info.flags&ActivityInfo.FLAG_CLEAR_TASK_ON_LAUNCH) != 0);
+   413	            if (DEBUG_TASKS) Slog.v(TAG, "Starting new activity " + r
+   414	                    + " in new task " + r.task);
+   415	            newTask = true;
+   416	            addRecentTaskLocked(r.task);
+   417
+   418	        } else if (sourceRecord != null) {
+   419	            if (!addingToTask &&
+   420	                    (launchFlags&Intent.FLAG_ACTIVITY_CLEAR_TOP) != 0) {
+   421			// sunway
+   422			// case 3;
+   423			// CLEAR_TOP并非NEW_TASK的专利
+   424			// 由于这里没有经过NEW_TASK的 moveToFront, 导致CLEAR_TOP更容易伤
+   425			// 到其他task的activity
+   426
+   427	                // In this case, we are adding the activity to an existing
+   428	                // task, but the caller has asked to clear that task if the
+   429	                // activity is already running.
+   430
+   431	                HistoryRecord top = performClearTaskLocked(
+   432	                        sourceRecord.task.taskId, r, launchFlags, true);
+   433	                if (top != null) {
+   434	                    logStartActivity(EventLogTags.AM_NEW_INTENT, r, top.task);
+   435	                    deliverNewIntentLocked(top, r.intent);
+   436	                    // For paranoia, make sure we have correctly
+   437	                    // resumed the top activity.
+   438	                    if (doResume) {
+   439	                        resumeTopActivityLocked(null);
+   440	                    }
+   441	                    return START_DELIVERED_TO_TOP;
+   442	                }
+   443	            } else if (!addingToTask &&
+   444	                    (launchFlags&Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) != 0) {
+   445			// sunway:
+   446
+   447			// case 3;
+   448			// REORDER_TO_FRONT是非NEW_TASK的专利
+   449			// 若当前task的stack为A,B,C; C调用startActivity(B),则执行后的结
+   450			// 果为A,C,B;
+   451			// 即B会被reorder to front
+   452			//
+   453			// 到目前为止可以导致onNewIntent的标志:
+   454			// 1. SINGLE_INSTANCE, SINGLE_TASK
+   455			// 2. MULTIPLE & SINGLE_TOP
+   456			// 3. REORDER_TO_FRONT
+   457
+   458
+   459	                // In this case, we are launching an activity in our own task
+   460	                // that may already be running somewhere in the history, and
+   461	                // we want to shuffle it to the front of the stack if so.
+   462	                int where = findActivityInHistoryLocked(r, sourceRecord.task.taskId);
+   463	                if (where >= 0) {
+   464	                    HistoryRecord top = moveActivityToFrontLocked(where);
+   465	                    logStartActivity(EventLogTags.AM_NEW_INTENT, r, top.task);
+   466	                    deliverNewIntentLocked(top, r.intent);
+   467	                    if (doResume) {
+   468	                        resumeTopActivityLocked(null);
+   469	                    }
+   470	                    return START_DELIVERED_TO_TOP;
+   471	                }
+   472	            }
+   473	            // An existing activity is starting this new activity, so we want
+   474	            // to keep the new one in the same task as the one that is starting
+   475	            // it.
+   476	            r.task = sourceRecord.task;
+   477	            if (DEBUG_TASKS) Slog.v(TAG, "Starting new activity " + r
+   478	                    + " in existing task " + r.task);
+   479
+   480	        } else {
+   481	            // This not being started from an existing activity, and not part
+   482	            // of a new task...  just put it in the top task, though these days
+   483	            // this case should never happen.
+   484	            final int N = mHistory.size();
+   485	            HistoryRecord prev =
+   486	                N > 0 ? (HistoryRecord)mHistory.get(N-1) : null;
+   487	            r.task = prev != null
+   488	                ? prev.task
+   489	                : new TaskRecord(mCurTask, r.info, intent,
+   490	                        (r.info.flags&ActivityInfo.FLAG_CLEAR_TASK_ON_LAUNCH) != 0);
+   491	            if (DEBUG_TASKS) Slog.v(TAG, "Starting new activity " + r
+   492	                    + " in new guessed " + r.task);
+   493	        }
+   494	        if (newTask) {
+   495	            EventLog.writeEvent(EventLogTags.AM_CREATE_TASK, r.task.taskId);
+   496	        }
+   497	        logStartActivity(EventLogTags.AM_CREATE_ACTIVITY, r, r.task);
+   498
+   499		// sunway:
+   500		//
+   501		// 经过九九八十一难,到这里才真正调用onCreate;回想前面的种种, 有些
+   502		// activity被kill掉了, 有些被移动到前台并被resume了, 能收到onNewIntent调
+   503		// 用都算不错了; 能真正因为startActivity导致onCreate被调用的有多少?
+   504
+   505	        startActivityLocked(r, newTask, doResume);
+   506	        return START_SUCCESS;
+   507	    }
+   508
+   509
+   510
+   511
+   512	private HistoryRecord findTaskLocked(Intent intent, ActivityInfo info) {
+   513	        ComponentName cls = intent.getComponent();
+   514	        if (info.targetActivity != null) {
+   515	            cls = new ComponentName(info.packageName, info.targetActivity);
+   516	        }
+   517
+   518	        TaskRecord cp = null;
+   519
+   520	        final int N = mHistory.size();
+   521	        for (int i=(N-1); i>=0; i--) {
+   522	            HistoryRecord r = (HistoryRecord)mHistory.get(i);
+   523	            if (!r.finishing && r.task != cp
+   524	                    && r.launchMode != ActivityInfo.LAUNCH_SINGLE_INSTANCE) {
+   525
+   526			// sunway:
+   527			// launchMode!=SINGLE_INSTANCE这个条件可用避免这种情况:
+   528			// 当前mHistory对于同一个affinity有多个task (只有一种可能:一个为正常的task,
+   529			// 其他的均为SINGLE_INSTANCE); 通过这个条件判断,可以避免findTask
+   530			// 时找到SINGLE_INSTANCE的task (这种task即使找到也不可能往上添加
+   531			// 其他activity, 结果还是要新建一个task, 但实际上该
+   532			// SINGLE_INSTANCE下面明明有一个可用的`正常`task...最后会导致task越
+   533			// 来越多)
+   534
+   535	                cp = r.task;
+   536	                //Slog.i(TAG, "Comparing existing cls=" + r.task.intent.getComponent().flattenToShortString()
+   537	                //        + "/aff=" + r.task.affinity + " to new cls="
+   538	                //        + intent.getComponent().flattenToShortString() + "/aff=" + taskAffinity);
+   539	                if (r.task.affinity != null) {
+   540	                    if (r.task.affinity.equals(info.taskAffinity)) {
+   541	                        //Slog.i(TAG, "Found matching affinity!");
+   542	                        return r;
+   543	                    }
+   544	                } else if (r.task.intent != null
+   545	                        && r.task.intent.getComponent().equals(cls)) {
+   546	                    //Slog.i(TAG, "Found matching class!");
+   547	                    //dump();
+   548	                    //Slog.i(TAG, "For Intent " + intent + " bringing to top: " + r.intent);
+   549	                    return r;
+   550	                } else if (r.task.affinityIntent != null
+   551	                        && r.task.affinityIntent.getComponent().equals(cls)) {
+   552	                    //Slog.i(TAG, "Found matching class!");
+   553	                    //dump();
+   554	                    //Slog.i(TAG, "For Intent " + intent + " bringing to top: " + r.intent);
+   555	                    return r;
+   556	                }
+   557	            }
+   558	        }
+   559
+   560	        return null;
+   561	    }
+   562
+   563
+   564	    private final HistoryRecord resetTaskIfNeededLocked(HistoryRecord taskTop,
+   565	            HistoryRecord newActivity) {
+   566		// sunway:
+   567		// resetTaskIfNeeded, 是RESET_TASK_IF_NEED intent flag导致的调用
+   568		// launcher在启动activity时会使用NEW_TASK & RESET_TASK_IF_NEED 标志
+   569		// 所以该标志和launch有关, 实际上, activity的四个属性:
+   570		// 1. CLEAR_TASK_ON_LAUNCH
+   571		// 2. FINISH_ON_TASK_LAUNCH
+   572		// 3. ALLOW_TASK_REPARENTING
+   573		// 4. ALWAYS_RETAIN_TASK_STATE
+   574		// 都只是和这个标志有关
+   575		// 另外, CLEAR_WHEN_TASK_RESET intent flag 也只和这个标志有关.
+   576		// Q: RESET_TASK是干什么?
+   577		// Q: IF_NEEDED是什么意思?
+   578
+   579	        boolean forceReset = (newActivity.info.flags
+   580	                &ActivityInfo.FLAG_CLEAR_TASK_ON_LAUNCH) != 0;
+   581
+   582		// sunway:
+   583		// ACTIVITY_INACTIVE_RESET_TIME 为 30 分钟
+   584		// 当task.getInactiveDuration > 30 min时, 表示该task需要被forceReset了, 这也
+   585		// 许就是IF_NEEDED的要表达的意思(之一)?
+   586
+   587
+   588	        if (taskTop.task.getInactiveDuration() > ACTIVITY_INACTIVE_RESET_TIME) {
+   589	            if ((newActivity.info.flags
+   590	                    &ActivityInfo.FLAG_ALWAYS_RETAIN_TASK_STATE) == 0) {
+   591			// sunway:
+   592			// 若root activity设置了这个属性,可以避免空闲30分钟后整个task被
+   593			// reset (reset case 1)
+   594			// 但对case 2,3 无效
+   595	                forceReset = true;
+   596	            }
+   597	        }
+   598
+   599		// sunway:
+   600		// 所谓 reset task, 是指要从当前task中找出哪些activity需要被reset
+   601		// (finish), 主要分为三种情况:
+   602		// case 1. 整个task的所有activity被需要被reset
+   603		// case 2. 某个或某些activity需要被reset
+   604		// case 3. 还要考虑更复杂的ALLOW_TASK_REPARENTING属性
+   605
+   606	        final TaskRecord task = taskTop.task;
+   607
+   608	        // We are going to move through the history list so that we can look
+   609	        // at each activity 'target' with 'below' either the interesting
+   610	        // activity immediately below it in the stack or null.
+   611	        HistoryRecord target = null;
+   612	        int targetI = 0;
+   613	        int taskTopI = -1;
+   614	        int replyChainEnd = -1;
+   615	        int lastReparentPos = -1;
+   616
+   617		// sunway:
+   618		// 遍历mHistory的所有activity, top --> bottom
+   619
+   620	        for (int i=mHistory.size()-1; i>=-1; i--) {
+   621	            HistoryRecord below = i >= 0 ? (HistoryRecord)mHistory.get(i) : null;
+   622
+   623	            if (below != null && below.finishing) {
+   624	                continue;
+   625	            }
+   626	            if (target == null) {
+   627	                target = below;
+   628	                targetI = i;
+   629	                // If we were in the middle of a reply chain before this
+   630	                // task, it doesn't appear like the root of the chain wants
+   631	                // anything interesting, so drop it.
+   632	                replyChainEnd = -1;
+   633	                continue;
+   634	            }
+   635
+   636	            final int flags = target.info.flags;
+   637
+   638		    // sunway:
+   639		    // 当前activity需要被finish on task launch?
+   640		    // IF_NEEDED (之二)?
+   641
+   642	            final boolean finishOnTaskLaunch =
+   643	                (flags&ActivityInfo.FLAG_FINISH_ON_TASK_LAUNCH) != 0;
+   644	            final boolean allowTaskReparenting =
+   645	                (flags&ActivityInfo.FLAG_ALLOW_TASK_REPARENTING) != 0;
+   646
+   647	            if (target.task == task) {
+   648			// sunway:
+   649			// 我们只能reset要reset的task, 其他的task不能碰
+   650
+   651	                // We are inside of the task being reset...  we'll either
+   652	                // finish this activity, push it out for another task,
+   653	                // or leave it as-is.  We only do this
+   654	                // for activities that are not the root of the task (since
+   655	                // if we finish the root, we may no longer have the task!).
+   656	                if (taskTopI < 0) {
+   657	                    taskTopI = targetI;
+   658	                }
+   659	                if (below != null && below.task == task) {
+   660	                    final boolean clearWhenTaskReset =
+   661	                            (target.intent.getFlags()
+   662	                                    &Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) != 0;
+   663	                    if (!finishOnTaskLaunch && !clearWhenTaskReset && target.resultTo != null) {
+   664	                        // If this activity is sending a reply to a previous
+   665	                        // activity, we can't do anything with it now until
+   666	                        // we reach the start of the reply chain.
+   667	                        // XXX note that we are assuming the result is always
+   668	                        // to the previous activity, which is almost always
+   669	                        // the case but we really shouldn't count on.
+   670	                        if (replyChainEnd < 0) {
+   671	                            replyChainEnd = targetI;
+   672	                        }
+   673	                    } else if (!finishOnTaskLaunch && !clearWhenTaskReset && allowTaskReparenting
+   674	                            && target.taskAffinity != null
+   675	                            && !target.taskAffinity.equals(task.affinity)) {
+   676
+   677				// sunway:
+   678	                        // 若当前处理的activity是从别的地方`收养`的
+   679	                        // (allowTaskReparenting为真,且它的affinity和要reset的
+   680	                        // task的affinity不同), 而且它不想死,那么放了它(从哪来的
+   681	                        // 回哪去,或者自立门户)
+   682	                        //
+   683	                        //
+   684	                        // If this activity has an affinity for another
+   685	                        // task, then we need to move it out of here.  We will
+   686	                        // move it as far out of the way as possible, to the
+   687	                        // bottom of the activity stack.  This also keeps it
+   688	                        // correctly ordered with any activities we previously
+   689	                        // moved.
+   690	                        HistoryRecord p = (HistoryRecord)mHistory.get(0);
+   691	                        if (target.taskAffinity != null
+   692	                                && target.taskAffinity.equals(p.task.affinity)) {
+   693	                            // If the activity currently at the bottom has the
+   694	                            // same task affinity as the one we are moving,
+   695	                            // then merge it into the same task.
+   696	                            target.task = p.task;
+   697	                            if (DEBUG_TASKS) Slog.v(TAG, "Start pushing activity " + target
+   698	                                    + " out to bottom task " + p.task);
+   699	                        } else {
+   700	                            mCurTask++;
+   701	                            if (mCurTask <= 0) {
+   702	                                mCurTask = 1;
+   703	                            }
+   704	                            target.task = new TaskRecord(mCurTask, target.info, null,
+   705	                                    (target.info.flags&ActivityInfo.FLAG_CLEAR_TASK_ON_LAUNCH) != 0);
+   706	                            target.task.affinityIntent = target.intent;
+   707	                            if (DEBUG_TASKS) Slog.v(TAG, "Start pushing activity " + target
+   708	                                    + " out to new task " + target.task);
+   709	                        }
+   710	                        mWindowManager.setAppGroupId(target, task.taskId);
+   711	                        if (replyChainEnd < 0) {
+   712	                            replyChainEnd = targetI;
+   713	                        }
+   714	                        int dstPos = 0;
+   715	                        for (int srcPos=targetI; srcPos<=replyChainEnd; srcPos++) {
+   716	                            p = (HistoryRecord)mHistory.get(srcPos);
+   717	                            if (p.finishing) {
+   718	                                continue;
+   719	                            }
+   720	                            if (DEBUG_TASKS) Slog.v(TAG, "Pushing next activity " + p
+   721	                                    + " out to target's task " + target.task);
+   722	                            task.numActivities--;
+   723	                            p.task = target.task;
+   724	                            target.task.numActivities++;
+   725	                            mHistory.remove(srcPos);
+   726	                            mHistory.add(dstPos, p);
+   727	                            mWindowManager.moveAppToken(dstPos, p);
+   728	                            mWindowManager.setAppGroupId(p, p.task.taskId);
+   729	                            dstPos++;
+   730	                            if (VALIDATE_TOKENS) {
+   731	                                mWindowManager.validateAppTokens(mHistory);
+   732	                            }
+   733	                            i++;
+   734	                        }
+   735	                        if (taskTop == p) {
+   736	                            taskTop = below;
+   737	                        }
+   738	                        if (taskTopI == replyChainEnd) {
+   739	                            taskTopI = -1;
+   740	                        }
+   741	                        replyChainEnd = -1;
+   742	                        addRecentTaskLocked(target.task);
+   743	                    } else if (forceReset || finishOnTaskLaunch
+   744	                            || clearWhenTaskReset) {
+   745
+   746				// sunway:
+   747	                        // 经过若干次循环后,确定了要reset的activity的范围,开始reset
+   748	                        // 其中, CLEAR_WHEN_TASK_RESET和CLEAR_TOP行为相似,都使
+   749	                        // 该activity以上被finish,但前者会限制上限为当前task
+   750
+   751	                        // If the activity should just be removed -- either
+   752	                        // because it asks for it, or the task should be
+   753	                        // cleared -- then finish it and anything that is
+   754	                        // part of its reply chain.
+   755	                        if (clearWhenTaskReset) {
+   756	                            // In this case, we want to finish this activity
+   757	                            // and everything above it, so be sneaky and pretend
+   758	                            // like these are all in the reply chain.
+   759	                            replyChainEnd = targetI+1;
+   760	                            while (replyChainEnd < mHistory.size() &&
+   761	                                    ((HistoryRecord)mHistory.get(
+   762	                                                replyChainEnd)).task == task) {
+   763	                                replyChainEnd++;
+   764	                            }
+   765	                            replyChainEnd--;
+   766	                        } else if (replyChainEnd < 0) {
+   767	                            replyChainEnd = targetI;
+   768	                        }
+   769	                        HistoryRecord p = null;
+   770	                        for (int srcPos=targetI; srcPos<=replyChainEnd; srcPos++) {
+   771	                            p = (HistoryRecord)mHistory.get(srcPos);
+   772	                            if (p.finishing) {
+   773	                                continue;
+   774	                            }
+   775	                            if (finishActivityLocked(p, srcPos,
+   776	                                    Activity.RESULT_CANCELED, null, "reset")) {
+   777	                                replyChainEnd--;
+   778	                                srcPos--;
+   779	                            }
+   780	                        }
+   781	                        if (taskTop == p) {
+   782	                            taskTop = below;
+   783	                        }
+   784	                        if (taskTopI == replyChainEnd) {
+   785	                            taskTopI = -1;
+   786	                        }
+   787	                        replyChainEnd = -1;
+   788	                    } else {
+   789	                        // If we were in the middle of a chain, well the
+   790	                        // activity that started it all doesn't want anything
+   791	                        // special, so leave it all as-is.
+   792	                        replyChainEnd = -1;
+   793	                    }
+   794	                } else {
+   795	                    // Reached the bottom of the task -- any reply chain
+   796	                    // should be left as-is.
+   797	                    replyChainEnd = -1;
+   798	                }
+   799
+   800	            } else if (target.resultTo != null) {
+   801	                // If this activity is sending a reply to a previous
+   802	                // activity, we can't do anything with it now until
+   803	                // we reach the start of the reply chain.
+   804	                // XXX note that we are assuming the result is always
+   805	                // to the previous activity, which is almost always
+   806	                // the case but we really shouldn't count on.
+   807	                if (replyChainEnd < 0) {
+   808	                    replyChainEnd = targetI;
+   809	                }
+   810
+   811	            } else if (taskTopI >= 0 && allowTaskReparenting
+   812	                    && task.affinity != null
+   813	                    && task.affinity.equals(target.taskAffinity)) {
+   814			// sunway:
+   815			// 如果其它task中有从当前task`过继`过去的activity, 那么也会reset
+   816			// 它,或者会把它move回当前task (根据IF_NEEDED)
+   817
+   818	                // We are inside of another task...  if this activity has
+   819	                // an affinity for our task, then either remove it if we are
+   820	                // clearing or move it over to our task.  Note that
+   821	                // we currently punt on the case where we are resetting a
+   822	                // task that is not at the top but who has activities above
+   823	                // with an affinity to it...  this is really not a normal
+   824	                // case, and we will need to later pull that task to the front
+   825	                // and usually at that point we will do the reset and pick
+   826	                // up those remaining activities.  (This only happens if
+   827	                // someone starts an activity in a new task from an activity
+   828	                // in a task that is not currently on top.)
+   829			Slog.e("sunway", "AMS:206");
+   830	                if (forceReset || finishOnTaskLaunch) {
+   831			    Slog.e("sunway", "AMS:208");
+   832	                    if (replyChainEnd < 0) {
+   833	                        replyChainEnd = targetI;
+   834	                    }
+   835	                    HistoryRecord p = null;
+   836	                    for (int srcPos=targetI; srcPos<=replyChainEnd; srcPos++) {
+   837	                        p = (HistoryRecord)mHistory.get(srcPos);
+   838	                        if (p.finishing) {
+   839	                            continue;
+   840	                        }
+   841				Slog.e("sunway", "AMS:218");
+   842	                        if (finishActivityLocked(p, srcPos,
+   843	                                Activity.RESULT_CANCELED, null, "reset")) {
+   844	                            taskTopI--;
+   845	                            lastReparentPos--;
+   846	                            replyChainEnd--;
+   847	                            srcPos--;
+   848	                        }
+   849	                    }
+   850	                    replyChainEnd = -1;
+   851	                } else {
+   852			    Slog.e("sunway", "AMS:229");
+   853	                    if (replyChainEnd < 0) {
+   854	                        replyChainEnd = targetI;
+   855	                    }
+   856	                    for (int srcPos=replyChainEnd; srcPos>=targetI; srcPos--) {
+   857	                        HistoryRecord p = (HistoryRecord)mHistory.get(srcPos);
+   858	                        if (p.finishing) {
+   859	                            continue;
+   860	                        }
+   861	                        if (lastReparentPos < 0) {
+   862	                            lastReparentPos = taskTopI;
+   863	                            taskTop = p;
+   864	                        } else {
+   865	                            lastReparentPos--;
+   866	                        }
+   867	                        mHistory.remove(srcPos);
+   868	                        p.task.numActivities--;
+   869	                        p.task = task;
+   870	                        mHistory.add(lastReparentPos, p);
+   871	                        if (DEBUG_TASKS) Slog.v(TAG, "Pulling activity " + p
+   872	                                + " in to resetting task " + task);
+   873	                        task.numActivities++;
+   874	                        mWindowManager.moveAppToken(lastReparentPos, p);
+   875	                        mWindowManager.setAppGroupId(p, p.task.taskId);
+   876	                        if (VALIDATE_TOKENS) {
+   877	                            mWindowManager.validateAppTokens(mHistory);
+   878	                        }
+   879	                    }
+   880	                    replyChainEnd = -1;
+   881
+   882	                    // Now we've moved it in to place...  but what if this is
+   883	                    // a singleTop activity and we have put it on top of another
+   884	                    // instance of the same activity?  Then we drop the instance
+   885	                    // below so it remains singleTop.
+   886	                    if (target.info.launchMode == ActivityInfo.LAUNCH_SINGLE_TOP) {
+   887	                        for (int j=lastReparentPos-1; j>=0; j--) {
+   888	                            HistoryRecord p = (HistoryRecord)mHistory.get(j);
+   889	                            if (p.finishing) {
+   890	                                continue;
+   891	                            }
+   892	                            if (p.intent.getComponent().equals(target.intent.getComponent())) {
+   893	                                if (finishActivityLocked(p, j,
+   894	                                        Activity.RESULT_CANCELED, null, "replace")) {
+   895	                                    taskTopI--;
+   896	                                    lastReparentPos--;
+   897	                                }
+   898	                            }
+   899	                        }
+   900	                    }
+   901	                }
+   902	            }
+   903
+   904	            target = below;
+   905	            targetI = i;
+   906	        }
+   907
+   908	        return taskTop;
+   909		// sunway:
+   910		// 总结:
+   911		// RESET_TASK是指有些activity会被finish,有些会被move (ALLOW_TASK_REPARENTING)
+   912		// IF_NEEDED因为有三层含义:
+   913		//   1. task inactive超过30 min后会被CLEAR_TASK_ON_LAUNCH
+   914		//   2. 有些activity若设置了FINISH_ON_TASK_LAUNCH属性或有
+   915		//      CLEAR_WHEN_TASK_RESET intent flag, 会被finish
+   916		//   3. 有些activity若设置了ALLOW_TASK_REPARENTING, 会被moved, 或者被finish
+   917		// 一般只有launcher会 reset task
+   918	    }
+#+END_EXAMPLE
+****** analysis
+#+BEGIN_EXAMPLE
+      startActivityUnchecked(HistoryRecord r, HistoryRecord sourceRecord, ...)
+      // r is the activity to be start; sourceRecord is the activity that issues the startActivity, for notification, service..., sourceRecord is null
+        if (sourceRecord==null):
+	// This activity is not being started from another...  in this case, always start new task
+	  launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+        else if (sourceRecord.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE):
+	// original Activity is SINGLE_INSTANCE launchMode
+	  launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+	else if (r.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE
+	         or r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK):
+	  launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
+
+	if (r.resultTo != null && (launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0):
+	  // NEW_TASK is set, but requires Activity result, so just cancel the result
+          sendActivityResultLocked(-1,...)
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if (((launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0 ...):
+	  HistoryRecord taskTop=findTaskLocked(intent, r.info);
+	     // find the target task complies with r, according to affinity, compnent, .... from mHistory, top --> bottom
+	     // findTaskLocked will return the top activity in any existing task matching the given intent
+	     // typically, the search will compare taskAffinity, but sometimes, taskAffinity could be null, if so, componentName is considered
+	     // How taskAffinity is null? if activity's taskAffinity property is set to "" (see `Notification`), then it's taskAffinity will be set to null
+	  if (taskTop!=null):
+	  // found an target task, may try to foreground the task
+	  // else jump to endif of ..launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK..
+	    HistoryRecord curTop = topRunningNonDelayedActivityLocked(notTop);
+	    // find the current top activity's task
+	    if (curTop.task != taskTop.task):
+	    // target task is in background, will try to foreground target task, unless ...
+	      boolean callerAtFront = sourceRecord == null  || curTop.task == sourceRecord.task;
+	      // whether the startActivity action is issued from an obscured activity
+	      // we prefer that an obscured activity can't moveTaskToFront
+	      if (callerAtFront):
+	        moveTaskToFrontLocked(taskTop.task, r);
+		// move all the activities belonging to target task to the top of mHistory
+	      if ((launchFlags&Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) != 0):
+	        // reset task if need, another dragon~
+	        taskTop = resetTaskIfNeededLocked(taskTop, r);
+            if ((launchFlags&Intent.FLAG_ACTIVITY_CLEAR_TOP) != 0
+                 or r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK
+                 or r.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE):
+	      HistoryRecord top = performClearTaskLocked(taskTop.task.taskId, r, launchFlags, true);
+	      // clear the *mHistory* from top to the target *artivity*
+	      // note that: if target is successfully moved to front beforehand,
+	      // clearTask will actually only clear the target task, instead of the whole mHistory
+	        // for each activity from mHistory.top downto target activity, finish it!
+		// for the target activity, if it has the SINGLE_TOP flag, do nothing and return it, else finish it!
+	      if (top!=null):
+	        // target activity has the SINGLE_TOP flag, thus not finished
+		deliverNewIntentLocked(top, r.intent);
+	      else:
+	        // target activity has been finished, place a new one on the task
+		addingToTask = true;  // future actions will be taken if addingToTask is true, which means we need add the target activity to target task
+		                      // addingToTask means `startNewActivity`
+	    else if (r.realActivity.equals(taskTop.task.realActivity)): // else of clear_top
+	      // In this case the top activity on the task is the
+              // same as the one being launched, so we take that
+              // as a request to bring the task to the foreground.
+	      if (!r.intent.filterEquals(taskTop.task.intent)):
+	      // we are trying to restart target task's root activity, but with a different intent, we should start a new instance on top
+	      // else, do nothing (since the target task is already brought to front)
+	        addingToTask = true;
+            // if CLEAR_TOP ends here
+	    if (!addingToTask):
+	    // new instance should not be started, e.g. CLEAR_TOP will SINGLE_TOP; starting target task's root activity with the same intent
+	      resumeTopActivity()
+	      return;
+	// if NEW_TASK end here
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// when we reach here:
+	// 1. activity w/o NEW_TASK
+	// 2. activity w/ NEW_TASK but doesn't found the target task
+
+        HistoryRecord top = topRunningNonDelayedActivityLocked(notTop);
+	if (top.realActivity.equals(r.realActivity)):
+	  if ((launchFlags&Intent.FLAG_ACTIVITY_SINGLE_TOP) != 0
+	    or r.launchMode == ActivityInfo.LAUNCH_SINGLE_TOP
+            or r.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK):
+	      resumeTopActivityLocked(null);
+	      deliverNewIntentLocked(top, r.intent);
+	      return;
+	if (!addingToTask  && (launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0):
+	  // case 2.
+          r.task = new TaskRecord(mCurTask, r.info, intent,...)
+	else if (!addingToTask && (launchFlags&Intent.FLAG_ACTIVITY_CLEAR_TOP) != 0):
+	  // case 1.
+	  HistoryRecord top = performClearTaskLocked(sourceRecord.task.taskId, r, launchFlags, true);
+	  if (top != null):
+	    deliverNewIntentLocked(top, r.intent);
+	    return;
+	else if (!addingToTask && (launchFlags&Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) != 0):
+	  // case 1.
+	  // In this case, we are launching an activity in our own task
+          // that may already be running somewhere in the history, and
+          // we want to shuffle it to the front of the stack if so.
+	  int where = findActivityInHistoryLocked(r, sourceRecord.task.taskId);
+	    // if sourceRecord.task is not the top task in mHistory, return -1, else return the index of r in mHistory
+	  HistoryRecord top = moveActivityToFrontLocked(where);
+          deliverNewIntentLocked(top, r.intent);
+          resumeTopActivityLocked(null);
+	  return;
+        // if NEW_TASK ends here
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// all launchMode and flag is considered, if control flow still reach here ... startActivity!
+	startActivityLocked(r, newTask, doResume);
+	return;
+#+END_EXAMPLE
+      simplified procedure:
+
+#+BEGIN_EXAMPLE
+      if NEW_TASK:
+        if found target task:
+          moveTaskToFront()
+	  clearTop
+	  starting with the same intent with target task?
+      single_top
+      new task
+      clear_top
+      reorder_to_front
+      startActivity
+#+END_EXAMPLE
+
+      To summarize:
+      1. FLAG\_ACTIVITY\_NEW\_TASK may be set implicitly, e.g.
+	 - starting activity from service, notification ..., where sourceRecord==null
+	 - target activity is SINGLE\_INSTANCE, SINGLE\_TASK
+	 - sourceRecord is in SINGLE\_INSTANCE
+      2. FLAG\_ACTIVITY\_NEW\_TASK has two means:
+	 1. if target task exists: `moveTaskToFront`
+	 2. if not: start new task
+      3. moveTaskToFront must meet 3 conditions:
+	 1. NEW\_TASK
+	 2. target task exists and is in background
+	 3. sourceRecord is null or sourceRecord is the top activity,
+	    that is, only notification, service and curTop activity can move a background task to front through NEW\_TASK
+      4. CLEAR\_TOP
+	 CLEAR\_TOP will clear all the activities in *mHistory* on top of target activity, so  CLEAR\_TOP should be used in two ways:
+	 1. in most cases, CLEAR\_TOP should be used in conjunction with NEW\_TASK, so that, before clear top, the target task is moveTaskToFront,
+	    thus the succeeding CLEAR\_TOP will be restrict to the target task
+	 2. CLEAR\_TOP can be used w/o NEW\_TASK, but make sure the sourceRecord is the foreground task, or else all the activities on top of it will
+	    be finished.
+      5. REORDER\_TO\_FRONT
+	 1. should *ONLY* be called by foreground task, or else the flag will not take effect
+	 because CLEAR\_TOP condition is judged before REORDER\_TO\_FRONT, so if CLEAR\_TOP is set, REORDER\_TO\_FRONT is ignored
+	 What's more: REORDER\_TO\_FRONT will only take effect if NEW\_TASK
+      6. deliverNewIntent
+	 deliverNewIntent will occurs in two cases:
+	 1. SINGLE\_TOP, w/ or w/o NEW\_TASK
+	 2. REORDER\_TO\_FRONT
+***** TODO Launcher & Task
+***** resetTaskIfNeededLocked
+      FLAG\_ACTIVITY\_NEW\_TAKS && FLAG\_ACTIVITY\_RESET\_TASK\_IF\_NEEDED will trigger resetTaskIfNeededLocked
+
+      Typically, only launcher will set those two flags to resetTaskIfNeededLocked, but we still can set those flags manually to
+      trigger resetTaskIfNeededLocked
+
+#+BEGIN_EXAMPLE
+      resetTaskIfNeededLocked
+        // whether the launching activity has the property `CLEAR_TASK_ON_LAUNCH`
+        boolean forceReset = (newActivity.info.flags &ActivityInfo.FLAG_CLEAR_TASK_ON_LAUNCH) != 0;
+	// if the target task has been inactive for ACTIVITY_INACTIVE_RESET_TIME (30 min)
+	// and the target's *root* activity doesn't have the ALWAYS_RETAIN_TASK_STATE property, also set forceReset to true
+	// that is what the phrase `IfNeed` means
+	if (taskTop.task.getInactiveDuration() > ACTIVITY_INACTIVE_RESET_TIME):
+          if ((newActivity.info.flags &ActivityInfo.FLAG_ALWAYS_RETAIN_TASK_STATE) == 0):
+            forceReset = true;
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	foreach HistoryRecord of the target task in mHistory (from top --> bottom):
+	  // should the activity be finished on task launch?
+	  boolean finishOnTaskLaunch = (flags&ActivityInfo.FLAG_FINISH_ON_TASK_LAUNCH) != 0;
+	  // should the activity has ALLOW_TASK_REPARENTING property?
+          boolean allowTaskReparenting = (flags&ActivityInfo.FLAG_ALLOW_TASK_REPARENTING) != 0;
+	  // should the activity clear it's top when task reset?
+          boolean clearWhenTaskReset = (target.intent.getFlags()&Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) != 0;
+	  if (!finishOnTaskLaunch && !clearWhenTaskReset && allowTaskReparenting
+	      && !target.taskAffinity.equals(task.affinity)):
+	    // if the activity is ALLOW_TASK_REPARENTING and it's affinity is different with target task ...
+	    // that is , the activity is reparent from somewhere else ... , so detach it, instead of kill it.
+	    // however, ALLOW_TASK_REPARENTING can only overide forceReset: finishOnTaskLaunch and clearWhenTaskReset can still kill it.
+	    // ALLOW_TASK_REPARENTING is flexible: it can be attached/detached from a TO-BE-RESET task.
+	  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	  if (forceReset || finishOnTaskLaunch || clearWhenTaskReset ):
+	    if (clearWhenTaskReset):
+	      // finish all the actvities of the target task above the launching activity.
+	    finish current activity
+	  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          else if (taskTopI >= 0 && allowTaskReparenting && task.affinity.equals(target.taskAffinity)):
+	    // We are inside of another task...  if this activity has an affinity for our task, then either remove it if we are
+            // clearing or attach it to our task
+#+END_EXAMPLE
+
+      To summarize:
+      - CLEAR\_TASK\_ON\_LAUNCH property will clear the task when re-launch the task from launcher, (only meaningful for root activity)
+      - if task has been inactive for 30 min, it will also be CLEAR\_TASK\_ON\_LAUNCH, unless RETAIN\_TASK\_STATE property is set
+	RETAIN\_TASK\_STATE is closely related to the 30 min thresh-hold, (only meaningful for root activity)
+      - FINISH\_ON\_TASK\_LAUNCH property vs. CLEAR\_WHEN\_TASK\_RESET intent flag (not only meaningful for root activity)
+      - ALLOW\_TASK\_REPARENTING is flexible: it can be detached/attached from a TO-BE-RESET task
+
+***** affinity
+      2010-11-15
+      1. One task's affinity is the root activity's task affinity.
+      2. activity's task affinity, if not specified in manifest, is set to the activity's package name, by default.
+      3. activity's task affinity can be *null*:
+	 if activity's taskAffinity property is set to "" (see [[Notification]]), then it's taskAffinity will be set to null
+      4. Affinity will affect activity in two ways:
+	 1. When activity A calls startActivity(B) to start B activity, B will be
+	    put into the same task as A, but if the calling intent set the flag
+	    FLAG_NEW_TASK
+	    2. if there is already ONE task whose affinity is identical with B's
+               affinity (including the origina task), B will be put into that
+               task. so, if orig task's affinity is the same as B's affinity,B will still be placed into the orig task
+	    3. if there is no task whose affinity is identical with B's
+               affinity, B will be put into a new task. So the FLAG_NEW_TASK is
+               a little ambiguous, maybe it should be named
+               FLAG_NEW_OR_EXIST_TASK.
+	 2. If A call startActivity(B) to start B activity, and the calling
+	   task's affinity is same as B's affinity, and B has set the activity
+	   property: AllowTaskReparenting, then B will be `reparented` to the
+	   calling task.
+***** launch mode
+****** standard
+****** singleTop
+****** singleInstance
+****** singleTask
+***** Intent flag
+****** FLAG_ACTIVITY_NEW_TASK
+****** FLAG_ACTIVITY_CLEAR_TOP
+****** FLAG_ACTIVITY_SINGLE_TOP
+****** FLAG_ACTIVITY_REORDER_TO_FRONT
+****** FLAG_ACTIVITY_RESET_TASK_IF_NEEDED [launch related]
+****** FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET [launch related]
+       stronger CLEAR_TOP?
+****** FLAG_ACTIVITY_MULTIPLE_TASK
+****** FLAG_ACTIVITY_FORWARD_RESULT
+****** FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+***** Properties
+****** FINISH_ON_TASK_LAUNCH  [launch related]
+****** CLEAR_TASK_ON_LAUNCH  [launch related]
+       activity must be taks's root activity
+****** ALLOW_TASK_REPARENTING
+****** ALWAYS_RETAIN_TASK_STATE
+*** Service							    :service:
+**** startService
+#+BEGIN_EXAMPLE
+	startServiceLocked()
+	   retrieveServiceLocked()
+	     checkComponentPermission()
+	   bringUpServiceLocked()
+	      if serviceRecord.app and app.thread is not null,
+	           sendServiceArgs()
+	              thread.scheduleServiceArgs()
+	                  service.onStartCommand()
+	       else
+	           getProcessRecord(appName)
+	           if app or thread is not null (process is ready)
+	               realStartService()
+	                  thread.scheduleCreate..
+	           else
+	               startProcess()
+	                  start ActivityThread
+	               add service to mPendingSer..
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+	New process:
+	  ActivityThread::attach()
+	     AMS::attachApplication()
+	        foreach mPendingServices:
+	           realStartService()
+	                thread.scheduleCreate..
+#+END_EXAMPLE
+**** bindService &  unbindService
+***** ServiceConnection
+      ServiceConnection itself is binder proxy, which only implement one method:
+#+BEGIN_EXAMPLE
+      void connected(ComponentName name, IBinder service) throws RemoteException;
+#+END_EXAMPLE
+      through ServiceConnection.connected(), service can notify the *client* about service bound/unbound.
+
+      so the client must implement the ServiceConnection stub, actually, ActivityThread maintains one
+#+BEGIN_EXAMPLE
+      HashMap<Context, HashMap<ServiceConnection, ServiceDispatcher>> mServices
+#+END_EXAMPLE
+      while ServiceDispatcher maintains the ServiceConnection stub. AMS will notify the client directly through ServiceConnection stub in ActivityThread
+      To summarize:
+	 1. ServiceConnection is a stub implement in ActivityThread, AMS use it to notify client
+	 2. ServiceConnection are maintained by ActivityThread, Activity.destroy will not affect the connection.
+***** bindService
+#+BEGIN_EXAMPLE
+      int bindService(IServiceConnection connection,...);; connection is the binder proxy supplied by client
+        mServiceConnections.put(binder, c); ;; AMS save the proxy for later use
+         if ((flags&Context.BIND_AUTO_CREATE) != 0):  ;; if BIND_AUTO_CREATE flag is set, will bring up the service
+           bringUpServiceLocked(s, service.getFlags(), false);
+	     ;; may start process --> create service --> start service ...
+           return 0;
+         if (s.app != null && b.intent.received):
+	   connection.connected(s.name, b.intent.binder); ;; notify client by onServiceConnected
+#+END_EXAMPLE
+***** unbindService
+#+BEGIN_EXAMPLE
+        mServiceConnections.remove(connection);
+        s.app.thread.scheduleUnbindService(s, b.intent.intent.getIntent());
+	if ((c.flags&Context.BIND_AUTO_CREATE) != 0):
+          bringDownServiceLocked(s, false);
+	    if (!force && r.startRequested):  // startService will set r.startRequested to true, that why unbindService won't bring down service if it is
+	                                      // started by startService
+              return;
+	    if (r.connections.size() > 0):
+	      for each connection:
+                if ((cr.flags&Context.BIND_AUTO_CREATE) != 0):  // if there is still any other connection that is BIND_AUTO_CREATE,
+		                                                  // skip bring down the service
+                  return;
+	      for each connection:
+                c.conn.connected(r.name, null);   // service is about to be brought down, notify all connections through onServiceDisconnected
+	  r.app.thread.scheduleStopService(r);
+#+END_EXAMPLE
+	To summarize:
+	  unbindService will normally stop service, unless:
+	     1. the connection is not a BIND_AUTO_CREATE connection
+	     2. service is started by startService
+	     3. that are still other BIND_AUTO_CREATE connections bound to the service
+**** ServiceRecor
+d12/28/10 8:12 pm
+similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to interact with the service's process. .  But there is no correspondant like ActivityRecord in ActivityThread, since service needn't interqact with WMS, and it's life cycle is quite simple. (create, start, stop)
+**** DONE STICKY service
+     SCHEDULED: <2011-06-01 Wed> CLOSED: [2011-07-18 Mon 17:21]
+     - State "DONE"       from "DOING"      [2011-07-18 Mon 17:21]
+     STICKY mainly make sense when process has crashed due to uncaught exception.
+     see also [[Android Process Crash and Restart]]
+*** Broadcast							  :broadcast:
+**** OrderedBroadcast
+***** AbortBroadcast()
+***** GetResult..()
+***** priority
+      broadcast receiver's intent filter's `priority` will be used to by the AMS to determine the order in which the broadcast is send to
+***** SetResult..()
+**** DONE [#C] <<<protected-broadcast>>>
+     CLOSED: [2011-08-01 Mon 09:19]
+     - State "DONE"       from "TODO"       [2011-08-01 Mon 09:19]
+     PACKAGE_REMOVED/PACKAGE_ADDED/BOOT_COMPLETED are all protected-broadcasts, only the process with "system" uid can send the broadcast
+#+BEGIN_EXAMPLE
+     broadcastIntentLocked()
+       if (callingUid == Process.SYSTEM_UID || callingUid == Process.PHONE_UID || callingUid == Process.SHELL_UID || callingUid == 0) :
+         // Always okay.
+       else:
+         if (ActivityThread.getPackageManager().isProtectedBroadcast(intent.getAction())) :
+	   throw new SecurityException(msg);
+#+END_EXAMPLE
+     To summarize:
+     `protected-broadcasts` means `those broadcasts can only be sent by SYSTEM,PHONE,SHELL or root`
+
+**** DONE [#B] <<<SendBroadcast>>>
+     CLOSED: [2011-02-15 Tue 19:37]
+     - State "DONE"       [2011-02-15 Tue 19:37]
+     12/28/10 8:11 pm
+     every call to sendBroadcast will init a new receiver instance.
+#+BEGIN_EXAMPLE lang:c
+     AMS:broadcastIntentLocked()
+       // find out who will recv this broadcast
+       if intent.getComponent():
+         receivers.add(r);
+       else:
+         if !Intent.FLAG_RECEIVER_REGISTERED_ONLY:
+	   receivers=PM.queryIntentReceivers();
+	 registeredReceivers = ReceiverResolver.queryIntent(); ;;ReceiverResolver is a in-memory storage that stores runtime-registered receivers
+       // now, `receivers` stores receivers from PM, `registeredReceivers` stores receivers from ReceiverResolver
+       if !ordered:
+         BroadcastRecord r=new BroadcastRecord(registeredReceivers);
+	 mParallelBroadcasts.add(r);
+	 scheduleBroadcastsLocked()
+	   sendMessage(BROADCAST_INTENT_MSG);
+	     processNextBroadcast();
+	       foreach BroadcastRecord in mParallelBroadcasts:
+	         foreach receiver in BroadcastRecord:
+		   deliverToRegisteredReceiver();
+		     ;; make sure receiver has the requiredPermission imposed by the sender,  e.g. PERMISSION_BOOT_COMPLETED, sender can imposed a
+		     ;; requiredPermission through sendBroadcast(intent,requiredPermission)
+		     if r.requiredPermission!=null:
+		       checkComponentPermission(r.requiredPermission,filter.receiverList.pid, filter.receiverList.uid, -1);
+		     ;; make sure the sender has the requiredPermission imposed by the receiver's filter
+		     if filter.requiredPermission != null:
+		       checkComponentPermission(filter.requiredPermission,r.callingPid, r.callingUid, -1);
+		     performReceive();
+		       if app.thread !=null:
+		         app.thread.scheduleRegisteredReceiver();
+			   ReceiverDispatcher.performReceive() ;; for registeredReceivers, receiver class are identified by ReceiverDispatcher (which is send to
+			                                       ;; AMS during registerReceiver()
+			     new Args() {
+			       run():
+			         receiver.onReceive();
+			         if ordered:
+			           AMS:finishReceiver(); ;; not called here
+			     }
+			     H.post(Args);
+         registeredReceivers=null; ;; since registeredReceivers is broadcasted already as mParallelBroadcasts, it should not be merged with receivers
+       ;; if  !ordered, registeredReceivers are broadcasted all at once, without TIMEOUT consideration! SO, registeredReceivers in non-ordered broadcast
+       ;; will never cause ANR!
+       ;; if ordered, both registeredReceivers and receivers are merged in a single list, so that both registeredReceivers and receivers are broadcasted in
+       ;; order
+       merge_into_one_receiver_list();
+       scheduleBroadcastsLocked();
+         sendMessage();
+	   processNextBroadcast();
+	     r=OrderedBroadcast.get(0);
+	     if r.nextReceiver>r.receivers.size():
+	       removeMessages(BROADCAST_TIMEOUT_MSG);
+	     r.receiverTime=now();
+	     if current receiver is the first one of r:
+	       sendMessageAtTime(BROADCAST_TIMEOUT_MSG,r.receiverTime+BROADCAST_TIMEOUT);
+	     if current receiver is a registeredReceivers:
+	       scheduleBroadcastsLocked(get Current Receiver); ;; direct call
+	     else:
+	       if app!=null:
+	         app.thread.scheduleReceiver();
+		   handlerReceiver()
+		     receiver = (BroadcastReceiver)cl.loadClass(component).newInstance(); ;; for static receivers, receivers are identified by component name
+		     receiver.onReceive(context.getReceiverRestrictedContext(),...)
+		     AMS:finishReceiver(); ;; notify AMS that it can process next broadcast.
+	       else:
+	         startProcess();
+		 mPendingBroadcast=r; ;; mPendingBroadcast will broadcasted when process is ready and attached to AMS
+
+        BROADCAST_TIMEOUT_MSG's handle Message() will check whether r.receiverTime is updated, if so, that means one of Ra's receiver has returned, so
+	handler will not cause an ANR
+#+END_EXAMPLE
+   To summarize:
+   1. dynamic registered receiver
+      *the same BroadcastReceiver instance is used for Multi-broadcast*
+      - in non-ordered broadcast
+	1. doesn't cause ANR
+	2. all dynamic receivers are invoked in parallel manner (by ActivityThread's handler), i.e. one receiver's onReceive() will not block another
+	   receiver's correspondent.
+      - in ordered broadcast
+	ANR and parallel/serial manner is the same as static registered receivers
+
+   2. static registered receiver
+      *every time broadcast is received, a new static registered receiver instance is initiated*
+      - always invoked in a serial manner, i.e. one static receiver's onReceive() will block other static receiver's correspondents, no matter
+	whether it is ordered. (maybe because static receiver's process is not assumed to be running, AMS need a simplified way to start all the processes)
+   3. for a certain broadcast, the ANR timing begins when the first receiver is about to be handled, and ends when the last receiver has been handled,
+      and, what's most important: take one broadcast contains 10 static receivers for example, _the total ANR timing can be 10*10s at most_, instead of 10s.
+      because although the BROADCAST_TIMEOUT is set to be 10s, every receiver will update r.receiverTime in AMS.finishReceiver(), and the timeout handler
+      will issues an ANR only when *now-r.receiverTime > BROADCAST_TIMEOUT (10s)*
+
+   4. sendBroadcast will make sure both the sender and the receiver has been granted the requiredPermission imposed by the counterpart.
+      see also protected-broadcast for another sendBroadcast limitation.
+
+   5. Intent.FLAG_RECEIVER_REGISTERED_ONLY
+**** BroadcastRecord
+**** Sticky
+*** TODO [#A] ContentProvider
+*** ProcessRecord
+**** processName
+*** DONE AppDeathRecipient
+    CLOSED: [2011-08-02 Tue 13:39]
+    - State "DONE"       from ""           [2011-08-02 Tue 13:39]
+    see also [[binder's death]]
+    see also [[Android Process Crash and Restart]]
+*** ActivityThread
+    :PROPERTIES:
+    :CUSTOM_ID: @ActivityThread
+    :END:
+    ActivityThread stands for the client (contract to AMS) side *process*.
+    Actually, the class itself is not a Thread at all. It is a normal java class, and has ONE main(), which act as the entry point of a java process.
+    ActivityThread.main()
+#+BEGIN_EXAMPLE
+    Looper.prepare()
+    ActivityThread thread = new ActivityThread();
+    thread.attach(false);
+    Looper.loop();
+#+END_EXAMPLE
+    that is ,
+    - ActivityThread.main() will start loop in the main thread, the looper is the so-call `mainLooper`
+    - thread.attach() will establish reverse connection (AMS --> ActivityThread) with AMS, (set IApplicationThread IBinder to AMS.app.thread),
+      so that AMS can use the IApplicationThread to interact with ActivityThread, e.g. scheduleResumeaCtivity, scheduleLaunchActivity.
+      AMS use [[@AppDeathRecipient]] to reset app.thread to null, which means the process has gone.
+*** DONE Android Process Crash and Restart
+    SCHEDULED: <2011-07-18 Mon> CLOSED: [2011-07-18 Mon 14:39]
+    - State "DONE"       from "DOING"      [2011-07-18 Mon 14:39]
+      see also [[persistent application]]
+      see also [[STICKY service]]
+      see also [[Java Process Creation]]
+      see also [[binder's death]]
+      Note: we can also restart process manually by: AM.restartPackage()
+  1. setDefaultUncaughtExceptionHandler during process creation
+#+BEGIN_EXAMPLE
+     1	    Thread.setDefaultUncaughtExceptionHandler @ RuntimeInit.java
+     2	      UncaughtHandler implements Thread.UncaughtExceptionHandler
+     3	        public void uncaughtException(Thread t, Throwable e):
+     4		  ActivityManagerNative.getDefault().handleApplicationCrash(mApplicationObject, new ApplicationErrorReport.CrashInfo(e));
+     5		  Process.killProcess(Process.myPid());
+     6	          System.exit(10);
+#+END_EXAMPLE
+  2.  when there are ANY uncaught exception in ANY thread, AMS.handleApplicationCrash will be invoked, and then process will be killed
+#+BEGIN_EXAMPLE
+     1	      AMS.handleApplicationCrash()
+     2	        crashApplication(r, crashInfo);
+     3	          makeAppCrashingLocked()
+     4	            handleAppCrashLocked(app);
+     5	              // NOTE: when handling app crashing, the process is still alive, so there is still a chance for AMS to stop activity/service(s)..
+     6	              // if crashing too much, stopActivity, and in SOME cases, bringDownService
+     7	              if (crashTime != null && now < crashTime+MIN_CRASH_INTERVAL):
+     8	                killServicesLocked(app, false);
+     9	                // `killServiceLocked`, the name is quite misleading, maybe it should be named to `killOrRestartService`xs
+    10	                foreach (activity of app):
+    11	                  finishActivityLock();
+    12	              // although crashTime interval is long enough, but if the crashed app owns the top running activity...also finish the activities
+    13	              ...
+    14	              foreach (service of app):
+    15	                service.crashCount++;
+    16	      // NOTE: any way, after handleApplicationCrash, the process will definitely be killed. But before it is killed, AMS can destroy the activity/service
+    17	      // explicitly, and what's more important, restart service in some cases;
+#+END_EXAMPLE
+  3. Process.killProcess
+     After handleApplicationCrash(), the process will be killed
+
+     When process exit, all fd(s) will be closed; when the fd of /dev/binder is closed, binder_release() in binder.c will be called;
+     binder_release will trigger the binder_death notification of the IApplicationThread binder node;
+     For each Java process, AMS hold their IApplicationThread, in app.thread. Thus, when the process exit, AMS.AppDeathRecipient (which implements
+     IBinder.DeathRecipient) will be notified.
+
+     AppDeathRecipient mainly does some cleaning up of activity/service, but if the app is persistent, it will always be restarted
+#+BEGIN_EXAMPLE
+     AppDeathRecipient.binderDie()
+       ...
+       cleanUpApplicationRecordLocked()
+         if (app.persistent):
+           startProcessLocked(app, "restart", app.processName);
+#+END_EXAMPLE
+
+  4. AMS.killServiceLocked
+#+BEGIN_EXAMPLE
+     if (service.crashCount >= 2):
+       bringDownServiceLocked(sr, true);
+     else:
+       scheduleServiceRestartLocked(sr, true);
+       // after 5s, service will be restarted
+       // sr.stopIfKill is true if the service is started as STICKY
+       if (sr.stopIfKilled):
+         if (!hasClients):
+           // Whoops, no reason to restart! since no one bind the service
+           bringDownServiceLocked(sr, true);
+#+END_EXAMPLE
+ To summaries:
+   After an uncaught exception occurs in any thread, the process will crash through the registered Thread.UncaughtExceptionHandler.
+   The handler will firstly finish activities, and if the service has crashed >=2 times, the service will be bringDown (service.onDestroy will be called)
+   If the service is crashing for the 1st time, doesn't bring it down (service.onDestroy will not be called, although the service will be killed due to the
+   process will be killed later), and schedule the restart of the service after the process is killed later.
+** Alarm
+** DONE [#A] Android Testing
+   SCHEDULED: <2011-03-14 Mon>
+   - State "DONE"       [2011-03-13 Sun 18:01]
+   see [[@Instrumentation]]
+   there are 3 different testing in android
+     - Testing using JUnit's Test{Runner,Suite,Case}
+     - Testing using AndroidTest{Runner,Suite,Case}
+     - Testing using InstrumentationTest{Runner,Suite,Case}
+*** JUnit TestRunner
+    there are classes such as `TestSuite` and `TestCase`, but there is no `TestRunner` in android.
+    if u want to kick off a JUnit testing, there are 2 alternative ways:
+       1. write some `TestCase` and run the application as `JUnit TestCase` in eclipse or using cmd like `java -cp jnit.jar com.sunway.test`,
+	  Note that: the testing will run in the PC side instead of android emulator or device.
+       2. in the android application code, create a TestSuite instance manually, and add some TestCase to it, then invoke TestSuite.runTest() manually.
+	  (similar with AndroidTestRunner)
+*** AndroidTestRunner
+    AndroidTestRunner, in contract with JUnit TestRunner, it maintain a Context instance (need to call AndroidTestRunner.setContext(context) to set it
+    manually, then any underlying AndroidTestCase can call `getContext()` to get the Context instance.
+
+    Q:how to kick off the testing?
+    A:manually...
+
+    if u use AndroidTestRunner, u must setup the testing manually, e.g. new AndroidTestRunner, new TestSuite, add AndroidTestCase to suite, and invoke
+    runner.runTest() at last.
+
+*** InstrumentationTestRunner
+    InstrumentationTestRunner, in contract with AndroidTestRunner, it itself is a Instrumentation, and thus the Context is set automatically by
+    Instrumentation.init() when AMS calls bindApplication().
+    InstrumentationTestCase can call `getInstrumentation()` to get the Instrumentation instance.
+
+    InstrumentationTestRunner extends *Instrumentation*, thus the testing can be kick-off by Instrumentation.onCreate(), in fact:
+#+BEGIN_EXAMPLE
+    InstrumentationTestRunner.onCreate()
+      mTestRunner = getAndroidTestRunner();
+      mTestRunner.setContext(getTargetContext());
+      mTestRunner.setInstrumentation(this);
+      mTestRunner.setTest(testSuiteBuilder.build());       ;;testSuiteBuilder will scan all the testCase automatically
+      mTestRunner.addTestListener();
+      start(); ;; Instrumentation.start() will start another thread and call onStart()
+        onStart();
+	  mTestRunner.runTest();
+#+END_EXAMPLE
+    that is , InstrumentationTestRunner actually is not a TestRunner, what it does is two things:
+      1. reply on Instrumentation.onCreate() to kick of the testing
+      2. reply on inner AndroidTestRunner to run all the test.
+
+#+BEGIN_EXAMPLE
+    AndroidTestRunner.runTest()						o
+      for (TestCase testCase : mTestCases):
+        setContextIfAndroidTestCase(testCase, mContext, testContext);
+        setInstrumentationIfInstrumentationTestCase(testCase, mInstrumentation); ;; set mInstrumentation to InstrumentationTestCase so that they can make use
+	                                                                         ;; of it.
+        testCase.run(mTestResult);
+#+END_EXAMPLE
+*** class hierachy graph
+#+BEGIN_EXAMPLE
+       	       	       	       	       	       	       	      -+----------+
+	     						       | TestCase |
+                            				      -+-----+----+
+	     						      	     |
+       	       	     for unit test	     -+----------------------+---------------------+
+       	       	    -+------------------------+--------------------+ 		       	   |
+	     	     |		      -+------+--------+	   |   	      -+-----------+-----------+
+	     	     |		       |AndroidTestCase|	   |	       |InstrumentationTestCase|
+	     	     |		      -+------+--------+       	   |   	      -+-----------+-----------+
+	     	     |		      	      |		       	   |	      		   |
+	     	     |		   -+---------+---------+      	   |	      -+-----------+-----------+
+	     	     |		    |	   		|      	   |	       |       	  	       |
+	     	     |	 -+---------+------+  -+--------+------+   | -+--------+-------+       	     .....
+	     	     |	  |ProviderTestCase|   |ServiceTestCase|   |  |ActivityTestCase|
+	     	     |	 -+----------------+  -+---------------+   | -+--------+-------+
+	     	     |			       	                   |           |
+       	       	     | 	       	       	       	      -+-----------+-----------+----------------------+    for functional test
+	     	     |			       	       |  	   |	       -+---------------------+---------------+
+       	       	     | 	       	       	  -+-----------+---------+ |	       	| -+------------------+-------------+ |
+	     	     |		           |ActivityUnitTestCase | |	       	|  | ActivityInstrumentationTestCase| |
+	     	     |		       	  -+---------------------+ |	       	| -+--------------------------------+ |
+		    -+---------------------------------------------+   	       -+-------------------------------------+
+#+END_EXAMPLE
+
+   - AndroidTestCase
+     - AndroidTesCase.setContext()/getContext()
+     - AndroidTestCase doesn't interact with AMS, e.g. ServiceTestCase has methods like startService(), but as against to
+       Instrumentation.startActivitySync(), ServiceTestCase.startService() only call through to mService.start(), mContext is mainly used to access
+       resource?
+   - InstrumentationTestCase
+     - InstrumentationTestCase can call getInstrumentation() and getContext() (mContext is set by AMS automatically)
+     - ActivityInstrumentationTestCase is for functional testing: the activity under test will be create using the system infrastructure
+       (by calling mInstrumentation.launchActivity) will call Instrumentation.startActivitySync to launch the activity, and perform functional testing
+     - ActivityUnitTestCase  is for unit testing: the activity under test will be create with minimal connection to the system infrastructure, and you can
+       invoke setActivityConetxt() to inject a mock context.
+** Animation
+*** TranslateAnimation
+** DONE ANR
+   CLOSED: [2011-06-13 Mon 10:52]
+   - State "DONE"       [2011-06-13 Mon 10:52]
+   see [[Strict Mode]]
+*** DONE [#A] Broadcast ANR					  :broadcast:
+    SCHEDULED: <2011-02-15 Tue> CLOSED: [2011-02-15 Tue 19:41]
+    - State "DONE"       [2011-02-15 Tue 19:41]
+    see SendBroadcast
+*** TODO [#B] KeyEvent ANR					   :keyevent:
+    key event is dispatched by AMS one by one, that is ,until prev key event is
+    dispatched, AMS will wait to dispatching next key event, until ANR occurs.
+
+    when key event is dispatched to ViewRoot, ViewRoot will
+    diliverToViewHierachy, then notify WMS that key is dispatched.
+
+    KeyWaiter says:
+#+BEGIN_HTML
+<pre lang="java" line="1">
+    long keyDispatchingTimeout = 10 * 1000;
+</pre>
+#+END_HTML
+*** DONE Service ANR						    :service:
+    CLOSED: [2011-06-13 Mon 10:52]
+    - State "DONE"       [2011-06-13 Mon 10:52]
+AMS calls:
+#+BEGIN_EXAMPLE
+1. sendServiceArgs()
+     bumpServiceExcuting
+       sendMessageAtTime(SERVICE_TIMEOUT) (20s)
+       after SERVICE_TIMEOUT (20s), appNotResponding() will be call, and ANR occurs
+     app.thread.scheduleServiceArgs()
+     activityThread will call service.onStart()
+     activityThread calls mWindowSession.serviceDone() to tell AMS that onStart returns. then the SERVICE_TIMEOUT msg is removed
+
+2. realStartService()
+     bumpServiceExecuting()
+	sendMessageAtTime(SERVICE_TIMEOUT) (20s)
+     app.thread.scheduleCreateService()
+     activityThread will call service.onCreate()
+     activityThread calls mWindowSession.serviceDone()
+#+END_EXAMPLE
+** Ant & android
+** ANT and android project
+** Application
+   see also [[Context.getApplicationContext()]]
+*** DONE persistent application
+    SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 10:08]
+    - State "DONE"       from "DOING"      [2011-07-19 Tue 10:08]
+    see also [[Android Process Crash and Restart]]
+    1. An application is persistent only when it is [[system application]]; 3rd application will never be taken as persistent.
+    2. when the persistent application is killed (crash, killPid ...), AMS will always restart it.
+    3. persistent application will be launched during system boot, before the BOOT_COMPLETED is broadcasted
+** AppWidget
+** TODO ASEC
+   :PROPERTIES:
+   :CUSTOM_ID: @ASEC
+   :END:
+   Android Security Executable Cache
+*** dm_crypt
+** Ashmem
+** Audio
+*** AudioFlingerService
+**** Track
+**** PlaybackThread
+**** MixerThread
+*** AudioPolicyService
+*** AudioTrack
+*** MediaServer
+*** Higher level
+**** MediaPlayer
+**** MediaRecorder
+**** SoundPool
+**** AudioService
+**** AudioRecord
+*** MediaPlayerService
+** Bionic libc
+*** Prelink
+** CANCELED [#B] Preference
+   - State "CANCELED"   from "DOING"      [2011-07-26 Tue 16:25]
+*** PreferenceActivity
+    - PreferenceActivity extends ListActivity
+    - Basic usage:
+      1. setContentView(resId)
+	 optional, if called, resId must contain a ListView with id="@+android/List"
+      2. PreferenceActivity.addPreferencesFromResource()
+    - Basically, PreferenceActivity is an Activity contains a ListView, and it delegate anything about the ListView to a inner member: PreferenceManager
+*** PreferenceManager
+    PreferenceManager is a utility functional object
+    - PreferenceManager extends NULL
+    - PreferenceManager mainly does two things:
+      1. maintain the underlying SharedPreference
+      2. maintain the PreferenceScreen (inflate PreferenceScreen from xml)
+*** PreferenceScreen
+    PreferenceScreen is one of the two core concepts of Preference  (another is Preference)
+    *NOTE*: PreferenceScreen vs. ListAdapter
+
+    - PreferenceScreen extends PreferenceGroup
+    - it maintains a PreferenceGroupAdapter (extends ListAdapter), which is shown in the ListView
+      The adapter will map the Preference to ListView item.
+*** Preference
+    *NOTE*: Preference vs. ListView item
+    - when Preference is changed (through Preference.notifyChanged()), it will eventually
+      invoke PreferenceScreen.PreferenceGroupAdapter.notifyDatasetChanged(), thus update the ListView.
+    - when PreferenceGroupAdapter decides to getView(), it will eventually call through to Preference.getView()->Preference.onBindView()
+    - Preference's builtin setTitle()/setSummary() will call notifyChanged() automatically, thus cause onBindView()
+*** KeyEvent dispatch
+#+BEGIN_EXAMPLE
+    ListView.onItemClicked
+      Preference.performClick
+        Preference.mOnClickListener
+	if not intercepted:
+	  PreferenceActivity.OnPreferenceTreeClickListener
+	if not intercepted && mIntent != null:
+	  startActivity(mIntent)
+#+END_EXAMPLE
+*** To summurize:
+    PreferenceScreen vs. ListAdapter
+    Preference vs. ListItem
+** PowerManagment
+*** WakeLock
+** ClassLoader
+*** DexClassLoader
+*** PathClassLoader
+*** Context.getClassLoader
+    see also [[Context.getClassLoader]]
+** TODO [#B] ContentObserver
+
+** ContentProvider , ContentResover & SQLite
+*** ContentProvider.openFile() & ContentProvider.openInputStream()
+** DONE [#A] Context
+   SCHEDULED: <2011-06-02 Thu> CLOSED: [2011-06-13 Mon 16:57]
+   - State "DONE"       [2011-06-13 Mon 16:57]
+   Context can be used to:
+   - Access application's resource and manipulate files in /data/data/xxx (through Context.mPackageInfo)
+   - Context.mainThread (ActivityThread) is a interface exposed by ActivityThread to Android component, so that Context can interact with various
+     system services on behalf of ActivityThread (permission checking, IApplicationThread, ...)
+   - call through to many system services, e.g. AMS, PMS
+
+   Context ( or ContextImpl ) is the facade of the running Context, it mainly represents:
+     1. mPackageInfo -- the PackageInfo, represents the data, e.g. ApplicationInfo, ActivityInfo, data file (resource, asset, db ...), ClassLoader, ...
+     2. mMainThread -- the ActivityThread, represents the process, e.g. looper, ApplicationThread
+
+#+END_EXAMPLE
+*** Context class hierachy
+#+BEGIN_EXAMPLE
+	     				           Context
+ 					       	      |
+				   -+-----------------+---------------+
+				    |	     			      |
+				    |		       	       	      |
+	    		     ContextWrapper    	                 ContextImpl
+       	       	       	       	    |		    		      ^
+	    -+------------------+---+---------+-		      |
+	     |			| 	      |		 	      |
+	     |			| 	      |		 	      | composition
+   ContextThemeWrapper       Service   Application      	      |
+  	    |	  |    	       	|      	      |		 	      |
+	    |	 -+-------------+-------------+----------+------------+
+        Activity
+
+#+END_EXAMPLE
+    Actually, Activity,Receiver,Service all use ContextImpl as the common implementation of the Context, but instead of inherit from ContextImpl,
+    they implement from the ContextWrapper, whose `attachBaseContext()` will compose the ContextImpl as mBase, to which ContextWrapper will delegates
+    all of the context functions.
+*** How ContextImpl is initialized
+    Take `startActivity` for example
+#+BEGIN_EXAMPLE
+     1	    AMS::startActivityMayWait()
+     2	      ActivityInfo aInfo = ActivityThread.getPackageManager().resolveIntent().activityInfo;
+     3	      startActivityLocked(...,aInfo,...)
+     4	        HistoryRecord r=new HistoryRecord(...,aInfo,...)
+     5		startActivityUncheckedLocked(r,...)
+     6		  ...
+     7		  app.thread.scheduleLaunchActivity(...,r.info,...)
+     8		    // ActivityThread
+     9		    ActivityRecord ar=new ActivityRecord();
+    10		    ar.activityInfo=info;
+    11		    performLaunchActivity(r,...)
+    12		      ar.packageInfo=getPackageInfo(r.activityInfo)
+    13		      // classLoader is obtained from packageInfo , or aInfo
+    14		      Activity activity=mInstrumentation.newActivity(ar.packageInfo.getClassLoader(),intent.getComponent,...)
+    15		      ContextImpl context=new ContextImpl(); // GOTCHA!
+    16		      context.init(ar.packageInfo,r.token,this)
+    17		        // mainThread=this
+    18	  	        mPackageInfo = packageInfo;
+    19			mResources = mPackageInfo.getResources(mainThread);
+    20			mMainThread = mainThread;
+    21		      activity.attach(context,...)
+    22		        // call ContextWrapper.attachBaseContext() to compose the ContextImpl to mBase
+    23		        attachBaseContext(context);
+    24		      ....
+    25		      call onCreate, onStart ...
+#+END_EXAMPLE
+*** Context.createPackageContext()
+     Return a new Context object for the given application name.  This
+     Context is the same as what the named application gets when it is
+     launched, containing the same resources and class loader.  Each call to
+     this method returns a new instance of a Context object; Context objects
+     are not shared, however they share common state (Resources, ClassLoader,
+     etc) so the Context instance itself is fairly lightweight.
+
+     As mentioned before, Context represents both data and process. Can createPackageContext() create a Context object that we can use to run in
+     other package's process? No!
+
+#+BEGIN_EXAMPLE
+     1	     createPackageContext():
+     2	        ActivityThread.PackageInfo pi =  mMainThread.getPackageInfo(packageName, flags);
+     3	        ContextImpl c = new ContextImpl();
+     4		// notice `init` take mMainThread as the mMainThread of the created context, thus, the context still runs in the caller's process.
+     5	        c.init(pi, null, mMainThread, mResources);
+     6		return c;
+#+END_EXAMPLE
+*** Restricted Context
+*** Context.getClassLoader()
+*** Context.getApplicationContext()
+    return an process global `Application` instance.
+    - We can inherit the `Application` class and set it to the `Application` field in AndroidManifest.xml, so that getApplicationContext() can return our own `Application` instance.
+    - since `Application` extends ContextWrapper and has been init with a ContextImpl, it is a context of the full functionality.
+      You can use it as a `persistent` Context.
+**** onCreate()
+     Called when the application is stopping.  There are no more application
+     objects running and the process will exit.  <em>Note: never depend on
+     this method being called; in many cases an unneeded application process
+     will simply be killed by the kernel without executing any application
+     code.
+     If you override this method, be sure to call super.onTerminate().
+**** onTerminate()
+**** onConfigurationChanged()
+**** onLowMemory()
+*** ContextImpl.getOuterContext()
+    OuterContext means ContextImple's `outer` context, e.g. activity or service
+** Dalvik
+*** dalvik-cache
+    :PROPERTIES:
+    :CUSTOM_ID: @dalvik-cache
+    :END:
+    /data/dalvik-cache
+*** TODO [#A] dex & apk file format
+**** DexInv & DexOpt
+** dbus
+** DONE [#C] FileObserver
+   SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 14:55]
+   - State "DONE"       [2011-02-10 Thu 14:55]
+     FileObserver relies on `inotify`
+     it mainly use jni to call inotify_init() to init the inotify_fd,
+     then call inotify_add_watch(path) to add watch a file path,
+     and at last init one ObserverThread, and run
+
+#+BEGIN_EXAMPLE
+     while (true):
+       read(inotify_fd);
+       env->CallVoidMethod() ;; call ObserverThread.onEvent() to notify FileObserver
+#+END_EXAMPLE
+
+** HAL								    :ARCHIVE:
+** important files
+*** device
+    1. data/system/packages.xml
+    2. /mnt/secure/asec
+    3. /mnt/asec
+    4. /system/etc/permissions/platform.xml
+    5. /system/etc/security/cacerts.bks
+    6. /data/dalvik-cache
+    7. /data/property
+    8. /system/build.prop
+    9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
+    10. /data/system/registered_services/android.content.SyncAdapter.xml
+*** src
+    1. framework/base/core/res
+    2. framework/base/core/jni
+    3. system/core/init
+    4. system/core/include/private/android_filesystem_config.h
+** init
+*** TODO init.rc
+*** DONE System init
+    CLOSED: [2011-03-01 Tue 11:20]
+    - State "DONE"       [2011-03-01 Tue 11:20]
+    init will start some daemon, service_manager, media_service. Then call app_process to call zygoteInit.java to start zygote.
+    ZygoteInit.java, first will fork and start system_server, then listen on one local socket through runSelectLoopMode().
+    SystemServer.java's main() will firstly load 'android_server'.so and call
+    it's init1() to start binderThreadPool and call SystemServer's init2(),
+    which will init an ServerThread and start some java service like AMS, WMS.
+
+    system_server is setuid to `system` uid.
+
+    Note:
+    zygote will keep running with `root` uid, so that zygote can setuid/gid/groups on newly forked progress, so that new java progress will run with
+    proper uid/gid/groups
+*** Zygote init
+    app_process --> app_main.cpp: framework/base/cads/app_process
+    ZygoteInit.java: framework/base/core/java/com/android/internal/os
+#+BEGIN_EXAMPLE
+    app_process::main()
+      runtime.start("com.android.internal.os.ZygoteInit", startSystemServer);
+       ZygoteInit.main()
+         registerZygoteSocket();
+	 startSystemServer();
+	   pid = Zygote.forkSystemServer();
+	   if (pid == 0):
+             handleSystemServerProcess(parsedArgs);
+	       closeServerSocket(); // for newly forked system_server process, close zygote socket inherited from parent
+	       RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
+	         zygoteInitNative();
+		   proc->startThreadPool();
+		   invokeStaticMain(startClass, startArgs); // startClass is "com.android.server.SystemServer"
+		     SystemServer.java:main()
+		       System.loadLibrary("android_servers");
+		       init1(args); // init1 is native method in android_servers.so
+		         android_server_SystemServer_init1(JNIEnv* env, jobject clazz)
+			   system_init();
+			     runtime->callStatic("com/android/server/SystemServer", "init2");
+			       SystemServer.java:init2()
+			         Thread thr = new ServerThread();
+				   // start any system service, e.g. ams, wms..
+				   // prepare the looper and loop in it.
+				   // the looper is TAKEN as the `main` looper  of the `system` process
+				 thr.start();
+			     ProcessState::self()->startThreadPool();
+			     IPCThreadState::self()->joinThreadPool();
+	 runSelectLoopMode();
+#+END_EXAMPLE
+    Q: Why SystemServer.java will call android_server.so:init1(), which will call SystemServer.java:init2()? instead of call init2() directly?
+    A: android_server.so:init1() is needed because it will call `joinThreadPool` to put the process into ThreadPool. There is no java correspondent of
+       joinThreadPool()
+
+** Input Method Framework
+** IntentSender
+   :PROPERTIES:
+   :CUSTOM_ID:       @IntentSender
+   :ATTACH_DIR_INHERIT: t
+   :END:
+   see [[@PendingIntent]]
+** Launcher							    :ARCHIVE:
+** Looper & Message & Message Queue
+   see [[@ActivityThread]]
+**** Message Queue
+****** DONE [#A] Idle Handler
+       SCHEDULED: <2011-02-09 Wed> CLOSED: [2011-02-09 Wed 17:57]
+       - State "DONE"       [2011-02-09 Wed 17:57]
+#+BEGIN_EXAMPLE
+       MessageQueue.next()
+         while true:
+	   msg=pullNextLocked(now)
+	     foreach msg:
+	       if now>msg.when:
+	         return msg
+	   if msg==null:
+	     return msg
+	   else:
+	     idlers = mIdleHandlers.toArray();
+	   foreach idler in idlers:
+	     keep=idler.queueIdle();
+	     if !keep:
+               mIdleHandlers.remove(idler);
+           if (mMessages != null):
+             this.wait(mMessages.when-now); // if there is a message, but it's not up to date, wait until it is up to date
+           else:
+             this.wait();  // no message, wait until new message arrives
+           // MessageQueue.enqueueMessage() will call this.notify()
+#+END_EXAMPLE
+******* <<<Idler>>>
+	Idler class is used by ActivityThread when resumeActivity. when resumeActivity returns, ActivityThread will put one Idler in the MessageQueue,
+	when the queue is idle (activity is ready), Idler.queueIdle() will be called, which will notify AMS to finish activities registered before.
+
+**** DONE Message.obtain() & Message.recycle()
+     SCHEDULED: <2011-05-28 Sat> CLOSED: [2011-05-27 Fri 14:55]
+     - State "DONE"       [2011-05-27 Fri 14:55]
+     - Message.obtain():
+#+BEGIN_EXAMPLE
+     synchronized (mPoolSync) {
+         if (mPool != null) {
+             Message m = mPool;
+             mPool = m.next;
+             m.next = null;
+             return m;
+         }
+     }
+     return new Message();
+#+END_EXAMPLE
+     - Message.recycle():
+#+BEGIN_EXAMPLE
+     synchronized (mPoolSync) {
+         if (mPoolSize < MAX_POOL_SIZE) {
+             clearForRecycle();
+	       what = 0;
+               obj = null;
+               when = 0;
+               target = null;
+               callback = null;
+	       ...
+             next = mPool;
+             mPool = this;
+         }
+     }
+#+END_EXAMPLE
+     - sendMessage():
+#+BEGIN_EXAMPLE
+       sendMessageDelayed(msg,delayMillis)
+         sendMessageAtTime(msg, uptimeMillis)
+	   queue.enqueueMessage(msg, uptimeMillis);
+	     if (msg.when != 0):
+               throw new AndroidRuntimeException(msg + " This message is already in use.");
+	       msg.when = uptimeMillis;  // important
+	       if (p == null || when == 0 || when < p.when): // reorder messages in queue according to msg.when
+                 msg.next = p;
+                 mMessages = msg;
+                 this.notify(); // notify waiting
+	       else:
+                 Message prev = null;
+                 while (p != null && p.when <= when) {
+                   prev = p;
+                   p = p.next;
+                 }
+                 msg.next = prev.next;
+                 prev.next = msg;
+                 this.notify();
+#+END_EXAMPLE
+     - Looper.loop():
+#+BEGIN_EXAMPLE
+       while true:
+         Message msg=queue.next(); // might block
+	 msg.target.dispatchMessage(msg);
+	 msg.recycle()
+#+END_EXAMPLE
+       Note:
+       Looper.loop() will recycle message automatically, thus *NEVER* invoke Message.recycle() manually!  Or else `message is already in use` exception
+       will be thrown. Because: when u call recycle() manually, the message will finally be recycled twice, after the 2nd recycle(), the message list will
+       have circular reference, and the succeeding obtainMessage() will definitly obtain the *same* message *again and again*
+
+     To summarize:
+     - Generally, message can't be re-used, except for the situation that `Message is firstly recycled by Message.recycle() and then reused by
+       Message.obtain()`, or else any other form of Message re-use will cause exception.
+     - Loop will invoke Message.recycle() automatically, thus never call it manually.
+**** misc
+***** Looper.setMessageLogging()
+***** DONE <<<HandlerThread>>>
+      CLOSED: [2011-02-24 Thu 15:00]
+      - State "DONE"       [2011-02-24 Thu 15:00]
+      Handy class that starting a thread with a looper, u can call HandlerThread.getLooper() to get the looper.
+      note that getLooper() will block until the looper is ready.
+
+***** Messenger
+      see [[@Messenger]]
+** LowMemoryKiller
+*** oom adj
+** misc
+*** DONE [#A] bitmap recycle
+    SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 11:46]
+    - State "DONE"       [2011-02-10 Thu 11:46]
+    Bitmap.recycle() will call nativeRecycle() to release native memory used by Skia. But, we don't need call it directly, since Bitmap.finalize()
+    will call it.
+*** TODO [#B] android 尺寸单位 (px,pt,dp,sp..)
+** TODO [#B] MountService
+   :PROPERTIES:
+   :CUSTOM_ID: @MountService
+   :END:
+   see [[@NativeDaemonConnector]]
+   see [[@vold]]
+#+BEGIN_EXAMPLE
+		       -+------socket-------+
+	   	        |	     	    |
+	       	       	|    	     	    V
+   MountService-----connector  	       	   vold <-----netlink-----> kernel
+	   	       	^	     	    |
+	   	       	|	     	    |
+	       	       -+------binder-------+
+#+END_EXAMPLE
+
+** TODO NativeDaemonConnector
+   :PROPERTIES:
+   :CUSTOM_ID: @NativeDaemonConnector
+   :END:
+   see [[@MountService]]
+   android use NativeDaemonConnector to interactive native daemons, including
+   - vold
+   - netd
+   - installd
+** NDK								    :ARCHIVE:
+** Notification
+   :PROPERTIES:
+   :CUSTOM_ID: Notification
+   :END:
+   Notification intent will use FLAG_NEW_TASK implicitly, and the target activity *should* use blank string ("") as affinity, to reduce the risk that
+   startActivity from notification falls into an existing task;
+
+*** "" as taskAffinity
+    see `startActivityUnchecked`
+
+    activity with "" as taskAffinity will have it taskAffinity set to null; So that `findTaskLocked` in `startActivityUnchecked` will not try to find
+    any existing task according to taskAffinity, instead, it will try to find the target task by the condition
+
+                        *the target task's starting intent must be identical with the calling intent*
+
+    which impose a stronger restriction on the target task searing, and thus reduce conflict.
+
+    Different activities with the same "" taskAffinity will not be placed in the same task when start activty with NEW_TASK, since their starting intent is
+    different.
+
+** DONE [#A] PackageManager
+   SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-05-12 Thu 17:50]
+   - State "DONE"       [2011-05-12 Thu 17:50]
+*** Security
+**** DONE [#A] Android Permission
+     SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-01 Tue 18:33]
+     - State "DONE"       [2011-03-01 Tue 18:33]
+     :PROPERTIES:
+       :CUSTOM_ID: @Android Permission
+     :END:
+***** check permission during Binder transactions
+      see [[Binder.getCallingPid() & Binder.getCallingUid()][getCallingPid]]
+****** check `component permission` when access certain component: startService, sendBroadcast, startActivity
+       see [[startService][startService]], [[sendBroadcast][sendBroadcast]], [[startActivity][startActivity]]
+       note: sendBroadcast will make sure both the sender and the receiver has gained the requiredPermission imposed by the counterpart.
+****** check `application permission` when access application's any component
+#+BEGIN_EXAMPLE
+       <application ... android:permission="xxx">  </application>
+#+END_EXAMPLE
+***** check permission by private API calls
+      e.g. When accessing network, u need `INTERNET` permission, the network API will check permission.
+***** check permission by operating system (e.g. file permission..)
+      /system/etc/permissions/platform.xml reads:
+#+BEGIN_EXAMPLE
+      <permission name="android.permission.INTERNET" >
+          <group gid="inet" />
+      </permission>
+      ...
+#+END_EXAMPLE
+      The above tags are associating low-level group IDs with permission
+      names.  By specifying such a mapping, you are saying that any application
+      process granted the given permission will also be running with the given
+      group ID attached to its process, so it can perform any filesystem (read,
+      write, execute) operations allowed for that group.
+
+***** DONE [#B] PendingIntent / IntentSender
+      SCHEDULED: <2011-03-03 Thu> CLOSED: [2011-03-07 Mon 15:15]
+      - State "DONE"       [2011-03-07 Mon 15:15]
+      when A's PendingIntent is delivered to B, B calls PendingIntent.send() to send the underlying intent *on behalf of* A, A's permission is also
+      delegated to B
+
+***** PermissionController Service
+      PermissionController Service is a service added by ActivityManagerService though addService("permission"), it's only a encapsulation of
+      AMS.checkPermission() and further PMS.checkUidPermission()
+
+      android::checkCallingPermission() in native code use PermissionController service to check permission in native code:
+#+BEGIN_EXAMPLE
+      binder = defaultServiceManager()->checkService("permission");
+      pc = interface_cast<IPermissionController>(binder);
+      pc.checkPermission
+#+END_EXAMPLE
+
+**** DONE where is the /etc/password , /etc/shadow & /etc/group files of android?
+     CLOSED: [2011-03-01 Tue 11:21]
+     - State "DONE"       [2011-03-01 Tue 11:21]
+       system/core/include/private/android_filesystem_config.h
+       /bionic/libc/bionic/stubs.c
+
+       progresses granted "EXTERNAL_STORAGE" permission can read/write sdcard, because these progresses will be put into `sdcard_rw` group (see [[@Android Permission]])
+       but this doesn't mean that the file's owner is added into the `sdcard_rw` group beforehand, in fact, PM will maintain the group info, when
+       forking the process from zygote, zygote will invoke setgroups to add the process to `sdcard_rw` group.
+
+       typically, when user A launch a linux program, the program uid/gid/groups will be set according to user A's uid/gid/groups, but progress can also call
+       setuid/gid/groups manually (with enough privilege) to reset the uid/gid/groups (zygote adopts the later approach to restrict user progress's privilege)
+**** DONE secure container
+     CLOSED: [2011-03-07 Mon 14:06]
+     - State "DONE"       [2011-03-07 Mon 14:06]
+     :PROPERTIES:
+	:CUSTOM_ID: @secure_container
+     :END:
+
+       see dm_crypt [[@ASEC]] vold MountService
+       when apk are installed to sdcard, for security reason, it must not be placed in the sdcard directly , instead, a security container is used to save
+       the encrypted apk (xxx.asec), we need to mount (use MountService) the security container to a cached directory (/mnt/asec) to get the
+       decrypted apk (pkg.apk)
+
+      related files:
+      - /data/misc/systemkeys/AppsOnSD.sks
+	the *AES* key to encrypt pkg.apk and decrypt xxx.asec, all the secure container share the same key.
+      - /mnt/asec/com.xx xx.xxxx/pkg.apk
+	;; from init.rc
+
+#+BEGIN_EXAMPLE
+	# Secure container public mount points.
+	mkdir /mnt/asec  0700 root system
+	mount tmpfs tmpfs /mnt/asec mode=0755,gid=1000
+#+END_EXAMPLE
+	that is, /mnt/asec/ is actually mounted from a tmpfs, it's content (com.xxx.xx/pkg.apk) actually is the run-time decryption of
+	/mnt/secure/asec/com.xxx.asec
+
+      - /mnt/secure/asec/com.xxx.xxx.asec
+	the secure container (encrypted apk), /mnt/asec/xxx/pkg.apk is extracted from this file in run-time
+
+	secure container is created, mounted, umounted by MountService, which relies on `asec` executable binary to perform
+	`mount,umount,create,delete..` of the secure containers:
+      - how to create a secure container of 1.apk
+	asec create cid
+	asec mount cid /mnt/asec/xxxix
+	cp 1.apk /mnt/asec/xxxx/pkg.apk
+	asec umount cid
+
+      To summarize:
+      secure container is analogous to the `encrypt file system`.
+
+      MORE DETAILS:
+#+BEGIN_EXAMPLE
+      $>mount
+1      tmpfs /mnt/asec tmpfs rw,relatime,mode=755,gid=1000 0 0
+2      /dev/block/vold/179:1 /mnt/sdcard vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+3      /dev/block/vold/179:1 /mnt/secure/asec vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+4      tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
+5      /dev/block/dm-0 /mnt/asec/com.sunway.testwebview-1 vfat ro,dirsync,nosuid,nodev,noexec,relatime,uid=1000,fmask=0222,dmask=0222,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+#+END_EXAMPLE
+      that is,
+      1. sdcard is mounted as two part:
+	 1. the entire sdcard is mounted to /mnt/sdcard (line 2)
+	 2. sdcard/.android_secure is *bind-mount* to /mnt/secure/asec (line 3)
+	    *note*: android mount the sdcard/.android_secure to tmpfs (line 4) to obscure the actual asec data on sdcard, so that normal operations
+	    on sdcard won't touch asec data at run-time.
+      2. /mnt/secure/asec/xxx.asec is mounted as loop device, e.g.:
+	mount /mnt/secure/asec/xxx.asec -o loop=/dev/loop0
+      3. cryptsetup key /dev/block/dm-0 /dev/loop0
+      4. mount /dev/block/dm-0 /mnt/asec/xxxx (line 5)
+
+      Step 3 is essential: android use `device-mapper crypto` as the `encrypt file system` behind secure container, which can mount a encrypted image file
+      to a mapped device (dm-0)
+**** SharedUserId
+**** TODO [#A] Signature & Certificate
+     :PROPERTIES:
+     :ID:       c5ca7d63-57fd-407a-8275-3266f925d386
+     :END:
+     see also [[keytool & jarsigner]]
+     google: Android APK 签名比对
+
+     [[file:~/codebase/cb_study/build/tools/signapk/SignApk.java::for%20(String%20name%20:%20names)%20{][signApk.java]]
+
+*** installd
+    installd is a system binary running as `root` and listening on `installd` socket.
+    see [[@dalvik-cache]]
+    - when installing and uninstalling package, PMS need to mkdir/rmdir /data/data/xxx, but those data dirs is not accessable by PMS (PMS running with
+      `system` uid, while data dirs is owned by package uids like `app_1`), so PMS need to use `installd` to access those data dir.
+    - after package is installed / deleted, PMS need invoke dex_opt / rm_dex to do the dirty work like optimize dex to dalvik-cache or remove dalvik-cache,
+      those works are also delegated to installd.
+
+*** forward_lock
+    adb install -l xxx.apk ( -l means `forward_lock` install )
+
+    when xxx.apk is `forward_lock` installed
+    - it's orig .apk is deleted
+    - it's res/, manifest.xml is put to /data/app/xxx.zip
+      (note that .dex is cached in dalvik-cache)
+*** Install Package
+    - there are 2 ways to install package:
+       1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
+       2. use PackageInstaller or adb install (which will invoke PM.installPackage())
+
+    - `system` application & 3rd application
+      `system` is a property of ApplicationInfo after installation.
+      `system` application are applications not listed in `downloaded` category in Settings, while 3rd applications are applications listed in `downloaded`
+      category.
+
+      PackageManager will decide whether a newly installed application is a `system` application:
+      - if apk is pushed to /system/app & /system/framework, then it is `system` application
+      - if apk is replacing an existing old system application, then it is.
+      - ...
+**** adb push
+#+BEGIN_EXAMPLE
+     FileObserver.onEvent()
+       isApk=isPackageFilename():
+         name.endsWith(".apk");
+       if !isApk:return;
+       if ignoreCodePath(fullPathStr):   ;; if apk name is like "xxx-1.apk", it will be ignored!
+                                         ;; this is because PM.installPackage will also put installed package to /data/app, PM.installPackage use the
+					 ;; special naming rule to prevent FileObserver from installing the apk again.
+         return
+       if ADD_EVENTS:
+         scanPackageLI(mIsRom?PARSE_IS_SYSTEM:0) ;; if apk is in /system/app or /system/framework, mIsRom is true
+	                                         ;; package with PARSE_IS_SYSTEM flag will be marked as `system` application
+	 updatePermissionsLP()
+       if REMOVE_EVENTS:
+         removePackageLI()
+       if addedPackage!=null:
+         sendPackageBroadcast(ACTION_PACKAGE_ADDED)
+       if removedPackage!=null:
+         sendPackageBroadcast(ACTION_PACKAGE_REMOVED)
+#+END_EXAMPLE
+**** PM.installPackage
+***** PackageInstaller
+***** install location (src & dest)
+****** src apk location
+	  - from DownloadManager through ContentProvider
+	  - from file though MediaContainerService
+****** app install location
+       the apk's install location can be internal flash / sdcard.
+       1. The apk's manifest may declares it's `install location`, including:
+	  - auto
+	  - internalOnly
+	  - preferExternal
+       2. PackageHelper.recommendAppInstallLocation() make the ultimate decision:
+	  - if `install location` is not set in manifest, internal will always be selected
+	  - auto
+	    if apk's code size>1MB, location will be set to external, unless external storage is slow (<10% free space..
+	  - internalOnly
+	    internal will be selected
+	  - preferExternal
+	    always selected external unless storage is unavailable or inefficient.
+	  - system setting for default installation location is also considered
+
+       To summurize:
+       - manifest's `install location`
+       - system setting for `default install location`
+       - internal/external storage status
+
+***** DONE MediaContainerService / DefaultContainerService
+      SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-02 Wed 16:42]
+      - State "DONE"       [2011-03-02 Wed 16:42]
+       	see [[@MountService]]
+       	see [[@secure_container]]
+***** calling stack
+*** Replace Package
+*** Uninstall package
+**** Intent.ACTION_PACKAGE_REMOVED
+*** resolveActivity
+    as shown in [[IntentFilter matching][IntentFilter matching]], startActivity will call PM.resolveIntent to resolve the intent, and get one best ResolveInfo;
+    PM.resolveActivity() will also call PM.resolveIntent() to resolve the intent, but there is ONE difference, PM.resolveActivity will not force the DEFAULT_ONLY
+    flag set when calling resolveIntent(). but startActivity will.
+
+*** android package vs. java package vs. android application
+** DONE PendingIntent
+   CLOSED: [2011-03-07 Mon 15:58]
+   - State "DONE"       [2011-03-07 Mon 15:58]
+   :PROPERTIES:
+     :CUSTOM_ID: @PendingIntent
+   :END:
+   see [[PendingIntent @ Permission][Permission]]
+   see [[@IntentSender]]
+   A description of an Intent and target action to perform with
+   it. Instances of this class are created with getActivity(Context, int,
+   Intent, int), getBroadcast(Context, int, Intent, int), getService(Context,
+   int, Intent, int); the returned object can be handed to other applications so
+   that they can perform the action you described on your behalf at a later
+   time.
+
+   By giving a PendingIntent to another application, you are granting it the
+   right to perform the operation you have specified as if the other application
+   was yourself (with the same permissions and identity (*uid*) ). As such, you
+   should be careful about how you build the PendingIntent: often, for example,
+   the base Intent you supply will have the component name explicitly set to one
+   of your own components, to ensure it is ultimately sent there and nowhere
+   else.
+
+   A PendingIntent itself is simply a reference to a token maintained by the
+   system describing the original data used to retrieve it. This means that,
+   even if its owning application's process is killed, the PendingIntent itself
+   will remain usable from other processes that have been given it. If the
+   creating application later re-retrieves *the same kind of PendingIntent* (same
+   operation, same Intent action, data, categories, and components, and same
+   flags), it will receive a PendingIntent representing the same token if that
+   is still valid, and can thus call cancel() to remove it.
+
+   *Note*:
+   if u want to generate different PendingIntent for different intents, make
+   sure the PendingIntent's request_code is different, or intents are different.
+
+   Intent equality:
+   That is, if intents' action, data, type, class, and categories are the same.
+   This does *not* compare any extra data included in the intents.
+
+** TODO [#A] Scroll
+*** Scroller
+*** GestureDetector
+*** VelocityTracker
+** TODO Service Manager
+   see also [[binder]]
+** SharedPreference
+** DONE Strict Mode
+   SCHEDULED: <2011-06-13 Mon> CLOSED: [2011-06-13 Mon 15:24]
+   - State "DONE"       [2011-06-13 Mon 15:24]
+   see [[ANR]]
+   - use BlockGuard (StrictMode) to detect possible ANR caused by file/network IO in mainThread
+** Surfacing							    :ARCHIVE:
+** System Property
+   1. android property is by no means related to java property.
+   2. android SDK doesn't provide public java API to access android property; However, internal java API is available
+   3. android SDK provide java API to manipulate java property.
+*** android property
+    - adb shell getprop / adb shell setprop
+    - there is NO java api to set/get android property
+    - only root can set android property
+**** internal
+     main() @ init.c  // in system/core/init
+      property_init()
+      property_set("ro.hardware", hardware);
+      property_set(...)
+      ...
+*** java property
+    System.getProperty() / System.setProperty()
+** system_server
+*** ServerThread
+** Toast
+** Tools
+*** aapt
+*** adb
+**** dumpsys
+**** am
+     am start
+     am startservice
+     am broadcast
+     am instrument
+     am monitor
+**** pm
+     pm list instrumentation
+     pm setInstallLocation
+     pm getInstallLocation
+**** sendevent
+*** aidl
+**** in,out
+     - void foo(in Foo foo,out Bar bar)
+     - void foo(String s) // s is `in` implicitly, since String is immutable
+     - void foo(Integer i) // i in `in` implicitly, since Integer is also immutable
+     - void foo(Foo foo) // compile error, must specify in/out/inout for foo
+**** oneway
+     - oneway int foo();
+*** android
+*** ddms
+*** decompile
+**** dex2jar
+**** jd-gui
+**** apktool
+*** hierachyviewer
+*** layouopt
+*** sign
+**** jarsigner
+**** signapk.jar
+**** keytool
+*** traceview
+**** set traceview buffer size in ddms
+     .android/ddms.cfg:
+       profilerBufferSizeMb=100
+** Uri
+** vold
+   :PROPERTIES:
+   :CUSTOM_ID: @vold
+   :END:
+   *android's alternative to linux udev*
+   src location: /system/vold
+** Widget
+*** ActivityGroup
+*** AdapterView
+*** Layout
+**** LinearLayout
+**** TODO FrameLayout
+**** GridLayout
+**** CANCELED RelativeLayout
+     - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
+*** ListView
+**** convertView
+**** Adapter
+***** getView
+***** ViewBinder
+***** ViewHolder
+***** DONE [#A] NotifyDatasetChanged()
+      CLOSED: [2011-02-24 Thu 13:33]
+#+BEGIN_EXAMPLE
+     1	      BaseAdapter.NotifyDatasetChanged()
+     2	        AdapterView.AdapterDataSetObserver.onChanged()
+     3		  mDataChanged=true;
+     4		  AbsList.requestLayout()
+     5		    if !mBlockLayoutRequests && !mInLayout: // mInLayout makes sure that NotifyDatasetChanged() in getView() will not cause infinite loop
+     6		      super.requestLayout();
+     7		      ...
+     8		      ViewRoot.requestLayout()
+     9		        ViewRoot.performTraversals()
+    10			  deco.measure()
+    11			  deco.layout()
+    12	                    ListView.onLayout()
+    13			      mInLayout=true;
+    14			      ListView.layoutChildren()
+    15			        remove_all_children
+    16			        makeAndAddView()
+    17			          if !mDataChanged:
+    18				    reuse_previous_views
+    19				  else:
+    20				    obtainView()
+    21				      Adapter.getView()
+    22			        mDataChanged=false;
+    23			  deco.draw();
+#+END_EXAMPLE
+**** cacheColorHint
+**** FastScroller
+**** DONE Android BUG: NotifyDatasetChanged() when scrolling
+      CLOSED: [2011-06-13 Mon 17:16]
+      - State "DONE"       [2011-06-13 Mon 17:16]
+      - BUG表现: 在 getView() 中调用 NotifyDatasetChanged(), 当滑动 ListView 时, onItemClick 无法响应
+      - 原因:
+	1. NotifyDatasetChanged: see also  [[NotifyDatasetChanged]]
+	   其中最重要的三点:
+	   1. NotifyDatasetChanged 会在开始时将 mDataChanged 置位, 然后调用 AbsListView.requestLayout
+	   2. AbsListView.requestLayout 在 *mBlockLayoutRequests* 时什么也不做! ( 重要 )
+	   3. ListView layoutChildren 完成后会将 mDataChanged 复位
+	2. AbsListView TouchEvent dispatch
+	   当 mDataChanged 置位时, touch up 事件不会被处理, 因为 mDataChanged 置位, 表示 数据已改变, 而该 ListView 还没有被重新 layout, 这
+	   时应该阻止 itemClick 事件, 因为用户点击时看到的数据很可能并不是真正的数据
+	3. ListView scroll
+	   上面提到的一重要的数据是 mBlockLayoutRequests, 这个值表示 ListView 当前禁止 requestLayout.
+	   当发生 scroll 事件时, ListView 调用 trackMotionScroll(incrementalDeltaY, incrementalDeltaY); 处理滚动,
+	   该函数大致是:
+#+BEGIN_EXAMPLE
+     1		   trackMotionScroll()
+     2		     mRecycler.addScrapView(start,count); // cache 滑动出去的 view
+     3		       mRecyclerListener.onMovedToScrapHeap(scrap);
+     4	             detachViewsFromParent(start, count); // detach 滑动出去的 view from ViewGroup
+     5		     mBlockLayoutRequests = true;
+     6		       fillGap() --> makeAndAddView() --> obtainView() --> getView() 获得新的 view 以填充滑动时产生的 gap
+     7		     mBlockLayoutRequests = false;
+     8	             invokeOnItemScrollListener();
+     9	             awakenScrollBars();
+#+END_EXAMPLE
+           最重要的一点是: 在 scroll 时, mBlockLayoutRequests 会被置位,以禁止 scroll 时 requestLayout
+
+****** 在 Preference 中出现该 BUG
+       Preference 作为 经过包装的 ListView ,相对来说比较容易出现该 BUG:
+       see also [[Preference]]
+       - Preference.onBindView() 实际是经过包装的 getView()
+       - Preference 自带的 setTitle(), setSummary() 的写法:
+
+#+BEGIN_EXAMPLE
+     1		 Preference.setTitle(title):
+     2		   if (title == null && mTitle != null || title != null && !title.equals(mTitle)):
+     3		     mTitle = title;
+     4		     notifyChanged();
+#+END_EXAMPLE
+
+     如果调用者在 onBinderView 中调用了 setXXX() 方法, 则会出现该 BUG.
+
+*** TODO view overlay
+*** GestureOverlayView
+*** TODO SurfaceView
+*** TabActivity
+*** TabHost
+*** TODO [#A] TextView
+*** ViewAnimator
+*** WebView
+**** TODO [#C] Cookie
+     see [[@HTTP_Cookie]]
+***** CookieManager
+***** CookieSyncManager
+** WindowManager
+*** addView
+    2010-11-16
+    window.addView() will firstly gen (viewRoot,view,layout_param) tuple, then call ViewRoot.setView() to ask WMS to add the view.
+    since ViewRoot has an IWindowSession, and it will send IWindow to WMS (as mClient), it can communicate with WMS back and forth.
+
+    2010-11-15
+    window.addView() will add [new viewroot,decorView] tuple to
+    WindowManagerImpl, when WMS want to dispatch event to window, e.g. key event, it will
+    call mClient.dispatchKey() to viewRoot, viewRoot, as a handler, will then dispatch key event to it's looper
+
+    Activity and Dialog will generate decorView automatically, then call
+    WM.addView(decorView) to window.  but PopupWindow will not generate
+    decorView since PopupWindow need not to be `decorated`.
+
+*** Event dispatch
+**** KeyEvent dispatch
+     11/17/10 11:12 am WMS first found the focused WindowState, then dispatch
+     event to WindowState.mClient (this is a IWindow), IWindow , as an AIDL
+     register by viewRoot, will call viewRoot's dispatch() directory
+
+     2010-11-14
+#+BEGIN_EXAMPLE
+     WMS get mClient, and call mClient.dispatch() through binder
+       ViewRoot.dispatchKey()
+         ViewRoot.sendEmptyMessage(DISPATCH_KEY)
+	   message handler: ViewRoot.deliverKeyEvent()
+	     ViewRoot.deliverKeyEventToViewHierarchy()
+	       Decorview.dispatchKeyEvent() ;; mView is the decorView
+	         if (is volume key)
+		   adjust volume
+		 if (has Window.Callback) ;; Activity, Dialog implents Window.Callback
+		   callback.dispatchKeyEvent()
+		     DecorView.superDispatchKeyEvent()
+		       ViewGroup.dispatchKeyEvent() ;; dispatch key event to view hierachy
+		         Travers the focus path, call every ViewGroup's dispatchKeyEvent, then finally,calls:
+			 focusView.dispatchKeyEvent()
+			   mOnKeyListener.onKey()
+			   if (not handled)
+			     event.dispatch(view) ;; view also implents Event.Callback
+		     if (not handled)
+		         event.dispatch(activity) ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
+		 else
+		   super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
+		                            ;; does not implents Window.Callback
+                 if (still not handled):
+                   Window.onKeyDown() or onKeyUp()
+                     // cope with MENU,CAMERA,VOLUME,MEDIA,CALL,SEARCH...
+               if (not handled)
+	         changeFocus()
+		 if not (focus changed)
+		   playSoundEffect
+	       sWindowSession.finishKey(mWindow) to tell AMS that key
+#+END_EXAMPLE
+
+    note that:
+    Activity and Dialog implements Window.Callback and KeyEvent.Callback, so you can override Activity or Dialog's dispatchKeyEvent (implemented in
+    Window.Callback), and you can override onKeyUp, onKeyDown ...( implemented in KeyEvent.Callback)
+    But PopupWindow implements neither Window.Callback nor KeyEvent.Callback.
+
+**** DONE [#A] TouchEvent dispatch
+     SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-27 Thu 11:35]
+     - State "DONE"       [2011-01-27 Thu 11:35]
+
+#+BEGIN_EXAMPLE
+     ViewRoot.dispatchPointer()
+       decorView.dispatchTouchEvent() ;; mView is typically a DecorView
+         if DecorView has callbacks like Activity or Dialog
+	   activity.dispatchTouchEvent()
+	     mDecor.superDispatchTouchEvent()
+	     .... ;; same as the `else` branch
+	     activity.onTouchEvent() if not handled before
+	 else
+	   mDecor.superDispatchTouchEvent()
+	     ViewGroup.dispatchTouchEvent() ; DecorView is a FrameLayout
+               if (action == MotionEvent.ACTION_DOWN):
+                 if (disallowIntercept || !onInterceptTouchEvent(Ev)):
+                   foreach mView of ViewGroup: ;; for each child of the ViewGroup whose rect contains pointer(x,y), note that view's rect is set during view.layout()
+                     if (mView.dispatchTouchEvent()):
+                       mMotionTarget=mView;
+                       return true;
+               if mMotionTarget==null: // DOWN is not handled by any child; or event is up/move, but there is no mMotionTarget,
+                                       // which means last DOWN is handled by ourselves.
+                 return super.dispatchTouchEvent()
+	           mView.onTouchListener().on Touch()
+	           mView.onTouchEvent() ;; if not handled before
+	             mView.onClickListener()
+               // ACTION is up/move, and mMotionTarget is not null, which means we should delegate the up/move to the mMotionTarget,
+               // There is no need to go through child hierarchy to handle it.
+               if (!disallowIntercept && onInterceptTouchEvent(ev)): // touchEvent is intercepted
+                 ev.setAction(MotionEvent.ACTION_CANCEL);
+                 mMotionTarget.dispatchTouchEvent(ev)
+                 return true;
+               // touchEvent is not intercepted
+               return mMotionTarget.dispatchTouchEvent(ev);
+#+END_EXAMPLE
+     To summarize:
+     1. TouchEvent dispatching 的过程和 KeyEvent *相反*:
+	- KeyEvent: 先调用 ViewGroup.superDispatchKeyEvent(), 若没处理,再调用 mFocused.dispatchKeyEvent()
+	- TouchEvent: 先调用 child.dispatchTouchEvent(),若没处理, 再调用 super.dispatchTouchEvent()
+     2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
+     3. onInterceptTouchEvent and mMotionTarget
+***** DONE ListView TouchEvent dispatch
+      SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
+      - State "DONE"       [2011-02-16 Wed 15:04]
+      ListView 首先是一个 ViewGroup, 它使用了
+#+BEGIN_EXAMPLE
+	 ViewGroup.dispatchTouchEvent()
+	   ask_child_to_handle_it()
+	   if not handled:
+	     super(view).dispatchTouchEvent()
+	       AbsListView.onTouchEvent()
+	         if child(list item).hasFocusable(): ;; if the liste_item have any view that is focusable
+		   do_nothing;
+		 else:
+		   onItemClickedListener();
+#+END_EXAMPLE
+
+      To summarize:
+      ListView is just like a common ViewGroup, but:
+      1. ListView's onTouchEvent will not invoke `onClickListener`, but `onItemClickedListener`
+      2. before invoke onItemClickedListener, onTouchEvent will make sure that child.hasFocusable() is false
+
+***** DONE ViewGroup.onInterceptTouchEvent & mMotionTarget
+      SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
+      - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
+*** View
+**** TODO [#A] View life cycle
+***** DONE requestLayout
+      SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-26 Wed 17:22]
+      - State "DONE"       [2011-01-26 Wed 17:22]
+      :PROPERTIES:
+	:CUSTOM_ID: @requestLayout
+      :END:
+      see [[@onMeasure]] [[@onLayout]]
+      requestLayout() is actually implemented in ViewRoot
+      View defined it's own requestLayout by:
+#+BEGIN_EXAMPLE
+      View.requestLayout()
+        mParent.requestLayout() ;; for a view, mParent is the upper ViewGroup
+	  mParent.requestLayout() ;; ViewGroup implements View, thus recursive again to the parent
+	    ...
+	      top_view.requestLayout()
+	        ViewRoot.requestLayout() ;; top view's mParent is the ViewRoot
+#+END_EXAMPLE
+
+    Call stack:
+#+BEGIN_EXAMPLE
+    ViewRoot.requestLayout()
+      ViewRoot.scheduleTraversals()
+        ViewRoot.performTraversals() handles the msg
+	  mView.dispatchAttachedToWindow() ;; mView is the ViewRoot's top view
+	    ViewGroup.dispatchAttachedToWindow()
+	      view.dispatchAttachedToWindow() for every child view of the ViewGroup
+	        view.onAttachedToWindow() ;;  see [[onAttachedToWindow][onAttachedToWindow]]
+	  mView.measure()
+	    mView.onMeasure()
+	      layout.onMeasure() ;; e.g. LinearLayout, FrameLayout
+	        view.measure() ;; for every child view of the layout, including margin
+		  view.onMeasure() ;; see [[onMeasure][onMeasure]]
+	  mView.layout()
+	    layout.layout() ;; e.g. LinearLayout
+	      view.layout() ;; it seems that view.layout && view.onLayout doesn't do something meaningful?  it mainly stores the child's x,y,width,height
+	                    ;; so that we can, when touch the screen, tell which view is touched
+	        view.onLayout() ;; see [[onLayout][onLayout]],
+#+END_EXAMPLE
+
+***** addView
+***** removeView
+***** onAttachedToWindow
+      see [[@requestLayout]]
+***** onDetachedFromWindow
+***** DONE onLayout
+      CLOSED: [2011-03-15 Tue 16:50]
+      - State "DONE"       [2011-03-15 Tue 16:50]
+      :PROPERTIES:
+      :CUSTOM_ID: @onLayout
+      :END:
+      see [[@requestLayout]]
+****** android:layout_gravity & android:gravity
+       during onMeasure, view's size is fixed, after-wards, ViewGroup.onLayout will re-position children views and invoke child.onLayout to notify children
+       for their position.
+
+       - similar with android:height, only a few views or ViewGroup has the android:gravity property.
+	 e.g. TextView has the android:gravity property, so that the inner text can be positioned to top/bottom/left/right
+	 LinearLayout also has the android:gravity, which control Linear Layout's children's gravity as a whole.
+******* How does LinearLayout make use of gravity.
+	- for *Vertical* LinearLayout with layout_height= *fill_parent* :
+	  vertical LinearLayout can only set it's android:gravity to `top,bottom,center_vertical`, which can move the children as a whole in
+	  vertical direction.
+	  vertical LinearLayout's child can set their android:layout_gravity to `left,right,center_horizontal`,which can move a single child view
+	  in the horizontal direction.
+
+	  that is, if u want to position a view in vertical LinearLayout to right-bottom, u can:
+	    - set LinearLayout.android:gravity to bottom
+	    - set view.android:layout_gravity to right
+
+#+BEGIN_EXAMPLE
+	    vertical LinearLayout      	       	      set android:gravity to bottom   		& set view1.layout_gravity to right
+	   -+-----------------------+                -+-----------------------+                -+--------------------------+
+	    |-+-------------+	    |		      |			      |		       	|		 	   |
+	    | |	 view1	    |	    |		      |			      |		       	|		 	   |
+	    | |	      	    |	    |		      |			      |		       	|		 	   |
+	    |-+-------------+	    |		      |			      |		       	|		 	   |
+	    | |	 view2	    |	    |		      | 		      |		       	|		 	   |
+	    | |		    |	    |		      | 		      |		       	|		 	   |
+	    |-+-------------+	    |		      |-+--------------+      |		       	|  	    -+-----------+ |
+	    |			    |		      |	|  view1       |      |		       	|  	     |	view1	 | |
+	    |			    |		      |	|  	       |      |		       	|      	     | 	     	 | |
+	    |			    |		      |-+--------------+      |		       	| -+---------+--+--------+ |
+	    |			    |		      |	|  view2       |      |		       	|  |  view2    	|    	   |
+	    |			    |		      |	|      	       |      |		       	|  |		|    	   |
+	    |			    |		      |-+--------------+      |		       	| -+------------+  	   |
+	   -+-----------------------+		     -+-----------------------+		       -+--------------------------+
+#+END_EXAMPLE
+
+	- for horizontal LinearLayout:
+	  vice-versa
+
+***** TODO [#B] invalidate
+**** view padding and margin
+     padding = 内边距
+     margin =  外边距
+     内,外是相对于容器(盒子)的边界而言, 以Button为例,Button可以看作一个盒子,设置button.padding会影响Button里的文字或图片与Button边界的距离,例如:
+
+     Button
+#+BEGIN_EXAMPLE
+       -+---------------+
+       	|[padding] click|
+       -+---------------+
+#+END_EXAMPLE
+
+     而button.margin会影响button与其更外层盒子(如layout)的边界
+
+     LinearLayout
+#+BEGIN_EXAMPLE
+       -+-------------------+
+       	| [top margin] 	    |
+       	|+-------------+    |
+       	|| button      |    |
+       	|+-------------+    |
+       -+-------------------+
+#+END_EXAMPLE
+
+   需要注意的一点是,android中view是没有margin属性的,只有 ViewGroup 才有margin属性, 所以,如果想达到上图的效果,不可能直接设置button的margin,而是需在将button
+   放在一个 ViewGroup 中,然后设置该 ViewGroup 的margin.
+
+**** DecorView
+**** findViewById
+**** Switch focus
+     11/17/10 9:41 am
+     Q:when press 'left' key, how the focus is changed?
+     A:
+     1. when viewRoot got the key event, it will firstly call 'dispatchKeyEventToViewHierachy' to dispatch the key event to it's correspondingg top level viw (i.e. DecorView)
+     2. If the key event is not handled by the view hierachy, viewRoot will call 'findFocus' to find next focus in 'handleFinishedEvent'
+
+     3. If the current focused view has set 'focus:right...' properties, viewRoot will call view.findViewById to find the next focus, or find the nearest focusable view in a specified rectangle area.
+
+**** getDrawingCache
+**** ViewGroup
+*** ViewRoot
+    2010-11-16
+    ViewRoot is the bridge between WMS and View
+
+    It is basically a handler of activityThread's mainLooper.  So WMS can use this handler to dispatch event to top view of the activity or dialog.  What more, viewRoot is also equiped with an IWindowSession, through which can communicate with WMS, e.g, tell WMS to add view in ViewRoot.setView()
+
+**** appToken
+**** IWindowSession
+     when viewRoot is constructred, it will open session to WMS (IWindowSession) to communicate with WMS (e.g. For add, remove view)
+**** IWindow
+     when viewRoot is constructed, it will create IWindow, and register the AIDL interface to WMS,  WMS will save the IWindow as 'mClient' in WindowState arrays, through which WMS can communite with ViewRoot for event dispatching.
+     IWindow.dispatch() will call viewRoot.dispatch() directly.
+*** ViewRoot, View (DecorView) and Window
+    - 与WMS直接打交道的是ViewRoot,WMS能直接看到的只有ViewRoot (通过ViewRoot注册到WMS的IWindow mClient)
+
+    - ViewRoot直接管理其顶层View (对于Actity,Dialog, 即DecorView. 对于
+
+      PopupWindow及手动通过WindowManagerImpl.addView添加的view, 其顶层view只是普
+      通的view), 所以一个进程可以有多个ViewRoot
+
+    - Window是和DecorView一一对应的. 
+
+      因为Activity, Dialog项层view是DecorView, 所以有window的概念, 可以通
+      过Window来控制ContextMenu, 调用Window.Callback等;
+
+    - Window与Activity,Dialog对应
+    
+      通过Window.Callback, 可以和Activity和Dialog联系起来,因为它们都实际了
+      Window.Callback接口.而PopupWindow顶层只是普通view,所以没有Window的概念
+
+      综上:
+      - WMS<-->ViewRoot
+      - ViewRoot<-->DecorView
+      - DecorView<-->Window<-->Activity,Dialog
+*** Window
+    对于ViewRoot来说,顶层的`Window`就是一个普通的View, 但有些和`Window`有关的操
+    作,如:
+    - 如何处理一些通用的按键事件, 如Volume, ContextMenu,Camera,Call,Search...,
+    - 如何在顶层View之上再显示一个ContextMenu
+    - 从WMS来的一些事件如何通知给Activity,Dialog, 例如onBackPressed()
+    因为, 提供了一个Window类, 用来处理这些和`Window`有关的操作, 但从WMS及
+    ViewRoot的角度看,并没有`Window`的概念. 
+
+    只有DecorView能和Window关联,来处理`Window`相关操作 (因为DecorView是Window的
+    inner class), 所以只有Activity,Dialog有window的概念
+**** PhoneWindow
+*** WindowManagerImpl
+*** WindowManagerService
+**** WindowState
+***** mClient
+** Zygote
+*** DONE Java Process Creation
+    CLOSED: [2011-03-01 Tue 11:20]
+    - State "DONE"       [2011-03-01 Tue 11:20]
+#+BEGIN_EXAMPLE lang:c
+    AMS::startSpecificActivity()
+      Process::start(className,uid..)
+         Process::startViaZygote()
+            Pro::zygoteSendArgAndGetPid()
+               for zygote socket read pid
+#+END_EXAMPLE
+    zygote socket:
+#+BEGIN_EXAMPLE lang:c
+        runSelectLoopMode()
+          got request form socket
+             runOnce()
+	       forkAndSpecialize(int uid, int gid, int[] gids..)
+	         - uid: the UNIX uid that the new process should setuid() to after fork()ing and and before spawning any threads.
+                 - gid: the UNIX gid that the new process should setgid() to after fork()ing and and before spawning any threads.
+                 - gids: null-ok; a list of UNIX gids that the new process should setgroups() to after fork and before spawning any threads.
+		   because zygote runs with root uid, it can setuid/gid/groups freely
+                 // in child process
+                 handleChildProc()
+                   closeSocket();
+                   RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
+                     commonInit()
+                       Thread.setDefaultUncaughtExceptionHandler(new UncaughtHandler()); // NOTE: the UncaughtHandler does nothing but crash the app
+                     zygoteInitNative()
+                       gCurRuntime->onZygoteInit()
+                         proc->startThreadPool();
+                     invokeStaticMain();
+                in parent process
+                    return child pid
+#+END_EXAMPLE
+*** DONE Zygote init
+    CLOSED: [2011-06-30 Thu 16:42]
+    - State "DONE"       from ""           [2011-06-30 Thu 16:42]
+    see also [[System init]]
+** Debug related
+*** hprof & MAT
+    - 在代码中生成
+      Debug.dumpHprofData()
+    - 使用信号on-demand生成
+#+BEGIN_EXAMPLE
+    $ chmod 777 /data/misc -R
+    $ ps # 找到进程号
+    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
+    $ ls /data/misc/*.hprof 
+#+END_EXAMPLE
+    - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
+*** traceview
+**** dmtracedump
+     dmtracedump -g out.png -t 30% test.trace
+*** hierachyviewer
+*** Thread.dumpStack()
+*** logcat
+*** adb am start
+*** monkey

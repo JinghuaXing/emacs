@@ -1,0 +1,1087 @@
+* Linux Dev
+#+CATEGORY:Linux dev
+** TODO [#C] IBM ICU and HanziToPinyin in android
+** DONE [#C] UTC,GMT,Wall Time and so on
+   SCHEDULED: <2011-01-21 Fri> CLOSED: [2011-01-24 Mon 10:20]
+   - State "DONE"       [2011-01-24 Mon 10:20]
+     UTC = Universal Time Coordinate
+     GMT = Greenwich Mean Time
+     UTC and GMT are almost identical, but UTC use atomic clock.
+     Wall Time, unix RTC time, measured from 1970/1/1 0:00:00
+** DONE 程序运行时进行IO重定向
+   CLOSED: [2011-03-01 Tue 10:59]
+   - State "DONE"       [2011-03-01 Tue 10:59]
+#+BEGIN_EXAMPLE
+   $>gdb
+   (gdb) attach pid
+   (gdb) p close(1)
+   (gdb) p open("/tmp/xxx",1,0755)
+   (gdb) q
+#+END_EXAMPLE
+** TODO setuid() & SETUID flag
+** DONE uuid
+   SCHEDULED: <2011-05-31 Tue> CLOSED: [2011-07-01 Fri 13:44]
+   - State "DONE"       from "DOING"      [2011-07-01 Fri 13:44]
+** TODO 同步,互斥,信号量
+** pthread_mutex_lock 开销
+** 关于ctors,init...
+   main.cpp:
+     A a,b,c;
+     B x;
+     main() {...}
+   最终生成的./a.out中, 有一个_global_I_a的函数,它会调用_static_init_global_...函数,这个函数会负责初始化a,b,c,x
+   另外,在.init section中,会调用__do_global_ctors_aux,后者会从.ctors section中读出几个地址,顺序执行. 而.ctors section中
+   会保存_global_I_a的地址. 由于所有全局变量的初始化都放在一个_static_init_global..函数中,所以.ctors section一般只需要保存一个4
+   字节的数据.
+
+   另外,__attribute__((contructor))和__attribute__((section (".ctors")))可以给.ctors section添加新数据,使程序执行或so载入时可
+   以执行额外的函数
+
+
+*** atexit,.init,.fini是什么关系
+    void foo() __attribute__((destructor));
+    T t;
+    int main() {}
+
+    执行的结果是: main之前,t的ctor先执行,正常退出时,t的dtor先执行,foo再执行
+    原因:
+    _start --- __libc_start_main (main,argc,argv,init,fini ..)
+    而__libc_start_main大致为:
+     if (fini)
+        atexit (fini);
+     if (init)
+        (*init) ();
+     exit ((*main) (argc, argv, __environ));
+     即__libc_start_main会先将.fini段中的_fini函数用atexit注册,然后执行.init段中的_init函数,而_init函数一般是:调用.ctors段中的ctor,例如前面提到的
+     _global_I_a..函数,这个函数最终会调用各个全局变量的构造函数,然后用atexit注册相应的析构函数
+
+     因为atexit先注册的后执行,所以exit时析构函数先执行,然后_fini才执行(注:析构函数并不在.fini中)
+
+** 静态库与.o还是有区别的
+#+BEGIN_EXAMPLE
+   foo.cpp:
+   class A {
+   public:
+       A() {cout<<"a"<<endl;}
+   };
+   A a,b,c;
+   main.cpp
+   main(){}
+
+   g++ main.cpp foo.cpp时,a会被初始化
+   ar cr libfoo.a foo.o
+   g++ main.cpp -L./ -lfoo时,a不会被初始化
+   另外,
+   g++ foo.cpp -shared -fPIC -o libfoo.so
+   g++ main.cpp -L./ -lfoo时,a会被初始化
+#+END_EXAMPLE
+
+   究其原因:
+   情况1. main.cpp foo.cpp中的全局变量被.init段的代码初始化,这是elf针对c++专门设计的
+   情况2. 由于main.cpp没有引用foo.cpp中的任何东西,导致libfoo.a中的foo.o根本不会被链接到./a.out中
+   情况3. 在main执行之前,libfoo.so被ld.so动态载入后,由ld.so负责调用.init段的初始化代码初始全局变量
+
+   另外,静态库链接到程序时,是以.o为单位的,即若main.cpp需要libfoo.a的foo.o的一个函数时,foo.o中的所有东西
+   都会链接进来.
+
+   另外,由于一个编译单元中所有全局变量的初始化都是在一个函数中完成的([[*%20ctors%20init][ctor]]),所以foo.o被链接后,所有全局变量都会被初
+   始化,而不是只有main.cpp中用到的变量被初始化
+** ld链接器脚本
+   http://hi.baidu.com/chosin/blog/item/be1a507b02eb54f70bd18712.html
+   ld --verbose 显示默认链接器脚本
+   链接器脚本可以:
+   - 确定把各目标文件中的哪些section合并,如 .data : { *(mydata) } 即把所有文件中的mydata section合并成.data section
+   - 确定合并后的section的起始地址,如
+     . = 0x8049095;
+     .data : { *(mydata) }
+     即是使.data section的起始地址为0x8049095;
+   - 设定生成的可执行文件的entry
+     ENTRY (_start)
+   - 对符号赋值
+     .data : {*(.data)}
+     _edata = .;
+     即添加了一个_edata符号,$_edata即.data段的末尾的地址
+     1.c:
+     int a;
+     lds:
+     a = 3;
+     则1.c中a变量的地址会变成3
+
+** 修改了.so或executable，正在运行的程序会有啥影响？
+   executable使用exec一类函数映射到进程地址空间
+   .so使用mmap映射到进程地址,使用的参数类似于:
+       mmap2(NULL, 44424, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0)
+
+   MAP_PRIVATE表示私有映射,即本进程对文件的修改不会反映到对应的文件上
+   但外部程序(如MAP_PUBLIC的mmap,或cp..)对.so文件的修改会反映到本进程,因而可能影响程序的正常运行.
+
+   mmap的参数MAP_DENYWRITE本来用意就是阻止外部程序对mmap映射的文件的修改的,但这个
+   mmap的选项在用户态已经被ignored了(但这个选项在内核还是有效的)....据说是因为会
+   有dos风险
+
+   所以.so被mmap后,外部的修改会影响已经mmap的.so,使程序崩溃
+   有一个patch可以保护.so,其实就是不管有没有MAP_DENYWRITE选项,内核都对带PROT_EXEC的mmap加DENYWRITE:
+   ETXTBUSY on shared libs (patch included)
+   http://lkml.indiana.edu/hypermail/linux/kernel/9808.2/1046.html
+
+   与.so不同的是,executable被mmap后,内核可以保证executable文件不能被其他程序修改,其
+   他程序打开文件时,会返回ETXTBUSY
+
+   executable被保护,是因为:
+   executable都是通过sys_execve->do_execve->open_exec映射到内存的,open_exec中有一段:
+
+#+BEGIN_EXAMPLE
+   494 err = deny_write_access(file);
+   495 if (err) {
+   496   fput(file);
+   497   file = ERR_PTR(err);
+#+END_EXAMPLE
+   所以executable可以被denywrite保护
+
+   综上:
+   .so在加载后可能被外部程序修改(比如cp),linux没有什么办法保护.so,唯一的办法就是注意不要无意修改.so,例如:
+   安装新版本的.so时,不要直接cp,而要先rm .so,再cp .so,或使用install
+
+** 外部对.so的修改是如何让正在使用.so的程序崩溃的
+   - so都是用MAP_PRIVATE进行mmap的,在Linux的实现中,外部对.so的修改会反映到mmap的
+   区域中,不管是MAP_PRIVATE还是MAP_SHARED,即使MAP_PRIVATE使用了COW使程序只是修改
+   原so的附本,外部对.so的修改还是会反映到附本的区域....穷追不舍啊
+   - loader将so载入时,不仅仅要用mmap把so映射进来,还要对映射的区域的一些内容进行修改,根据
+     so类型的不同(是否使用了-fPIC选项),修改也会有所不同
+   外部程序修改了so使正在使用so的程序崩溃的原因是:外部程序的修改直接反映到mmap区域,loader载入so时
+   对mmap区域的一些修改因此丢失,而这些修改是关键的,因此程序崩溃
+
+   - loader对mmap区域的修改:
+     - so用-fPIC编译时:
+       so中对全局变量的引用使用GOT表,对自己无法解析的其他函数的调用使用PLT表,这两个表都在.data段中,初始为空
+       loader将so载入时,会填充GOT表,并将PLT表的所有entry置为loader自己的地址,将so初次调用PLT表的函数时,loader会
+       负责查找这个函数的真正地址,用它替换掉entry中自己的地址,并调用之,这也是一种lazy evaluation.
+     - so没用-fPIC编译时:
+       so中对全局变量的引用和无法解析的函数的调用都是0,load在载入so时,会修改这些值,即会同时修改.data和.text
+   因为外部程序修改so时,原来loader对mmap区域的修改都丢失了,导致so中全局变量和函数调用都变成空,出现段错误
+
+** abi for register
+   ==========i386 ABI / function calling sequence ==========
+
+All registers on the Intel386 are global and
+thus visible to both a calling and a
+called function. Registers %ebp, %ebx, %edi,
+%esi, and %esp 'belong' to the calling
+function. In other words, a called function
+must preserve these registers' values for
+its caller. Remaining registers 'belong' to
+the called function. If a calling
+function wants to preserve such a register
+value across a function call, it must
+save the value in its local stack frame.
+
+
+Some registers have assigned roles in the standard calling sequence:
+
+%esp
+The stack pointer holds the limit of the current stack frame, which
+is the address of the stack’s bottom-most, valid word. At all
+times, the stack pointer should point to a word-aligned area.
+
+%ebp
+The frame pointer optionally holds a base address for the current G
+stack frame. Consequently, a function has registers pointing to
+both ends of its frame. Incoming arguments reside in the previous
+frame, referenced as positive offsets from %ebp, while local
+variables reside in the current frame, referenced as negative
+offsets from %ebp. A function must preserve this register’s value
+for its caller.
+
+%eax
+Integral and pointer return values appear in %eax. A function that
+returns a struct or union value places the address of the result
+in %eax. Otherwise this is a scratch register.
+
+
+%ebx
+As described below, this register serves as the global offset table
+base register for position-independent code. For absolute code,
+%ebx serves as a local register and has no specified role in the
+function calling sequence. In either case, a function
+must preserve the register value for the caller.
+
+%esi and %edi
+These local registers have no specified role in the function calling sequence.
+A function must preserve their values for the
+caller.
+
+%ecx and %edx
+Scratch registers have no specified role in the standard calling sequence.
+Functions do not have to preserve their values for
+the caller.
+
+
+
+%st(0)
+Floating-point return values appear on the top of the floatingpoint
+register stack; there is no difference in the representation
+of single- or double-precision values in floating-point registers.
+If the function does not return a floating-point value, then this
+register must be empty. This register must be empty before G
+entry to a function.
+
+%st(1) through %st(7)
+Floating-point scratch registers have no specified role in the standard
+calling sequence. These registers must be empty before
+entry and upon exit from a function.
+
+EFLAGS
+The flags register contains the system flags, such as the direction
+flag and the carry flag. The direction flag must be set to the
+‘‘forward’’ (that is, zero) direction before entry and upon exit
+from a function. Other user flags have no specified role in the
+standard calling sequence and are not preserved.
+
+Floating-Point Control Word
+The Intel387 control word contains the floating-point flags, such
+as the rounding mode and exception masking.
+
+** man 7 signal
+   standard signal
+   real-time signal
+       信号队列
+       siginfo_t包含额外的信息,如信号发送方的uid
+   可重入系统调用
+   可靠信号
+   sigqueue/kill
+   sigsuspend/pause
+
+** libnotify
+** pid,ppid,tgid,pgid,sid, and signal
+   - pid 是进程/线程的唯一标识,但getpid并不是返回task_struct的pid字段,而是返回
+     task_struct->tgid,因为posix规定一个进程创建的多个线程的getpid的结果是一样的,都是那个进程的id
+     gettid返回真正的pid
+   - ppid 父进程
+     线程创建时使用了CLONE_PARENT,所以各个线程和主线程的的ppid都是主线程的ppid
+     #>ps -meo cmd,pid,ppid,pgid,tid
+     ./a.out                     23874 23237 23874     -
+      -                               -     -     - 23874
+      -                               -     -     - 23875
+     而若a.out使用进程来创建子进程,相当于clone没指定CLONE_PARENT
+     #>ps -meo cmd,pid,ppid,pgid,tid
+     ./a.out                     23885 23237 23885     -
+     -                               -     -     - 23885
+     ./a.out                     23886 23885 23885     -
+     -                               -     -     - 23886
+
+   - tgid是线程组id,getpid返回tgid
+   - pgid,组id. 子进程继承pgid,shell管道中各个进程有相同的pgid,kill -9 -pgid 可以给所有组id是pgid的进程发SIGKILL,
+     而kill -9 pid只给pid是pid的进程发SIGKILL.
+     If pid is less than -1, then sig is sent to every process in the process group whose ID is -pid.
+     pgid可以使我们同时管理一组进程,比如发信号,另外,shell的作业控制也使用了pgid,比如tcsetpgrp(fd,pgid)使得所有组id为pgid的进程
+     处于前台(即C-c给这个进程发SIGINT,这些进程的stdin,stdout为fd...) 另外, 要将一个进程daemonize通常需要关闭stdin/stdout,setpgid为自已的pid,
+     setsid为自己的pid,其中setpgid的作用就是让进程脱离父进程的进程组,以免kill -SIG 时误杀daemon进程
+   - sid,会话id,完全和shell有关的id,一个shell启动的所有进程的sid一样,当shell退出时,shell会向同一个会话id的进程发SIGHUP
+
+** SIGSTOP与SIGCONT
+   kill -SIGSTOP pid 可以将一个进程置于STOP状态,只有收到SIGCONT才能继续执行. 与各
+   种sleep,mutex,阻塞而置于STOP状态不同的是,因SIGSTOP停止的进程不会因为SIGCONT以
+   外的其他条件而苏醒
+   SIGSTOP与SIGKILL一样不能修改handler
+
+** objcopy 将数据文件保存在目标文件中
+#+BEGIN_EXAMPLE
+   #> objcopy -I binary  -O elf32-i386 -B i386 source.c sourcefile.o
+   #> nm -a sourcefile.o|grep source.c
+   00000179 D _binary_source_c_end
+   00000179 A _binary_source_c_size
+   00000000 D _binary_source_c_start
+
+   #> cat source.c
+   #include <stdio.h>
+   extern char _binary_source_c_start,  _binary_source_c_end;
+   int main(void) {
+       char * start=(char *)&_binary_source_c_start;
+       char * end=(char *)&_binary_source_c_end;
+       while (start++!=end) {
+           printf ("%c",*start);
+       }
+       return 0;
+   }
+
+
+   #>gcc source.c sourcefile.o -o ./a.out
+   #> a.out 显示source.c的内容
+#+END_EXAMPLE
+   ps. c语言中的变量名和汇编语言中的符号的关系:
+   变量名和汇编符号是对应的,不过直接引用变量名取到的是值,而直接引用汇编符号取到的是地址
+
+** self-modification code						:ATTACH:
+   :PROPERTIES:
+   :Attachments: 1.S
+   :ID:       ewhabz210oe0@sunway-lab.bupt.edu.cn
+   :END:
+   Note:mprotect is the key
+   http://en.wikipedia.org/wiki/Self-modifying_code
+   self-modifying code的作用:
+
+   The method is frequently used for conditionally invoking test/debugging code
+   without requiring additional overhead for every input/output cycle and also
+   in just-in-time (JIT) compilers.
+
+   能够避免使用 if (flag..) then ..这种语句,因为当flag发生时,代码已经被修改,后面
+   的执行不需要再判断flag,用来优化和状态相关的循环
+
+   例如:
+   - c++的多态.实际就是通过修改vtbl将条件直接通过代码的修改体现
+   - elf对共享库的函数的调用. 调用库函数时通过plt调用,例如foo@plt初始时实际是
+     loader的代码,第一次执行foo时loader负责把foo@plt修改为真正的foo的位置
+   - 对函数指针的修改也可以看作是更高层次上的self-modifying code
+
+** How main() is executed on Linux
+Starting
+
+The question is simple: how does linux execute my main()?
+Through this document, I'll use the following simple C program to illustrate how it works. It's called "simple.c"
+
+main()
+{
+   return(0);
+}
+
+
+Build
+
+gcc -o simple simple.c
+
+
+What's in the executable?
+
+To see what's in the executable, let's use a tool "objdump"
+
+objdump -f simple
+
+simple:     file format elf32-i386
+architecture: i386, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0x080482d0
+
+The output gives us some critical information about the executable.
+ First of all, the file is "ELF32" format. Second of all, the start address is "0x080482d0"
+What's ELF?
+
+ELF is acronym for Executable and Linking Format. It's one of several object and executable file formats used on Unix systems. For our discussion, the interesting thing about ELF is its header format. Every ELF executable has ELF header, which is the following.
+
+typedef struct
+{
+	unsigned char	e_ident[EI_NIDENT];	/* Magic number and other info */
+	Elf32_Half	e_type;			/* Object file type */
+	Elf32_Half	e_machine;		/* Architecture */
+	Elf32_Word	e_version;		/* Object file version */
+	Elf32_Addr	e_entry;		/* Entry point virtual address */
+	Elf32_Off	e_phoff;		/* Program header table file offset */
+	Elf32_Off	e_shoff;		/* Section header table file offset */
+	Elf32_Word	e_flags;		/* Processor-specific flags */
+	Elf32_Half	e_ehsize;		/* ELF header size in bytes */
+	Elf32_Half	e_phentsize;		/* Program header table entry size */
+	Elf32_Half	e_phnum;		/* Program header table entry count */
+	Elf32_Half	e_shentsize;		/* Section header table entry size */
+	Elf32_Half	e_shnum;		/* Section header table entry count */
+	Elf32_Half	e_shstrndx;		/* Section header string table index */
+} Elf32_Ehdr;
+
+In the above structure, there is "e_entry" field, which is starting address of an executable.
+What's at address "0x080482d0", that is, starting address?
+
+For this question, let's disassemble "simple". There are several tools to disassemble an executable. I'll use objdump for this purpose.
+
+objdump --disassemble simple
+
+The output is a little bit long so I'll not paste all the output from objdump. Our intention is see what's at address 0x080482d0. Here is the output.
+
+080482d0 <_start>:
+ 80482d0:       31 ed                   xor    %ebp,%ebp
+ 80482d2:       5e                      pop    %esi
+ 80482d3:       89 e1                   mov    %esp,%ecx
+ 80482d5:       83 e4 f0                and    $0xfffffff0,%esp
+ 80482d8:       50                      push   %eax
+ 80482d9:       54                      push   %esp
+ 80482da:       52                      push   %edx
+ 80482db:       68 20 84 04 08          push   $0x8048420
+ 80482e0:       68 74 82 04 08          push   $0x8048274
+ 80482e5:       51                      push   %ecx
+ 80482e6:       56                      push   %esi
+ 80482e7:       68 d0 83 04 08          push   $0x80483d0
+ 80482ec:       e8 cb ff ff ff          call   80482bc <_init+0x48>
+ 80482f1:       f4                      hlt
+ 80482f2:       89 f6                   mov    %esi,%esi
+
+Looks like some kind of starting routine called "_start" is at the starting address. What it does is clear a register, push some values into stack and call a function. According to this instruction, the stack frame should look like this.
+
+Stack Top	-------------------
+		0x80483d
+		-------------------
+		esi
+		-------------------
+		ecx
+		-------------------
+		0x8048274
+		-------------------
+		0x8048420
+		-------------------
+		edx
+		-------------------
+		esp
+		-------------------
+		eax
+		-------------------
+
+
+Now, as you already wonder,we've got a few questions regarding this stack frame.
+
+
+
+   1. What are those hex values about?
+   2. What's at address 80482bc, which is called by _start?
+   3. Looks like the assembly instructions doesn't initialize any register with possibly meaningful values. Then who initializes the registers?
+
+
+
+Let's answer these questions one by one.
+
+Q1>The hexa values.
+
+If you look at disassembled output from objdump carefully, you can answer this question easily.
+
+Here is answer.
+
+0x80483d0 :        This is the address of our main() function.
+
+0x8048274 :         _init function.
+
+0x8048420 :        _fini function _init and _fini is initialization/finalization function provided by GCC.
+
+Right now, let's not care about these stuffs. And basically, all those hexa values are function pointers.
+
+Q2>What's at address 80482bc?
+
+Again, let's look for address 80482bc from the disassembly output.
+If you look for it, the assembly is
+
+80482bc:	ff 25 48 95 04 08    	jmp    *0x8049548
+
+
+Here *0x8049548 is a pointer operation.
+ It just jumps to an address stored at address 0x8049548.
+
+
+More about ELF and dymanic linking
+
+With ELF, we can build an executable linked dynamically with libraries.
+Here "linked dynamically" means the actual linking process happens at runtime. Otherwise we'd have to build a huge executable containing all the libraries it calls (a "statically-linked executable). If you issue the command
+
+"ldd simple"
+
+	  libc.so.6 => /lib/i686/libc.so.6 (0x42000000)
+	  /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)
+
+You can see all the libraries dynamically linked with simple. And all the dynamically linked data and functions have "dynamic relocation entry".
+
+The concept is roughly like this.
+
+
+   1. We don't know actual address of a dynamic symbol at link time. We can know the actual address of the symbol only at runtime.
+   2. So for the dynamic symbol, we reserve a memory location for the actual address.
+      The memory location will be filled with actual address of the symbol at runtime by loader.
+   3. Our application sees the dynamic symbol indirectly with the momeory location by using kind of pointer operation. In our case, at address 80482bc, there is just a simple jump instruction.
+      And the jump location is stored at address 0x8049548 by loader during runtime.
+      We can see all dynamic link entries with objdump command.
+
+      objdump -R simple
+
+      	simple:     file format elf32-i386
+
+      	DYNAMIC RELOCATION RECORDS
+      	OFFSET   TYPE              VALUE
+      	0804954c R_386_GLOB_DAT    __gmon_start__
+      	08049540 R_386_JUMP_SLOT   __register_frame_info
+      	08049544 R_386_JUMP_SLOT   __deregister_frame_info
+      	08049548 R_386_JUMP_SLOT   __libc_start_main
+
+      Here address 0x8049548 is called "jump slot", which perfectly makes sense. And according to the table, actually we want to call __libc_start_main.
+
+
+What's __libc_start_main?
+
+Now the ball is on libc's hand. __libc_start_main is a function in libc.so.6. If you look for __libc_start_main in glibc source code, the prototype looks like this.
+
+extern int BP_SYM (__libc_start_main) (int (*main) (int, char **, char **),
+		int argc,
+		char *__unbounded *__unbounded ubp_av,
+		void (*init) (void),
+		void (*fini) (void),
+		void (*rtld_fini) (void),
+		void *__unbounded stack_end)
+__attribute__ ((noreturn));
+
+And all the assembly instructions do is set up argument stack and call __libc_start_main.
+What this function does is setup/initialize some data structures/environments and call our main().
+Let's look at the stack frame with this function prototype.
+
+Stack Top     -------------------
+                        0x80483d0                               main
+                     -------------------
+                        esi                                            argc
+                     -------------------
+                        ecx                                           argv
+                    -------------------
+                        0x8048274                             _init
+                     -------------------
+                        0x8048420                             _fini
+                     -------------------
+                        edx                                         _rtlf_fini
+                     -------------------
+                        esp                                         stack_end
+                     -------------------
+                        eax                                         this is 0
+                     -------------------
+
+According to this stack frame, esi, ecx, edx, esp, eax registers should be filled with appropriate values before __libc_start_main() is executed. And clearly this registers are not set by the startup assembly instructions shown before. Then, who sets these registers? Now I guess the only thing left. The kernel.
+Now let's go back to our third question.
+Q3>What does the kernel do?
+
+When we execute a program by entering a name on shell, this is what happens on Linux.
+
+
+   1. The shell calls the kernel system call "execve" with argc/argv.
+   2. The kernel system call handler gets control and start handling the system call. In kernel code, the handler is "sys_execve". On x86, the user-mode application passes all required parameters to kernel with the following registers.
+
+          * ebx : pointer to program name string
+          * ecx : argv array pointer
+          * edx : environment variable array pointer.
+
+   3. The generic execve kernel system call handler, which is do_execve, is called. What it does is set up a data structure and copy some data from user space to kernel space and finally calls search_binary_handler(). Linux can support more than one executable file format such as a.out and ELF at the same time. For this functionality, there is a data structure "struct linux_binfmt", which has a function pointer for each binary format loader. And search_binary_handler() just looks up an appropriate handler and calls it. In our case, load_elf_binary() is the handler. To explain each detail of the function would be lengthy/boring work. So I'll not do that. If you are interested in it, read a book about it. As a picture tells a thousand words, a thousand lines of source code tells ten thousand words (sometimes). Here is the bottom line of the function. It first sets up kernel data structures for file operation to read the ELF executable image in. Then it sets up a kernel data structure: code size, data segment start, stack segment start, etc. And it allocates user mode pages for this process and copies the argv and environment variables to those allocated page addresses. Finally, argc, the argv pointer, and the envrioronment variable array pointer are pushed to user mode stack by create_elf_tables(), and start_thread() starts the process execution rolling.
+
+
+
+
+When the _start assembly instruction gets control of execution, the stack frame looks like this.
+
+Stack Top        -------------
+                            argc
+                        -------------
+                            argv pointer
+                        -------------
+                            env pointer
+                        -------------
+
+And the assembly instructions gets all information from stack by
+
+pop %esi 		<--- get argc
+move %esp, %ecx		<--- get argv
+			  actually the argv address is the same as the current
+			  stack pointer.
+
+And now we are all set to start executing.
+What about the other registers?
+
+For esp, this is used for stack end in application program. After popping all necessary information, the _start rountine simply adjusts the stack pointer (esp) by turning off lower 4 bits from esp register. This perfectly makes sense since actually, to our main program, that is the end of stack. For edx, which is used for rtld_fini, a kind of application destructor, the kernel just sets it to 0 with the following macro.
+
+#define ELF_PLAT_INIT(_r)	do { \
+	_r->ebx = 0; _r->ecx = 0; _r->edx = 0; \
+	_r->esi = 0; _r->edi = 0; _r->ebp = 0; \
+	_r->eax = 0; \
+} while (0)
+
+The 0 means we don't use that functionality on x86 linux.
+About the assembly instructions
+
+Where are all those codes from? It's part of GCC code. You can usually find all the object files for the code at
+/usr/lib/gcc-lib/i386-redhat-linux/XXX and
+/usr/lib where XXX is gcc version.
+File names are crtbegin.o,crtend.o, gcrt1.o.
+
+
+Summing up
+
+Here is what happens.
+
+
+   1. GCC build your program with crtbegin.o/crtend.o/gcrt1.o And the other default libraries are dynamically linked by default. Starting address of the executable is set to that of _start.
+   2. Kernel loads the executable and setup text/data/bss/stack, especially, kernel allocate page(s) for arguments and environment variables and pushes all necessary information on stack.
+   3. Control is pased to _start. _start gets all information from stack setup by kernel, sets up argument stack for __libc_start_main, and calls it.
+   4. __libc_start_main initializes necessary stuffs, especially C library(such as malloc) and thread environment and calls our main.
+   5. our main is called with main(argv, argv) Actually, here one interesting point is the signature of main. __libc_start_main thinks main's signature as main(int, char **, char **) If you are curious, try the following prgram.
+
+      main(int argc, char** argv, char** env)
+      {
+          int i = 0;
+          while(env[i] != 0)
+          {
+             printf("%s\n", env[i++]);
+          }
+          return(0);
+      }
+
+
+Conclusion
+
+On Linux, our C main() function is executed by the cooperative work of GCC, libc and Linux's binary loader.
+
+References
+
+objdump                         "man objdump"
+
+ELF header                     /usr/include/elf.h
+
+__libc_start_main          glibc source
+                                       ./sysdeps/generic/libc-start.c
+
+sys_execve                     linux kernel source code
+                                       arch/i386/kernel/process.c
+
+do_execve                      linux kernel source code
+                                       fs/exec.c
+
+struct linux_binfmt       linux kernel source code
+                                       include/linux/binfmts.h
+
+load_elf_binary             linux kernel source code
+                                       fs/binfmt_elf.c
+
+create_elf_tables           linux kernel source code
+                                       fs/binfmt_elf.c
+
+start_thread                   linux kernel source code
+                                      include/asm/processor.h
+** 静态库
+   ar cr libfoo.a 1.o 2.o
+** getsockname getpeername
+** raw socket中如何指定源地址
+   虽然man raw说明,如果指定源地址为0,则内核会自动加上正确的源地址, 但我在ipv6上试没有成功...在raw socket中得到正确的源地址的方法是:
+#+BEGIN_EXAMPLE
+       void probeSrcAddr () {
+	int probeFd = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (connect (probeFd, (struct sockaddr*)&toAddr, sizeof(toAddr))==-1) {
+	    perror ("connect");
+	}
+	struct sockaddr_in6 source;
+	bzero (&source,sizeof(struct sockaddr_in6));
+	socklen_t sourceLen=sizeof(struct sockaddr_in6);
+	if (getsockname(probeFd, (struct sockaddr*)&source, &sourceLen)==-1) {
+	    perror ("getsockname");
+	}
+	memcpy (srcAddr,(char *)&source.sin6_addr,16);
+      }
+#+END_EXAMPLE
+
+   iputils中的ping6.c ping.c都是用的这种方法
+
+** SOCK_RAW, NF_PACKET, sniffer
+   使用raw socket能够:
+    - 修改整个Ip包
+    - 自定义四层协议,如ospf
+    - 监听所有的tcp,udp,icmp包,但不能拦截
+  int sockfd=socket (PF_INET,SOCK_RAW,protocol),根据protocal的不同,有不同的功能:
+    - 当protocol为IPPROTOCOL_TCP,IPPROTO_UDP,IPPROTO_ICMP时,这个socket被限定了用来收发tcp/udp/icmp包,即
+      - 向sockfd写时,Ip包的协议字段自动被重写为tcp/udp/icmp
+      - 从sockfd读时,可以读到所有收到的tcp/udp/icmp包,注意,这个sockfd并没有像SOCK_STREAM一样绑定端口号,也没有像
+	SOCK_DGRAM一样sendto后绑定一个随机端口. SOCK_RAW没有端口号的概念. 所以 sockfd可以读到所有收到的tcp/udp/icmp包
+    - 当protocol为SOCK_RAW (0) 的其它数值时,可以用来实现自己的四层协议
+      - 向sockfd写时,ip包的协议字段自动重写为protocol的值
+      - 从sockfd读时,可以读到ip层收到的所有Protocol为相应的值的ip包
+	所以本质上这种情况和情况1是一样的,只不过对于tcp/udp/icmp,系统本身已经提供了直接的支持,注:对于某个协议,可以注册多个raw socket,
+	ip层收到属于这个协议的ip包后,会依次传给每个raw socket处理. 这就是为什么 指定protocol为IPPROTOCOL_TCP后,我们自己的sockfd可以
+	读到这个tcp包,而且不影响系统自身对tcp包的处理. 链路层的PF_PACKET(sniffer)也是这种处理方法,所以sniffer只能监听,而不能拦截
+    - 总结:protocol的值对wirte sockfd的影响主要是:ip头中的协议字段会被自动修改为protocol的值,对read sockfd的影响:ip头为协议字段为protocol的包会被读到
+    - 当protocol为IPPROTOCOL_RAW(0)时
+      - 向sockfd写时,ip包完全不会被修改
+      - 系统限制不能从这种sockfd中读,要实现这个功能,需要用 PF_PACKET
+** weak symbol
+   http://www.tortall.net/projects/yasm/manual/html/objfmt-elf-directives.html
+   ref [[*c%20inline%20function][c++ inline function]] [[*gcc%20__attribute__%20syntax][gcc __attribute__ extension]]
+   ELF allows defining certain symbols as “weak”. Weak symbols are similar to
+   global symbols, except during linking, weak symbols are only chosen after
+   global and local symbols during symbol resolution. Unlike global symbols,
+   multiple object files may declare the same weak symbol, and references to a
+   symbol get resolved against a weak symbol only if no global or local symbols
+   have the same name.
+
+   This functionality is primarily useful for libraries that want to provide
+   common functions but not come into conflict with user programs. For example,
+   libc has a syscall (function) called “read”. However, to implement a threaded
+   process using POSIX threads in user-space, libpthread needs to supply a
+   function also called “read” that provides a blocking interface to the
+   programmer, but actually does non-blocking calls to the kernel. To allow an
+   application to be linked to both libc and libpthread (to share common code),
+   libc needs to have its version of the syscall with a non-weak name like
+   “_sys_read” with a weak symbol called “read”. If an application is linked
+   against libc only, the linker won't find a non-weak symbol for “read”, so it
+   will use the weak one. If the same application is linked against libc and
+   libpthread, then the linker will link “read” calls to the symbol in
+   libpthread, ignoring the weak one in libc, regardless of library link
+   order. If libc used a non-weak name, which “read” function the program ended
+   up with might depend on a variety of factors; a weak symbol is a way to tell
+   the linker that a symbol is less important resolution-wise.
+
+   The `weak' attribute causes the declaration to be emitted as a weak
+     symbol rather than a global.  This is primarily useful in defining
+     library functions which can be overridden in user code, though it
+     can also be used with non-function declarations.  Weak symbols are
+     supported for ELF targets, and also for a.out targets when using
+     the GNU assembler and linker.
+
+** pthread signal,wait,lock,unlock顺序					:ATTACH:
+   :PROPERTIES:
+   :Attachments: 1.c
+   :ID:       bxibmeh0bge0@sunway-lab.bupt.edu.cn
+   :END:
+
+** How do I get a core dump from a running program?
+
+   - abort()
+   - SIGABRT
+   - gcore
+   - gdb generate-core-file
+
+   If you just want a program to terminate now and dump core, you can use the
+   SIGABRT signal. This signal can be send from another process using kill. Or it
+   can be send by the process itself using, kill, raise, or abort. If you want a
+   core dump without killing the process, things start getting more tricky. You
+   can create a child process by using the fork system call, and let the child
+   dump core. The init program actually does this in its signal handlers. From the
+   outside, the kernel offers no simple way to get a core dump from a process
+   without killing it. But gdb have a gcore command that will do the hard work. On
+   Fedora Core you can also call gcore from your shell (in which case it is just a
+   script that call gdb).
+** nohup,SIGHUP,daemon关系
+   - SIGHUP 当终端关闭时，它会向本进程组发送SIGHUP信号,该终端进程组的所有进程都会收到
+   - nohup foo.sh 可以使foo.sh忽略SIGHUP信号
+   - daemon
+     一个进程要成为daemon需要：
+     后台运行(通过fork)
+     setsid() ;;退出原来的进程组(一般是终端)，以免接收到发往原进程组的信号(如SIGHUP)
+     chdir("/")
+     umask(0)
+     一般还要关闭各个fd
+
+** brk 与 sbrk								:ATTACH:
+   :PROPERTIES:
+   :Attachments: brk.c
+   :ID:       trz9m8l0xfe0@sunway-lab.bupt.edu.cn
+   :END:
+
+** 读取elf信息的几个程序
+   - size
+   - readelf
+   - ldd
+   - objdump
+   - strings
+   - nm
+** pmap看进程的内存映射
+   或cat /proc/<pid>/maps
+** 关于linux共享库						 :SharedLibrary:
+  - ldconfig,ld.so与ld.so.cache
+  - /usr/lib
+  - LD_LIBRARY_PATH
+  - LD_DEBUG
+  - gcc \-L选项
+  - ld -rpath选项
+
+ld.so.cache只在运行时起作用
+LD_LIBRARY_PATH只在运行时起作用
+\/usr/lib在编译时和运行时都起作用
+gcc \-L只在编译时起作用.
+ld的 -rpath 在运行时起作用,告诉加载器到哪去找so. gcc以前也有这个选项,现在这个选项只在ld中,在gcc中可以这样指定这个rpath选项:
+    gcc ... -Wl,rpath,/home/sunway
+
+ld.so的作用:
+在程序运行之前载入共享库,库查找的顺序是
+1. LD_LIBRARY_PATH
+2. ld.so.cache
+3. /usr/lib
+
+ldconfig \-v 可以显示更新cache的过程,ldconfig \-p可以查看cache的内容
+
+综上:
+  - 如果要在编译时使用某个库,可以用gcc \-L选项,或者把so复制到/usr/lib
+  - 如果要在运行时使用某个库,可以设定LD_LIBRARY_PATH,或复制到ld.so.conf指定的目录并ldconfig,或复制到/usr/lib,或使用ld的 -rpath 选项
+** valgrind
+** distcc
+** switch..case中变量的声明
+#+BEGIN_EXAMPLE
+   switch (b) {
+   int a=0;
+   case 1:
+      int c=0;
+      break;
+   case 2:
+      {
+         int d=0;
+      }
+   }
+#+END_EXAMPLE
+
+int a是合法的,int c是非法的,int d是合法的
+
+因为case 1并不一定被执行,而整个switch都属于一个作用域,编译器如何知道case 1能不能
+被执行?如果不能,引用了c的语句(包括整个switch结构)怎么办?编译器从逻辑上禁止了在
+case里声明变量.
+
+int a是合法的,因为它在所有case之间,肯定会被执行.
+
+int d是合法的,因为它属于单独的作用域.
+
+这个问题关键一点是:整个switch使用同一个作用域,而每个case不一定被执行.
+
+** DONE 数组与指针 ( array vs. pointer)
+   CLOSED: [2011-04-08 Fri 15:06]
+   - State "DONE"       [2011-04-08 Fri 15:06]
+   数组与指针的混淆,最根本的原因是这种语法糖:
+#+BEGIN_EXAMPLE
+   char * pointer=array;
+#+END_EXAMPLE
+
+   本来,做为C/C++中的一种基本类型, int a[10] 和 int x; 并没有明显的区别, a, x都是变量,都有地址和值, 但由于数组的值的结构与指针的相似性,C提供了上面提到的语法糖,即:
+   要使用数组变量的地址时,不必再加&符号,而可以直接使用数组名字 (访问数组的值时使用a[0]这种语法,所以不会混淆).
+
+   数组名即地址,所以给a再赋值是违法的,正如 &x 不能再赋值一样.
+
+   另外,为何数组不能做为函数返回值:
+   函数返回值有两种方式:
+     - 通过寄存器直接返回,如各种基本类型和指针类型
+     - 通过named-return-value返回,如结构体
+   或函数可以返回,只能通过第二种情况, 但是, 由于数组大小不定,若 caller 和 callee 的数组长度不同,如何处理?
+** c的参数与返回值
+   除了数组,任何类型都可以做为函数的返回值,包括结构等
+   - 对于<=32位的返回值,如int,short,float,指针等,直接通过%eax返回
+   - 对于64位的返回值,通常通过两个寄存器返回,如%eax,%edx
+   - 对于更大的结构体,通常在函数调用时把返回值的地址作为第一个参数,函数直接给这个指针赋值
+
+   任何类型都可做为函数的参数,但数组有些例外:数组做为参数时弱化为指针
+** sync,fsync,fflush的区别
+   - sync Force changed blocks to disk, update the super block.
+   - fsync(int fd),和sync作用类似，不过只针对一个fd
+   - fflush(FILE *) 刷新FILE *的缓存。例如：
+   printf("test");
+   fflush(stdout);
+   sleep(2);
+   在sleep前test因为fflush而被显示出来。
+   缓存（包括全缓存，行缓存）是标准IO库的概念，fflush只对标准IO起作用。
+   对于write(STDOUT_FILENO,"test",5),没有缓存的概念，test直接被显示出来。
+
+   综上：
+   sync,fsync对应的是OS的磁盘cache,fflush对应的是标准IO库的缓存。标准IO的缓存在磁盘cache之上，当
+   用fflush()刷新一个流时，可能仍需要用sync可能保证内容被写到磁盘上。
+** Non-blocking synchronization (Lock-free)				:ATTACH:
+   :PROPERTIES:
+      :Attachments: L31_LockFree.pdf Lock-Free-1.pdf cas.c
+      :ID:       n7ga2qc0xfe0@sunway-lab.bupt.edu.cn
+      :END:
+   http://en.wikipedia.org/wiki/Non-blocking_synchronization
+   With few exceptions, non-blocking algorithms use atomic read-modify-write
+   primitives that the hardware must provide, the most notable of which is
+   compare and swap (CAS). Ultimately, all synchronizing algorithms must use
+   these;
+*** Live-lock
+    http://en.wikipedia.org/wiki/Livelock#Livelock
+
+    A livelock is similar to a deadlock, except that the states of the
+    processes involved in the livelock constantly change with regard to one
+    another, none progressing. [1] Livelock is a special case of resource
+    starvation; the general definition only states that a specific process is
+    not progressing. [2]
+
+    A real-world example of livelock occurs when two people meet in a narrow
+    corridor, and each tries to be polite by moving aside to let the other
+    pass, but they end up swaying from side to side without making any progress
+    because they both repeatedly move the same way at the same time.  RCU
+
+*** CAS
+    http://en.wikipedia.org/wiki/Compare-and-swap
+    In computer science, the compare-and-swap CPU instruction ("CAS") (or the
+    Compare & Exchange - CMPXCHG instruction in the x86 and Itanium
+    architectures) is a special instruction that atomically compares the contents
+    of a memory location to a given value and, if they are the same, modifies the
+    contents of that memory location to a given new value.
+
+    CAS是所有Lock-free算法(数据结构)的基础
+
+    一个用c++表示的cas算法如下:
+    bool CAS(int* addr, int expected, int fresh) {
+       	if (*addr != expected) return false;
+       	*addr = fresh;
+       	return true;
+    }
+    实际上cas都是用的CPU支持的单条汇编指令,如CMPXCHG
+    用CAS实现lock-free算法一般如下实现:
+    要修改Data时:
+    Data * p_;
+    Data * pOld, * pNew = new Data;
+    do {
+       	pOld = p_;
+       	*pNew=*p_;
+       	//在这里修改 *pNew
+       	//另:CAS的参数都是指针,因为CAS对应的汇编指令参数是处理内存地址
+    } while (!CAS(&p_, pOld, pNew));
+
+    CAS的例子见附件cas.c
+    注意:当使用-O2编译cas.c时,volatile关键字是必须的,参考[[*volatile%20keyword%20in%20C][volatile]]
+
+*** Implementations of Lock-free data structures
+**** 由于结构简单或功能受限不需要CAS的Lock-free数据结构
+***** RCU
+      http://en.wikipedia.org/wiki/Read-copy-update
+      http://www-128.ibm.com/developerworks/cn/linux/l-rcu/
+***** Circular buffer
+      http://en.wikipedia.org/wiki/Circular_buffer
+**** Lock-free stack,list,etco
+     见附件 L32_lockfree.pdf
+
+     例:lock-free stack的push操作
+
+#+BEGIN_EXAMPLE
+     void push(int t) {
+          Node* node = new Node(t);
+          do {
+              node->next = head;
+	  } while (!cas(&head, node->next, node));
+      }
+#+END_EXAMPLE
+** DONE gcc __attribute__ syntax
+   CLOSED: [2008-09-21 日 14:08]
+   - State "DONE"       [2008-09-21 日 14:08]
+     http://www.ohse.de/uwe/articles/gcc-attributes.html
+** DONE what is weak reference
+   CLOSED: [2008-10-13 一 22:34]
+   - State "DONE"       [2008-10-13 一 22:34]
+   http://mindtrove.info/articles/python-weak-references/
+   http://en.wikipedia.org/wiki/Weak_reference
+** DONE zero copy and Scatter/Gather IO
+   CLOSED: [2009-01-05 一 14:19]
+   - State "DONE"       [2009-01-05 一 14:19]
+     http://www.linuxjournal.com/article/6345
+     http://en.wikipedia.org/wiki/Zero-copy
+     http://www.ibm.com/developerworks/library/j-zerocopy/index.html
+
+#+BEGIN_EXAMPLE
+   normal read/write copy
+     |
+     +->mmap
+       	 |
+         +->sendfile syscall
+	      |
+	      +-->sendfile together with Gather/Scatter IO (Zero copy)
+#+END_EXAMPLE
+
+** DONE -shared与-fPIC						 :SharedLibrary:
+   CLOSED: [2008-12-29 一 09:10]
+   - State "DONE"       [2008-12-29 一 09:10]
+   http://bottomupcs.sourceforge.net/csbu/x3809.htm
+
+   对于共享库,代码本身就是位置无关的,但共享库中用到的全局数据是位置相关的,由于共享库的地址在运行时才能确定,所以共享库中要访问的全局数据的地址
+   都是不确定的,全局数据的地址在运行时由loader确定. 比如:
+#+BEGIN_EXAMPLE
+ lib.c:
+   extern int a;
+   void fun() {
+       a=1;
+   }
+   main.c:
+   int a;
+   main () {
+       fun();
+   }
+#+END_EXAMPLE
+
+   gcc -shared -fPIC (or not)  lib.c -o lib.so
+   lib.so中全局数据a的地址编译时不确定,运行后a的地址由Loader添加到lib.so在内存的映像中
+   至于loader如何将a的地址添加到lib.so中,可能有两种方法:
+   1. a在a.out的.bss中,地址为A,loader载入lib.so后负责把lib.so .text段中所有对a的引用的地址改写成A
+      这种方法需要改写lib.so的 .text段,导致lib.so的.text段无法被共享
+      编译时不指定-fPIC时就是这种情况
+   2. lib.so中对a的引用的地址是"GOT基址+偏移量"的形式,GOT即global offset table,loader载入lib.so后会把
+      a的地址加入GOT表中对应于a的地方. 显示这种方法不需要修改lib.so的.text段,所以.text段可能被共享
+      编译时指定-fPIC时是这种情况
+      每个共享库都有一个GOT表
+      GOT基址通常保存在一个寄存器中,如ebx,每次函数共享库的函数时,都会重设ebx使其指向相应的so的GOT基址
+      lib.so每次访问a时真要先查GOT表才能确定a的地址,即多一次内存访问
+      GOT紧跟在lib.so的.text之后,lib.so的.text编译时确定,所以lib.so被载入内存后,GOT基址也是确定的
+      如图:
+      lib.so载入前:
+#+BEGIN_EXAMPLE
+      	   +---------+
+	   | lib.so  |
+	   | .text段 o-----a的地址为(GOT+OFFSET(a)),例如 OFFSET(a)=1
+	   +---------+
+	   | GOT     |
+	   +---------+
+	   | .data   |
+	   | .bss    |
+	   +---------+
+#+END_EXAMPLE
+      lib.so载入后:
+#+BEGIN_EXAMPLE
+                          /----lib.so被载入到0xXXX
+       	   +---------+----
+	   | lib.so  |
+       	   | .text段 |----a的地址没变,还是(GOT+OFFSET(a)),但GOT的地址已经确定为len of .text+0xXXX
+	   +---------+	      而且GOT的第OFFSET(a)个表项的值已经被loader改写为a的地址
+	   | GOT     |
+	   +---------+
+	   | .data   |
+	   | .bss    |
+	   +---------+
+#+END_EXAMPLE
+
+      -fPIC指将库编译成"位置无关代码",这里的"位置"并不是指lib.so被映射到线性地址空间的位置,而是指lib.so中引用的
+      全局数据的地址是位置无关的
+
+      另外,
+      main.c:
+      extern int a;
+      main() {
+          a=1;
+      }
+      lib.c:
+      int a;
+      如果main中要使用lib.so中定义的全局变量,链接后a还是在a.out的.bss段,而不是在lib.so的.bss段,否则如果另一个lib2.so
+      要使用a还要去lib.so中找lib.so?
+
+      另:strace的结果也显示出不加-fPIC时lib.so无法被共享
+      没加-fPIC时,strace ./a.out的部分结果:
+#+BEGIN_EXAMPLE
+      ...
+      open("./libmy.so", O_RDONLY)            = 3
+      read(3,"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000\3\0\0004\0\0\0\300"..., 512) = 512
+      fstat64(3, {st_mode=S_IFREG|0755, st_size=48065, ...}) = 0
+      getcwd("/home/sunway"..., 128)          = 13
+      mmap2(NULL, 44424, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =0xb7efe000
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      mmap2(0xb7eff000, 40960, PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1) = 0xb7eff000
+      ..
+      mprotect(0xb7efe000, 4096, PROT_READ|PROT_WRITE) = 0
+      mprotect(0xb7efe000, 4096, PROT_READ|PROT_EXEC) = 0
+      ..
+#+END_EXAMPLE
+
+      加了-fPIC:
+#+BEGIN_EXAMPLE
+      ..
+      open("./libmy.so", O_RDONLY)            = 3
+      read(3,"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000\3\0\0004\0\0\0\240"..., 512)= 512
+      fstat64(3, {st_mode=S_IFREG|0755, st_size=48072, ...}) = 0
+      getcwd("/home/sunway"..., 128)          = 13
+      mmap2(NULL, 44392, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) =0xb7f22000
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      mmap2(0xb7f23000, 40960, PROT_READ|PROT_WRITE,
+      MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1) = 0xb7f23000
+      ..
+      mprotect(0xb7f07000, 4096, PROT_READ)   = 0
+      munmap(0xb7f0d000, 84037)               = 0
+      ..
+#+END_EXAMPLE
+
+      唯一的区别就是末尾的mprotect(0xb7efe000, 4096, PROT_READ|PROT_WRITE) = 0.
+      没加-fPIC时,libmy.so的.text用MAP_PRIVATE参数map进来,但后面又用mprotect设为可写..
+      然后dynamic loader会修改这个内存区(以便确定全局数据的真实地址),然后就copy on
+      write了
+
+      静态库->硬盘占的多,内存占的多,加载快,运行快
+      不加fPIC的动态库->硬盘占的不多,内存占的多,加载慢,运行快
+      加了fPIC的动态库->硬盘占的不多,内存占的不多,加载慢,运行慢

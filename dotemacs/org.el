@@ -5,13 +5,14 @@
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
 (setq org-log-done 'time)
+(global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
 (require 'remember)
 (org-remember-insinuate)
 (setq org-directory "~/.elisp/dotemacs/org/")
 (define-key global-map "\C-cor" 'org-remember)
-(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/")))
+(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/todo.org")))
 (setq org-remember-templates
-      '(("Todo" ?t "* TODO %^{Title}\n  %?\n  SCHEDULED: %^t" "~/.elisp/dotemacs/org/main.org" "Tasks")
+      '(("Todo" ?t "* TODO %^{Title}\n  %?\n  SCHEDULED: %^t" "~/.elisp/dotemacs/org/todo.org" "Tasks")
         ))
 (setq org-todo-keywords
       '((sequence "TODO(t)" "DOING(g)" "|" "DONE(d)" )

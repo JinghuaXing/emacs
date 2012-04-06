@@ -1,9 +1,61 @@
-#+POSTID: 172
-#+DATE: [2011-11-29 二 09:50]
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
-#+CATEGORY: 
-#+TAGS:
-#+DESCRIPTION:
-#+TITLE: TODO
-　-　数值类型转换
+* Tasks
+#+CATEGORY:Task
+** TODO PIM: 18811046790:084906
+** TODO [#A] never rebase from tracking branch
+** TODO add batch unstage and revert for magit
+** TODO handleSmsReceived @ SmsReceiverService
+** TODO javacc
+** TODO [#B] Programmer Dvorak Keyboard Layout
+   - http://www.kaufmann.no/roland/dvorak/index.html
+   - dvorak7min
+** TODO magit
+   http://zagadka.vm.bytemark.co.uk/magit/magit.html
+** TODO db index
+** TODO StringBuffer vs. StringBuilder
+** TODO Unicode Normalize
+** TODO [#A] Android Search
+** TODO URI
+** TODO [#B] Android eng-mode vs. user-mode
+** TODO android apk signature
+** TODO Android coredump
+** TODO Android IMF
+** TODO [#B] adjustPan/adjustResize
+** TODO android MTD, memory,NAND...etc
+** TODO Android Span
+** TODO android tombstone
+** TODO bash `source` usage
+** TODO browser通过代理访问ftp?
+** TODO can apk for 2.2 be installed on 2.3? and vice-vesa
+** TODO Canvas
+** TODO Code snippet to dump message queue
+** TODO dex & apk & jar 文件格式
+** TODO How IME is triggered
+** TODO invokeinterface vs. invokevirtual / vtable vs. itable / _klass 
+** TODO [#C] org-mode manual
+** TODO PowerManagment, WakeLock
+** TODO PreferenceScreen nesting & notify
+** TODO res/menu sub-folder
+** TODO shebang
+** TODO Webview
+** TODO WindowManager, layoutWindow
+** TODO bugzilla 4.0
+   http://dev.spreadst.com/lion/
+** TODO some funcy notification for `compilation`?
+   
+   SCHEDULED: <2012-03-25 Sun>
+** TODO ImportVCardActivity use NIO?
+   
+   SCHEDULED: <2012-03-21 Wed>
+** TODO activity orientation change?
+   
+   SCHEDULED: <2012-03-22 Thu>
+** TODO sqlite single-thread model
+   
+   SCHEDULED: <2012-03-23 Fri>
+** TODO fast swith window in emacs?
+   
+   SCHEDULED: <2012-03-21 Wed>
+** TODO 线段树
+   
+   SCHEDULED: <2012-03-22 Thu>
 
