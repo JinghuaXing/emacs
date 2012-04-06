@@ -1,8 +1,8 @@
-(require 'org-install)
+a(require 'org-install)
 (require 'org-agenda)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;;(global-set-key (kbd "C-c o l") 'org-store-link)
-;;(global-set-key (kbd "C-c o a") 'org-agenda)
+(global-set-key (kbd "C-c o a") 'org-agenda)
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
 (setq org-log-done 'time)
@@ -12,7 +12,7 @@
 (require 'remember)
 (org-remember-insinuate)
 (defalias 'todo 'org-remember)
-(defalias 'td 'org-remember)
+(global-set-key (kbd "C-c o r") 'org-remember)
 (setq org-directory "~/.elisp/dotemacs/org/")
 ;;(define-key global-map "\C-cor" 'org-remember)
 (setq org-agenda-files (quote ("~/.elisp/dotemacs/org/")))
@@ -63,7 +63,7 @@
 	     "\\setCJKmainfont{SimSun}"
 	     t
 	     )
-(setq org-tag-alist '(("java" . ?v) ("android" . ?d) ("joke" . ?j)))
+;;(setq org-tag-alist '(("java" . ?v) ("android" . ?d) ("joke" . ?j)))
 (setq org-completion-use-ido t)
 
 (add-hook 'org-agenda-mode-hook
