@@ -172,7 +172,7 @@
 
    总之,系统调用会被信号打断,是因为sig handler必须在原进程的上下文执行,而sig handler又只有在原进程返回到用户态之前才会被调用.
 
-** 组相联cache								:ATTACH:
+** 组相联cache                                                      :ATTACH:
     :PROPERTIES:
     :Attachments: cache.png
     :ID:       8dih1b81uoe0@sunway-lab.bupt.edu.cn
@@ -308,14 +308,14 @@ main(int argc, char *argv[]) {
     }
 #+END_EXAMPLE
 
-** vfs,fs,page cache(disk cache)与io scheduler的关系			:ATTACH:
+** vfs,fs,page cache(disk cache)与io scheduler的关系                :ATTACH:
    :PROPERTIES:
    :Attachments: vfs.png
    :ID:       j2udxzl0efe0@sunway-lab.bupt.edu.cn
    :END:
    page cache位于vfs与fs之间,而不是位于generic block层,因为page cache中是以page为单位的,一个Page可以包含多个block,
    所以不能用block号为标识,实际上它是以file+offset为标识的,file是vfs的概念,所以只能放在vfs层之下
-** clone,fork,vfork							:ATTACH:
+** clone,fork,vfork                                                 :ATTACH:
    :PROPERTIES:
    :Attachments: clone.c
    :ID:       3fuhk9o0hfe0@sunway-lab.bupt.edu.cn
@@ -668,7 +668,7 @@ main(int argc, char *argv[]) {
 
    这样就可以设置10秒为dhcp超时时间。为了保证设备在网线重新插入的时候再次进行
    dhcp的操作，则需要安装软件包ifplugd软件包。
-** dhclient.conf						      :net:dhcp:
+** dhclient.conf                                                  :net:dhcp:
 #+BEGIN_EXAMPLE
    timeout 60;
    retry 60;
@@ -690,7 +690,7 @@ main(int argc, char *argv[]) {
     media "media 10baseT/UTP", "media 10base2/BNC";
    }
 #+END_EXAMPLE
-** ssh端口转发(隧道) 						       :net:ssh:
+** ssh端口转发(隧道)                                               :net:ssh:
 -D [bind_address:]port
 
 Specifies a local "dynamic" application-level port forwarding. This works by
@@ -705,7 +705,7 @@ also be specified in the configuration file.
 ssh -D 9999 foo.com
 然后在fx中把代理设为socks5: 127.0.0.1:9999就可以把foo.com做为浏览器的socks5代理了
 
-** ssh反向隧道							       :net:ssh:
+** ssh反向隧道                                                     :net:ssh:
    与 -D 选项相反, -R选项在远端主机上打开一个tcp监听端口A,并与本机的一个端口B建立
    一个反向隧道,对远端主机A端口的访问被转发到本机的B端口.
    例如:
@@ -716,7 +716,7 @@ ssh -D 9999 foo.com
    ssh反向隧道可以用于:
    本机位于NAT,防火墙之后
 
-** ssh x11 forwarding						       :net:ssh:
+** ssh x11 forwarding                                              :net:ssh:
 
 #+BEGIN_EXAMPLE
 |--------------------------+--------|
@@ -727,7 +727,7 @@ ssh -D 9999 foo.com
 |--------------------------+--------|
 #+END_EXAMPLE
 
-** nc									   :net:
+** nc                                                                  :net:
 nc - TCP/IP swiss army knife
 nc可以用来创建任一TCP/UDP连接
 - 选项：
@@ -748,13 +748,13 @@ nc可以用来创建任一TCP/UDP连接
   - telnet客户端不能指定端口，源地址，发送或接收到EOF并终止连接，而且只能使用TCP
   - telnet不能用来传送任意二进制数据，因为有些字符被解释为telnet的命令或选项，如^]
   - telnet命令不能做为服务器端,而 nc \-l 可以做为服务器
-** scp&sftp							       :net:ssh:
+** scp&sftp                                                        :net:ssh:
 scp很像cp,sftp很像lftp
   - scp user@host:/path/source.file dest.file
   - sftp user@host:/path
   - scp source.file user@host:/pathto/dest.file
 
-** openvpn							       :net:vpn:
+** openvpn                                                         :net:vpn:
 最近玩的一个东西-openvpn
 
 在大运村想和同学打魔兽,想了一下,好像有几种选择:
@@ -802,7 +802,7 @@ eth0所在的局域网和B收到,如果B把它那端的tap和它的eth0再桥接
 游戏,比如学十的想和学九的连,直接用pptp就可以,用openvpn也可以,但如果A把tap0和eth0
 桥接起来,B也把tap0和eth0桥接起来会不会被封?
 
-** brctrl							    :net:bridge:
+** brctrl                                                       :net:bridge:
 #+BEGIN_EXAMPLE
 brctrl addbr br0
 brctrl addif eth0
@@ -813,5 +813,5 @@ ifconfig br0 192.168.0.102 netmask 255.255.255.0 broadcast 192.168.0.255
 ifconfig br0 down
 brctrl delbr br0
 #+END_EXAMPLE
-** dnsmasq							       :net:dns:
+** dnsmasq                                                         :net:dns:
 

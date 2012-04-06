@@ -1,4 +1,5 @@
 (require 'org-install)
+(require 'org-agenda)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;;(global-set-key (kbd "C-c o l") 'org-store-link)
 ;;(global-set-key (kbd "C-c o a") 'org-agenda)
@@ -40,6 +41,7 @@
 ;; (define-key org-mode-map (kbd "C-c C-n") 'outline-forward-same-level)
 ;; (define-key org-mode-map (kbd "C-c C-p") 'outline-backward-same-level)
 
+(define-key org-agenda-mode-map (kbd "C-c C-c") 'org-agenda-set-tags)
 (setq org-agenda-sorting-strategy '((agenda time-up priority-down category-keep)
  (todo todo-state-down priority-down category-keep)
  (tags priority-down category-keep)
@@ -54,10 +56,16 @@
 
 
 (add-to-list 'org-export-latex-default-packages-alist
-	     '("slantfont, boldfont, CJKtextspaces, CJKmathspaces" "xeCJK" nil)
+	     '("" "xeCJK" nil)
 	     t
 	     )
 (add-to-list 'org-export-latex-default-packages-alist
 	     "\\setCJKmainfont{SimSun}"
 	     t
 	     )
+(setq org-tag-alist '(("java" . ?v) ("android" . ?d) ("joke" . ?j)))
+(setq org-completion-use-ido t)
+
+(add-hook 'org-agenda-mode-hook
+   (lambda ()
+     (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))

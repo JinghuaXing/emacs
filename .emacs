@@ -185,9 +185,6 @@
 (require 'etags-select)
 (global-set-key "\M-." 'etags-select-find-tag)
 
-(require 'etags-stack)
-(global-set-key "\M-*" 'etags-stack-show)
-
 (setq sentence-end "\\([¡££¡£¿]\\|¡­¡­\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]
 *")    
 

@@ -3,8 +3,8 @@
 ** indent && astyle
 ** auditd							      :sysadmin:
 ** htop
-   ½»»¥Ê½ top
-** basenameÓëdirname							 :shell:
+   äº¤äº’å¼ top
+** basenameä¸dirname							 :shell:
 ** bash
 *** get file name extension and get main file name
     echo ${fi e##*.}
@@ -37,9 +37,9 @@
 *** (())
     a=$((a+1))
 *** ()
-    ×Óshell
+    å­shell
 *** {;}
-    ·Ç×Óshell
+    éå­shell
 *** test
 *** typeset
     typeset -i a
@@ -107,40 +107,40 @@
     - Git Community Book
     - Pro Git
 ** grep
-*** grep/egrep ÖĞÈçºÎÆ¥Åätab					       :grep:
+*** grep/egrep ä¸­å¦‚ä½•åŒ¹é…tab					       :grep:
     - input tab with ^v^i(control-v control-i)
     - grep $'\t' file
-*** grep³£ÓÃµÄÑ¡Ïî						       :grep:
-    - C NUM ÏÔÊ¾³öÆ¥ÅäĞĞ¸½½üµÄ NUM ĞĞÉÏÏÂÎÄ¡£
-    - n ÏÔÊ¾ĞĞºÅ¡£
-    - H ÏÔÊ¾ÎÄ¼şÃû¡£ÕâÁ½¸öÑ¡Ïî¶ÔÓÚÔÚÒ»´ó¶ÑÎÄ¼şÀïÃæËÑË÷¶« Î÷·Ç³£ÓĞÓÃ¡£
-    - o Ö»ÏÔÊ¾Æ¥ÅäµÄ²¿·Ö£¬Õâ¶ÔÓÚ´ÓÒ»´ó¶Ñ¶«Î÷ÖĞÌáÈ¡Ä³Ğ©ÌØÊâĞÅÏ¢·Ç³£ÓĞÓÃ¡£
-    - i ºöÂÔ´óĞ¡Ğ´
-    - v ·´ÏòÆ¥Åä£¬¼´ÏÔÊ¾²»Æ¥ÅäµÄĞĞ¡£
+*** grepå¸¸ç”¨çš„é€‰é¡¹						       :grep:
+    - C NUM æ˜¾ç¤ºå‡ºåŒ¹é…è¡Œé™„è¿‘çš„ NUM è¡Œä¸Šä¸‹æ–‡ã€‚
+    - n æ˜¾ç¤ºè¡Œå·ã€‚
+    - H æ˜¾ç¤ºæ–‡ä»¶åã€‚è¿™ä¸¤ä¸ªé€‰é¡¹å¯¹äºåœ¨ä¸€å¤§å †æ–‡ä»¶é‡Œé¢æœç´¢ä¸œ è¥¿éå¸¸æœ‰ç”¨ã€‚
+    - o åªæ˜¾ç¤ºåŒ¹é…çš„éƒ¨åˆ†ï¼Œè¿™å¯¹äºä»ä¸€å¤§å †ä¸œè¥¿ä¸­æå–æŸäº›ç‰¹æ®Šä¿¡æ¯éå¸¸æœ‰ç”¨ã€‚
+    - i å¿½ç•¥å¤§å°å†™
+    - v åå‘åŒ¹é…ï¼Œå³æ˜¾ç¤ºä¸åŒ¹é…çš„è¡Œã€‚
 ** hdparm							      :sysadmin:
 ** hostname /etc/hostname
 ** iconv
 ** inittab
    http://publib.boulder.ibm.com/infocenter/systems/index.jsp?topic=/com.ibm.aix.files/doc/aixfiles/inittab.htm
-   - Ê¹Ò»¸ö³ÌĞòcmdÔËĞĞ,²¢ÇÒ³ÌĞòÍË³öºó×Ô¶¯ÖØÆô
+   - ä½¿ä¸€ä¸ªç¨‹åºcmdè¿è¡Œ,å¹¶ä¸”ç¨‹åºé€€å‡ºåè‡ªåŠ¨é‡å¯
      mycmd:2:respawn:cmd && telinit q
 ** ion
-*** ĞŞ¸Ämod_query.warn()ºÍmod_query.message()Ê¹warnºÍmessage¹ıÒ»¶ÎÊ±¼ä×Ô¶¯cancel
+*** ä¿®æ”¹mod_query.warn()å’Œmod_query.message()ä½¿warnå’Œmessageè¿‡ä¸€æ®µæ—¶é—´è‡ªåŠ¨cancel
     [[file:~/setup/ion-3-20080207/mod_query/mod_query.lua::function%20mod_query%20warn%20mplex%20str][mod_query.warn]]
 ** ion3									  :util:
 ** lsof								      :sysadmin:
 ** mc									  :util:
 ** meld
 ** mutt
-*** muttÖĞÓÃsearchÃüÁî(/,M-b,l..)Ê±¾­³£segment fault?
+*** muttä¸­ç”¨searchå‘½ä»¤(/,M-b,l..)æ—¶ç»å¸¸segment fault?
     ./configure --with-regex
 ** nc
 ** rename								 :shell:
 ** screen								  :util:
-*** ¸Ä±äencoding
+*** æ”¹å˜encoding
     C-o : encoding utf8
-*** ±£´æscreenµÄÊä³ö
-    C-o [½øÈëscrollÄ£Ê½£¬ÓÃC-p,C-nÒÆ¶¯µ½Òª±£´æµÄÇøÓòµÄ¿ªÊ¼£¬°´SPACE£¬È»ºóÒÆ¶¯µ½Òª±£   ´æµÄÇøÓòµÄ½áÊø£¬°´Y£¬ÇøÓò±»±£´æµ½paste bufferÖĞ,°´C-o ]¾Í¿ÉÒÔµ÷³öpaste bufferµÄ   ÄÚÈİ
+*** ä¿å­˜screençš„è¾“å‡º
+    C-o [è¿›å…¥scrollæ¨¡å¼ï¼Œç”¨C-p,C-nç§»åŠ¨åˆ°è¦ä¿å­˜çš„åŒºåŸŸçš„å¼€å§‹ï¼ŒæŒ‰SPACEï¼Œç„¶åç§»åŠ¨åˆ°è¦ä¿   å­˜çš„åŒºåŸŸçš„ç»“æŸï¼ŒæŒ‰Yï¼ŒåŒºåŸŸè¢«ä¿å­˜åˆ°paste bufferä¸­,æŒ‰C-o ]å°±å¯ä»¥è°ƒå‡ºpaste bufferçš„   å†…å®¹
 
 ** shc
    shc -- generic shell script compiler
@@ -153,20 +153,20 @@
    make any command has top-like output
 ** wmctrl								  :util:
 ** x remote display
-   Ä¬ÈÏÇé¿öÏÂX server²»»áÔÚtcpÉÏ¼àÌı,ĞèÒªĞŞ¸Ä/etc/X11/xinit/xserverrc
-   ½«ÆäÖĞµÄ -nolisten tcpÉ¾µô
+   é»˜è®¤æƒ…å†µä¸‹X serverä¸ä¼šåœ¨tcpä¸Šç›‘å¬,éœ€è¦ä¿®æ”¹/etc/X11/xinit/xserverrc
+   å°†å…¶ä¸­çš„ -nolisten tcpåˆ æ‰
 
 ** xmodmap								  :util:
-   ²éÑ¯ÏµÍ³ÓĞÄÄĞ©¿ÉÓÃµÄkeysym: /usr/share/X11/xkb/symbols
+   æŸ¥è¯¢ç³»ç»Ÿæœ‰å“ªäº›å¯ç”¨çš„keysym: /usr/share/X11/xkb/symbols
 ** xset
-** »­Í¼
+** ç”»å›¾
 *** ditaa
 *** rrdtool
 *** gimp
-*** graphivz ¾²Ì¬Í¼,ÊÊºÏÍ¼ÍØÆÓÍ¼,µ÷ÓÃÍ¼µÈ
+*** graphivz é™æ€å›¾,é€‚åˆå›¾æ‹“æœ´å›¾,è°ƒç”¨å›¾ç­‰
 *** imagemagick
 **** display
 **** import
-**** importÈ«ÆÁ½ØÍ¼
+**** importå…¨å±æˆªå›¾
      import -window root -pause 2 1.jpg
 *** ubigraph

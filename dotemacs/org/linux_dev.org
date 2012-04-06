@@ -8,7 +8,7 @@
      GMT = Greenwich Mean Time
      UTC and GMT are almost identical, but UTC use atomic clock.
      Wall Time, unix RTC time, measured from 1970/1/1 0:00:00
-** DONE ³ÌĞòÔËĞĞÊ±½øĞĞIOÖØ¶¨Ïò
+** DONE ç¨‹åºè¿è¡Œæ—¶è¿›è¡ŒIOé‡å®šå‘
    CLOSED: [2011-03-01 Tue 10:59]
    - State "DONE"       [2011-03-01 Tue 10:59]
 #+BEGIN_EXAMPLE
@@ -22,42 +22,42 @@
 ** DONE uuid
    SCHEDULED: <2011-05-31 Tue> CLOSED: [2011-07-01 Fri 13:44]
    - State "DONE"       from "DOING"      [2011-07-01 Fri 13:44]
-** TODO Í¬²½,»¥³â,ĞÅºÅÁ¿
-** pthread_mutex_lock ¿ªÏú
-** ¹ØÓÚctors,init...
+** TODO åŒæ­¥,äº’æ–¥,ä¿¡å·é‡
+** pthread_mutex_lock å¼€é”€
+** å…³äºctors,init...
    main.cpp:
      A a,b,c;
      B x;
      main() {...}
-   ×îÖÕÉú³ÉµÄ./a.outÖĞ, ÓĞÒ»¸ö_global_I_aµÄº¯Êı,Ëü»áµ÷ÓÃ_static_init_global_...º¯Êı,Õâ¸öº¯Êı»á¸ºÔğ³õÊ¼»¯a,b,c,x
-   ÁíÍâ,ÔÚ.init sectionÖĞ,»áµ÷ÓÃ__do_global_ctors_aux,ºóÕß»á´Ó.ctors sectionÖĞ¶Á³ö¼¸¸öµØÖ·,Ë³ĞòÖ´ĞĞ. ¶ø.ctors sectionÖĞ
-   »á±£´æ_global_I_aµÄµØÖ·. ÓÉÓÚËùÓĞÈ«¾Ö±äÁ¿µÄ³õÊ¼»¯¶¼·ÅÔÚÒ»¸ö_static_init_global..º¯ÊıÖĞ,ËùÒÔ.ctors sectionÒ»°ãÖ»ĞèÒª±£´æÒ»¸ö4
-   ×Ö½ÚµÄÊı¾İ.
+   æœ€ç»ˆç”Ÿæˆçš„./a.outä¸­, æœ‰ä¸€ä¸ª_global_I_açš„å‡½æ•°,å®ƒä¼šè°ƒç”¨_static_init_global_...å‡½æ•°,è¿™ä¸ªå‡½æ•°ä¼šè´Ÿè´£åˆå§‹åŒ–a,b,c,x
+   å¦å¤–,åœ¨.init sectionä¸­,ä¼šè°ƒç”¨__do_global_ctors_aux,åè€…ä¼šä».ctors sectionä¸­è¯»å‡ºå‡ ä¸ªåœ°å€,é¡ºåºæ‰§è¡Œ. è€Œ.ctors sectionä¸­
+   ä¼šä¿å­˜_global_I_açš„åœ°å€. ç”±äºæ‰€æœ‰å…¨å±€å˜é‡çš„åˆå§‹åŒ–éƒ½æ”¾åœ¨ä¸€ä¸ª_static_init_global..å‡½æ•°ä¸­,æ‰€ä»¥.ctors sectionä¸€èˆ¬åªéœ€è¦ä¿å­˜ä¸€ä¸ª4
+   å­—èŠ‚çš„æ•°æ®.
 
-   ÁíÍâ,__attribute__((contructor))ºÍ__attribute__((section (".ctors")))¿ÉÒÔ¸ø.ctors sectionÌí¼ÓĞÂÊı¾İ,Ê¹³ÌĞòÖ´ĞĞ»òsoÔØÈëÊ±¿É
-   ÒÔÖ´ĞĞ¶îÍâµÄº¯Êı
+   å¦å¤–,__attribute__((contructor))å’Œ__attribute__((section (".ctors")))å¯ä»¥ç»™.ctors sectionæ·»åŠ æ–°æ•°æ®,ä½¿ç¨‹åºæ‰§è¡Œæˆ–soè½½å…¥æ—¶å¯
+   ä»¥æ‰§è¡Œé¢å¤–çš„å‡½æ•°
 
 
-*** atexit,.init,.finiÊÇÊ²Ã´¹ØÏµ
+*** atexit,.init,.finiæ˜¯ä»€ä¹ˆå…³ç³»
     void foo() __attribute__((destructor));
     T t;
     int main() {}
 
-    Ö´ĞĞµÄ½á¹ûÊÇ: mainÖ®Ç°,tµÄctorÏÈÖ´ĞĞ,Õı³£ÍË³öÊ±,tµÄdtorÏÈÖ´ĞĞ,fooÔÙÖ´ĞĞ
-    Ô­Òò:
+    æ‰§è¡Œçš„ç»“æœæ˜¯: mainä¹‹å‰,tçš„ctorå…ˆæ‰§è¡Œ,æ­£å¸¸é€€å‡ºæ—¶,tçš„dtorå…ˆæ‰§è¡Œ,fooå†æ‰§è¡Œ
+    åŸå› :
     _start --- __libc_start_main (main,argc,argv,init,fini ..)
-    ¶ø__libc_start_main´óÖÂÎª:
+    è€Œ__libc_start_mainå¤§è‡´ä¸º:
      if (fini)
         atexit (fini);
      if (init)
         (*init) ();
      exit ((*main) (argc, argv, __environ));
-     ¼´__libc_start_main»áÏÈ½«.fini¶ÎÖĞµÄ_finiº¯ÊıÓÃatexit×¢²á,È»ºóÖ´ĞĞ.init¶ÎÖĞµÄ_initº¯Êı,¶ø_initº¯ÊıÒ»°ãÊÇ:µ÷ÓÃ.ctors¶ÎÖĞµÄctor,ÀıÈçÇ°ÃæÌáµ½µÄ
-     _global_I_a..º¯Êı,Õâ¸öº¯Êı×îÖÕ»áµ÷ÓÃ¸÷¸öÈ«¾Ö±äÁ¿µÄ¹¹Ôìº¯Êı,È»ºóÓÃatexit×¢²áÏàÓ¦µÄÎö¹¹º¯Êı
+     å³__libc_start_mainä¼šå…ˆå°†.finiæ®µä¸­çš„_finiå‡½æ•°ç”¨atexitæ³¨å†Œ,ç„¶åæ‰§è¡Œ.initæ®µä¸­çš„_initå‡½æ•°,è€Œ_initå‡½æ•°ä¸€èˆ¬æ˜¯:è°ƒç”¨.ctorsæ®µä¸­çš„ctor,ä¾‹å¦‚å‰é¢æåˆ°çš„
+     _global_I_a..å‡½æ•°,è¿™ä¸ªå‡½æ•°æœ€ç»ˆä¼šè°ƒç”¨å„ä¸ªå…¨å±€å˜é‡çš„æ„é€ å‡½æ•°,ç„¶åç”¨atexitæ³¨å†Œç›¸åº”çš„ææ„å‡½æ•°
 
-     ÒòÎªatexitÏÈ×¢²áµÄºóÖ´ĞĞ,ËùÒÔexitÊ±Îö¹¹º¯ÊıÏÈÖ´ĞĞ,È»ºó_fini²ÅÖ´ĞĞ(×¢:Îö¹¹º¯Êı²¢²»ÔÚ.finiÖĞ)
+     å› ä¸ºatexitå…ˆæ³¨å†Œçš„åæ‰§è¡Œ,æ‰€ä»¥exitæ—¶ææ„å‡½æ•°å…ˆæ‰§è¡Œ,ç„¶å_finiæ‰æ‰§è¡Œ(æ³¨:ææ„å‡½æ•°å¹¶ä¸åœ¨.finiä¸­)
 
-** ¾²Ì¬¿âÓë.o»¹ÊÇÓĞÇø±ğµÄ
+** é™æ€åº“ä¸.oè¿˜æ˜¯æœ‰åŒºåˆ«çš„
 #+BEGIN_EXAMPLE
    foo.cpp:
    class A {
@@ -68,67 +68,67 @@
    main.cpp
    main(){}
 
-   g++ main.cpp foo.cppÊ±,a»á±»³õÊ¼»¯
+   g++ main.cpp foo.cppæ—¶,aä¼šè¢«åˆå§‹åŒ–
    ar cr libfoo.a foo.o
-   g++ main.cpp -L./ -lfooÊ±,a²»»á±»³õÊ¼»¯
-   ÁíÍâ,
+   g++ main.cpp -L./ -lfooæ—¶,aä¸ä¼šè¢«åˆå§‹åŒ–
+   å¦å¤–,
    g++ foo.cpp -shared -fPIC -o libfoo.so
-   g++ main.cpp -L./ -lfooÊ±,a»á±»³õÊ¼»¯
+   g++ main.cpp -L./ -lfooæ—¶,aä¼šè¢«åˆå§‹åŒ–
 #+END_EXAMPLE
 
-   ¾¿ÆäÔ­Òò:
-   Çé¿ö1. main.cpp foo.cppÖĞµÄÈ«¾Ö±äÁ¿±».init¶ÎµÄ´úÂë³õÊ¼»¯,ÕâÊÇelfÕë¶Ôc++×¨ÃÅÉè¼ÆµÄ
-   Çé¿ö2. ÓÉÓÚmain.cppÃ»ÓĞÒıÓÃfoo.cppÖĞµÄÈÎºÎ¶«Î÷,µ¼ÖÂlibfoo.aÖĞµÄfoo.o¸ù±¾²»»á±»Á´½Óµ½./a.outÖĞ
-   Çé¿ö3. ÔÚmainÖ´ĞĞÖ®Ç°,libfoo.so±»ld.so¶¯Ì¬ÔØÈëºó,ÓÉld.so¸ºÔğµ÷ÓÃ.init¶ÎµÄ³õÊ¼»¯´úÂë³õÊ¼È«¾Ö±äÁ¿
+   ç©¶å…¶åŸå› :
+   æƒ…å†µ1. main.cpp foo.cppä¸­çš„å…¨å±€å˜é‡è¢«.initæ®µçš„ä»£ç åˆå§‹åŒ–,è¿™æ˜¯elfé’ˆå¯¹c++ä¸“é—¨è®¾è®¡çš„
+   æƒ…å†µ2. ç”±äºmain.cppæ²¡æœ‰å¼•ç”¨foo.cppä¸­çš„ä»»ä½•ä¸œè¥¿,å¯¼è‡´libfoo.aä¸­çš„foo.oæ ¹æœ¬ä¸ä¼šè¢«é“¾æ¥åˆ°./a.outä¸­
+   æƒ…å†µ3. åœ¨mainæ‰§è¡Œä¹‹å‰,libfoo.soè¢«ld.soåŠ¨æ€è½½å…¥å,ç”±ld.soè´Ÿè´£è°ƒç”¨.initæ®µçš„åˆå§‹åŒ–ä»£ç åˆå§‹å…¨å±€å˜é‡
 
-   ÁíÍâ,¾²Ì¬¿âÁ´½Óµ½³ÌĞòÊ±,ÊÇÒÔ.oÎªµ¥Î»µÄ,¼´Èômain.cppĞèÒªlibfoo.aµÄfoo.oµÄÒ»¸öº¯ÊıÊ±,foo.oÖĞµÄËùÓĞ¶«Î÷
-   ¶¼»áÁ´½Ó½øÀ´.
+   å¦å¤–,é™æ€åº“é“¾æ¥åˆ°ç¨‹åºæ—¶,æ˜¯ä»¥.oä¸ºå•ä½çš„,å³è‹¥main.cppéœ€è¦libfoo.açš„foo.oçš„ä¸€ä¸ªå‡½æ•°æ—¶,foo.oä¸­çš„æ‰€æœ‰ä¸œè¥¿
+   éƒ½ä¼šé“¾æ¥è¿›æ¥.
 
-   ÁíÍâ,ÓÉÓÚÒ»¸ö±àÒëµ¥ÔªÖĞËùÓĞÈ«¾Ö±äÁ¿µÄ³õÊ¼»¯¶¼ÊÇÔÚÒ»¸öº¯ÊıÖĞÍê³ÉµÄ([[*%20ctors%20init][ctor]]),ËùÒÔfoo.o±»Á´½Óºó,ËùÓĞÈ«¾Ö±äÁ¿¶¼»á±»³õ
-   Ê¼»¯,¶ø²»ÊÇÖ»ÓĞmain.cppÖĞÓÃµ½µÄ±äÁ¿±»³õÊ¼»¯
-** ldÁ´½ÓÆ÷½Å±¾
+   å¦å¤–,ç”±äºä¸€ä¸ªç¼–è¯‘å•å…ƒä¸­æ‰€æœ‰å…¨å±€å˜é‡çš„åˆå§‹åŒ–éƒ½æ˜¯åœ¨ä¸€ä¸ªå‡½æ•°ä¸­å®Œæˆçš„([[*%20ctors%20init][ctor]]),æ‰€ä»¥foo.oè¢«é“¾æ¥å,æ‰€æœ‰å…¨å±€å˜é‡éƒ½ä¼šè¢«åˆ
+   å§‹åŒ–,è€Œä¸æ˜¯åªæœ‰main.cppä¸­ç”¨åˆ°çš„å˜é‡è¢«åˆå§‹åŒ–
+** ldé“¾æ¥å™¨è„šæœ¬
    http://hi.baidu.com/chosin/blog/item/be1a507b02eb54f70bd18712.html
-   ld --verbose ÏÔÊ¾Ä¬ÈÏÁ´½ÓÆ÷½Å±¾
-   Á´½ÓÆ÷½Å±¾¿ÉÒÔ:
-   - È·¶¨°Ñ¸÷Ä¿±êÎÄ¼şÖĞµÄÄÄĞ©sectionºÏ²¢,Èç .data : { *(mydata) } ¼´°ÑËùÓĞÎÄ¼şÖĞµÄmydata sectionºÏ²¢³É.data section
-   - È·¶¨ºÏ²¢ºóµÄsectionµÄÆğÊ¼µØÖ·,Èç
+   ld --verbose æ˜¾ç¤ºé»˜è®¤é“¾æ¥å™¨è„šæœ¬
+   é“¾æ¥å™¨è„šæœ¬å¯ä»¥:
+   - ç¡®å®šæŠŠå„ç›®æ ‡æ–‡ä»¶ä¸­çš„å“ªäº›sectionåˆå¹¶,å¦‚ .data : { *(mydata) } å³æŠŠæ‰€æœ‰æ–‡ä»¶ä¸­çš„mydata sectionåˆå¹¶æˆ.data section
+   - ç¡®å®šåˆå¹¶åçš„sectionçš„èµ·å§‹åœ°å€,å¦‚
      . = 0x8049095;
      .data : { *(mydata) }
-     ¼´ÊÇÊ¹.data sectionµÄÆğÊ¼µØÖ·Îª0x8049095;
-   - Éè¶¨Éú³ÉµÄ¿ÉÖ´ĞĞÎÄ¼şµÄentry
+     å³æ˜¯ä½¿.data sectionçš„èµ·å§‹åœ°å€ä¸º0x8049095;
+   - è®¾å®šç”Ÿæˆçš„å¯æ‰§è¡Œæ–‡ä»¶çš„entry
      ENTRY (_start)
-   - ¶Ô·ûºÅ¸³Öµ
+   - å¯¹ç¬¦å·èµ‹å€¼
      .data : {*(.data)}
      _edata = .;
-     ¼´Ìí¼ÓÁËÒ»¸ö_edata·ûºÅ,$_edata¼´.data¶ÎµÄÄ©Î²µÄµØÖ·
+     å³æ·»åŠ äº†ä¸€ä¸ª_edataç¬¦å·,$_edataå³.dataæ®µçš„æœ«å°¾çš„åœ°å€
      1.c:
      int a;
      lds:
      a = 3;
-     Ôò1.cÖĞa±äÁ¿µÄµØÖ·»á±ä³É3
+     åˆ™1.cä¸­aå˜é‡çš„åœ°å€ä¼šå˜æˆ3
 
-** ĞŞ¸ÄÁË.so»òexecutable£¬ÕıÔÚÔËĞĞµÄ³ÌĞò»áÓĞÉ¶Ó°Ïì£¿
-   executableÊ¹ÓÃexecÒ»Ààº¯ÊıÓ³Éäµ½½ø³ÌµØÖ·¿Õ¼ä
-   .soÊ¹ÓÃmmapÓ³Éäµ½½ø³ÌµØÖ·,Ê¹ÓÃµÄ²ÎÊıÀàËÆÓÚ:
+** ä¿®æ”¹äº†.soæˆ–executableï¼Œæ­£åœ¨è¿è¡Œçš„ç¨‹åºä¼šæœ‰å•¥å½±å“ï¼Ÿ
+   executableä½¿ç”¨execä¸€ç±»å‡½æ•°æ˜ å°„åˆ°è¿›ç¨‹åœ°å€ç©ºé—´
+   .soä½¿ç”¨mmapæ˜ å°„åˆ°è¿›ç¨‹åœ°å€,ä½¿ç”¨çš„å‚æ•°ç±»ä¼¼äº:
        mmap2(NULL, 44424, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0)
 
-   MAP_PRIVATE±íÊ¾Ë½ÓĞÓ³Éä,¼´±¾½ø³Ì¶ÔÎÄ¼şµÄĞŞ¸Ä²»»á·´Ó³µ½¶ÔÓ¦µÄÎÄ¼şÉÏ
-   µ«Íâ²¿³ÌĞò(ÈçMAP_PUBLICµÄmmap,»òcp..)¶Ô.soÎÄ¼şµÄĞŞ¸Ä»á·´Ó³µ½±¾½ø³Ì,Òò¶ø¿ÉÄÜÓ°Ïì³ÌĞòµÄÕı³£ÔËĞĞ.
+   MAP_PRIVATEè¡¨ç¤ºç§æœ‰æ˜ å°„,å³æœ¬è¿›ç¨‹å¯¹æ–‡ä»¶çš„ä¿®æ”¹ä¸ä¼šåæ˜ åˆ°å¯¹åº”çš„æ–‡ä»¶ä¸Š
+   ä½†å¤–éƒ¨ç¨‹åº(å¦‚MAP_PUBLICçš„mmap,æˆ–cp..)å¯¹.soæ–‡ä»¶çš„ä¿®æ”¹ä¼šåæ˜ åˆ°æœ¬è¿›ç¨‹,å› è€Œå¯èƒ½å½±å“ç¨‹åºçš„æ­£å¸¸è¿è¡Œ.
 
-   mmapµÄ²ÎÊıMAP_DENYWRITE±¾À´ÓÃÒâ¾ÍÊÇ×èÖ¹Íâ²¿³ÌĞò¶ÔmmapÓ³ÉäµÄÎÄ¼şµÄĞŞ¸ÄµÄ,µ«Õâ¸ö
-   mmapµÄÑ¡ÏîÔÚÓÃ»§Ì¬ÒÑ¾­±»ignoredÁË(µ«Õâ¸öÑ¡ÏîÔÚÄÚºË»¹ÊÇÓĞĞ§µÄ)....¾İËµÊÇÒòÎª»á
-   ÓĞdos·çÏÕ
+   mmapçš„å‚æ•°MAP_DENYWRITEæœ¬æ¥ç”¨æ„å°±æ˜¯é˜»æ­¢å¤–éƒ¨ç¨‹åºå¯¹mmapæ˜ å°„çš„æ–‡ä»¶çš„ä¿®æ”¹çš„,ä½†è¿™ä¸ª
+   mmapçš„é€‰é¡¹åœ¨ç”¨æˆ·æ€å·²ç»è¢«ignoredäº†(ä½†è¿™ä¸ªé€‰é¡¹åœ¨å†…æ ¸è¿˜æ˜¯æœ‰æ•ˆçš„)....æ®è¯´æ˜¯å› ä¸ºä¼š
+   æœ‰dosé£é™©
 
-   ËùÒÔ.so±»mmapºó,Íâ²¿µÄĞŞ¸Ä»áÓ°ÏìÒÑ¾­mmapµÄ.so,Ê¹³ÌĞò±ÀÀ£
-   ÓĞÒ»¸öpatch¿ÉÒÔ±£»¤.so,ÆäÊµ¾ÍÊÇ²»¹ÜÓĞÃ»ÓĞMAP_DENYWRITEÑ¡Ïî,ÄÚºË¶¼¶Ô´øPROT_EXECµÄmmap¼ÓDENYWRITE:
+   æ‰€ä»¥.soè¢«mmapå,å¤–éƒ¨çš„ä¿®æ”¹ä¼šå½±å“å·²ç»mmapçš„.so,ä½¿ç¨‹åºå´©æºƒ
+   æœ‰ä¸€ä¸ªpatchå¯ä»¥ä¿æŠ¤.so,å…¶å®å°±æ˜¯ä¸ç®¡æœ‰æ²¡æœ‰MAP_DENYWRITEé€‰é¡¹,å†…æ ¸éƒ½å¯¹å¸¦PROT_EXECçš„mmapåŠ DENYWRITE:
    ETXTBUSY on shared libs (patch included)
    http://lkml.indiana.edu/hypermail/linux/kernel/9808.2/1046.html
 
-   Óë.so²»Í¬µÄÊÇ,executable±»mmapºó,ÄÚºË¿ÉÒÔ±£Ö¤executableÎÄ¼ş²»ÄÜ±»ÆäËû³ÌĞòĞŞ¸Ä,Æä
-   Ëû³ÌĞò´ò¿ªÎÄ¼şÊ±,»á·µ»ØETXTBUSY
+   ä¸.soä¸åŒçš„æ˜¯,executableè¢«mmapå,å†…æ ¸å¯ä»¥ä¿è¯executableæ–‡ä»¶ä¸èƒ½è¢«å…¶ä»–ç¨‹åºä¿®æ”¹,å…¶
+   ä»–ç¨‹åºæ‰“å¼€æ–‡ä»¶æ—¶,ä¼šè¿”å›ETXTBUSY
 
-   executable±»±£»¤,ÊÇÒòÎª:
-   executable¶¼ÊÇÍ¨¹ısys_execve->do_execve->open_execÓ³Éäµ½ÄÚ´æµÄ,open_execÖĞÓĞÒ»¶Î:
+   executableè¢«ä¿æŠ¤,æ˜¯å› ä¸º:
+   executableéƒ½æ˜¯é€šè¿‡sys_execve->do_execve->open_execæ˜ å°„åˆ°å†…å­˜çš„,open_execä¸­æœ‰ä¸€æ®µ:
 
 #+BEGIN_EXAMPLE
    494 err = deny_write_access(file);
@@ -136,29 +136,29 @@
    496   fput(file);
    497   file = ERR_PTR(err);
 #+END_EXAMPLE
-   ËùÒÔexecutable¿ÉÒÔ±»denywrite±£»¤
+   æ‰€ä»¥executableå¯ä»¥è¢«denywriteä¿æŠ¤
 
-   ×ÛÉÏ:
-   .soÔÚ¼ÓÔØºó¿ÉÄÜ±»Íâ²¿³ÌĞòĞŞ¸Ä(±ÈÈçcp),linuxÃ»ÓĞÊ²Ã´°ì·¨±£»¤.so,Î¨Ò»µÄ°ì·¨¾ÍÊÇ×¢Òâ²»ÒªÎŞÒâĞŞ¸Ä.so,ÀıÈç:
-   °²×°ĞÂ°æ±¾µÄ.soÊ±,²»ÒªÖ±½Ócp,¶øÒªÏÈrm .so,ÔÙcp .so,»òÊ¹ÓÃinstall
+   ç»¼ä¸Š:
+   .soåœ¨åŠ è½½åå¯èƒ½è¢«å¤–éƒ¨ç¨‹åºä¿®æ”¹(æ¯”å¦‚cp),linuxæ²¡æœ‰ä»€ä¹ˆåŠæ³•ä¿æŠ¤.so,å”¯ä¸€çš„åŠæ³•å°±æ˜¯æ³¨æ„ä¸è¦æ— æ„ä¿®æ”¹.so,ä¾‹å¦‚:
+   å®‰è£…æ–°ç‰ˆæœ¬çš„.soæ—¶,ä¸è¦ç›´æ¥cp,è€Œè¦å…ˆrm .so,å†cp .so,æˆ–ä½¿ç”¨install
 
-** Íâ²¿¶Ô.soµÄĞŞ¸ÄÊÇÈçºÎÈÃÕıÔÚÊ¹ÓÃ.soµÄ³ÌĞò±ÀÀ£µÄ
-   - so¶¼ÊÇÓÃMAP_PRIVATE½øĞĞmmapµÄ,ÔÚLinuxµÄÊµÏÖÖĞ,Íâ²¿¶Ô.soµÄĞŞ¸Ä»á·´Ó³µ½mmapµÄ
-   ÇøÓòÖĞ,²»¹ÜÊÇMAP_PRIVATE»¹ÊÇMAP_SHARED,¼´Ê¹MAP_PRIVATEÊ¹ÓÃÁËCOWÊ¹³ÌĞòÖ»ÊÇĞŞ¸Ä
-   Ô­soµÄ¸½±¾,Íâ²¿¶Ô.soµÄĞŞ¸Ä»¹ÊÇ»á·´Ó³µ½¸½±¾µÄÇøÓò....Çî×·²»Éá°¡
-   - loader½«soÔØÈëÊ±,²»½ö½öÒªÓÃmmap°ÑsoÓ³Éä½øÀ´,»¹Òª¶ÔÓ³ÉäµÄÇøÓòµÄÒ»Ğ©ÄÚÈİ½øĞĞĞŞ¸Ä,¸ù¾İ
-     soÀàĞÍµÄ²»Í¬(ÊÇ·ñÊ¹ÓÃÁË-fPICÑ¡Ïî),ĞŞ¸ÄÒ²»áÓĞËù²»Í¬
-   Íâ²¿³ÌĞòĞŞ¸ÄÁËsoÊ¹ÕıÔÚÊ¹ÓÃsoµÄ³ÌĞò±ÀÀ£µÄÔ­ÒòÊÇ:Íâ²¿³ÌĞòµÄĞŞ¸ÄÖ±½Ó·´Ó³µ½mmapÇøÓò,loaderÔØÈësoÊ±
-   ¶ÔmmapÇøÓòµÄÒ»Ğ©ĞŞ¸ÄÒò´Ë¶ªÊ§,¶øÕâĞ©ĞŞ¸ÄÊÇ¹Ø¼üµÄ,Òò´Ë³ÌĞò±ÀÀ£
+** å¤–éƒ¨å¯¹.soçš„ä¿®æ”¹æ˜¯å¦‚ä½•è®©æ­£åœ¨ä½¿ç”¨.soçš„ç¨‹åºå´©æºƒçš„
+   - soéƒ½æ˜¯ç”¨MAP_PRIVATEè¿›è¡Œmmapçš„,åœ¨Linuxçš„å®ç°ä¸­,å¤–éƒ¨å¯¹.soçš„ä¿®æ”¹ä¼šåæ˜ åˆ°mmapçš„
+   åŒºåŸŸä¸­,ä¸ç®¡æ˜¯MAP_PRIVATEè¿˜æ˜¯MAP_SHARED,å³ä½¿MAP_PRIVATEä½¿ç”¨äº†COWä½¿ç¨‹åºåªæ˜¯ä¿®æ”¹
+   åŸsoçš„é™„æœ¬,å¤–éƒ¨å¯¹.soçš„ä¿®æ”¹è¿˜æ˜¯ä¼šåæ˜ åˆ°é™„æœ¬çš„åŒºåŸŸ....ç©·è¿½ä¸èˆå•Š
+   - loaderå°†soè½½å…¥æ—¶,ä¸ä»…ä»…è¦ç”¨mmapæŠŠsoæ˜ å°„è¿›æ¥,è¿˜è¦å¯¹æ˜ å°„çš„åŒºåŸŸçš„ä¸€äº›å†…å®¹è¿›è¡Œä¿®æ”¹,æ ¹æ®
+     soç±»å‹çš„ä¸åŒ(æ˜¯å¦ä½¿ç”¨äº†-fPICé€‰é¡¹),ä¿®æ”¹ä¹Ÿä¼šæœ‰æ‰€ä¸åŒ
+   å¤–éƒ¨ç¨‹åºä¿®æ”¹äº†soä½¿æ­£åœ¨ä½¿ç”¨soçš„ç¨‹åºå´©æºƒçš„åŸå› æ˜¯:å¤–éƒ¨ç¨‹åºçš„ä¿®æ”¹ç›´æ¥åæ˜ åˆ°mmapåŒºåŸŸ,loaderè½½å…¥soæ—¶
+   å¯¹mmapåŒºåŸŸçš„ä¸€äº›ä¿®æ”¹å› æ­¤ä¸¢å¤±,è€Œè¿™äº›ä¿®æ”¹æ˜¯å…³é”®çš„,å› æ­¤ç¨‹åºå´©æºƒ
 
-   - loader¶ÔmmapÇøÓòµÄĞŞ¸Ä:
-     - soÓÃ-fPIC±àÒëÊ±:
-       soÖĞ¶ÔÈ«¾Ö±äÁ¿µÄÒıÓÃÊ¹ÓÃGOT±í,¶Ô×Ô¼ºÎŞ·¨½âÎöµÄÆäËûº¯ÊıµÄµ÷ÓÃÊ¹ÓÃPLT±í,ÕâÁ½¸ö±í¶¼ÔÚ.data¶ÎÖĞ,³õÊ¼Îª¿Õ
-       loader½«soÔØÈëÊ±,»áÌî³äGOT±í,²¢½«PLT±íµÄËùÓĞentryÖÃÎªloader×Ô¼ºµÄµØÖ·,½«so³õ´Îµ÷ÓÃPLT±íµÄº¯ÊıÊ±,loader»á
-       ¸ºÔğ²éÕÒÕâ¸öº¯ÊıµÄÕæÕıµØÖ·,ÓÃËüÌæ»»µôentryÖĞ×Ô¼ºµÄµØÖ·,²¢µ÷ÓÃÖ®,ÕâÒ²ÊÇÒ»ÖÖlazy evaluation.
-     - soÃ»ÓÃ-fPIC±àÒëÊ±:
-       soÖĞ¶ÔÈ«¾Ö±äÁ¿µÄÒıÓÃºÍÎŞ·¨½âÎöµÄº¯ÊıµÄµ÷ÓÃ¶¼ÊÇ0,loadÔÚÔØÈësoÊ±,»áĞŞ¸ÄÕâĞ©Öµ,¼´»áÍ¬Ê±ĞŞ¸Ä.dataºÍ.text
-   ÒòÎªÍâ²¿³ÌĞòĞŞ¸ÄsoÊ±,Ô­À´loader¶ÔmmapÇøÓòµÄĞŞ¸Ä¶¼¶ªÊ§ÁË,µ¼ÖÂsoÖĞÈ«¾Ö±äÁ¿ºÍº¯Êıµ÷ÓÃ¶¼±ä³É¿Õ,³öÏÖ¶Î´íÎó
+   - loaderå¯¹mmapåŒºåŸŸçš„ä¿®æ”¹:
+     - soç”¨-fPICç¼–è¯‘æ—¶:
+       soä¸­å¯¹å…¨å±€å˜é‡çš„å¼•ç”¨ä½¿ç”¨GOTè¡¨,å¯¹è‡ªå·±æ— æ³•è§£æçš„å…¶ä»–å‡½æ•°çš„è°ƒç”¨ä½¿ç”¨PLTè¡¨,è¿™ä¸¤ä¸ªè¡¨éƒ½åœ¨.dataæ®µä¸­,åˆå§‹ä¸ºç©º
+       loaderå°†soè½½å…¥æ—¶,ä¼šå¡«å……GOTè¡¨,å¹¶å°†PLTè¡¨çš„æ‰€æœ‰entryç½®ä¸ºloaderè‡ªå·±çš„åœ°å€,å°†soåˆæ¬¡è°ƒç”¨PLTè¡¨çš„å‡½æ•°æ—¶,loaderä¼š
+       è´Ÿè´£æŸ¥æ‰¾è¿™ä¸ªå‡½æ•°çš„çœŸæ­£åœ°å€,ç”¨å®ƒæ›¿æ¢æ‰entryä¸­è‡ªå·±çš„åœ°å€,å¹¶è°ƒç”¨ä¹‹,è¿™ä¹Ÿæ˜¯ä¸€ç§lazy evaluation.
+     - soæ²¡ç”¨-fPICç¼–è¯‘æ—¶:
+       soä¸­å¯¹å…¨å±€å˜é‡çš„å¼•ç”¨å’Œæ— æ³•è§£æçš„å‡½æ•°çš„è°ƒç”¨éƒ½æ˜¯0,loadåœ¨è½½å…¥soæ—¶,ä¼šä¿®æ”¹è¿™äº›å€¼,å³ä¼šåŒæ—¶ä¿®æ”¹.dataå’Œ.text
+   å› ä¸ºå¤–éƒ¨ç¨‹åºä¿®æ”¹soæ—¶,åŸæ¥loaderå¯¹mmapåŒºåŸŸçš„ä¿®æ”¹éƒ½ä¸¢å¤±äº†,å¯¼è‡´soä¸­å…¨å±€å˜é‡å’Œå‡½æ•°è°ƒç”¨éƒ½å˜æˆç©º,å‡ºç°æ®µé”™è¯¯
 
 ** abi for register
    ==========i386 ABI / function calling sequence ==========
@@ -180,7 +180,7 @@ Some registers have assigned roles in the standard calling sequence:
 
 %esp
 The stack pointer holds the limit of the current stack frame, which
-is the address of the stack¡¯s bottom-most, valid word. At all
+is the address of the stackâ€™s bottom-most, valid word. At all
 times, the stack pointer should point to a word-aligned area.
 
 %ebp
@@ -189,7 +189,7 @@ stack frame. Consequently, a function has registers pointing to
 both ends of its frame. Incoming arguments reside in the previous
 frame, referenced as positive offsets from %ebp, while local
 variables reside in the current frame, referenced as negative
-offsets from %ebp. A function must preserve this register¡¯s value
+offsets from %ebp. A function must preserve this registerâ€™s value
 for its caller.
 
 %eax
@@ -233,7 +233,7 @@ entry and upon exit from a function.
 EFLAGS
 The flags register contains the system flags, such as the direction
 flag and the carry flag. The direction flag must be set to the
-¡®¡®forward¡¯¡¯ (that is, zero) direction before entry and upon exit
+â€˜â€˜forwardâ€™â€™ (that is, zero) direction before entry and upon exit
 from a function. Other user flags have no specified role in the
 standard calling sequence and are not preserved.
 
@@ -244,47 +244,47 @@ as the rounding mode and exception masking.
 ** man 7 signal
    standard signal
    real-time signal
-       ĞÅºÅ¶ÓÁĞ
-       siginfo_t°üº¬¶îÍâµÄĞÅÏ¢,ÈçĞÅºÅ·¢ËÍ·½µÄuid
-   ¿ÉÖØÈëÏµÍ³µ÷ÓÃ
-   ¿É¿¿ĞÅºÅ
+       ä¿¡å·é˜Ÿåˆ—
+       siginfo_tåŒ…å«é¢å¤–çš„ä¿¡æ¯,å¦‚ä¿¡å·å‘é€æ–¹çš„uid
+   å¯é‡å…¥ç³»ç»Ÿè°ƒç”¨
+   å¯é ä¿¡å·
    sigqueue/kill
    sigsuspend/pause
 
 ** libnotify
 ** pid,ppid,tgid,pgid,sid, and signal
-   - pid ÊÇ½ø³Ì/Ïß³ÌµÄÎ¨Ò»±êÊ¶,µ«getpid²¢²»ÊÇ·µ»Øtask_structµÄpid×Ö¶Î,¶øÊÇ·µ»Ø
-     task_struct->tgid,ÒòÎªposix¹æ¶¨Ò»¸ö½ø³Ì´´½¨µÄ¶à¸öÏß³ÌµÄgetpidµÄ½á¹ûÊÇÒ»ÑùµÄ,¶¼ÊÇÄÇ¸ö½ø³ÌµÄid
-     gettid·µ»ØÕæÕıµÄpid
-   - ppid ¸¸½ø³Ì
-     Ïß³Ì´´½¨Ê±Ê¹ÓÃÁËCLONE_PARENT,ËùÒÔ¸÷¸öÏß³ÌºÍÖ÷Ïß³ÌµÄµÄppid¶¼ÊÇÖ÷Ïß³ÌµÄppid
+   - pid æ˜¯è¿›ç¨‹/çº¿ç¨‹çš„å”¯ä¸€æ ‡è¯†,ä½†getpidå¹¶ä¸æ˜¯è¿”å›task_structçš„pidå­—æ®µ,è€Œæ˜¯è¿”å›
+     task_struct->tgid,å› ä¸ºposixè§„å®šä¸€ä¸ªè¿›ç¨‹åˆ›å»ºçš„å¤šä¸ªçº¿ç¨‹çš„getpidçš„ç»“æœæ˜¯ä¸€æ ·çš„,éƒ½æ˜¯é‚£ä¸ªè¿›ç¨‹çš„id
+     gettidè¿”å›çœŸæ­£çš„pid
+   - ppid çˆ¶è¿›ç¨‹
+     çº¿ç¨‹åˆ›å»ºæ—¶ä½¿ç”¨äº†CLONE_PARENT,æ‰€ä»¥å„ä¸ªçº¿ç¨‹å’Œä¸»çº¿ç¨‹çš„çš„ppidéƒ½æ˜¯ä¸»çº¿ç¨‹çš„ppid
      #>ps -meo cmd,pid,ppid,pgid,tid
      ./a.out                     23874 23237 23874     -
       -                               -     -     - 23874
       -                               -     -     - 23875
-     ¶øÈôa.outÊ¹ÓÃ½ø³ÌÀ´´´½¨×Ó½ø³Ì,Ïàµ±ÓÚcloneÃ»Ö¸¶¨CLONE_PARENT
+     è€Œè‹¥a.outä½¿ç”¨è¿›ç¨‹æ¥åˆ›å»ºå­è¿›ç¨‹,ç›¸å½“äºcloneæ²¡æŒ‡å®šCLONE_PARENT
      #>ps -meo cmd,pid,ppid,pgid,tid
      ./a.out                     23885 23237 23885     -
      -                               -     -     - 23885
      ./a.out                     23886 23885 23885     -
      -                               -     -     - 23886
 
-   - tgidÊÇÏß³Ì×éid,getpid·µ»Øtgid
-   - pgid,×éid. ×Ó½ø³Ì¼Ì³Ğpgid,shell¹ÜµÀÖĞ¸÷¸ö½ø³ÌÓĞÏàÍ¬µÄpgid,kill -9 -pgid ¿ÉÒÔ¸øËùÓĞ×éidÊÇpgidµÄ½ø³Ì·¢SIGKILL,
-     ¶økill -9 pidÖ»¸øpidÊÇpidµÄ½ø³Ì·¢SIGKILL.
+   - tgidæ˜¯çº¿ç¨‹ç»„id,getpidè¿”å›tgid
+   - pgid,ç»„id. å­è¿›ç¨‹ç»§æ‰¿pgid,shellç®¡é“ä¸­å„ä¸ªè¿›ç¨‹æœ‰ç›¸åŒçš„pgid,kill -9 -pgid å¯ä»¥ç»™æ‰€æœ‰ç»„idæ˜¯pgidçš„è¿›ç¨‹å‘SIGKILL,
+     è€Œkill -9 pidåªç»™pidæ˜¯pidçš„è¿›ç¨‹å‘SIGKILL.
      If pid is less than -1, then sig is sent to every process in the process group whose ID is -pid.
-     pgid¿ÉÒÔÊ¹ÎÒÃÇÍ¬Ê±¹ÜÀíÒ»×é½ø³Ì,±ÈÈç·¢ĞÅºÅ,ÁíÍâ,shellµÄ×÷Òµ¿ØÖÆÒ²Ê¹ÓÃÁËpgid,±ÈÈçtcsetpgrp(fd,pgid)Ê¹µÃËùÓĞ×éidÎªpgidµÄ½ø³Ì
-     ´¦ÓÚÇ°Ì¨(¼´C-c¸øÕâ¸ö½ø³Ì·¢SIGINT,ÕâĞ©½ø³ÌµÄstdin,stdoutÎªfd...) ÁíÍâ, Òª½«Ò»¸ö½ø³ÌdaemonizeÍ¨³£ĞèÒª¹Ø±Õstdin/stdout,setpgidÎª×ÔÒÑµÄpid,
-     setsidÎª×Ô¼ºµÄpid,ÆäÖĞsetpgidµÄ×÷ÓÃ¾ÍÊÇÈÃ½ø³ÌÍÑÀë¸¸½ø³ÌµÄ½ø³Ì×é,ÒÔÃâkill -SIG Ê±ÎóÉ±daemon½ø³Ì
-   - sid,»á»°id,ÍêÈ«ºÍshellÓĞ¹ØµÄid,Ò»¸öshellÆô¶¯µÄËùÓĞ½ø³ÌµÄsidÒ»Ñù,µ±shellÍË³öÊ±,shell»áÏòÍ¬Ò»¸ö»á»°idµÄ½ø³Ì·¢SIGHUP
+     pgidå¯ä»¥ä½¿æˆ‘ä»¬åŒæ—¶ç®¡ç†ä¸€ç»„è¿›ç¨‹,æ¯”å¦‚å‘ä¿¡å·,å¦å¤–,shellçš„ä½œä¸šæ§åˆ¶ä¹Ÿä½¿ç”¨äº†pgid,æ¯”å¦‚tcsetpgrp(fd,pgid)ä½¿å¾—æ‰€æœ‰ç»„idä¸ºpgidçš„è¿›ç¨‹
+     å¤„äºå‰å°(å³C-cç»™è¿™ä¸ªè¿›ç¨‹å‘SIGINT,è¿™äº›è¿›ç¨‹çš„stdin,stdoutä¸ºfd...) å¦å¤–, è¦å°†ä¸€ä¸ªè¿›ç¨‹daemonizeé€šå¸¸éœ€è¦å…³é—­stdin/stdout,setpgidä¸ºè‡ªå·²çš„pid,
+     setsidä¸ºè‡ªå·±çš„pid,å…¶ä¸­setpgidçš„ä½œç”¨å°±æ˜¯è®©è¿›ç¨‹è„±ç¦»çˆ¶è¿›ç¨‹çš„è¿›ç¨‹ç»„,ä»¥å…kill -SIG æ—¶è¯¯æ€daemonè¿›ç¨‹
+   - sid,ä¼šè¯id,å®Œå…¨å’Œshellæœ‰å…³çš„id,ä¸€ä¸ªshellå¯åŠ¨çš„æ‰€æœ‰è¿›ç¨‹çš„sidä¸€æ ·,å½“shellé€€å‡ºæ—¶,shellä¼šå‘åŒä¸€ä¸ªä¼šè¯idçš„è¿›ç¨‹å‘SIGHUP
 
-** SIGSTOPÓëSIGCONT
-   kill -SIGSTOP pid ¿ÉÒÔ½«Ò»¸ö½ø³ÌÖÃÓÚSTOP×´Ì¬,Ö»ÓĞÊÕµ½SIGCONT²ÅÄÜ¼ÌĞøÖ´ĞĞ. Óë¸÷
-   ÖÖsleep,mutex,×èÈû¶øÖÃÓÚSTOP×´Ì¬²»Í¬µÄÊÇ,ÒòSIGSTOPÍ£Ö¹µÄ½ø³Ì²»»áÒòÎªSIGCONTÒÔ
-   ÍâµÄÆäËûÌõ¼ş¶øËÕĞÑ
-   SIGSTOPÓëSIGKILLÒ»Ñù²»ÄÜĞŞ¸Ähandler
+** SIGSTOPä¸SIGCONT
+   kill -SIGSTOP pid å¯ä»¥å°†ä¸€ä¸ªè¿›ç¨‹ç½®äºSTOPçŠ¶æ€,åªæœ‰æ”¶åˆ°SIGCONTæ‰èƒ½ç»§ç»­æ‰§è¡Œ. ä¸å„
+   ç§sleep,mutex,é˜»å¡è€Œç½®äºSTOPçŠ¶æ€ä¸åŒçš„æ˜¯,å› SIGSTOPåœæ­¢çš„è¿›ç¨‹ä¸ä¼šå› ä¸ºSIGCONTä»¥
+   å¤–çš„å…¶ä»–æ¡ä»¶è€Œè‹é†’
+   SIGSTOPä¸SIGKILLä¸€æ ·ä¸èƒ½ä¿®æ”¹handler
 
-** objcopy ½«Êı¾İÎÄ¼ş±£´æÔÚÄ¿±êÎÄ¼şÖĞ
+** objcopy å°†æ•°æ®æ–‡ä»¶ä¿å­˜åœ¨ç›®æ ‡æ–‡ä»¶ä¸­
 #+BEGIN_EXAMPLE
    #> objcopy -I binary  -O elf32-i386 -B i386 source.c sourcefile.o
    #> nm -a sourcefile.o|grep source.c
@@ -306,10 +306,10 @@ as the rounding mode and exception masking.
 
 
    #>gcc source.c sourcefile.o -o ./a.out
-   #> a.out ÏÔÊ¾source.cµÄÄÚÈİ
+   #> a.out æ˜¾ç¤ºsource.cçš„å†…å®¹
 #+END_EXAMPLE
-   ps. cÓïÑÔÖĞµÄ±äÁ¿ÃûºÍ»ã±àÓïÑÔÖĞµÄ·ûºÅµÄ¹ØÏµ:
-   ±äÁ¿ÃûºÍ»ã±à·ûºÅÊÇ¶ÔÓ¦µÄ,²»¹ıÖ±½ÓÒıÓÃ±äÁ¿ÃûÈ¡µ½µÄÊÇÖµ,¶øÖ±½ÓÒıÓÃ»ã±à·ûºÅÈ¡µ½µÄÊÇµØÖ·
+   ps. cè¯­è¨€ä¸­çš„å˜é‡åå’Œæ±‡ç¼–è¯­è¨€ä¸­çš„ç¬¦å·çš„å…³ç³»:
+   å˜é‡åå’Œæ±‡ç¼–ç¬¦å·æ˜¯å¯¹åº”çš„,ä¸è¿‡ç›´æ¥å¼•ç”¨å˜é‡åå–åˆ°çš„æ˜¯å€¼,è€Œç›´æ¥å¼•ç”¨æ±‡ç¼–ç¬¦å·å–åˆ°çš„æ˜¯åœ°å€
 
 ** self-modification code						:ATTACH:
    :PROPERTIES:
@@ -318,20 +318,20 @@ as the rounding mode and exception masking.
    :END:
    Note:mprotect is the key
    http://en.wikipedia.org/wiki/Self-modifying_code
-   self-modifying codeµÄ×÷ÓÃ:
+   self-modifying codeçš„ä½œç”¨:
 
    The method is frequently used for conditionally invoking test/debugging code
    without requiring additional overhead for every input/output cycle and also
    in just-in-time (JIT) compilers.
 
-   ÄÜ¹»±ÜÃâÊ¹ÓÃ if (flag..) then ..ÕâÖÖÓï¾ä,ÒòÎªµ±flag·¢ÉúÊ±,´úÂëÒÑ¾­±»ĞŞ¸Ä,ºóÃæ
-   µÄÖ´ĞĞ²»ĞèÒªÔÙÅĞ¶Ïflag,ÓÃÀ´ÓÅ»¯ºÍ×´Ì¬Ïà¹ØµÄÑ­»·
+   èƒ½å¤Ÿé¿å…ä½¿ç”¨ if (flag..) then ..è¿™ç§è¯­å¥,å› ä¸ºå½“flagå‘ç”Ÿæ—¶,ä»£ç å·²ç»è¢«ä¿®æ”¹,åé¢
+   çš„æ‰§è¡Œä¸éœ€è¦å†åˆ¤æ–­flag,ç”¨æ¥ä¼˜åŒ–å’ŒçŠ¶æ€ç›¸å…³çš„å¾ªç¯
 
-   ÀıÈç:
-   - c++µÄ¶àÌ¬.Êµ¼Ê¾ÍÊÇÍ¨¹ıĞŞ¸Ävtbl½«Ìõ¼şÖ±½ÓÍ¨¹ı´úÂëµÄĞŞ¸ÄÌåÏÖ
-   - elf¶Ô¹²Ïí¿âµÄº¯ÊıµÄµ÷ÓÃ. µ÷ÓÃ¿âº¯ÊıÊ±Í¨¹ıpltµ÷ÓÃ,ÀıÈçfoo@plt³õÊ¼Ê±Êµ¼ÊÊÇ
-     loaderµÄ´úÂë,µÚÒ»´ÎÖ´ĞĞfooÊ±loader¸ºÔğ°Ñfoo@pltĞŞ¸ÄÎªÕæÕıµÄfooµÄÎ»ÖÃ
-   - ¶Ôº¯ÊıÖ¸ÕëµÄĞŞ¸ÄÒ²¿ÉÒÔ¿´×÷ÊÇ¸ü¸ß²ã´ÎÉÏµÄself-modifying code
+   ä¾‹å¦‚:
+   - c++çš„å¤šæ€.å®é™…å°±æ˜¯é€šè¿‡ä¿®æ”¹vtblå°†æ¡ä»¶ç›´æ¥é€šè¿‡ä»£ç çš„ä¿®æ”¹ä½“ç°
+   - elfå¯¹å…±äº«åº“çš„å‡½æ•°çš„è°ƒç”¨. è°ƒç”¨åº“å‡½æ•°æ—¶é€šè¿‡pltè°ƒç”¨,ä¾‹å¦‚foo@pltåˆå§‹æ—¶å®é™…æ˜¯
+     loaderçš„ä»£ç ,ç¬¬ä¸€æ¬¡æ‰§è¡Œfooæ—¶loaderè´Ÿè´£æŠŠfoo@pltä¿®æ”¹ä¸ºçœŸæ­£çš„fooçš„ä½ç½®
+   - å¯¹å‡½æ•°æŒ‡é’ˆçš„ä¿®æ”¹ä¹Ÿå¯ä»¥çœ‹ä½œæ˜¯æ›´é«˜å±‚æ¬¡ä¸Šçš„self-modifying code
 
 ** How main() is executed on Linux
 Starting
@@ -649,11 +649,11 @@ create_elf_tables           linux kernel source code
 
 start_thread                   linux kernel source code
                                       include/asm/processor.h
-** ¾²Ì¬¿â
+** é™æ€åº“
    ar cr libfoo.a 1.o 2.o
 ** getsockname getpeername
-** raw socketÖĞÈçºÎÖ¸¶¨Ô´µØÖ·
-   ËäÈ»man rawËµÃ÷,Èç¹ûÖ¸¶¨Ô´µØÖ·Îª0,ÔòÄÚºË»á×Ô¶¯¼ÓÉÏÕıÈ·µÄÔ´µØÖ·, µ«ÎÒÔÚipv6ÉÏÊÔÃ»ÓĞ³É¹¦...ÔÚraw socketÖĞµÃµ½ÕıÈ·µÄÔ´µØÖ·µÄ·½·¨ÊÇ:
+** raw socketä¸­å¦‚ä½•æŒ‡å®šæºåœ°å€
+   è™½ç„¶man rawè¯´æ˜,å¦‚æœæŒ‡å®šæºåœ°å€ä¸º0,åˆ™å†…æ ¸ä¼šè‡ªåŠ¨åŠ ä¸Šæ­£ç¡®çš„æºåœ°å€, ä½†æˆ‘åœ¨ipv6ä¸Šè¯•æ²¡æœ‰æˆåŠŸ...åœ¨raw socketä¸­å¾—åˆ°æ­£ç¡®çš„æºåœ°å€çš„æ–¹æ³•æ˜¯:
 #+BEGIN_EXAMPLE
        void probeSrcAddr () {
 	int probeFd = socket(AF_INET6, SOCK_DGRAM, 0);
@@ -670,32 +670,32 @@ start_thread                   linux kernel source code
       }
 #+END_EXAMPLE
 
-   iputilsÖĞµÄping6.c ping.c¶¼ÊÇÓÃµÄÕâÖÖ·½·¨
+   iputilsä¸­çš„ping6.c ping.céƒ½æ˜¯ç”¨çš„è¿™ç§æ–¹æ³•
 
 ** SOCK_RAW, NF_PACKET, sniffer
-   Ê¹ÓÃraw socketÄÜ¹»:
-    - ĞŞ¸ÄÕû¸öIp°ü
-    - ×Ô¶¨ÒåËÄ²ãĞ­Òé,Èçospf
-    - ¼àÌıËùÓĞµÄtcp,udp,icmp°ü,µ«²»ÄÜÀ¹½Ø
-  int sockfd=socket (PF_INET,SOCK_RAW,protocol),¸ù¾İprotocalµÄ²»Í¬,ÓĞ²»Í¬µÄ¹¦ÄÜ:
-    - µ±protocolÎªIPPROTOCOL_TCP,IPPROTO_UDP,IPPROTO_ICMPÊ±,Õâ¸ösocket±»ÏŞ¶¨ÁËÓÃÀ´ÊÕ·¢tcp/udp/icmp°ü,¼´
-      - ÏòsockfdĞ´Ê±,Ip°üµÄĞ­Òé×Ö¶Î×Ô¶¯±»ÖØĞ´Îªtcp/udp/icmp
-      - ´Ósockfd¶ÁÊ±,¿ÉÒÔ¶Áµ½ËùÓĞÊÕµ½µÄtcp/udp/icmp°ü,×¢Òâ,Õâ¸ösockfd²¢Ã»ÓĞÏñSOCK_STREAMÒ»Ñù°ó¶¨¶Ë¿ÚºÅ,Ò²Ã»ÓĞÏñ
-	SOCK_DGRAMÒ»Ñùsendtoºó°ó¶¨Ò»¸öËæ»ú¶Ë¿Ú. SOCK_RAWÃ»ÓĞ¶Ë¿ÚºÅµÄ¸ÅÄî. ËùÒÔ sockfd¿ÉÒÔ¶Áµ½ËùÓĞÊÕµ½µÄtcp/udp/icmp°ü
-    - µ±protocolÎªSOCK_RAW (0) µÄÆäËüÊıÖµÊ±,¿ÉÒÔÓÃÀ´ÊµÏÖ×Ô¼ºµÄËÄ²ãĞ­Òé
-      - ÏòsockfdĞ´Ê±,ip°üµÄĞ­Òé×Ö¶Î×Ô¶¯ÖØĞ´ÎªprotocolµÄÖµ
-      - ´Ósockfd¶ÁÊ±,¿ÉÒÔ¶Áµ½ip²ãÊÕµ½µÄËùÓĞProtocolÎªÏàÓ¦µÄÖµµÄip°ü
-	ËùÒÔ±¾ÖÊÉÏÕâÖÖÇé¿öºÍÇé¿ö1ÊÇÒ»ÑùµÄ,Ö»²»¹ı¶ÔÓÚtcp/udp/icmp,ÏµÍ³±¾ÉíÒÑ¾­Ìá¹©ÁËÖ±½ÓµÄÖ§³Ö,×¢:¶ÔÓÚÄ³¸öĞ­Òé,¿ÉÒÔ×¢²á¶à¸öraw socket,
-	ip²ãÊÕµ½ÊôÓÚÕâ¸öĞ­ÒéµÄip°üºó,»áÒÀ´Î´«¸øÃ¿¸öraw socket´¦Àí. Õâ¾ÍÊÇÎªÊ²Ã´ Ö¸¶¨protocolÎªIPPROTOCOL_TCPºó,ÎÒÃÇ×Ô¼ºµÄsockfd¿ÉÒÔ
-	¶Áµ½Õâ¸ötcp°ü,¶øÇÒ²»Ó°ÏìÏµÍ³×ÔÉí¶Ôtcp°üµÄ´¦Àí. Á´Â·²ãµÄPF_PACKET(sniffer)Ò²ÊÇÕâÖÖ´¦Àí·½·¨,ËùÒÔsnifferÖ»ÄÜ¼àÌı,¶ø²»ÄÜÀ¹½Ø
-    - ×Ü½á:protocolµÄÖµ¶Ôwirte sockfdµÄÓ°ÏìÖ÷ÒªÊÇ:ipÍ·ÖĞµÄĞ­Òé×Ö¶Î»á±»×Ô¶¯ĞŞ¸ÄÎªprotocolµÄÖµ,¶Ôread sockfdµÄÓ°Ïì:ipÍ·ÎªĞ­Òé×Ö¶ÎÎªprotocolµÄ°ü»á±»¶Áµ½
-    - µ±protocolÎªIPPROTOCOL_RAW(0)Ê±
-      - ÏòsockfdĞ´Ê±,ip°üÍêÈ«²»»á±»ĞŞ¸Ä
-      - ÏµÍ³ÏŞÖÆ²»ÄÜ´ÓÕâÖÖsockfdÖĞ¶Á,ÒªÊµÏÖÕâ¸ö¹¦ÄÜ,ĞèÒªÓÃ PF_PACKET
+   ä½¿ç”¨raw socketèƒ½å¤Ÿ:
+    - ä¿®æ”¹æ•´ä¸ªIpåŒ…
+    - è‡ªå®šä¹‰å››å±‚åè®®,å¦‚ospf
+    - ç›‘å¬æ‰€æœ‰çš„tcp,udp,icmpåŒ…,ä½†ä¸èƒ½æ‹¦æˆª
+  int sockfd=socket (PF_INET,SOCK_RAW,protocol),æ ¹æ®protocalçš„ä¸åŒ,æœ‰ä¸åŒçš„åŠŸèƒ½:
+    - å½“protocolä¸ºIPPROTOCOL_TCP,IPPROTO_UDP,IPPROTO_ICMPæ—¶,è¿™ä¸ªsocketè¢«é™å®šäº†ç”¨æ¥æ”¶å‘tcp/udp/icmpåŒ…,å³
+      - å‘sockfdå†™æ—¶,IpåŒ…çš„åè®®å­—æ®µè‡ªåŠ¨è¢«é‡å†™ä¸ºtcp/udp/icmp
+      - ä»sockfdè¯»æ—¶,å¯ä»¥è¯»åˆ°æ‰€æœ‰æ”¶åˆ°çš„tcp/udp/icmpåŒ…,æ³¨æ„,è¿™ä¸ªsockfdå¹¶æ²¡æœ‰åƒSOCK_STREAMä¸€æ ·ç»‘å®šç«¯å£å·,ä¹Ÿæ²¡æœ‰åƒ
+	SOCK_DGRAMä¸€æ ·sendtoåç»‘å®šä¸€ä¸ªéšæœºç«¯å£. SOCK_RAWæ²¡æœ‰ç«¯å£å·çš„æ¦‚å¿µ. æ‰€ä»¥ sockfdå¯ä»¥è¯»åˆ°æ‰€æœ‰æ”¶åˆ°çš„tcp/udp/icmpåŒ…
+    - å½“protocolä¸ºSOCK_RAW (0) çš„å…¶å®ƒæ•°å€¼æ—¶,å¯ä»¥ç”¨æ¥å®ç°è‡ªå·±çš„å››å±‚åè®®
+      - å‘sockfdå†™æ—¶,ipåŒ…çš„åè®®å­—æ®µè‡ªåŠ¨é‡å†™ä¸ºprotocolçš„å€¼
+      - ä»sockfdè¯»æ—¶,å¯ä»¥è¯»åˆ°ipå±‚æ”¶åˆ°çš„æ‰€æœ‰Protocolä¸ºç›¸åº”çš„å€¼çš„ipåŒ…
+	æ‰€ä»¥æœ¬è´¨ä¸Šè¿™ç§æƒ…å†µå’Œæƒ…å†µ1æ˜¯ä¸€æ ·çš„,åªä¸è¿‡å¯¹äºtcp/udp/icmp,ç³»ç»Ÿæœ¬èº«å·²ç»æä¾›äº†ç›´æ¥çš„æ”¯æŒ,æ³¨:å¯¹äºæŸä¸ªåè®®,å¯ä»¥æ³¨å†Œå¤šä¸ªraw socket,
+	ipå±‚æ”¶åˆ°å±äºè¿™ä¸ªåè®®çš„ipåŒ…å,ä¼šä¾æ¬¡ä¼ ç»™æ¯ä¸ªraw socketå¤„ç†. è¿™å°±æ˜¯ä¸ºä»€ä¹ˆ æŒ‡å®šprotocolä¸ºIPPROTOCOL_TCPå,æˆ‘ä»¬è‡ªå·±çš„sockfdå¯ä»¥
+	è¯»åˆ°è¿™ä¸ªtcpåŒ…,è€Œä¸”ä¸å½±å“ç³»ç»Ÿè‡ªèº«å¯¹tcpåŒ…çš„å¤„ç†. é“¾è·¯å±‚çš„PF_PACKET(sniffer)ä¹Ÿæ˜¯è¿™ç§å¤„ç†æ–¹æ³•,æ‰€ä»¥snifferåªèƒ½ç›‘å¬,è€Œä¸èƒ½æ‹¦æˆª
+    - æ€»ç»“:protocolçš„å€¼å¯¹wirte sockfdçš„å½±å“ä¸»è¦æ˜¯:ipå¤´ä¸­çš„åè®®å­—æ®µä¼šè¢«è‡ªåŠ¨ä¿®æ”¹ä¸ºprotocolçš„å€¼,å¯¹read sockfdçš„å½±å“:ipå¤´ä¸ºåè®®å­—æ®µä¸ºprotocolçš„åŒ…ä¼šè¢«è¯»åˆ°
+    - å½“protocolä¸ºIPPROTOCOL_RAW(0)æ—¶
+      - å‘sockfdå†™æ—¶,ipåŒ…å®Œå…¨ä¸ä¼šè¢«ä¿®æ”¹
+      - ç³»ç»Ÿé™åˆ¶ä¸èƒ½ä»è¿™ç§sockfdä¸­è¯»,è¦å®ç°è¿™ä¸ªåŠŸèƒ½,éœ€è¦ç”¨ PF_PACKET
 ** weak symbol
    http://www.tortall.net/projects/yasm/manual/html/objfmt-elf-directives.html
    ref [[*c%20inline%20function][c++ inline function]] [[*gcc%20__attribute__%20syntax][gcc __attribute__ extension]]
-   ELF allows defining certain symbols as ¡°weak¡±. Weak symbols are similar to
+   ELF allows defining certain symbols as â€œweakâ€. Weak symbols are similar to
    global symbols, except during linking, weak symbols are only chosen after
    global and local symbols during symbol resolution. Unlike global symbols,
    multiple object files may declare the same weak symbol, and references to a
@@ -704,18 +704,18 @@ start_thread                   linux kernel source code
 
    This functionality is primarily useful for libraries that want to provide
    common functions but not come into conflict with user programs. For example,
-   libc has a syscall (function) called ¡°read¡±. However, to implement a threaded
+   libc has a syscall (function) called â€œreadâ€. However, to implement a threaded
    process using POSIX threads in user-space, libpthread needs to supply a
-   function also called ¡°read¡± that provides a blocking interface to the
+   function also called â€œreadâ€ that provides a blocking interface to the
    programmer, but actually does non-blocking calls to the kernel. To allow an
    application to be linked to both libc and libpthread (to share common code),
    libc needs to have its version of the syscall with a non-weak name like
-   ¡°_sys_read¡± with a weak symbol called ¡°read¡±. If an application is linked
-   against libc only, the linker won't find a non-weak symbol for ¡°read¡±, so it
+   â€œ_sys_readâ€ with a weak symbol called â€œreadâ€. If an application is linked
+   against libc only, the linker won't find a non-weak symbol for â€œreadâ€, so it
    will use the weak one. If the same application is linked against libc and
-   libpthread, then the linker will link ¡°read¡± calls to the symbol in
+   libpthread, then the linker will link â€œreadâ€ calls to the symbol in
    libpthread, ignoring the weak one in libc, regardless of library link
-   order. If libc used a non-weak name, which ¡°read¡± function the program ended
+   order. If libc used a non-weak name, which â€œreadâ€ function the program ended
    up with might depend on a variety of factors; a weak symbol is a way to tell
    the linker that a symbol is less important resolution-wise.
 
@@ -726,7 +726,7 @@ start_thread                   linux kernel source code
      supported for ELF targets, and also for a.out targets when using
      the GNU assembler and linker.
 
-** pthread signal,wait,lock,unlockË³Ğò					:ATTACH:
+** pthread signal,wait,lock,unlocké¡ºåº					:ATTACH:
    :PROPERTIES:
    :Attachments: 1.c
    :ID:       bxibmeh0bge0@sunway-lab.bupt.edu.cn
@@ -749,61 +749,61 @@ start_thread                   linux kernel source code
    without killing it. But gdb have a gcore command that will do the hard work. On
    Fedora Core you can also call gcore from your shell (in which case it is just a
    script that call gdb).
-** nohup,SIGHUP,daemon¹ØÏµ
-   - SIGHUP µ±ÖÕ¶Ë¹Ø±ÕÊ±£¬Ëü»áÏò±¾½ø³Ì×é·¢ËÍSIGHUPĞÅºÅ,¸ÃÖÕ¶Ë½ø³Ì×éµÄËùÓĞ½ø³Ì¶¼»áÊÕµ½
-   - nohup foo.sh ¿ÉÒÔÊ¹foo.shºöÂÔSIGHUPĞÅºÅ
+** nohup,SIGHUP,daemonå…³ç³»
+   - SIGHUP å½“ç»ˆç«¯å…³é—­æ—¶ï¼Œå®ƒä¼šå‘æœ¬è¿›ç¨‹ç»„å‘é€SIGHUPä¿¡å·,è¯¥ç»ˆç«¯è¿›ç¨‹ç»„çš„æ‰€æœ‰è¿›ç¨‹éƒ½ä¼šæ”¶åˆ°
+   - nohup foo.sh å¯ä»¥ä½¿foo.shå¿½ç•¥SIGHUPä¿¡å·
    - daemon
-     Ò»¸ö½ø³ÌÒª³ÉÎªdaemonĞèÒª£º
-     ºóÌ¨ÔËĞĞ(Í¨¹ıfork)
-     setsid() ;;ÍË³öÔ­À´µÄ½ø³Ì×é(Ò»°ãÊÇÖÕ¶Ë)£¬ÒÔÃâ½ÓÊÕµ½·¢ÍùÔ­½ø³Ì×éµÄĞÅºÅ(ÈçSIGHUP)
+     ä¸€ä¸ªè¿›ç¨‹è¦æˆä¸ºdaemonéœ€è¦ï¼š
+     åå°è¿è¡Œ(é€šè¿‡fork)
+     setsid() ;;é€€å‡ºåŸæ¥çš„è¿›ç¨‹ç»„(ä¸€èˆ¬æ˜¯ç»ˆç«¯)ï¼Œä»¥å…æ¥æ”¶åˆ°å‘å¾€åŸè¿›ç¨‹ç»„çš„ä¿¡å·(å¦‚SIGHUP)
      chdir("/")
      umask(0)
-     Ò»°ã»¹Òª¹Ø±Õ¸÷¸öfd
+     ä¸€èˆ¬è¿˜è¦å…³é—­å„ä¸ªfd
 
-** brk Óë sbrk								:ATTACH:
+** brk ä¸ sbrk								:ATTACH:
    :PROPERTIES:
    :Attachments: brk.c
    :ID:       trz9m8l0xfe0@sunway-lab.bupt.edu.cn
    :END:
 
-** ¶ÁÈ¡elfĞÅÏ¢µÄ¼¸¸ö³ÌĞò
+** è¯»å–elfä¿¡æ¯çš„å‡ ä¸ªç¨‹åº
    - size
    - readelf
    - ldd
    - objdump
    - strings
    - nm
-** pmap¿´½ø³ÌµÄÄÚ´æÓ³Éä
-   »òcat /proc/<pid>/maps
-** ¹ØÓÚlinux¹²Ïí¿â						 :SharedLibrary:
-  - ldconfig,ld.soÓëld.so.cache
+** pmapçœ‹è¿›ç¨‹çš„å†…å­˜æ˜ å°„
+   æˆ–cat /proc/<pid>/maps
+** å…³äºlinuxå…±äº«åº“						 :SharedLibrary:
+  - ldconfig,ld.soä¸ld.so.cache
   - /usr/lib
   - LD_LIBRARY_PATH
   - LD_DEBUG
-  - gcc \-LÑ¡Ïî
-  - ld -rpathÑ¡Ïî
+  - gcc \-Lé€‰é¡¹
+  - ld -rpathé€‰é¡¹
 
-ld.so.cacheÖ»ÔÚÔËĞĞÊ±Æğ×÷ÓÃ
-LD_LIBRARY_PATHÖ»ÔÚÔËĞĞÊ±Æğ×÷ÓÃ
-\/usr/libÔÚ±àÒëÊ±ºÍÔËĞĞÊ±¶¼Æğ×÷ÓÃ
-gcc \-LÖ»ÔÚ±àÒëÊ±Æğ×÷ÓÃ.
-ldµÄ -rpath ÔÚÔËĞĞÊ±Æğ×÷ÓÃ,¸æËß¼ÓÔØÆ÷µ½ÄÄÈ¥ÕÒso. gccÒÔÇ°Ò²ÓĞÕâ¸öÑ¡Ïî,ÏÖÔÚÕâ¸öÑ¡ÏîÖ»ÔÚldÖĞ,ÔÚgccÖĞ¿ÉÒÔÕâÑùÖ¸¶¨Õâ¸örpathÑ¡Ïî:
+ld.so.cacheåªåœ¨è¿è¡Œæ—¶èµ·ä½œç”¨
+LD_LIBRARY_PATHåªåœ¨è¿è¡Œæ—¶èµ·ä½œç”¨
+\/usr/libåœ¨ç¼–è¯‘æ—¶å’Œè¿è¡Œæ—¶éƒ½èµ·ä½œç”¨
+gcc \-Låªåœ¨ç¼–è¯‘æ—¶èµ·ä½œç”¨.
+ldçš„ -rpath åœ¨è¿è¡Œæ—¶èµ·ä½œç”¨,å‘Šè¯‰åŠ è½½å™¨åˆ°å“ªå»æ‰¾so. gccä»¥å‰ä¹Ÿæœ‰è¿™ä¸ªé€‰é¡¹,ç°åœ¨è¿™ä¸ªé€‰é¡¹åªåœ¨ldä¸­,åœ¨gccä¸­å¯ä»¥è¿™æ ·æŒ‡å®šè¿™ä¸ªrpathé€‰é¡¹:
     gcc ... -Wl,rpath,/home/sunway
 
-ld.soµÄ×÷ÓÃ:
-ÔÚ³ÌĞòÔËĞĞÖ®Ç°ÔØÈë¹²Ïí¿â,¿â²éÕÒµÄË³ĞòÊÇ
+ld.soçš„ä½œç”¨:
+åœ¨ç¨‹åºè¿è¡Œä¹‹å‰è½½å…¥å…±äº«åº“,åº“æŸ¥æ‰¾çš„é¡ºåºæ˜¯
 1. LD_LIBRARY_PATH
 2. ld.so.cache
 3. /usr/lib
 
-ldconfig \-v ¿ÉÒÔÏÔÊ¾¸üĞÂcacheµÄ¹ı³Ì,ldconfig \-p¿ÉÒÔ²é¿´cacheµÄÄÚÈİ
+ldconfig \-v å¯ä»¥æ˜¾ç¤ºæ›´æ–°cacheçš„è¿‡ç¨‹,ldconfig \-på¯ä»¥æŸ¥çœ‹cacheçš„å†…å®¹
 
-×ÛÉÏ:
-  - Èç¹ûÒªÔÚ±àÒëÊ±Ê¹ÓÃÄ³¸ö¿â,¿ÉÒÔÓÃgcc \-LÑ¡Ïî,»òÕß°Ñso¸´ÖÆµ½/usr/lib
-  - Èç¹ûÒªÔÚÔËĞĞÊ±Ê¹ÓÃÄ³¸ö¿â,¿ÉÒÔÉè¶¨LD_LIBRARY_PATH,»ò¸´ÖÆµ½ld.so.confÖ¸¶¨µÄÄ¿Â¼²¢ldconfig,»ò¸´ÖÆµ½/usr/lib,»òÊ¹ÓÃldµÄ -rpath Ñ¡Ïî
+ç»¼ä¸Š:
+  - å¦‚æœè¦åœ¨ç¼–è¯‘æ—¶ä½¿ç”¨æŸä¸ªåº“,å¯ä»¥ç”¨gcc \-Lé€‰é¡¹,æˆ–è€…æŠŠsoå¤åˆ¶åˆ°/usr/lib
+  - å¦‚æœè¦åœ¨è¿è¡Œæ—¶ä½¿ç”¨æŸä¸ªåº“,å¯ä»¥è®¾å®šLD_LIBRARY_PATH,æˆ–å¤åˆ¶åˆ°ld.so.confæŒ‡å®šçš„ç›®å½•å¹¶ldconfig,æˆ–å¤åˆ¶åˆ°/usr/lib,æˆ–ä½¿ç”¨ldçš„ -rpath é€‰é¡¹
 ** valgrind
 ** distcc
-** switch..caseÖĞ±äÁ¿µÄÉùÃ÷
+** switch..caseä¸­å˜é‡çš„å£°æ˜
 #+BEGIN_EXAMPLE
    switch (b) {
    int a=0;
@@ -817,57 +817,57 @@ ldconfig \-v ¿ÉÒÔÏÔÊ¾¸üĞÂcacheµÄ¹ı³Ì,ldconfig \-p¿ÉÒÔ²é¿´cacheµÄÄÚÈİ
    }
 #+END_EXAMPLE
 
-int aÊÇºÏ·¨µÄ,int cÊÇ·Ç·¨µÄ,int dÊÇºÏ·¨µÄ
+int aæ˜¯åˆæ³•çš„,int cæ˜¯éæ³•çš„,int dæ˜¯åˆæ³•çš„
 
-ÒòÎªcase 1²¢²»Ò»¶¨±»Ö´ĞĞ,¶øÕû¸öswitch¶¼ÊôÓÚÒ»¸ö×÷ÓÃÓò,±àÒëÆ÷ÈçºÎÖªµÀcase 1ÄÜ²»ÄÜ
-±»Ö´ĞĞ?Èç¹û²»ÄÜ,ÒıÓÃÁËcµÄÓï¾ä(°üÀ¨Õû¸öswitch½á¹¹)ÔõÃ´°ì?±àÒëÆ÷´ÓÂß¼­ÉÏ½ûÖ¹ÁËÔÚ
-caseÀïÉùÃ÷±äÁ¿.
+å› ä¸ºcase 1å¹¶ä¸ä¸€å®šè¢«æ‰§è¡Œ,è€Œæ•´ä¸ªswitchéƒ½å±äºä¸€ä¸ªä½œç”¨åŸŸ,ç¼–è¯‘å™¨å¦‚ä½•çŸ¥é“case 1èƒ½ä¸èƒ½
+è¢«æ‰§è¡Œ?å¦‚æœä¸èƒ½,å¼•ç”¨äº†cçš„è¯­å¥(åŒ…æ‹¬æ•´ä¸ªswitchç»“æ„)æ€ä¹ˆåŠ?ç¼–è¯‘å™¨ä»é€»è¾‘ä¸Šç¦æ­¢äº†åœ¨
+caseé‡Œå£°æ˜å˜é‡.
 
-int aÊÇºÏ·¨µÄ,ÒòÎªËüÔÚËùÓĞcaseÖ®¼ä,¿Ï¶¨»á±»Ö´ĞĞ.
+int aæ˜¯åˆæ³•çš„,å› ä¸ºå®ƒåœ¨æ‰€æœ‰caseä¹‹é—´,è‚¯å®šä¼šè¢«æ‰§è¡Œ.
 
-int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
+int dæ˜¯åˆæ³•çš„,å› ä¸ºå®ƒå±äºå•ç‹¬çš„ä½œç”¨åŸŸ.
 
-Õâ¸öÎÊÌâ¹Ø¼üÒ»µãÊÇ:Õû¸öswitchÊ¹ÓÃÍ¬Ò»¸ö×÷ÓÃÓò,¶øÃ¿¸öcase²»Ò»¶¨±»Ö´ĞĞ.
+è¿™ä¸ªé—®é¢˜å…³é”®ä¸€ç‚¹æ˜¯:æ•´ä¸ªswitchä½¿ç”¨åŒä¸€ä¸ªä½œç”¨åŸŸ,è€Œæ¯ä¸ªcaseä¸ä¸€å®šè¢«æ‰§è¡Œ.
 
-** DONE Êı×éÓëÖ¸Õë ( array vs. pointer)
+** DONE æ•°ç»„ä¸æŒ‡é’ˆ ( array vs. pointer)
    CLOSED: [2011-04-08 Fri 15:06]
    - State "DONE"       [2011-04-08 Fri 15:06]
-   Êı×éÓëÖ¸ÕëµÄ»ìÏı,×î¸ù±¾µÄÔ­ÒòÊÇÕâÖÖÓï·¨ÌÇ:
+   æ•°ç»„ä¸æŒ‡é’ˆçš„æ··æ·†,æœ€æ ¹æœ¬çš„åŸå› æ˜¯è¿™ç§è¯­æ³•ç³–:
 #+BEGIN_EXAMPLE
    char * pointer=array;
 #+END_EXAMPLE
 
-   ±¾À´,×öÎªC/C++ÖĞµÄÒ»ÖÖ»ù±¾ÀàĞÍ, int a[10] ºÍ int x; ²¢Ã»ÓĞÃ÷ÏÔµÄÇø±ğ, a, x¶¼ÊÇ±äÁ¿,¶¼ÓĞµØÖ·ºÍÖµ, µ«ÓÉÓÚÊı×éµÄÖµµÄ½á¹¹ÓëÖ¸ÕëµÄÏàËÆĞÔ,CÌá¹©ÁËÉÏÃæÌáµ½µÄÓï·¨ÌÇ,¼´:
-   ÒªÊ¹ÓÃÊı×é±äÁ¿µÄµØÖ·Ê±,²»±ØÔÙ¼Ó&·ûºÅ,¶ø¿ÉÒÔÖ±½ÓÊ¹ÓÃÊı×éÃû×Ö (·ÃÎÊÊı×éµÄÖµÊ±Ê¹ÓÃa[0]ÕâÖÖÓï·¨,ËùÒÔ²»»á»ìÏı).
+   æœ¬æ¥,åšä¸ºC/C++ä¸­çš„ä¸€ç§åŸºæœ¬ç±»å‹, int a[10] å’Œ int x; å¹¶æ²¡æœ‰æ˜æ˜¾çš„åŒºåˆ«, a, xéƒ½æ˜¯å˜é‡,éƒ½æœ‰åœ°å€å’Œå€¼, ä½†ç”±äºæ•°ç»„çš„å€¼çš„ç»“æ„ä¸æŒ‡é’ˆçš„ç›¸ä¼¼æ€§,Cæä¾›äº†ä¸Šé¢æåˆ°çš„è¯­æ³•ç³–,å³:
+   è¦ä½¿ç”¨æ•°ç»„å˜é‡çš„åœ°å€æ—¶,ä¸å¿…å†åŠ &ç¬¦å·,è€Œå¯ä»¥ç›´æ¥ä½¿ç”¨æ•°ç»„åå­— (è®¿é—®æ•°ç»„çš„å€¼æ—¶ä½¿ç”¨a[0]è¿™ç§è¯­æ³•,æ‰€ä»¥ä¸ä¼šæ··æ·†).
 
-   Êı×éÃû¼´µØÖ·,ËùÒÔ¸øaÔÙ¸³ÖµÊÇÎ¥·¨µÄ,ÕıÈç &x ²»ÄÜÔÙ¸³ÖµÒ»Ñù.
+   æ•°ç»„åå³åœ°å€,æ‰€ä»¥ç»™aå†èµ‹å€¼æ˜¯è¿æ³•çš„,æ­£å¦‚ &x ä¸èƒ½å†èµ‹å€¼ä¸€æ ·.
 
-   ÁíÍâ,ÎªºÎÊı×é²»ÄÜ×öÎªº¯Êı·µ»ØÖµ:
-   º¯Êı·µ»ØÖµÓĞÁ½ÖÖ·½Ê½:
-     - Í¨¹ı¼Ä´æÆ÷Ö±½Ó·µ»Ø,Èç¸÷ÖÖ»ù±¾ÀàĞÍºÍÖ¸ÕëÀàĞÍ
-     - Í¨¹ınamed-return-value·µ»Ø,Èç½á¹¹Ìå
-   »òº¯Êı¿ÉÒÔ·µ»Ø,Ö»ÄÜÍ¨¹ıµÚ¶şÖÖÇé¿ö, µ«ÊÇ, ÓÉÓÚÊı×é´óĞ¡²»¶¨,Èô caller ºÍ callee µÄÊı×é³¤¶È²»Í¬,ÈçºÎ´¦Àí?
-** cµÄ²ÎÊıÓë·µ»ØÖµ
-   ³ıÁËÊı×é,ÈÎºÎÀàĞÍ¶¼¿ÉÒÔ×öÎªº¯ÊıµÄ·µ»ØÖµ,°üÀ¨½á¹¹µÈ
-   - ¶ÔÓÚ<=32Î»µÄ·µ»ØÖµ,Èçint,short,float,Ö¸ÕëµÈ,Ö±½ÓÍ¨¹ı%eax·µ»Ø
-   - ¶ÔÓÚ64Î»µÄ·µ»ØÖµ,Í¨³£Í¨¹ıÁ½¸ö¼Ä´æÆ÷·µ»Ø,Èç%eax,%edx
-   - ¶ÔÓÚ¸ü´óµÄ½á¹¹Ìå,Í¨³£ÔÚº¯Êıµ÷ÓÃÊ±°Ñ·µ»ØÖµµÄµØÖ·×÷ÎªµÚÒ»¸ö²ÎÊı,º¯ÊıÖ±½Ó¸øÕâ¸öÖ¸Õë¸³Öµ
+   å¦å¤–,ä¸ºä½•æ•°ç»„ä¸èƒ½åšä¸ºå‡½æ•°è¿”å›å€¼:
+   å‡½æ•°è¿”å›å€¼æœ‰ä¸¤ç§æ–¹å¼:
+     - é€šè¿‡å¯„å­˜å™¨ç›´æ¥è¿”å›,å¦‚å„ç§åŸºæœ¬ç±»å‹å’ŒæŒ‡é’ˆç±»å‹
+     - é€šè¿‡named-return-valueè¿”å›,å¦‚ç»“æ„ä½“
+   æˆ–å‡½æ•°å¯ä»¥è¿”å›,åªèƒ½é€šè¿‡ç¬¬äºŒç§æƒ…å†µ, ä½†æ˜¯, ç”±äºæ•°ç»„å¤§å°ä¸å®š,è‹¥ caller å’Œ callee çš„æ•°ç»„é•¿åº¦ä¸åŒ,å¦‚ä½•å¤„ç†?
+** cçš„å‚æ•°ä¸è¿”å›å€¼
+   é™¤äº†æ•°ç»„,ä»»ä½•ç±»å‹éƒ½å¯ä»¥åšä¸ºå‡½æ•°çš„è¿”å›å€¼,åŒ…æ‹¬ç»“æ„ç­‰
+   - å¯¹äº<=32ä½çš„è¿”å›å€¼,å¦‚int,short,float,æŒ‡é’ˆç­‰,ç›´æ¥é€šè¿‡%eaxè¿”å›
+   - å¯¹äº64ä½çš„è¿”å›å€¼,é€šå¸¸é€šè¿‡ä¸¤ä¸ªå¯„å­˜å™¨è¿”å›,å¦‚%eax,%edx
+   - å¯¹äºæ›´å¤§çš„ç»“æ„ä½“,é€šå¸¸åœ¨å‡½æ•°è°ƒç”¨æ—¶æŠŠè¿”å›å€¼çš„åœ°å€ä½œä¸ºç¬¬ä¸€ä¸ªå‚æ•°,å‡½æ•°ç›´æ¥ç»™è¿™ä¸ªæŒ‡é’ˆèµ‹å€¼
 
-   ÈÎºÎÀàĞÍ¶¼¿É×öÎªº¯ÊıµÄ²ÎÊı,µ«Êı×éÓĞĞ©ÀıÍâ:Êı×é×öÎª²ÎÊıÊ±Èõ»¯ÎªÖ¸Õë
-** sync,fsync,fflushµÄÇø±ğ
+   ä»»ä½•ç±»å‹éƒ½å¯åšä¸ºå‡½æ•°çš„å‚æ•°,ä½†æ•°ç»„æœ‰äº›ä¾‹å¤–:æ•°ç»„åšä¸ºå‚æ•°æ—¶å¼±åŒ–ä¸ºæŒ‡é’ˆ
+** sync,fsync,fflushçš„åŒºåˆ«
    - sync Force changed blocks to disk, update the super block.
-   - fsync(int fd),ºÍsync×÷ÓÃÀàËÆ£¬²»¹ıÖ»Õë¶ÔÒ»¸öfd
-   - fflush(FILE *) Ë¢ĞÂFILE *µÄ»º´æ¡£ÀıÈç£º
+   - fsync(int fd),å’Œsyncä½œç”¨ç±»ä¼¼ï¼Œä¸è¿‡åªé’ˆå¯¹ä¸€ä¸ªfd
+   - fflush(FILE *) åˆ·æ–°FILE *çš„ç¼“å­˜ã€‚ä¾‹å¦‚ï¼š
    printf("test");
    fflush(stdout);
    sleep(2);
-   ÔÚsleepÇ°testÒòÎªfflush¶ø±»ÏÔÊ¾³öÀ´¡£
-   »º´æ£¨°üÀ¨È«»º´æ£¬ĞĞ»º´æ£©ÊÇ±ê×¼IO¿âµÄ¸ÅÄî£¬fflushÖ»¶Ô±ê×¼IOÆğ×÷ÓÃ¡£
-   ¶ÔÓÚwrite(STDOUT_FILENO,"test",5),Ã»ÓĞ»º´æµÄ¸ÅÄî£¬testÖ±½Ó±»ÏÔÊ¾³öÀ´¡£
+   åœ¨sleepå‰testå› ä¸ºfflushè€Œè¢«æ˜¾ç¤ºå‡ºæ¥ã€‚
+   ç¼“å­˜ï¼ˆåŒ…æ‹¬å…¨ç¼“å­˜ï¼Œè¡Œç¼“å­˜ï¼‰æ˜¯æ ‡å‡†IOåº“çš„æ¦‚å¿µï¼Œfflushåªå¯¹æ ‡å‡†IOèµ·ä½œç”¨ã€‚
+   å¯¹äºwrite(STDOUT_FILENO,"test",5),æ²¡æœ‰ç¼“å­˜çš„æ¦‚å¿µï¼Œtestç›´æ¥è¢«æ˜¾ç¤ºå‡ºæ¥ã€‚
 
-   ×ÛÉÏ£º
-   sync,fsync¶ÔÓ¦µÄÊÇOSµÄ´ÅÅÌcache,fflush¶ÔÓ¦µÄÊÇ±ê×¼IO¿âµÄ»º´æ¡£±ê×¼IOµÄ»º´æÔÚ´ÅÅÌcacheÖ®ÉÏ£¬µ±
-   ÓÃfflush()Ë¢ĞÂÒ»¸öÁ÷Ê±£¬¿ÉÄÜÈÔĞèÒªÓÃsync¿ÉÄÜ±£Ö¤ÄÚÈİ±»Ğ´µ½´ÅÅÌÉÏ¡£
+   ç»¼ä¸Šï¼š
+   sync,fsyncå¯¹åº”çš„æ˜¯OSçš„ç£ç›˜cache,fflushå¯¹åº”çš„æ˜¯æ ‡å‡†IOåº“çš„ç¼“å­˜ã€‚æ ‡å‡†IOçš„ç¼“å­˜åœ¨ç£ç›˜cacheä¹‹ä¸Šï¼Œå½“
+   ç”¨fflush()åˆ·æ–°ä¸€ä¸ªæµæ—¶ï¼Œå¯èƒ½ä»éœ€è¦ç”¨syncå¯èƒ½ä¿è¯å†…å®¹è¢«å†™åˆ°ç£ç›˜ä¸Šã€‚
 ** Non-blocking synchronization (Lock-free)				:ATTACH:
    :PROPERTIES:
       :Attachments: L31_LockFree.pdf Lock-Free-1.pdf cas.c
@@ -900,40 +900,40 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
     of a memory location to a given value and, if they are the same, modifies the
     contents of that memory location to a given new value.
 
-    CASÊÇËùÓĞLock-freeËã·¨(Êı¾İ½á¹¹)µÄ»ù´¡
+    CASæ˜¯æ‰€æœ‰Lock-freeç®—æ³•(æ•°æ®ç»“æ„)çš„åŸºç¡€
 
-    Ò»¸öÓÃc++±íÊ¾µÄcasËã·¨ÈçÏÂ:
+    ä¸€ä¸ªç”¨c++è¡¨ç¤ºçš„casç®—æ³•å¦‚ä¸‹:
     bool CAS(int* addr, int expected, int fresh) {
        	if (*addr != expected) return false;
        	*addr = fresh;
        	return true;
     }
-    Êµ¼ÊÉÏcas¶¼ÊÇÓÃµÄCPUÖ§³ÖµÄµ¥Ìõ»ã±àÖ¸Áî,ÈçCMPXCHG
-    ÓÃCASÊµÏÖlock-freeËã·¨Ò»°ãÈçÏÂÊµÏÖ:
-    ÒªĞŞ¸ÄDataÊ±:
+    å®é™…ä¸Šcaséƒ½æ˜¯ç”¨çš„CPUæ”¯æŒçš„å•æ¡æ±‡ç¼–æŒ‡ä»¤,å¦‚CMPXCHG
+    ç”¨CASå®ç°lock-freeç®—æ³•ä¸€èˆ¬å¦‚ä¸‹å®ç°:
+    è¦ä¿®æ”¹Dataæ—¶:
     Data * p_;
     Data * pOld, * pNew = new Data;
     do {
        	pOld = p_;
        	*pNew=*p_;
-       	//ÔÚÕâÀïĞŞ¸Ä *pNew
-       	//Áí:CASµÄ²ÎÊı¶¼ÊÇÖ¸Õë,ÒòÎªCAS¶ÔÓ¦µÄ»ã±àÖ¸Áî²ÎÊıÊÇ´¦ÀíÄÚ´æµØÖ·
+       	//åœ¨è¿™é‡Œä¿®æ”¹ *pNew
+       	//å¦:CASçš„å‚æ•°éƒ½æ˜¯æŒ‡é’ˆ,å› ä¸ºCASå¯¹åº”çš„æ±‡ç¼–æŒ‡ä»¤å‚æ•°æ˜¯å¤„ç†å†…å­˜åœ°å€
     } while (!CAS(&p_, pOld, pNew));
 
-    CASµÄÀı×Ó¼û¸½¼şcas.c
-    ×¢Òâ:µ±Ê¹ÓÃ-O2±àÒëcas.cÊ±,volatile¹Ø¼ü×ÖÊÇ±ØĞëµÄ,²Î¿¼[[*volatile%20keyword%20in%20C][volatile]]
+    CASçš„ä¾‹å­è§é™„ä»¶cas.c
+    æ³¨æ„:å½“ä½¿ç”¨-O2ç¼–è¯‘cas.cæ—¶,volatileå…³é”®å­—æ˜¯å¿…é¡»çš„,å‚è€ƒ[[*volatile%20keyword%20in%20C][volatile]]
 
 *** Implementations of Lock-free data structures
-**** ÓÉÓÚ½á¹¹¼òµ¥»ò¹¦ÄÜÊÜÏŞ²»ĞèÒªCASµÄLock-freeÊı¾İ½á¹¹
+**** ç”±äºç»“æ„ç®€å•æˆ–åŠŸèƒ½å—é™ä¸éœ€è¦CASçš„Lock-freeæ•°æ®ç»“æ„
 ***** RCU
       http://en.wikipedia.org/wiki/Read-copy-update
       http://www-128.ibm.com/developerworks/cn/linux/l-rcu/
 ***** Circular buffer
       http://en.wikipedia.org/wiki/Circular_buffer
 **** Lock-free stack,list,etco
-     ¼û¸½¼ş L32_lockfree.pdf
+     è§é™„ä»¶ L32_lockfree.pdf
 
-     Àı:lock-free stackµÄpush²Ù×÷
+     ä¾‹:lock-free stackçš„pushæ“ä½œ
 
 #+BEGIN_EXAMPLE
      void push(int t) {
@@ -944,17 +944,17 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
       }
 #+END_EXAMPLE
 ** DONE gcc __attribute__ syntax
-   CLOSED: [2008-09-21 ÈÕ 14:08]
-   - State "DONE"       [2008-09-21 ÈÕ 14:08]
+   CLOSED: [2008-09-21 æ—¥ 14:08]
+   - State "DONE"       [2008-09-21 æ—¥ 14:08]
      http://www.ohse.de/uwe/articles/gcc-attributes.html
 ** DONE what is weak reference
-   CLOSED: [2008-10-13 Ò» 22:34]
-   - State "DONE"       [2008-10-13 Ò» 22:34]
+   CLOSED: [2008-10-13 ä¸€ 22:34]
+   - State "DONE"       [2008-10-13 ä¸€ 22:34]
    http://mindtrove.info/articles/python-weak-references/
    http://en.wikipedia.org/wiki/Weak_reference
 ** DONE zero copy and Scatter/Gather IO
-   CLOSED: [2009-01-05 Ò» 14:19]
-   - State "DONE"       [2009-01-05 Ò» 14:19]
+   CLOSED: [2009-01-05 ä¸€ 14:19]
+   - State "DONE"       [2009-01-05 ä¸€ 14:19]
      http://www.linuxjournal.com/article/6345
      http://en.wikipedia.org/wiki/Zero-copy
      http://www.ibm.com/developerworks/library/j-zerocopy/index.html
@@ -969,13 +969,13 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
 	      +-->sendfile together with Gather/Scatter IO (Zero copy)
 #+END_EXAMPLE
 
-** DONE -sharedÓë-fPIC						 :SharedLibrary:
-   CLOSED: [2008-12-29 Ò» 09:10]
-   - State "DONE"       [2008-12-29 Ò» 09:10]
+** DONE -sharedä¸-fPIC						 :SharedLibrary:
+   CLOSED: [2008-12-29 ä¸€ 09:10]
+   - State "DONE"       [2008-12-29 ä¸€ 09:10]
    http://bottomupcs.sourceforge.net/csbu/x3809.htm
 
-   ¶ÔÓÚ¹²Ïí¿â,´úÂë±¾Éí¾ÍÊÇÎ»ÖÃÎŞ¹ØµÄ,µ«¹²Ïí¿âÖĞÓÃµ½µÄÈ«¾ÖÊı¾İÊÇÎ»ÖÃÏà¹ØµÄ,ÓÉÓÚ¹²Ïí¿âµÄµØÖ·ÔÚÔËĞĞÊ±²ÅÄÜÈ·¶¨,ËùÒÔ¹²Ïí¿âÖĞÒª·ÃÎÊµÄÈ«¾ÖÊı¾İµÄµØÖ·
-   ¶¼ÊÇ²»È·¶¨µÄ,È«¾ÖÊı¾İµÄµØÖ·ÔÚÔËĞĞÊ±ÓÉloaderÈ·¶¨. ±ÈÈç:
+   å¯¹äºå…±äº«åº“,ä»£ç æœ¬èº«å°±æ˜¯ä½ç½®æ— å…³çš„,ä½†å…±äº«åº“ä¸­ç”¨åˆ°çš„å…¨å±€æ•°æ®æ˜¯ä½ç½®ç›¸å…³çš„,ç”±äºå…±äº«åº“çš„åœ°å€åœ¨è¿è¡Œæ—¶æ‰èƒ½ç¡®å®š,æ‰€ä»¥å…±äº«åº“ä¸­è¦è®¿é—®çš„å…¨å±€æ•°æ®çš„åœ°å€
+   éƒ½æ˜¯ä¸ç¡®å®šçš„,å…¨å±€æ•°æ®çš„åœ°å€åœ¨è¿è¡Œæ—¶ç”±loaderç¡®å®š. æ¯”å¦‚:
 #+BEGIN_EXAMPLE
  lib.c:
    extern int a;
@@ -990,24 +990,24 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
 #+END_EXAMPLE
 
    gcc -shared -fPIC (or not)  lib.c -o lib.so
-   lib.soÖĞÈ«¾ÖÊı¾İaµÄµØÖ·±àÒëÊ±²»È·¶¨,ÔËĞĞºóaµÄµØÖ·ÓÉLoaderÌí¼Óµ½lib.soÔÚÄÚ´æµÄÓ³ÏñÖĞ
-   ÖÁÓÚloaderÈçºÎ½«aµÄµØÖ·Ìí¼Óµ½lib.soÖĞ,¿ÉÄÜÓĞÁ½ÖÖ·½·¨:
-   1. aÔÚa.outµÄ.bssÖĞ,µØÖ·ÎªA,loaderÔØÈëlib.soºó¸ºÔğ°Ñlib.so .text¶ÎÖĞËùÓĞ¶ÔaµÄÒıÓÃµÄµØÖ·¸ÄĞ´³ÉA
-      ÕâÖÖ·½·¨ĞèÒª¸ÄĞ´lib.soµÄ .text¶Î,µ¼ÖÂlib.soµÄ.text¶ÎÎŞ·¨±»¹²Ïí
-      ±àÒëÊ±²»Ö¸¶¨-fPICÊ±¾ÍÊÇÕâÖÖÇé¿ö
-   2. lib.soÖĞ¶ÔaµÄÒıÓÃµÄµØÖ·ÊÇ"GOT»ùÖ·+Æ«ÒÆÁ¿"µÄĞÎÊ½,GOT¼´global offset table,loaderÔØÈëlib.soºó»á°Ñ
-      aµÄµØÖ·¼ÓÈëGOT±íÖĞ¶ÔÓ¦ÓÚaµÄµØ·½. ÏÔÊ¾ÕâÖÖ·½·¨²»ĞèÒªĞŞ¸Älib.soµÄ.text¶Î,ËùÒÔ.text¶Î¿ÉÄÜ±»¹²Ïí
-      ±àÒëÊ±Ö¸¶¨-fPICÊ±ÊÇÕâÖÖÇé¿ö
-      Ã¿¸ö¹²Ïí¿â¶¼ÓĞÒ»¸öGOT±í
-      GOT»ùÖ·Í¨³£±£´æÔÚÒ»¸ö¼Ä´æÆ÷ÖĞ,Èçebx,Ã¿´Îº¯Êı¹²Ïí¿âµÄº¯ÊıÊ±,¶¼»áÖØÉèebxÊ¹ÆäÖ¸ÏòÏàÓ¦µÄsoµÄGOT»ùÖ·
-      lib.soÃ¿´Î·ÃÎÊaÊ±ÕæÒªÏÈ²éGOT±í²ÅÄÜÈ·¶¨aµÄµØÖ·,¼´¶àÒ»´ÎÄÚ´æ·ÃÎÊ
-      GOT½ô¸úÔÚlib.soµÄ.textÖ®ºó,lib.soµÄ.text±àÒëÊ±È·¶¨,ËùÒÔlib.so±»ÔØÈëÄÚ´æºó,GOT»ùÖ·Ò²ÊÇÈ·¶¨µÄ
-      ÈçÍ¼:
-      lib.soÔØÈëÇ°:
+   lib.soä¸­å…¨å±€æ•°æ®açš„åœ°å€ç¼–è¯‘æ—¶ä¸ç¡®å®š,è¿è¡Œåaçš„åœ°å€ç”±Loaderæ·»åŠ åˆ°lib.soåœ¨å†…å­˜çš„æ˜ åƒä¸­
+   è‡³äºloaderå¦‚ä½•å°†açš„åœ°å€æ·»åŠ åˆ°lib.soä¸­,å¯èƒ½æœ‰ä¸¤ç§æ–¹æ³•:
+   1. aåœ¨a.outçš„.bssä¸­,åœ°å€ä¸ºA,loaderè½½å…¥lib.soåè´Ÿè´£æŠŠlib.so .textæ®µä¸­æ‰€æœ‰å¯¹açš„å¼•ç”¨çš„åœ°å€æ”¹å†™æˆA
+      è¿™ç§æ–¹æ³•éœ€è¦æ”¹å†™lib.soçš„ .textæ®µ,å¯¼è‡´lib.soçš„.textæ®µæ— æ³•è¢«å…±äº«
+      ç¼–è¯‘æ—¶ä¸æŒ‡å®š-fPICæ—¶å°±æ˜¯è¿™ç§æƒ…å†µ
+   2. lib.soä¸­å¯¹açš„å¼•ç”¨çš„åœ°å€æ˜¯"GOTåŸºå€+åç§»é‡"çš„å½¢å¼,GOTå³global offset table,loaderè½½å…¥lib.soåä¼šæŠŠ
+      açš„åœ°å€åŠ å…¥GOTè¡¨ä¸­å¯¹åº”äºaçš„åœ°æ–¹. æ˜¾ç¤ºè¿™ç§æ–¹æ³•ä¸éœ€è¦ä¿®æ”¹lib.soçš„.textæ®µ,æ‰€ä»¥.textæ®µå¯èƒ½è¢«å…±äº«
+      ç¼–è¯‘æ—¶æŒ‡å®š-fPICæ—¶æ˜¯è¿™ç§æƒ…å†µ
+      æ¯ä¸ªå…±äº«åº“éƒ½æœ‰ä¸€ä¸ªGOTè¡¨
+      GOTåŸºå€é€šå¸¸ä¿å­˜åœ¨ä¸€ä¸ªå¯„å­˜å™¨ä¸­,å¦‚ebx,æ¯æ¬¡å‡½æ•°å…±äº«åº“çš„å‡½æ•°æ—¶,éƒ½ä¼šé‡è®¾ebxä½¿å…¶æŒ‡å‘ç›¸åº”çš„soçš„GOTåŸºå€
+      lib.soæ¯æ¬¡è®¿é—®aæ—¶çœŸè¦å…ˆæŸ¥GOTè¡¨æ‰èƒ½ç¡®å®šaçš„åœ°å€,å³å¤šä¸€æ¬¡å†…å­˜è®¿é—®
+      GOTç´§è·Ÿåœ¨lib.soçš„.textä¹‹å,lib.soçš„.textç¼–è¯‘æ—¶ç¡®å®š,æ‰€ä»¥lib.soè¢«è½½å…¥å†…å­˜å,GOTåŸºå€ä¹Ÿæ˜¯ç¡®å®šçš„
+      å¦‚å›¾:
+      lib.soè½½å…¥å‰:
 #+BEGIN_EXAMPLE
       	   +---------+
 	   | lib.so  |
-	   | .text¶Î o-----aµÄµØÖ·Îª(GOT+OFFSET(a)),ÀıÈç OFFSET(a)=1
+	   | .textæ®µ o-----açš„åœ°å€ä¸º(GOT+OFFSET(a)),ä¾‹å¦‚ OFFSET(a)=1
 	   +---------+
 	   | GOT     |
 	   +---------+
@@ -1015,13 +1015,13 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
 	   | .bss    |
 	   +---------+
 #+END_EXAMPLE
-      lib.soÔØÈëºó:
+      lib.soè½½å…¥å:
 #+BEGIN_EXAMPLE
-                          /----lib.so±»ÔØÈëµ½0xXXX
+                          /----lib.soè¢«è½½å…¥åˆ°0xXXX
        	   +---------+----
 	   | lib.so  |
-       	   | .text¶Î |----aµÄµØÖ·Ã»±ä,»¹ÊÇ(GOT+OFFSET(a)),µ«GOTµÄµØÖ·ÒÑ¾­È·¶¨Îªlen of .text+0xXXX
-	   +---------+	      ¶øÇÒGOTµÄµÚOFFSET(a)¸ö±íÏîµÄÖµÒÑ¾­±»loader¸ÄĞ´ÎªaµÄµØÖ·
+       	   | .textæ®µ |----açš„åœ°å€æ²¡å˜,è¿˜æ˜¯(GOT+OFFSET(a)),ä½†GOTçš„åœ°å€å·²ç»ç¡®å®šä¸ºlen of .text+0xXXX
+	   +---------+	      è€Œä¸”GOTçš„ç¬¬OFFSET(a)ä¸ªè¡¨é¡¹çš„å€¼å·²ç»è¢«loaderæ”¹å†™ä¸ºaçš„åœ°å€
 	   | GOT     |
 	   +---------+
 	   | .data   |
@@ -1029,10 +1029,10 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
 	   +---------+
 #+END_EXAMPLE
 
-      -fPICÖ¸½«¿â±àÒë³É"Î»ÖÃÎŞ¹Ø´úÂë",ÕâÀïµÄ"Î»ÖÃ"²¢²»ÊÇÖ¸lib.so±»Ó³Éäµ½ÏßĞÔµØÖ·¿Õ¼äµÄÎ»ÖÃ,¶øÊÇÖ¸lib.soÖĞÒıÓÃµÄ
-      È«¾ÖÊı¾İµÄµØÖ·ÊÇÎ»ÖÃÎŞ¹ØµÄ
+      -fPICæŒ‡å°†åº“ç¼–è¯‘æˆ"ä½ç½®æ— å…³ä»£ç ",è¿™é‡Œçš„"ä½ç½®"å¹¶ä¸æ˜¯æŒ‡lib.soè¢«æ˜ å°„åˆ°çº¿æ€§åœ°å€ç©ºé—´çš„ä½ç½®,è€Œæ˜¯æŒ‡lib.soä¸­å¼•ç”¨çš„
+      å…¨å±€æ•°æ®çš„åœ°å€æ˜¯ä½ç½®æ— å…³çš„
 
-      ÁíÍâ,
+      å¦å¤–,
       main.c:
       extern int a;
       main() {
@@ -1040,11 +1040,11 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
       }
       lib.c:
       int a;
-      Èç¹ûmainÖĞÒªÊ¹ÓÃlib.soÖĞ¶¨ÒåµÄÈ«¾Ö±äÁ¿,Á´½Óºóa»¹ÊÇÔÚa.outµÄ.bss¶Î,¶ø²»ÊÇÔÚlib.soµÄ.bss¶Î,·ñÔòÈç¹ûÁíÒ»¸ölib2.so
-      ÒªÊ¹ÓÃa»¹ÒªÈ¥lib.soÖĞÕÒlib.so?
+      å¦‚æœmainä¸­è¦ä½¿ç”¨lib.soä¸­å®šä¹‰çš„å…¨å±€å˜é‡,é“¾æ¥åaè¿˜æ˜¯åœ¨a.outçš„.bssæ®µ,è€Œä¸æ˜¯åœ¨lib.soçš„.bssæ®µ,å¦åˆ™å¦‚æœå¦ä¸€ä¸ªlib2.so
+      è¦ä½¿ç”¨aè¿˜è¦å»lib.soä¸­æ‰¾lib.so?
 
-      Áí:straceµÄ½á¹ûÒ²ÏÔÊ¾³ö²»¼Ó-fPICÊ±lib.soÎŞ·¨±»¹²Ïí
-      Ã»¼Ó-fPICÊ±,strace ./a.outµÄ²¿·Ö½á¹û:
+      å¦:straceçš„ç»“æœä¹Ÿæ˜¾ç¤ºå‡ºä¸åŠ -fPICæ—¶lib.soæ— æ³•è¢«å…±äº«
+      æ²¡åŠ -fPICæ—¶,strace ./a.outçš„éƒ¨åˆ†ç»“æœ:
 #+BEGIN_EXAMPLE
       ...
       open("./libmy.so", O_RDONLY)            = 3
@@ -1060,7 +1060,7 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
       ..
 #+END_EXAMPLE
 
-      ¼ÓÁË-fPIC:
+      åŠ äº†-fPIC:
 #+BEGIN_EXAMPLE
       ..
       open("./libmy.so", O_RDONLY)            = 3
@@ -1077,11 +1077,11 @@ int dÊÇºÏ·¨µÄ,ÒòÎªËüÊôÓÚµ¥¶ÀµÄ×÷ÓÃÓò.
       ..
 #+END_EXAMPLE
 
-      Î¨Ò»µÄÇø±ğ¾ÍÊÇÄ©Î²µÄmprotect(0xb7efe000, 4096, PROT_READ|PROT_WRITE) = 0.
-      Ã»¼Ó-fPICÊ±,libmy.soµÄ.textÓÃMAP_PRIVATE²ÎÊımap½øÀ´,µ«ºóÃæÓÖÓÃmprotectÉèÎª¿ÉĞ´..
-      È»ºódynamic loader»áĞŞ¸ÄÕâ¸öÄÚ´æÇø(ÒÔ±ãÈ·¶¨È«¾ÖÊı¾İµÄÕæÊµµØÖ·),È»ºó¾Ícopy on
-      writeÁË
+      å”¯ä¸€çš„åŒºåˆ«å°±æ˜¯æœ«å°¾çš„mprotect(0xb7efe000, 4096, PROT_READ|PROT_WRITE) = 0.
+      æ²¡åŠ -fPICæ—¶,libmy.soçš„.textç”¨MAP_PRIVATEå‚æ•°mapè¿›æ¥,ä½†åé¢åˆç”¨mprotectè®¾ä¸ºå¯å†™..
+      ç„¶ådynamic loaderä¼šä¿®æ”¹è¿™ä¸ªå†…å­˜åŒº(ä»¥ä¾¿ç¡®å®šå…¨å±€æ•°æ®çš„çœŸå®åœ°å€),ç„¶åå°±copy on
+      writeäº†
 
-      ¾²Ì¬¿â->Ó²ÅÌÕ¼µÄ¶à,ÄÚ´æÕ¼µÄ¶à,¼ÓÔØ¿ì,ÔËĞĞ¿ì
-      ²»¼ÓfPICµÄ¶¯Ì¬¿â->Ó²ÅÌÕ¼µÄ²»¶à,ÄÚ´æÕ¼µÄ¶à,¼ÓÔØÂı,ÔËĞĞ¿ì
-      ¼ÓÁËfPICµÄ¶¯Ì¬¿â->Ó²ÅÌÕ¼µÄ²»¶à,ÄÚ´æÕ¼µÄ²»¶à,¼ÓÔØÂı,ÔËĞĞÂı
+      é™æ€åº“->ç¡¬ç›˜å çš„å¤š,å†…å­˜å çš„å¤š,åŠ è½½å¿«,è¿è¡Œå¿«
+      ä¸åŠ fPICçš„åŠ¨æ€åº“->ç¡¬ç›˜å çš„ä¸å¤š,å†…å­˜å çš„å¤š,åŠ è½½æ…¢,è¿è¡Œå¿«
+      åŠ äº†fPICçš„åŠ¨æ€åº“->ç¡¬ç›˜å çš„ä¸å¤š,å†…å­˜å çš„ä¸å¤š,åŠ è½½æ…¢,è¿è¡Œæ…¢

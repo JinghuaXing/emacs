@@ -441,17 +441,17 @@ This is called in 2 scen:
     95	                // unique task, so we do a special search.
     96
     97			// sunway:
-    98			// ¶ÔÓÚlaunchMode²»ÎªSINGLE_INSTANCEµÄÇé¿ö, taskTopÊÇ¸ù
-    99			// ¾İaffinity(»òactivity component)²éÕÒµ½µÄÒÑ´æÔÚµÄtaskµÄtop activity; ¶ÔÓÚ
-   100			// SINGLE_INSTANCEµÄÇé¿ö, taskTopÎª¸Ãsingle activity
-   101			// Q: ÏµÍ³ÈçºÎÔÚNEW_TASKÊ±²éÕÒÊÇ·ñÒÑ¾­´æÔÚÒ»¸ö`ÃÜÇĞ`µÄtask?
+    98			// å¯¹äºlaunchModeä¸ä¸ºSINGLE_INSTANCEçš„æƒ…å†µ, taskTopæ˜¯æ ¹
+    99			// æ®affinity(æˆ–activity component)æŸ¥æ‰¾åˆ°çš„å·²å­˜åœ¨çš„taskçš„top activity; å¯¹äº
+   100			// SINGLE_INSTANCEçš„æƒ…å†µ, taskTopä¸ºè¯¥single activity
+   101			// Q: ç³»ç»Ÿå¦‚ä½•åœ¨NEW_TASKæ—¶æŸ¥æ‰¾æ˜¯å¦å·²ç»å­˜åœ¨ä¸€ä¸ª`å¯†åˆ‡`çš„task?
    102
    103	                HistoryRecord taskTop = r.launchMode != ActivityInfo.LAUNCH_SINGLE_INSTANCE
    104	                        ? findTaskLocked(intent, r.info)
    105	                        : findActivityLocked(intent, r.info);
    106
    107			// sunway:
-   108			// ¶ÔÓÚNEW_TASK, ÒÑ¾­ÕÒµ½Ò»¸öÒÑ¾­´æÔÚµÄTASK»òsingle instance
+   108			// å¯¹äºNEW_TASK, å·²ç»æ‰¾åˆ°ä¸€ä¸ªå·²ç»å­˜åœ¨çš„TASKæˆ–single instance
    109			// activity
    110
    111	                if (taskTop != null) {
@@ -482,10 +482,10 @@ This is called in 2 scen:
    136	                                || curTop.task == sourceRecord.task;
    137
    138				// sunway:
-   139				// Èç¹û: 1. new task 2. taskÔÚºóÌ¨ 3. callerÔÚÇ°Ì¨ (»ò
-   140				// sourceRecord==null),Ôò½«taskÒÆµ½Ç°Ì¨, ËùÒÔ, Ò»¸öºóÌ¨µÄ
-   141				// taskÀïµÄÒ»¸öthreadÎŞ·¨Í¨¹ı new_task &
-   142				// activity.startActivity½«taskÒÆ¶¯µ½Ç°Ì¨
+   139				// å¦‚æœ: 1. new task 2. taskåœ¨åå° 3. calleråœ¨å‰å° (æˆ–
+   140				// sourceRecord==null),åˆ™å°†taskç§»åˆ°å‰å°, æ‰€ä»¥, ä¸€ä¸ªåå°çš„
+   141				// taské‡Œçš„ä¸€ä¸ªthreadæ— æ³•é€šè¿‡ new_task &
+   142				// activity.startActivityå°†taskç§»åŠ¨åˆ°å‰å°
    143
    144	                        if (callerAtFront) {
    145	                            // We really do want to push this one into the
@@ -520,62 +520,62 @@ This is called in 2 scen:
    174	                        // initial state.
    175
    176				// sunway:
-   177				// ÔÚ´ó¶àÊıÇé¿öÏÂ, task»òsingle instance activity
-   178				// ÔÚ´ËÖ®Ç°ÒÑ¾­±»ÒÆ¶¯µ½Ç°Ì¨,performClearTaskLockedÖ»»á
-   179				// finish¸ÃtaskÖĞÎ»ÓÚrÖ®ÉÏµÄactivity, ³ı·Ç...ÒÆ¶¯µ½Ç°Ì¨
-   180				// Ê±Ê§°Ü(ÀıÈçcallerAtFrontÎª¼Ù,ÕâÊ±»áÓĞÒâÏë²»µ½µÄĞ§
-   181				// ¹û)
+   177				// åœ¨å¤§å¤šæ•°æƒ…å†µä¸‹, taskæˆ–single instance activity
+   178				// åœ¨æ­¤ä¹‹å‰å·²ç»è¢«ç§»åŠ¨åˆ°å‰å°,performClearTaskLockedåªä¼š
+   179				// finishè¯¥taskä¸­ä½äºrä¹‹ä¸Šçš„activity, é™¤é...ç§»åŠ¨åˆ°å‰å°
+   180				// æ—¶å¤±è´¥(ä¾‹å¦‚callerAtFrontä¸ºå‡,è¿™æ—¶ä¼šæœ‰æ„æƒ³ä¸åˆ°çš„æ•ˆ
+   181				// æœ)
    182
    183				// sunway:
-   184				// performClearTaskLocked»áfinishÎ»ÓÚr,topÖ®¼äµÄËùÓĞ
-   185				// activity,Ò»°ãÇé¿öÏÂ²»»áfinish `»ù×¼`activity (¶ÔÓÚ
-   186				// CLEAR_TOP,¼´ÊÇr,¶ÔÓÚSINGLE_TASK,SINGLE_INSTANCE,¼´ÊÇ
-   187				// taskµÄroot activity, ³ı·Ç...»ù×¼activityÊÇMULTIPLE
-   188				// launch modeÇÒÆäSINGLE_TOPÎª¼Ù
+   184				// performClearTaskLockedä¼šfinishä½äºr,topä¹‹é—´çš„æ‰€æœ‰
+   185				// activity,ä¸€èˆ¬æƒ…å†µä¸‹ä¸ä¼šfinish `åŸºå‡†`activity (å¯¹äº
+   186				// CLEAR_TOP,å³æ˜¯r,å¯¹äºSINGLE_TASK,SINGLE_INSTANCE,å³æ˜¯
+   187				// taskçš„root activity, é™¤é...åŸºå‡†activityæ˜¯MULTIPLE
+   188				// launch modeä¸”å…¶SINGLE_TOPä¸ºå‡
    189
-   190				// ×Ü½á: ¶ÔÓÚÒ»°ãµÄstartActivity(²»°üº¬
-   191				// RESET_TASK_IF_NEEDED intent flag), CLEAR_TOPÊÇ¿ÉÒÔ
-   192				// finishÄ³Ğ©activityµÄ»ú»á,Èç¹ûÏëÈÃÒ»¸öactivityÔÚÃ¿´Î
-   193				// startActivityÊ±finishµôÖ®Ç°µÄ²¢createĞÂµÄÇÒÖ»ÓĞÒ»¸öÊµ
-   194				// Àı (ÀıÈçÄ³Ğ©Í¨Öª¹¦ÄÜµÄactivity),¿ÉÒÔ:
-   195				// 1. Ê¹ÓÃNEW_TASKºÍCLEAR_TOP
-   196				// 2. launchModeÎªMULTIPLE,ÇÒSINGLE_TOPÎª¼Ù
-   197				// 3. Îª·ÀÖ¹CLEAR_TOPÎóÉ±Í¬taskµÄÆäËûactivity, ¿ÉÒÔÉèÆä
-   198				// affinityÎªÆäËûÎ¨Ò»Öµ»òÕßÖ±½ÓÊ¹ÓÃ¿Õ´®, È·±£taskÖĞÖ»ÓĞ
-   199				// ËüÒ»¸öactivity (ÀàËÆÓÚsingleInstance)
+   190				// æ€»ç»“: å¯¹äºä¸€èˆ¬çš„startActivity(ä¸åŒ…å«
+   191				// RESET_TASK_IF_NEEDED intent flag), CLEAR_TOPæ˜¯å¯ä»¥
+   192				// finishæŸäº›activityçš„æœºä¼š,å¦‚æœæƒ³è®©ä¸€ä¸ªactivityåœ¨æ¯æ¬¡
+   193				// startActivityæ—¶finishæ‰ä¹‹å‰çš„å¹¶createæ–°çš„ä¸”åªæœ‰ä¸€ä¸ªå®
+   194				// ä¾‹ (ä¾‹å¦‚æŸäº›é€šçŸ¥åŠŸèƒ½çš„activity),å¯ä»¥:
+   195				// 1. ä½¿ç”¨NEW_TASKå’ŒCLEAR_TOP
+   196				// 2. launchModeä¸ºMULTIPLE,ä¸”SINGLE_TOPä¸ºå‡
+   197				// 3. ä¸ºé˜²æ­¢CLEAR_TOPè¯¯æ€åŒtaskçš„å…¶ä»–activity, å¯ä»¥è®¾å…¶
+   198				// affinityä¸ºå…¶ä»–å”¯ä¸€å€¼æˆ–è€…ç›´æ¥ä½¿ç”¨ç©ºä¸², ç¡®ä¿taskä¸­åªæœ‰
+   199				// å®ƒä¸€ä¸ªactivity (ç±»ä¼¼äºsingleInstance)
    200
-   201				// Q: ¿´ÆğÀ´start SINGLE_TASK µÄ root activity Ò²»áµ¼ÖÂ
-   202				// performClearTask .... ²¢perforClearTask²¢²»
-   203				// ÄÜ±£Ö¤developerÖĞÉù³ÆµÄSINGLE_TASKµÄÊôĞÔ:SINGLE_TASK±Ø
-   204				// ĞëÊÇtaskµÄroot activity; Êµ¼ÊÉÏÕâ¶Î´úÂëµÄĞ§¹ûÊÇ: Éè
-   205				// A,BµÄaffinityÏàÍ¬, AÆô¶¯B,ÆäÖĞBÊÇ
-   206				// SINGLE_TASK,Ôò½á¹ûÊÇA,B; BÔÙÆô¶¯A,½á¹ûA,B,A; AÔÙÆô¶¯
-   207				// B, ½á¹ûÊÇA,B, ºÍCLEAR_TOPÓĞÉ¶Çø±ğ?
-   208				// ÈôÏë´ïµ½ÎÄµµÖĞÉù³ÆµÄSINGLE_TASKĞ§¹û,±ØĞë±£Ö¤BÒ»¿ªÊ¼¾Í
-   209				// ÊÇtaskµÄroot activity.....ÄÇÖ»ÄÜ¸øËüÉèÒ»¸öÎ¨Ò»µÄ
-   210				// affinity(»òaffinityÎªnull)²ÅĞĞ
-   211				// Q: ÎªÊ²Ã´»áÓĞÕâ¸öÎÊÌâ?
-   212				// A: Ïà±ÈÖ®ÏÂ,SINGLE_INSTANCEµÄĞĞÎªÊÇÕı³£µÄ,¸ù±¾Ô­ÒòÊÇ
-   213				// ÒòÎªÇ°Ãæ¶ÔtaskTopµÄ²éÕÒ: ¶ÔÓÚSINGLE_INSTANCE, ÊÇ´ÓÕû
-   214				// ¸ömHistoryÈ¥ÕÒÎ¨Ò»µÄÒ»¸öactivityÊµÀı. ¶ø¶ÔÓÚ
-   215				// SINGLE_TASK, ÔòÊÇ´ÓÉÏµ½ÏÂ¸ù¾İaffinityÕÒ\emph{µÚÒ»¸ö}
-   216				// Æ¥ÅäµÄtask, ¿¼ÂÇÕâÖÖÇé¿ö:
-   217				// ÓĞA,B,C,DËÄ¸öactivity, Ê¹ÓÃÏàÍ¬µÄaffinity, ÆäÖĞµÄAÊÇ
-   218				// SINGLE_TASK, Éèµ±Ç°ÓĞÁ½¸ötask, 'A,C,D'ºÍ'B'. È»ºóÁíÍâ
-   219				// Ä³´¦startActivity(B), ¼ÙÉèÏµÍ³ÕÒµ½µÚÒ»¸öÆ¥ÅäµÄ
-   220				// taskÊÇ'A,C,D'... ÊÇ·ñÒªÎªBÉú³ÉÒ»¸önew task?
-   221				// ËùÒÔ¸ù±¾Ô­ÒòÊÇtaskµÄ¹ÜÀí»¹ÊÇ¹ıÓÚ¼òµ¥, \emph{taskµÄ²éÕÒ·½·¨
-   222				// ÎŞ·¨Âú×ãSINGLE_TASKÓïÒå}.
-   223				// ×öÎªworkaround,¿ÉÒÔÍ¨¹ıÈ·±£SINGLE_TASKµÄactivityÎªÎ¨
-   224				// Ò»µÄaffinityÀ´ÃÖ²¹task²éÕÒ·½·¨µÄ²»×ã.
+   201				// Q: çœ‹èµ·æ¥start SINGLE_TASK çš„ root activity ä¹Ÿä¼šå¯¼è‡´
+   202				// performClearTask .... å¹¶perforClearTaskå¹¶ä¸
+   203				// èƒ½ä¿è¯developerä¸­å£°ç§°çš„SINGLE_TASKçš„å±æ€§:SINGLE_TASKå¿…
+   204				// é¡»æ˜¯taskçš„root activity; å®é™…ä¸Šè¿™æ®µä»£ç çš„æ•ˆæœæ˜¯: è®¾
+   205				// A,Bçš„affinityç›¸åŒ, Aå¯åŠ¨B,å…¶ä¸­Bæ˜¯
+   206				// SINGLE_TASK,åˆ™ç»“æœæ˜¯A,B; Bå†å¯åŠ¨A,ç»“æœA,B,A; Aå†å¯åŠ¨
+   207				// B, ç»“æœæ˜¯A,B, å’ŒCLEAR_TOPæœ‰å•¥åŒºåˆ«?
+   208				// è‹¥æƒ³è¾¾åˆ°æ–‡æ¡£ä¸­å£°ç§°çš„SINGLE_TASKæ•ˆæœ,å¿…é¡»ä¿è¯Bä¸€å¼€å§‹å°±
+   209				// æ˜¯taskçš„root activity.....é‚£åªèƒ½ç»™å®ƒè®¾ä¸€ä¸ªå”¯ä¸€çš„
+   210				// affinity(æˆ–affinityä¸ºnull)æ‰è¡Œ
+   211				// Q: ä¸ºä»€ä¹ˆä¼šæœ‰è¿™ä¸ªé—®é¢˜?
+   212				// A: ç›¸æ¯”ä¹‹ä¸‹,SINGLE_INSTANCEçš„è¡Œä¸ºæ˜¯æ­£å¸¸çš„,æ ¹æœ¬åŸå› æ˜¯
+   213				// å› ä¸ºå‰é¢å¯¹taskTopçš„æŸ¥æ‰¾: å¯¹äºSINGLE_INSTANCE, æ˜¯ä»æ•´
+   214				// ä¸ªmHistoryå»æ‰¾å”¯ä¸€çš„ä¸€ä¸ªactivityå®ä¾‹. è€Œå¯¹äº
+   215				// SINGLE_TASK, åˆ™æ˜¯ä»ä¸Šåˆ°ä¸‹æ ¹æ®affinityæ‰¾\emph{ç¬¬ä¸€ä¸ª}
+   216				// åŒ¹é…çš„task, è€ƒè™‘è¿™ç§æƒ…å†µ:
+   217				// æœ‰A,B,C,Då››ä¸ªactivity, ä½¿ç”¨ç›¸åŒçš„affinity, å…¶ä¸­çš„Aæ˜¯
+   218				// SINGLE_TASK, è®¾å½“å‰æœ‰ä¸¤ä¸ªtask, 'A,C,D'å’Œ'B'. ç„¶åå¦å¤–
+   219				// æŸå¤„startActivity(B), å‡è®¾ç³»ç»Ÿæ‰¾åˆ°ç¬¬ä¸€ä¸ªåŒ¹é…çš„
+   220				// taskæ˜¯'A,C,D'... æ˜¯å¦è¦ä¸ºBç”Ÿæˆä¸€ä¸ªnew task?
+   221				// æ‰€ä»¥æ ¹æœ¬åŸå› æ˜¯taskçš„ç®¡ç†è¿˜æ˜¯è¿‡äºç®€å•, \emph{taskçš„æŸ¥æ‰¾æ–¹æ³•
+   222				// æ— æ³•æ»¡è¶³SINGLE_TASKè¯­ä¹‰}.
+   223				// åšä¸ºworkaround,å¯ä»¥é€šè¿‡ç¡®ä¿SINGLE_TASKçš„activityä¸ºå”¯
+   224				// ä¸€çš„affinityæ¥å¼¥è¡¥taskæŸ¥æ‰¾æ–¹æ³•çš„ä¸è¶³.
    225
    226
    227	                        HistoryRecord top = performClearTaskLocked(
    228	                                taskTop.task.taskId, r, launchFlags, true);
    229
    230				// sunway:
-   231				// Èôtop²»Îªnull, ËµÃ÷CLEAR_TOPÕæµÄÖ»ÊÇ `clear top`, ÔòĞè
-   232				// Òªµ÷ÓÃtopµÄonNewIntent
+   231				// è‹¥topä¸ä¸ºnull, è¯´æ˜CLEAR_TOPçœŸçš„åªæ˜¯ `clear top`, åˆ™éœ€
+   232				// è¦è°ƒç”¨topçš„onNewIntent
    233
    234
    235	                        if (top != null) {
@@ -590,12 +590,12 @@ This is called in 2 scen:
    244	                            deliverNewIntentLocked(top, r.intent);
    245	                        } else {
    246				    // sunway:
-   247				    // ÈôtopÎªnull,ËµÃ÷CLEAR_TOP°Ñ`»ù×¼`activityÒ²clearµô
-   248				    // ÁË...ÕâÖÖÇé¿öµÄ·¢ÉúÖ»ÓĞÒ»ÖÖ¿ÉÄÜ:`»ù×¼`activityÊÇ
-   249				    // MULTIPLE & SINGLE_TOP, `»ù×¼`activity±»clearµôºó,
-   250				    // ĞèÒªÍ¨¹ıaddingToTask±ê¼ÇÍ¨ÖªºóĞø´úÂë:¸ÃactivityĞè
-   251				    // ÒªÖØĞÂÌí¼ÓÒ»¸öĞÂµÄÊµÀıµ½taskÖĞ, addingToTaskµÄÒâË¼
-   252				    // ÊÇ:addNewInstanceToTask
+   247				    // è‹¥topä¸ºnull,è¯´æ˜CLEAR_TOPæŠŠ`åŸºå‡†`activityä¹Ÿclearæ‰
+   248				    // äº†...è¿™ç§æƒ…å†µçš„å‘ç”Ÿåªæœ‰ä¸€ç§å¯èƒ½:`åŸºå‡†`activityæ˜¯
+   249				    // MULTIPLE & SINGLE_TOP, `åŸºå‡†`activityè¢«clearæ‰å,
+   250				    // éœ€è¦é€šè¿‡addingToTaskæ ‡è®°é€šçŸ¥åç»­ä»£ç :è¯¥activityéœ€
+   251				    // è¦é‡æ–°æ·»åŠ ä¸€ä¸ªæ–°çš„å®ä¾‹åˆ°taskä¸­, addingToTaskçš„æ„æ€
+   252				    // æ˜¯:addNewInstanceToTask
    253
    254	                            // A special case: we need to
    255	                            // start the activity because it is not currently
@@ -609,15 +609,15 @@ This is called in 2 scen:
    263	                        }
    264	                    } else if (r.realActivity.equals(taskTop.task.realActivity)) {
    265				// sunway:
-   266	                        // ÎÒÃÇÏëÒªstartµÄÊÇtaskµÄroot activity, ÈôÊ¹ÓÃµÄintent
-   267	                        // Ò²ÊÇÏàÍ¬µÄ, ÏµÍ³ÈÏÎªÎÒÃÇÖ»ÊÇÏëmoveTaskToFront, ËùÒÔ²»
-   268	                        // ÉúĞÂcreateÒ»¸öactivity,ÔòÖ»ÊÇresumeÕâ¸ötaskµÄtop
+   266	                        // æˆ‘ä»¬æƒ³è¦startçš„æ˜¯taskçš„root activity, è‹¥ä½¿ç”¨çš„intent
+   267	                        // ä¹Ÿæ˜¯ç›¸åŒçš„, ç³»ç»Ÿè®¤ä¸ºæˆ‘ä»¬åªæ˜¯æƒ³moveTaskToFront, æ‰€ä»¥ä¸
+   268	                        // ç”Ÿæ–°createä¸€ä¸ªactivity,åˆ™åªæ˜¯resumeè¿™ä¸ªtaskçš„top
    269	                        // activity.
-   270				// Êµ¼ÊÉÏ,Õâ¶Î´úÂë·´Ó³µÄÊÇlauncherµÄĞĞÎª: laucherÃ¿´Îµã
-   271	                        // »÷×ÀÃæÍ¼±êÊ±,¶ÔÍ¬Ò»¸öÍ¼±ê,Ê¹ÓÃµÄintentÊÇÒ»ÑùµÄ,ÇÒÒªÆô
-   272	                        // ¶¯µÄactivityÒ²±ØÈ»ÊÇtaskµÄroot activity
-   273				// Í¨¹ıÄ£ÄâlauncherµÄÕâÖÖĞĞÎª,ÎÒÃÇÒ²¿ÉÒÔÖ»ÊÇ½«Ä³¸ötaskÒÆ
-   274	                        // ¶¯µ½Ç°Ì¨,¶ø²»×öÆäËûÈÎºÎÊÂ
+   270				// å®é™…ä¸Š,è¿™æ®µä»£ç åæ˜ çš„æ˜¯launcherçš„è¡Œä¸º: laucheræ¯æ¬¡ç‚¹
+   271	                        // å‡»æ¡Œé¢å›¾æ ‡æ—¶,å¯¹åŒä¸€ä¸ªå›¾æ ‡,ä½¿ç”¨çš„intentæ˜¯ä¸€æ ·çš„,ä¸”è¦å¯
+   272	                        // åŠ¨çš„activityä¹Ÿå¿…ç„¶æ˜¯taskçš„root activity
+   273				// é€šè¿‡æ¨¡æ‹Ÿlauncherçš„è¿™ç§è¡Œä¸º,æˆ‘ä»¬ä¹Ÿå¯ä»¥åªæ˜¯å°†æŸä¸ªtaskç§»
+   274	                        // åŠ¨åˆ°å‰å°,è€Œä¸åšå…¶ä»–ä»»ä½•äº‹
    275
    276
    277
@@ -643,11 +643,11 @@ This is called in 2 scen:
    297	                        }
    298	                    } else if ((launchFlags&Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) == 0) {
    299				// sunway:
-   300	                        // ÕâÀï»ù±¾ÉÏÊÇNEW_TASKËùÅĞ¶ÏµÄ×îºóÒ»¸öÌõ¼şÁË: Èô
-   301	                        // RESET_TASK_IF_NEEDÉèÖÃ, ÔòaddingToTaskÎªfalse,×èÖ¹ÁË
-   302	                        // ºóĞøµÄ´¦Àí. Ğ§¹ûºÍÇ°ÃæÌáµ½µÄlauncherĞĞÎªÀàËÆ,µ«ÒªÆô¶¯
-   303	                        // µÄactivity²»±ØÊÇroot activity.
-   304				// Ò»°ãÇé¿öÏÂ,Ö»ÓĞlauncher»áÊ¹ÓÃÕâ¸ö±êÖ¾
+   300	                        // è¿™é‡ŒåŸºæœ¬ä¸Šæ˜¯NEW_TASKæ‰€åˆ¤æ–­çš„æœ€åä¸€ä¸ªæ¡ä»¶äº†: è‹¥
+   301	                        // RESET_TASK_IF_NEEDè®¾ç½®, åˆ™addingToTaskä¸ºfalse,é˜»æ­¢äº†
+   302	                        // åç»­çš„å¤„ç†. æ•ˆæœå’Œå‰é¢æåˆ°çš„launcherè¡Œä¸ºç±»ä¼¼,ä½†è¦å¯åŠ¨
+   303	                        // çš„activityä¸å¿…æ˜¯root activity.
+   304				// ä¸€èˆ¬æƒ…å†µä¸‹,åªæœ‰launcherä¼šä½¿ç”¨è¿™ä¸ªæ ‡å¿—
    305
    306
    307	                        // In this case an activity is being launched in to an
@@ -682,14 +682,14 @@ This is called in 2 scen:
    336
    337		// sunway:
    338	        // finally we are here....
-   339	        // ÔÚÈıÖÖÇé¿öÏÂ´úÂë»á×ßµ½ÕâÀï:
-   340	        // case 1. NEW_TASKÎªÕæ, µ«taskTopÎªnull...ËµÃ÷ÏÖÔÚÏµÍ³ÀïÕÒ²»µ½Ò»¸öÒÑ¾­´æÔÚµÄ
-   341	        // `ÃÜÇĞ`µÄtask, ÕæµÄĞèÒª`new`Ò»¸ötaskÁË
-   342	        // case 2. NEW_TASK==true, taskTop!=null, µ«addingToTaskÎªÕæ, ¼´ĞèÒªÔÚtaskTop
-   343	        // ÉÏ new activity instance
-   344	        // case 3. ¸ù±¾Ã»ÓĞÖ¸¶¨NEW_TASK±êÖ¾,ĞÂµÄactivityÊ¹ÓÃµ±Ç°µÄtask (Ê¹ÓÃµ±Ç°µÄ
-   345	        // task²¢²»ÒâÎ¶×ÅÒªÖ±½Ónew activity instance, ÒòÎªSINGLE_TOP,
-   346	        // CLEAR_TOP...»¹Òª¿¼ÂÇ)
+   339	        // åœ¨ä¸‰ç§æƒ…å†µä¸‹ä»£ç ä¼šèµ°åˆ°è¿™é‡Œ:
+   340	        // case 1. NEW_TASKä¸ºçœŸ, ä½†taskTopä¸ºnull...è¯´æ˜ç°åœ¨ç³»ç»Ÿé‡Œæ‰¾ä¸åˆ°ä¸€ä¸ªå·²ç»å­˜åœ¨çš„
+   341	        // `å¯†åˆ‡`çš„task, çœŸçš„éœ€è¦`new`ä¸€ä¸ªtaskäº†
+   342	        // case 2. NEW_TASK==true, taskTop!=null, ä½†addingToTaskä¸ºçœŸ, å³éœ€è¦åœ¨taskTop
+   343	        // ä¸Š new activity instance
+   344	        // case 3. æ ¹æœ¬æ²¡æœ‰æŒ‡å®šNEW_TASKæ ‡å¿—,æ–°çš„activityä½¿ç”¨å½“å‰çš„task (ä½¿ç”¨å½“å‰çš„
+   345	        // taskå¹¶ä¸æ„å‘³ç€è¦ç›´æ¥new activity instance, å› ä¸ºSINGLE_TOP,
+   346	        // CLEAR_TOP...è¿˜è¦è€ƒè™‘)
    347		//
    348	        //
    349	        //
@@ -708,7 +708,7 @@ This is called in 2 scen:
    362	                    if (top.app != null && top.app.thread != null) {
    363				// sunway:
    364				// case 2,3;
-   365				// SINGLE_TOP²¢·ÇNEW_TASKµÄ×¨Àû
+   365				// SINGLE_TOPå¹¶éNEW_TASKçš„ä¸“åˆ©
    366				// A,B,C (c single top)
    367	                        if ((launchFlags&Intent.FLAG_ACTIVITY_SINGLE_TOP) != 0
    368	                            || r.launchMode == ActivityInfo.LAUNCH_SINGLE_TOP
@@ -747,7 +747,7 @@ This is called in 2 scen:
    401	        if (r.resultTo == null && !addingToTask
    402	                && (launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
    403		    // sunway:
-   404		    // case 1, ĞÂ½¨Ò»¸ötask, NEW_TASK
+   404		    // case 1, æ–°å»ºä¸€ä¸ªtask, NEW_TASK
    405
    406	            // todo: should do better management of integers.
    407	            mCurTask++;
@@ -766,9 +766,9 @@ This is called in 2 scen:
    420	                    (launchFlags&Intent.FLAG_ACTIVITY_CLEAR_TOP) != 0) {
    421			// sunway
    422			// case 3;
-   423			// CLEAR_TOP²¢·ÇNEW_TASKµÄ×¨Àû
-   424			// ÓÉÓÚÕâÀïÃ»ÓĞ¾­¹ıNEW_TASKµÄ moveToFront, µ¼ÖÂCLEAR_TOP¸üÈİÒ×ÉË
-   425			// µ½ÆäËûtaskµÄactivity
+   423			// CLEAR_TOPå¹¶éNEW_TASKçš„ä¸“åˆ©
+   424			// ç”±äºè¿™é‡Œæ²¡æœ‰ç»è¿‡NEW_TASKçš„ moveToFront, å¯¼è‡´CLEAR_TOPæ›´å®¹æ˜“ä¼¤
+   425			// åˆ°å…¶ä»–taskçš„activity
    426
    427	                // In this case, we are adding the activity to an existing
    428	                // task, but the caller has asked to clear that task if the
@@ -791,12 +791,12 @@ This is called in 2 scen:
    445			// sunway:
    446
    447			// case 3;
-   448			// REORDER_TO_FRONTÊÇ·ÇNEW_TASKµÄ×¨Àû
-   449			// Èôµ±Ç°taskµÄstackÎªA,B,C; Cµ÷ÓÃstartActivity(B),ÔòÖ´ĞĞºóµÄ½á
-   450			// ¹ûÎªA,C,B;
-   451			// ¼´B»á±»reorder to front
+   448			// REORDER_TO_FRONTæ˜¯éNEW_TASKçš„ä¸“åˆ©
+   449			// è‹¥å½“å‰taskçš„stackä¸ºA,B,C; Cè°ƒç”¨startActivity(B),åˆ™æ‰§è¡Œåçš„ç»“
+   450			// æœä¸ºA,C,B;
+   451			// å³Bä¼šè¢«reorder to front
    452			//
-   453			// µ½Ä¿Ç°ÎªÖ¹¿ÉÒÔµ¼ÖÂonNewIntentµÄ±êÖ¾:
+   453			// åˆ°ç›®å‰ä¸ºæ­¢å¯ä»¥å¯¼è‡´onNewIntentçš„æ ‡å¿—:
    454			// 1. SINGLE_INSTANCE, SINGLE_TASK
    455			// 2. MULTIPLE & SINGLE_TOP
    456			// 3. REORDER_TO_FRONT
@@ -844,9 +844,9 @@ This is called in 2 scen:
    498
    499		// sunway:
    500		//
-   501		// ¾­¹ı¾Å¾Å°ËÊ®Ò»ÄÑ,µ½ÕâÀï²ÅÕæÕıµ÷ÓÃonCreate;»ØÏëÇ°ÃæµÄÖÖÖÖ, ÓĞĞ©
-   502		// activity±»killµôÁË, ÓĞĞ©±»ÒÆ¶¯µ½Ç°Ì¨²¢±»resumeÁË, ÄÜÊÕµ½onNewIntentµ÷
-   503		// ÓÃ¶¼Ëã²»´íÁË; ÄÜÕæÕıÒòÎªstartActivityµ¼ÖÂonCreate±»µ÷ÓÃµÄÓĞ¶àÉÙ?
+   501		// ç»è¿‡ä¹ä¹å…«åä¸€éš¾,åˆ°è¿™é‡Œæ‰çœŸæ­£è°ƒç”¨onCreate;å›æƒ³å‰é¢çš„ç§ç§, æœ‰äº›
+   502		// activityè¢«killæ‰äº†, æœ‰äº›è¢«ç§»åŠ¨åˆ°å‰å°å¹¶è¢«resumeäº†, èƒ½æ”¶åˆ°onNewIntentè°ƒ
+   503		// ç”¨éƒ½ç®—ä¸é”™äº†; èƒ½çœŸæ­£å› ä¸ºstartActivityå¯¼è‡´onCreateè¢«è°ƒç”¨çš„æœ‰å¤šå°‘?
    504
    505	        startActivityLocked(r, newTask, doResume);
    506	        return START_SUCCESS;
@@ -870,13 +870,13 @@ This is called in 2 scen:
    524	                    && r.launchMode != ActivityInfo.LAUNCH_SINGLE_INSTANCE) {
    525
    526			// sunway:
-   527			// launchMode!=SINGLE_INSTANCEÕâ¸öÌõ¼ş¿ÉÓÃ±ÜÃâÕâÖÖÇé¿ö:
-   528			// µ±Ç°mHistory¶ÔÓÚÍ¬Ò»¸öaffinityÓĞ¶à¸ötask (Ö»ÓĞÒ»ÖÖ¿ÉÄÜ:Ò»¸öÎªÕı³£µÄtask,
-   529			// ÆäËûµÄ¾ùÎªSINGLE_INSTANCE); Í¨¹ıÕâ¸öÌõ¼şÅĞ¶Ï,¿ÉÒÔ±ÜÃâfindTask
-   530			// Ê±ÕÒµ½SINGLE_INSTANCEµÄtask (ÕâÖÖtask¼´Ê¹ÕÒµ½Ò²²»¿ÉÄÜÍùÉÏÌí¼Ó
-   531			// ÆäËûactivity, ½á¹û»¹ÊÇÒªĞÂ½¨Ò»¸ötask, µ«Êµ¼ÊÉÏ¸Ã
-   532			// SINGLE_INSTANCEÏÂÃæÃ÷Ã÷ÓĞÒ»¸ö¿ÉÓÃµÄ`Õı³£`task...×îºó»áµ¼ÖÂtaskÔ½
-   533			// À´Ô½¶à)
+   527			// launchMode!=SINGLE_INSTANCEè¿™ä¸ªæ¡ä»¶å¯ç”¨é¿å…è¿™ç§æƒ…å†µ:
+   528			// å½“å‰mHistoryå¯¹äºåŒä¸€ä¸ªaffinityæœ‰å¤šä¸ªtask (åªæœ‰ä¸€ç§å¯èƒ½:ä¸€ä¸ªä¸ºæ­£å¸¸çš„task,
+   529			// å…¶ä»–çš„å‡ä¸ºSINGLE_INSTANCE); é€šè¿‡è¿™ä¸ªæ¡ä»¶åˆ¤æ–­,å¯ä»¥é¿å…findTask
+   530			// æ—¶æ‰¾åˆ°SINGLE_INSTANCEçš„task (è¿™ç§taskå³ä½¿æ‰¾åˆ°ä¹Ÿä¸å¯èƒ½å¾€ä¸Šæ·»åŠ 
+   531			// å…¶ä»–activity, ç»“æœè¿˜æ˜¯è¦æ–°å»ºä¸€ä¸ªtask, ä½†å®é™…ä¸Šè¯¥
+   532			// SINGLE_INSTANCEä¸‹é¢æ˜æ˜æœ‰ä¸€ä¸ªå¯ç”¨çš„`æ­£å¸¸`task...æœ€åä¼šå¯¼è‡´taskè¶Š
+   533			// æ¥è¶Šå¤š)
    534
    535	                cp = r.task;
    536	                //Slog.i(TAG, "Comparing existing cls=" + r.task.intent.getComponent().flattenToShortString()
@@ -910,44 +910,44 @@ This is called in 2 scen:
    564	    private final HistoryRecord resetTaskIfNeededLocked(HistoryRecord taskTop,
    565	            HistoryRecord newActivity) {
    566		// sunway:
-   567		// resetTaskIfNeeded, ÊÇRESET_TASK_IF_NEED intent flagµ¼ÖÂµÄµ÷ÓÃ
-   568		// launcherÔÚÆô¶¯activityÊ±»áÊ¹ÓÃNEW_TASK & RESET_TASK_IF_NEED ±êÖ¾
-   569		// ËùÒÔ¸Ã±êÖ¾ºÍlaunchÓĞ¹Ø, Êµ¼ÊÉÏ, activityµÄËÄ¸öÊôĞÔ:
+   567		// resetTaskIfNeeded, æ˜¯RESET_TASK_IF_NEED intent flagå¯¼è‡´çš„è°ƒç”¨
+   568		// launcheråœ¨å¯åŠ¨activityæ—¶ä¼šä½¿ç”¨NEW_TASK & RESET_TASK_IF_NEED æ ‡å¿—
+   569		// æ‰€ä»¥è¯¥æ ‡å¿—å’Œlaunchæœ‰å…³, å®é™…ä¸Š, activityçš„å››ä¸ªå±æ€§:
    570		// 1. CLEAR_TASK_ON_LAUNCH
    571		// 2. FINISH_ON_TASK_LAUNCH
    572		// 3. ALLOW_TASK_REPARENTING
    573		// 4. ALWAYS_RETAIN_TASK_STATE
-   574		// ¶¼Ö»ÊÇºÍÕâ¸ö±êÖ¾ÓĞ¹Ø
-   575		// ÁíÍâ, CLEAR_WHEN_TASK_RESET intent flag Ò²Ö»ºÍÕâ¸ö±êÖ¾ÓĞ¹Ø.
-   576		// Q: RESET_TASKÊÇ¸ÉÊ²Ã´?
-   577		// Q: IF_NEEDEDÊÇÊ²Ã´ÒâË¼?
+   574		// éƒ½åªæ˜¯å’Œè¿™ä¸ªæ ‡å¿—æœ‰å…³
+   575		// å¦å¤–, CLEAR_WHEN_TASK_RESET intent flag ä¹Ÿåªå’Œè¿™ä¸ªæ ‡å¿—æœ‰å…³.
+   576		// Q: RESET_TASKæ˜¯å¹²ä»€ä¹ˆ?
+   577		// Q: IF_NEEDEDæ˜¯ä»€ä¹ˆæ„æ€?
    578
    579	        boolean forceReset = (newActivity.info.flags
    580	                &ActivityInfo.FLAG_CLEAR_TASK_ON_LAUNCH) != 0;
    581
    582		// sunway:
-   583		// ACTIVITY_INACTIVE_RESET_TIME Îª 30 ·ÖÖÓ
-   584		// µ±task.getInactiveDuration > 30 minÊ±, ±íÊ¾¸ÃtaskĞèÒª±»forceResetÁË, ÕâÒ²
-   585		// Ğí¾ÍÊÇIF_NEEDEDµÄÒª±í´ïµÄÒâË¼(Ö®Ò»)?
+   583		// ACTIVITY_INACTIVE_RESET_TIME ä¸º 30 åˆ†é’Ÿ
+   584		// å½“task.getInactiveDuration > 30 minæ—¶, è¡¨ç¤ºè¯¥taskéœ€è¦è¢«forceResetäº†, è¿™ä¹Ÿ
+   585		// è®¸å°±æ˜¯IF_NEEDEDçš„è¦è¡¨è¾¾çš„æ„æ€(ä¹‹ä¸€)?
    586
    587
    588	        if (taskTop.task.getInactiveDuration() > ACTIVITY_INACTIVE_RESET_TIME) {
    589	            if ((newActivity.info.flags
    590	                    &ActivityInfo.FLAG_ALWAYS_RETAIN_TASK_STATE) == 0) {
    591			// sunway:
-   592			// Èôroot activityÉèÖÃÁËÕâ¸öÊôĞÔ,¿ÉÒÔ±ÜÃâ¿ÕÏĞ30·ÖÖÓºóÕû¸ötask±»
+   592			// è‹¥root activityè®¾ç½®äº†è¿™ä¸ªå±æ€§,å¯ä»¥é¿å…ç©ºé—²30åˆ†é’Ÿåæ•´ä¸ªtaskè¢«
    593			// reset (reset case 1)
-   594			// µ«¶Ôcase 2,3 ÎŞĞ§
+   594			// ä½†å¯¹case 2,3 æ— æ•ˆ
    595	                forceReset = true;
    596	            }
    597	        }
    598
    599		// sunway:
-   600		// ËùÎ½ reset task, ÊÇÖ¸Òª´Óµ±Ç°taskÖĞÕÒ³öÄÄĞ©activityĞèÒª±»reset
-   601		// (finish), Ö÷Òª·ÖÎªÈıÖÖÇé¿ö:
-   602		// case 1. Õû¸ötaskµÄËùÓĞactivity±»ĞèÒª±»reset
-   603		// case 2. Ä³¸ö»òÄ³Ğ©activityĞèÒª±»reset
-   604		// case 3. »¹Òª¿¼ÂÇ¸ü¸´ÔÓµÄALLOW_TASK_REPARENTINGÊôĞÔ
+   600		// æ‰€è°“ reset task, æ˜¯æŒ‡è¦ä»å½“å‰taskä¸­æ‰¾å‡ºå“ªäº›activityéœ€è¦è¢«reset
+   601		// (finish), ä¸»è¦åˆ†ä¸ºä¸‰ç§æƒ…å†µ:
+   602		// case 1. æ•´ä¸ªtaskçš„æ‰€æœ‰activityè¢«éœ€è¦è¢«reset
+   603		// case 2. æŸä¸ªæˆ–æŸäº›activityéœ€è¦è¢«reset
+   604		// case 3. è¿˜è¦è€ƒè™‘æ›´å¤æ‚çš„ALLOW_TASK_REPARENTINGå±æ€§
    605
    606	        final TaskRecord task = taskTop.task;
    607
@@ -961,7 +961,7 @@ This is called in 2 scen:
    615	        int lastReparentPos = -1;
    616
    617		// sunway:
-   618		// ±éÀúmHistoryµÄËùÓĞactivity, top --> bottom
+   618		// éå†mHistoryçš„æ‰€æœ‰activity, top --> bottom
    619
    620	        for (int i=mHistory.size()-1; i>=-1; i--) {
    621	            HistoryRecord below = i >= 0 ? (HistoryRecord)mHistory.get(i) : null;
@@ -982,8 +982,8 @@ This is called in 2 scen:
    636	            final int flags = target.info.flags;
    637
    638		    // sunway:
-   639		    // µ±Ç°activityĞèÒª±»finish on task launch?
-   640		    // IF_NEEDED (Ö®¶ş)?
+   639		    // å½“å‰activityéœ€è¦è¢«finish on task launch?
+   640		    // IF_NEEDED (ä¹‹äºŒ)?
    641
    642	            final boolean finishOnTaskLaunch =
    643	                (flags&ActivityInfo.FLAG_FINISH_ON_TASK_LAUNCH) != 0;
@@ -992,7 +992,7 @@ This is called in 2 scen:
    646
    647	            if (target.task == task) {
    648			// sunway:
-   649			// ÎÒÃÇÖ»ÄÜresetÒªresetµÄtask, ÆäËûµÄtask²»ÄÜÅö
+   649			// æˆ‘ä»¬åªèƒ½resetè¦resetçš„task, å…¶ä»–çš„taskä¸èƒ½ç¢°
    650
    651	                // We are inside of the task being reset...  we'll either
    652	                // finish this activity, push it out for another task,
@@ -1021,10 +1021,10 @@ This is called in 2 scen:
    675	                            && !target.taskAffinity.equals(task.affinity)) {
    676
    677				// sunway:
-   678	                        // Èôµ±Ç°´¦ÀíµÄactivityÊÇ´Ó±ğµÄµØ·½`ÊÕÑø`µÄ
-   679	                        // (allowTaskReparentingÎªÕæ,ÇÒËüµÄaffinityºÍÒªresetµÄ
-   680	                        // taskµÄaffinity²»Í¬), ¶øÇÒËü²»ÏëËÀ,ÄÇÃ´·ÅÁËËü(´ÓÄÄÀ´µÄ
-   681	                        // »ØÄÄÈ¥,»òÕß×ÔÁ¢ÃÅ»§)
+   678	                        // è‹¥å½“å‰å¤„ç†çš„activityæ˜¯ä»åˆ«çš„åœ°æ–¹`æ”¶å…»`çš„
+   679	                        // (allowTaskReparentingä¸ºçœŸ,ä¸”å®ƒçš„affinityå’Œè¦resetçš„
+   680	                        // taskçš„affinityä¸åŒ), è€Œä¸”å®ƒä¸æƒ³æ­»,é‚£ä¹ˆæ”¾äº†å®ƒ(ä»å“ªæ¥çš„
+   681	                        // å›å“ªå»,æˆ–è€…è‡ªç«‹é—¨æˆ·)
    682	                        //
    683	                        //
    684	                        // If this activity has an affinity for another
@@ -1090,9 +1090,9 @@ This is called in 2 scen:
    744	                            || clearWhenTaskReset) {
    745
    746				// sunway:
-   747	                        // ¾­¹ıÈô¸É´ÎÑ­»·ºó,È·¶¨ÁËÒªresetµÄactivityµÄ·¶Î§,¿ªÊ¼reset
-   748	                        // ÆäÖĞ, CLEAR_WHEN_TASK_RESETºÍCLEAR_TOPĞĞÎªÏàËÆ,¶¼Ê¹
-   749	                        // ¸ÃactivityÒÔÉÏ±»finish,µ«Ç°Õß»áÏŞÖÆÉÏÏŞÎªµ±Ç°task
+   747	                        // ç»è¿‡è‹¥å¹²æ¬¡å¾ªç¯å,ç¡®å®šäº†è¦resetçš„activityçš„èŒƒå›´,å¼€å§‹reset
+   748	                        // å…¶ä¸­, CLEAR_WHEN_TASK_RESETå’ŒCLEAR_TOPè¡Œä¸ºç›¸ä¼¼,éƒ½ä½¿
+   749	                        // è¯¥activityä»¥ä¸Šè¢«finish,ä½†å‰è€…ä¼šé™åˆ¶ä¸Šé™ä¸ºå½“å‰task
    750
    751	                        // If the activity should just be removed -- either
    752	                        // because it asks for it, or the task should be
@@ -1158,8 +1158,8 @@ This is called in 2 scen:
    812	                    && task.affinity != null
    813	                    && task.affinity.equals(target.taskAffinity)) {
    814			// sunway:
-   815			// Èç¹ûÆäËütaskÖĞÓĞ´Óµ±Ç°task`¹ı¼Ì`¹ıÈ¥µÄactivity, ÄÇÃ´Ò²»áreset
-   816			// Ëü,»òÕß»á°ÑËümove»Øµ±Ç°task (¸ù¾İIF_NEEDED)
+   815			// å¦‚æœå…¶å®ƒtaskä¸­æœ‰ä»å½“å‰task`è¿‡ç»§`è¿‡å»çš„activity, é‚£ä¹ˆä¹Ÿä¼šreset
+   816			// å®ƒ,æˆ–è€…ä¼šæŠŠå®ƒmoveå›å½“å‰task (æ ¹æ®IF_NEEDED)
    817
    818	                // We are inside of another task...  if this activity has
    819	                // an affinity for our task, then either remove it if we are
@@ -1253,14 +1253,14 @@ This is called in 2 scen:
    907
    908	        return taskTop;
    909		// sunway:
-   910		// ×Ü½á:
-   911		// RESET_TASKÊÇÖ¸ÓĞĞ©activity»á±»finish,ÓĞĞ©»á±»move (ALLOW_TASK_REPARENTING)
-   912		// IF_NEEDEDÒòÎªÓĞÈı²ãº¬Òå:
-   913		//   1. task inactive³¬¹ı30 minºó»á±»CLEAR_TASK_ON_LAUNCH
-   914		//   2. ÓĞĞ©activityÈôÉèÖÃÁËFINISH_ON_TASK_LAUNCHÊôĞÔ»òÓĞ
-   915		//      CLEAR_WHEN_TASK_RESET intent flag, »á±»finish
-   916		//   3. ÓĞĞ©activityÈôÉèÖÃÁËALLOW_TASK_REPARENTING, »á±»moved, »òÕß±»finish
-   917		// Ò»°ãÖ»ÓĞlauncher»á reset task
+   910		// æ€»ç»“:
+   911		// RESET_TASKæ˜¯æŒ‡æœ‰äº›activityä¼šè¢«finish,æœ‰äº›ä¼šè¢«move (ALLOW_TASK_REPARENTING)
+   912		// IF_NEEDEDå› ä¸ºæœ‰ä¸‰å±‚å«ä¹‰:
+   913		//   1. task inactiveè¶…è¿‡30 minåä¼šè¢«CLEAR_TASK_ON_LAUNCH
+   914		//   2. æœ‰äº›activityè‹¥è®¾ç½®äº†FINISH_ON_TASK_LAUNCHå±æ€§æˆ–æœ‰
+   915		//      CLEAR_WHEN_TASK_RESET intent flag, ä¼šè¢«finish
+   916		//   3. æœ‰äº›activityè‹¥è®¾ç½®äº†ALLOW_TASK_REPARENTING, ä¼šè¢«moved, æˆ–è€…è¢«finish
+   917		// ä¸€èˆ¬åªæœ‰launcherä¼š reset task
    918	    }
 #+END_EXAMPLE
 ****** analysis
@@ -2361,7 +2361,7 @@ AMS calls:
     - State "DONE"       [2011-02-10 Thu 11:46]
     Bitmap.recycle() will call nativeRecycle() to release native memory used by Skia. But, we don't need call it directly, since Bitmap.finalize()
     will call it.
-*** TODO [#B] android ³ß´çµ¥Î» (px,pt,dp,sp..)
+*** TODO [#B] android å°ºå¯¸å•ä½ (px,pt,dp,sp..)
 ** TODO [#B] MountService
    :PROPERTIES:
    :CUSTOM_ID: @MountService
@@ -2540,7 +2540,7 @@ AMS calls:
      :ID:       c5ca7d63-57fd-407a-8275-3266f925d386
      :END:
      see also [[keytool & jarsigner]]
-     google: Android APK Ç©Ãû±È¶Ô
+     google: Android APK ç­¾åæ¯”å¯¹
 
      [[file:~/codebase/cb_study/build/tools/signapk/SignApk.java::for%20(String%20name%20:%20names)%20{][signApk.java]]
 
@@ -2801,38 +2801,38 @@ AMS calls:
 **** DONE Android BUG: NotifyDatasetChanged() when scrolling
       CLOSED: [2011-06-13 Mon 17:16]
       - State "DONE"       [2011-06-13 Mon 17:16]
-      - BUG±íÏÖ: ÔÚ getView() ÖĞµ÷ÓÃ NotifyDatasetChanged(), µ±»¬¶¯ ListView Ê±, onItemClick ÎŞ·¨ÏìÓ¦
-      - Ô­Òò:
+      - BUGè¡¨ç°: åœ¨ getView() ä¸­è°ƒç”¨ NotifyDatasetChanged(), å½“æ»‘åŠ¨ ListView æ—¶, onItemClick æ— æ³•å“åº”
+      - åŸå› :
 	1. NotifyDatasetChanged: see also  [[NotifyDatasetChanged]]
-	   ÆäÖĞ×îÖØÒªµÄÈıµã:
-	   1. NotifyDatasetChanged »áÔÚ¿ªÊ¼Ê±½« mDataChanged ÖÃÎ», È»ºóµ÷ÓÃ AbsListView.requestLayout
-	   2. AbsListView.requestLayout ÔÚ *mBlockLayoutRequests* Ê±Ê²Ã´Ò²²»×ö! ( ÖØÒª )
-	   3. ListView layoutChildren Íê³Éºó»á½« mDataChanged ¸´Î»
+	   å…¶ä¸­æœ€é‡è¦çš„ä¸‰ç‚¹:
+	   1. NotifyDatasetChanged ä¼šåœ¨å¼€å§‹æ—¶å°† mDataChanged ç½®ä½, ç„¶åè°ƒç”¨ AbsListView.requestLayout
+	   2. AbsListView.requestLayout åœ¨ *mBlockLayoutRequests* æ—¶ä»€ä¹ˆä¹Ÿä¸åš! ( é‡è¦ )
+	   3. ListView layoutChildren å®Œæˆåä¼šå°† mDataChanged å¤ä½
 	2. AbsListView TouchEvent dispatch
-	   µ± mDataChanged ÖÃÎ»Ê±, touch up ÊÂ¼ş²»»á±»´¦Àí, ÒòÎª mDataChanged ÖÃÎ», ±íÊ¾ Êı¾İÒÑ¸Ä±ä, ¶ø¸Ã ListView »¹Ã»ÓĞ±»ÖØĞÂ layout, Õâ
-	   Ê±Ó¦¸Ã×èÖ¹ itemClick ÊÂ¼ş, ÒòÎªÓÃ»§µã»÷Ê±¿´µ½µÄÊı¾İºÜ¿ÉÄÜ²¢²»ÊÇÕæÕıµÄÊı¾İ
+	   å½“ mDataChanged ç½®ä½æ—¶, touch up äº‹ä»¶ä¸ä¼šè¢«å¤„ç†, å› ä¸º mDataChanged ç½®ä½, è¡¨ç¤º æ•°æ®å·²æ”¹å˜, è€Œè¯¥ ListView è¿˜æ²¡æœ‰è¢«é‡æ–° layout, è¿™
+	   æ—¶åº”è¯¥é˜»æ­¢ itemClick äº‹ä»¶, å› ä¸ºç”¨æˆ·ç‚¹å‡»æ—¶çœ‹åˆ°çš„æ•°æ®å¾ˆå¯èƒ½å¹¶ä¸æ˜¯çœŸæ­£çš„æ•°æ®
 	3. ListView scroll
-	   ÉÏÃæÌáµ½µÄÒ»ÖØÒªµÄÊı¾İÊÇ mBlockLayoutRequests, Õâ¸öÖµ±íÊ¾ ListView µ±Ç°½ûÖ¹ requestLayout.
-	   µ±·¢Éú scroll ÊÂ¼şÊ±, ListView µ÷ÓÃ trackMotionScroll(incrementalDeltaY, incrementalDeltaY); ´¦Àí¹ö¶¯,
-	   ¸Ãº¯Êı´óÖÂÊÇ:
+	   ä¸Šé¢æåˆ°çš„ä¸€é‡è¦çš„æ•°æ®æ˜¯ mBlockLayoutRequests, è¿™ä¸ªå€¼è¡¨ç¤º ListView å½“å‰ç¦æ­¢ requestLayout.
+	   å½“å‘ç”Ÿ scroll äº‹ä»¶æ—¶, ListView è°ƒç”¨ trackMotionScroll(incrementalDeltaY, incrementalDeltaY); å¤„ç†æ»šåŠ¨,
+	   è¯¥å‡½æ•°å¤§è‡´æ˜¯:
 #+BEGIN_EXAMPLE
      1		   trackMotionScroll()
-     2		     mRecycler.addScrapView(start,count); // cache »¬¶¯³öÈ¥µÄ view
+     2		     mRecycler.addScrapView(start,count); // cache æ»‘åŠ¨å‡ºå»çš„ view
      3		       mRecyclerListener.onMovedToScrapHeap(scrap);
-     4	             detachViewsFromParent(start, count); // detach »¬¶¯³öÈ¥µÄ view from ViewGroup
+     4	             detachViewsFromParent(start, count); // detach æ»‘åŠ¨å‡ºå»çš„ view from ViewGroup
      5		     mBlockLayoutRequests = true;
-     6		       fillGap() --> makeAndAddView() --> obtainView() --> getView() »ñµÃĞÂµÄ view ÒÔÌî³ä»¬¶¯Ê±²úÉúµÄ gap
+     6		       fillGap() --> makeAndAddView() --> obtainView() --> getView() è·å¾—æ–°çš„ view ä»¥å¡«å……æ»‘åŠ¨æ—¶äº§ç”Ÿçš„ gap
      7		     mBlockLayoutRequests = false;
      8	             invokeOnItemScrollListener();
      9	             awakenScrollBars();
 #+END_EXAMPLE
-           ×îÖØÒªµÄÒ»µãÊÇ: ÔÚ scroll Ê±, mBlockLayoutRequests »á±»ÖÃÎ»,ÒÔ½ûÖ¹ scroll Ê± requestLayout
+           æœ€é‡è¦çš„ä¸€ç‚¹æ˜¯: åœ¨ scroll æ—¶, mBlockLayoutRequests ä¼šè¢«ç½®ä½,ä»¥ç¦æ­¢ scroll æ—¶ requestLayout
 
-****** ÔÚ Preference ÖĞ³öÏÖ¸Ã BUG
-       Preference ×÷Îª ¾­¹ı°ü×°µÄ ListView ,Ïà¶ÔÀ´Ëµ±È½ÏÈİÒ×³öÏÖ¸Ã BUG:
+****** åœ¨ Preference ä¸­å‡ºç°è¯¥ BUG
+       Preference ä½œä¸º ç»è¿‡åŒ…è£…çš„ ListView ,ç›¸å¯¹æ¥è¯´æ¯”è¾ƒå®¹æ˜“å‡ºç°è¯¥ BUG:
        see also [[Preference]]
-       - Preference.onBindView() Êµ¼ÊÊÇ¾­¹ı°ü×°µÄ getView()
-       - Preference ×Ô´øµÄ setTitle(), setSummary() µÄĞ´·¨:
+       - Preference.onBindView() å®é™…æ˜¯ç»è¿‡åŒ…è£…çš„ getView()
+       - Preference è‡ªå¸¦çš„ setTitle(), setSummary() çš„å†™æ³•:
 
 #+BEGIN_EXAMPLE
      1		 Preference.setTitle(title):
@@ -2841,7 +2841,7 @@ AMS calls:
      4		     notifyChanged();
 #+END_EXAMPLE
 
-     Èç¹ûµ÷ÓÃÕßÔÚ onBinderView ÖĞµ÷ÓÃÁË setXXX() ·½·¨, Ôò»á³öÏÖ¸Ã BUG.
+     å¦‚æœè°ƒç”¨è€…åœ¨ onBinderView ä¸­è°ƒç”¨äº† setXXX() æ–¹æ³•, åˆ™ä¼šå‡ºç°è¯¥ BUG.
 
 *** TODO view overlay
 *** GestureOverlayView
@@ -2952,15 +2952,15 @@ AMS calls:
                return mMotionTarget.dispatchTouchEvent(ev);
 #+END_EXAMPLE
      To summarize:
-     1. TouchEvent dispatching µÄ¹ı³ÌºÍ KeyEvent *Ïà·´*:
-	- KeyEvent: ÏÈµ÷ÓÃ ViewGroup.superDispatchKeyEvent(), ÈôÃ»´¦Àí,ÔÙµ÷ÓÃ mFocused.dispatchKeyEvent()
-	- TouchEvent: ÏÈµ÷ÓÃ child.dispatchTouchEvent(),ÈôÃ»´¦Àí, ÔÙµ÷ÓÃ super.dispatchTouchEvent()
+     1. TouchEvent dispatching çš„è¿‡ç¨‹å’Œ KeyEvent *ç›¸å*:
+	- KeyEvent: å…ˆè°ƒç”¨ ViewGroup.superDispatchKeyEvent(), è‹¥æ²¡å¤„ç†,å†è°ƒç”¨ mFocused.dispatchKeyEvent()
+	- TouchEvent: å…ˆè°ƒç”¨ child.dispatchTouchEvent(),è‹¥æ²¡å¤„ç†, å†è°ƒç”¨ super.dispatchTouchEvent()
      2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
      3. onInterceptTouchEvent and mMotionTarget
 ***** DONE ListView TouchEvent dispatch
       SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
       - State "DONE"       [2011-02-16 Wed 15:04]
-      ListView Ê×ÏÈÊÇÒ»¸ö ViewGroup, ËüÊ¹ÓÃÁË
+      ListView é¦–å…ˆæ˜¯ä¸€ä¸ª ViewGroup, å®ƒä½¿ç”¨äº†
 #+BEGIN_EXAMPLE
 	 ViewGroup.dispatchTouchEvent()
 	   ask_child_to_handle_it()
@@ -3076,9 +3076,9 @@ AMS calls:
 
 ***** TODO [#B] invalidate
 **** view padding and margin
-     padding = ÄÚ±ß¾à
-     margin =  Íâ±ß¾à
-     ÄÚ,ÍâÊÇÏà¶ÔÓÚÈİÆ÷(ºĞ×Ó)µÄ±ß½ç¶øÑÔ, ÒÔButtonÎªÀı,Button¿ÉÒÔ¿´×÷Ò»¸öºĞ×Ó,ÉèÖÃbutton.padding»áÓ°ÏìButtonÀïµÄÎÄ×Ö»òÍ¼Æ¬ÓëButton±ß½çµÄ¾àÀë,ÀıÈç:
+     padding = å†…è¾¹è·
+     margin =  å¤–è¾¹è·
+     å†…,å¤–æ˜¯ç›¸å¯¹äºå®¹å™¨(ç›’å­)çš„è¾¹ç•Œè€Œè¨€, ä»¥Buttonä¸ºä¾‹,Buttonå¯ä»¥çœ‹ä½œä¸€ä¸ªç›’å­,è®¾ç½®button.paddingä¼šå½±å“Buttoné‡Œçš„æ–‡å­—æˆ–å›¾ç‰‡ä¸Buttonè¾¹ç•Œçš„è·ç¦»,ä¾‹å¦‚:
 
      Button
 #+BEGIN_EXAMPLE
@@ -3087,7 +3087,7 @@ AMS calls:
        -+---------------+
 #+END_EXAMPLE
 
-     ¶øbutton.margin»áÓ°ÏìbuttonÓëÆä¸üÍâ²ãºĞ×Ó(Èçlayout)µÄ±ß½ç
+     è€Œbutton.marginä¼šå½±å“buttonä¸å…¶æ›´å¤–å±‚ç›’å­(å¦‚layout)çš„è¾¹ç•Œ
 
      LinearLayout
 #+BEGIN_EXAMPLE
@@ -3099,8 +3099,8 @@ AMS calls:
        -+-------------------+
 #+END_EXAMPLE
 
-   ĞèÒª×¢ÒâµÄÒ»µãÊÇ,androidÖĞviewÊÇÃ»ÓĞmarginÊôĞÔµÄ,Ö»ÓĞ ViewGroup ²ÅÓĞmarginÊôĞÔ, ËùÒÔ,Èç¹ûÏë´ïµ½ÉÏÍ¼µÄĞ§¹û,²»¿ÉÄÜÖ±½ÓÉèÖÃbuttonµÄmargin,¶øÊÇĞèÔÚ½«button
-   ·ÅÔÚÒ»¸ö ViewGroup ÖĞ,È»ºóÉèÖÃ¸Ã ViewGroup µÄmargin.
+   éœ€è¦æ³¨æ„çš„ä¸€ç‚¹æ˜¯,androidä¸­viewæ˜¯æ²¡æœ‰marginå±æ€§çš„,åªæœ‰ ViewGroup æ‰æœ‰marginå±æ€§, æ‰€ä»¥,å¦‚æœæƒ³è¾¾åˆ°ä¸Šå›¾çš„æ•ˆæœ,ä¸å¯èƒ½ç›´æ¥è®¾ç½®buttonçš„margin,è€Œæ˜¯éœ€åœ¨å°†button
+   æ”¾åœ¨ä¸€ä¸ª ViewGroup ä¸­,ç„¶åè®¾ç½®è¯¥ ViewGroup çš„margin.
 
 **** DecorView
 **** findViewById
@@ -3128,38 +3128,38 @@ AMS calls:
      when viewRoot is constructed, it will create IWindow, and register the AIDL interface to WMS,  WMS will save the IWindow as 'mClient' in WindowState arrays, through which WMS can communite with ViewRoot for event dispatching.
      IWindow.dispatch() will call viewRoot.dispatch() directly.
 *** ViewRoot, View (DecorView) and Window
-    - ÓëWMSÖ±½Ó´ò½»µÀµÄÊÇViewRoot,WMSÄÜÖ±½Ó¿´µ½µÄÖ»ÓĞViewRoot (Í¨¹ıViewRoot×¢²áµ½WMSµÄIWindow mClient)
+    - ä¸WMSç›´æ¥æ‰“äº¤é“çš„æ˜¯ViewRoot,WMSèƒ½ç›´æ¥çœ‹åˆ°çš„åªæœ‰ViewRoot (é€šè¿‡ViewRootæ³¨å†Œåˆ°WMSçš„IWindow mClient)
 
-    - ViewRootÖ±½Ó¹ÜÀíÆä¶¥²ãView (¶ÔÓÚActity,Dialog, ¼´DecorView. ¶ÔÓÚ
+    - ViewRootç›´æ¥ç®¡ç†å…¶é¡¶å±‚View (å¯¹äºActity,Dialog, å³DecorView. å¯¹äº
 
-      PopupWindow¼°ÊÖ¶¯Í¨¹ıWindowManagerImpl.addViewÌí¼ÓµÄview, Æä¶¥²ãviewÖ»ÊÇÆÕ
-      Í¨µÄview), ËùÒÔÒ»¸ö½ø³Ì¿ÉÒÔÓĞ¶à¸öViewRoot
+      PopupWindowåŠæ‰‹åŠ¨é€šè¿‡WindowManagerImpl.addViewæ·»åŠ çš„view, å…¶é¡¶å±‚viewåªæ˜¯æ™®
+      é€šçš„view), æ‰€ä»¥ä¸€ä¸ªè¿›ç¨‹å¯ä»¥æœ‰å¤šä¸ªViewRoot
 
-    - WindowÊÇºÍDecorViewÒ»Ò»¶ÔÓ¦µÄ. 
+    - Windowæ˜¯å’ŒDecorViewä¸€ä¸€å¯¹åº”çš„. 
 
-      ÒòÎªActivity, DialogÏî²ãviewÊÇDecorView, ËùÒÔÓĞwindowµÄ¸ÅÄî, ¿ÉÒÔÍ¨
-      ¹ıWindowÀ´¿ØÖÆContextMenu, µ÷ÓÃWindow.CallbackµÈ;
+      å› ä¸ºActivity, Dialogé¡¹å±‚viewæ˜¯DecorView, æ‰€ä»¥æœ‰windowçš„æ¦‚å¿µ, å¯ä»¥é€š
+      è¿‡Windowæ¥æ§åˆ¶ContextMenu, è°ƒç”¨Window.Callbackç­‰;
 
-    - WindowÓëActivity,Dialog¶ÔÓ¦
+    - Windowä¸Activity,Dialogå¯¹åº”
     
-      Í¨¹ıWindow.Callback, ¿ÉÒÔºÍActivityºÍDialogÁªÏµÆğÀ´,ÒòÎªËüÃÇ¶¼Êµ¼ÊÁË
-      Window.Callback½Ó¿Ú.¶øPopupWindow¶¥²ãÖ»ÊÇÆÕÍ¨view,ËùÒÔÃ»ÓĞWindowµÄ¸ÅÄî
+      é€šè¿‡Window.Callback, å¯ä»¥å’ŒActivityå’ŒDialogè”ç³»èµ·æ¥,å› ä¸ºå®ƒä»¬éƒ½å®é™…äº†
+      Window.Callbackæ¥å£.è€ŒPopupWindowé¡¶å±‚åªæ˜¯æ™®é€šview,æ‰€ä»¥æ²¡æœ‰Windowçš„æ¦‚å¿µ
 
-      ×ÛÉÏ:
+      ç»¼ä¸Š:
       - WMS<-->ViewRoot
       - ViewRoot<-->DecorView
       - DecorView<-->Window<-->Activity,Dialog
 *** Window
-    ¶ÔÓÚViewRootÀ´Ëµ,¶¥²ãµÄ`Window`¾ÍÊÇÒ»¸öÆÕÍ¨µÄView, µ«ÓĞĞ©ºÍ`Window`ÓĞ¹ØµÄ²Ù
-    ×÷,Èç:
-    - ÈçºÎ´¦ÀíÒ»Ğ©Í¨ÓÃµÄ°´¼üÊÂ¼ş, ÈçVolume, ContextMenu,Camera,Call,Search...,
-    - ÈçºÎÔÚ¶¥²ãViewÖ®ÉÏÔÙÏÔÊ¾Ò»¸öContextMenu
-    - ´ÓWMSÀ´µÄÒ»Ğ©ÊÂ¼şÈçºÎÍ¨Öª¸øActivity,Dialog, ÀıÈçonBackPressed()
-    ÒòÎª, Ìá¹©ÁËÒ»¸öWindowÀà, ÓÃÀ´´¦ÀíÕâĞ©ºÍ`Window`ÓĞ¹ØµÄ²Ù×÷, µ«´ÓWMS¼°
-    ViewRootµÄ½Ç¶È¿´,²¢Ã»ÓĞ`Window`µÄ¸ÅÄî. 
+    å¯¹äºViewRootæ¥è¯´,é¡¶å±‚çš„`Window`å°±æ˜¯ä¸€ä¸ªæ™®é€šçš„View, ä½†æœ‰äº›å’Œ`Window`æœ‰å…³çš„æ“
+    ä½œ,å¦‚:
+    - å¦‚ä½•å¤„ç†ä¸€äº›é€šç”¨çš„æŒ‰é”®äº‹ä»¶, å¦‚Volume, ContextMenu,Camera,Call,Search...,
+    - å¦‚ä½•åœ¨é¡¶å±‚Viewä¹‹ä¸Šå†æ˜¾ç¤ºä¸€ä¸ªContextMenu
+    - ä»WMSæ¥çš„ä¸€äº›äº‹ä»¶å¦‚ä½•é€šçŸ¥ç»™Activity,Dialog, ä¾‹å¦‚onBackPressed()
+    å› ä¸º, æä¾›äº†ä¸€ä¸ªWindowç±», ç”¨æ¥å¤„ç†è¿™äº›å’Œ`Window`æœ‰å…³çš„æ“ä½œ, ä½†ä»WMSåŠ
+    ViewRootçš„è§’åº¦çœ‹,å¹¶æ²¡æœ‰`Window`çš„æ¦‚å¿µ. 
 
-    Ö»ÓĞDecorViewÄÜºÍWindow¹ØÁª,À´´¦Àí`Window`Ïà¹Ø²Ù×÷ (ÒòÎªDecorViewÊÇWindowµÄ
-    inner class), ËùÒÔÖ»ÓĞActivity,DialogÓĞwindowµÄ¸ÅÄî
+    åªæœ‰DecorViewèƒ½å’ŒWindowå…³è”,æ¥å¤„ç†`Window`ç›¸å…³æ“ä½œ (å› ä¸ºDecorViewæ˜¯Windowçš„
+    inner class), æ‰€ä»¥åªæœ‰Activity,Dialogæœ‰windowçš„æ¦‚å¿µ
 **** PhoneWindow
 *** WindowManagerImpl
 *** WindowManagerService
@@ -3205,16 +3205,16 @@ AMS calls:
     see also [[System init]]
 ** Debug related
 *** hprof & MAT
-    - ÔÚ´úÂëÖĞÉú³É
+    - åœ¨ä»£ç ä¸­ç”Ÿæˆ
       Debug.dumpHprofData()
-    - Ê¹ÓÃĞÅºÅon-demandÉú³É
+    - ä½¿ç”¨ä¿¡å·on-demandç”Ÿæˆ
 #+BEGIN_EXAMPLE
     $ chmod 777 /data/misc -R
-    $ ps # ÕÒµ½½ø³ÌºÅ
-    $ kill -10 ½ø³ÌºÅ # ·¢ËÍSIGQUITĞÅÊÂĞÅºÅ¸ø¸Ã½ø³Ì£¬´ËÊ±Éú³ÉhprofĞÅÏ¢
+    $ ps # æ‰¾åˆ°è¿›ç¨‹å·
+    $ kill -10 è¿›ç¨‹å· # å‘é€SIGQUITä¿¡äº‹ä¿¡å·ç»™è¯¥è¿›ç¨‹ï¼Œæ­¤æ—¶ç”Ÿæˆhprofä¿¡æ¯
     $ ls /data/misc/*.hprof 
 #+END_EXAMPLE
-    - ÎªÁËÄÜÈÃMATÊ¶±ğandroidµÄhprof¸ñÊ½,ĞèÒªÓÃhprof-conv×ª»»Ò»ÏÂ
+    - ä¸ºäº†èƒ½è®©MATè¯†åˆ«androidçš„hprofæ ¼å¼,éœ€è¦ç”¨hprof-convè½¬æ¢ä¸€ä¸‹
 *** traceview
 **** dmtracedump
      dmtracedump -g out.png -t 30% test.trace
