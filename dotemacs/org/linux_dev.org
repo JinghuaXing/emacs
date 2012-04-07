@@ -1,6 +1,6 @@
 * Linux Dev
 #+CATEGORY:Linux dev
-** TODO [#C] IBM ICU and HanziToPinyin in android
+** [#C] IBM ICU and HanziToPinyin in android
 ** DONE [#C] UTC,GMT,Wall Time and so on
    SCHEDULED: <2011-01-21 Fri> CLOSED: [2011-01-24 Mon 10:20]
    - State "DONE"       [2011-01-24 Mon 10:20]
@@ -18,11 +18,11 @@
    (gdb) p open("/tmp/xxx",1,0755)
    (gdb) q
 #+END_EXAMPLE
-** TODO setuid() & SETUID flag
+** setuid() & SETUID flag
 ** DONE uuid
    SCHEDULED: <2011-05-31 Tue> CLOSED: [2011-07-01 Fri 13:44]
    - State "DONE"       from "DOING"      [2011-07-01 Fri 13:44]
-** TODO 同步,互斥,信号量
+** 同步,互斥,信号量
 ** pthread_mutex_lock 开销
 ** 关于ctors,init...
    main.cpp:

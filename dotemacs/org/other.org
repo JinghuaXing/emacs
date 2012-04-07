@@ -79,9 +79,9 @@
 ** zip
 * Algorithm
 #+CATEGORY:Algorithm
-** TODO [#C] 并查集(union find set)
-** TODO [#C] 红黑树(rb tree)
-** TODO [#C] 迪卡尔树 (Cartesian tree)
+** [#C] 并查集(union find set)
+** [#C] 红黑树(rb tree)
+** [#C] 迪卡尔树 (Cartesian tree)
 ** 素数的判定
    费马说: 全部素数可分为4n+1和4n+3两种形式 (反之不成立)
 ** ip checksum
@@ -488,11 +488,11 @@ main(int argc, char *argv[]) {
 ** OMA
 ** SYNCML
 ** TCP
-*** TODO [#B] TCP 超时与长连接
+*** [#B] TCP 超时与长连接
 *** socket OOB (Out of Band) and TCP urgent flag
 *** 慢启动
 ** HTTP
-*** TODO [#B] Percent Encoding (UrlEncode)
+*** [#B] Percent Encoding (UrlEncode)
     - Note taken on [2011-02-14 Mon 15:28] \\
       refer to `Percent Encoding @ Wikipedia` for details
 *** DONE HTTP Cookie

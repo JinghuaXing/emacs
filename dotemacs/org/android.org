@@ -280,7 +280,7 @@ This is called in 2 scen:
 **** NativeActivity
 **** Activity Result
 
-**** TODO [#A] Launcher
+**** PENDING Launcher
      see also [[Launcher & Task]]
 **** Task
 ***** why relaunch an activity A from launcher will bring the task to foreground
@@ -1417,7 +1417,7 @@ This is called in 2 scen:
 	 deliverNewIntent will occurs in two cases:
 	 1. SINGLE\_TOP, w/ or w/o NEW\_TASK
 	 2. REORDER\_TO\_FRONT
-***** TODO Launcher & Task
+***** Launcher & Task
 ***** resetTaskIfNeededLocked
       FLAG\_ACTIVITY\_NEW\_TAKS && FLAG\_ACTIVITY\_RESET\_TASK\_IF\_NEEDED will trigger resetTaskIfNeededLocked
 
@@ -1718,7 +1718,8 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
    5. Intent.FLAG_RECEIVER_REGISTERED_ONLY
 **** BroadcastRecord
 **** Sticky
-*** TODO [#A] ContentProvider
+*** DOING [#A] ContentProvider                           :android:provider:
+SCHEDULED: <2012-04-09 周一>
 *** ProcessRecord
 **** processName
 *** DONE AppDeathRecipient
@@ -1817,6 +1818,9 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
    If the service is crashing for the 1st time, doesn't bring it down (service.onDestroy will not be called, although the service will be killed due to the
    process will be killed later), and schedule the restart of the service after the process is killed later.
 ** Alarm
+** Android coredump
+** Android IMF
+
 ** DONE [#A] Android Testing
    SCHEDULED: <2011-03-14 Mon>
    - State "DONE"       [2011-03-13 Sun 18:01]
@@ -1918,7 +1922,7 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
     SCHEDULED: <2011-02-15 Tue> CLOSED: [2011-02-15 Tue 19:41]
     - State "DONE"       [2011-02-15 Tue 19:41]
     see SendBroadcast
-*** TODO [#B] KeyEvent ANR					   :keyevent:
+*** [#B] KeyEvent ANR                                            :keyevent:
     key event is dispatched by AMS one by one, that is ,until prev key event is
     dispatched, AMS will wait to dispatching next key event, until ANR occurs.
 
@@ -1963,7 +1967,7 @@ AMS calls:
     2. when the persistent application is killed (crash, killPid ...), AMS will always restart it.
     3. persistent application will be launched during system boot, before the BOOT_COMPLETED is broadcasted
 ** AppWidget
-** TODO ASEC
+** ASEC
    :PROPERTIES:
    :CUSTOM_ID: @ASEC
    :END:
@@ -2028,14 +2032,12 @@ AMS calls:
 *** To summurize:
     PreferenceScreen vs. ListAdapter
     Preference vs. ListItem
-** PowerManagment
-*** WakeLock
 ** ClassLoader
 *** DexClassLoader
 *** PathClassLoader
 *** Context.getClassLoader
     see also [[Context.getClassLoader]]
-** TODO [#B] ContentObserver
+** ContentObserver
 
 ** ContentProvider , ContentResover & SQLite
 *** ContentProvider.openFile() & ContentProvider.openInputStream()
@@ -2147,9 +2149,29 @@ AMS calls:
     :CUSTOM_ID: @dalvik-cache
     :END:
     /data/dalvik-cache
-*** TODO [#A] dex & apk file format
-**** DexInv & DexOpt
 ** dbus
+** Debug related
+*** hprof & MAT
+    - 在代码中生成
+      Debug.dumpHprofData()
+    - 使用信号on-demand生成
+#+BEGIN_EXAMPLE
+    $ chmod 777 /data/misc -R
+    $ ps # 找到进程号
+    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
+    $ ls /data/misc/*.hprof 
+#+END_EXAMPLE
+    - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
+*** traceview
+**** dmtracedump
+     dmtracedump -g out.png -t 30% test.trace
+*** hierachyviewer
+*** Thread.dumpStack()
+*** logcat
+*** adb am start
+*** monkey
+*** tombstone
+
 ** DONE [#C] FileObserver
    SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 14:55]
    - State "DONE"       [2011-02-10 Thu 14:55]
@@ -2183,7 +2205,7 @@ AMS calls:
     3. system/core/init
     4. system/core/include/private/android_filesystem_config.h
 ** init
-*** TODO init.rc
+*** init.rc
 *** DONE System init
     CLOSED: [2011-03-01 Tue 11:20]
     - State "DONE"       [2011-03-01 Tue 11:20]
@@ -2356,13 +2378,15 @@ AMS calls:
 ** LowMemoryKiller
 *** oom adj
 ** misc
+*** DOING [#B] Android eng-mode vs. user-mode
+SCHEDULED: <2012-04-10 周二>
 *** DONE [#A] bitmap recycle
     SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 11:46]
     - State "DONE"       [2011-02-10 Thu 11:46]
     Bitmap.recycle() will call nativeRecycle() to release native memory used by Skia. But, we don't need call it directly, since Bitmap.finalize()
     will call it.
-*** TODO [#B] android 尺寸单位 (px,pt,dp,sp..)
-** TODO [#B] MountService
+*** android 尺寸单位 (px,pt,dp,sp..)
+** MountService
    :PROPERTIES:
    :CUSTOM_ID: @MountService
    :END:
@@ -2378,7 +2402,7 @@ AMS calls:
 	       	       -+------binder-------+
 #+END_EXAMPLE
 
-** TODO NativeDaemonConnector
+** NativeDaemonConnector
    :PROPERTIES:
    :CUSTOM_ID: @NativeDaemonConnector
    :END:
@@ -2535,7 +2559,7 @@ AMS calls:
       Step 3 is essential: android use `device-mapper crypto` as the `encrypt file system` behind secure container, which can mount a encrypted image file
       to a mapped device (dm-0)
 **** SharedUserId
-**** TODO [#A] Signature & Certificate
+**** PENDING Signature & Certificate
      :PROPERTIES:
      :ID:       c5ca7d63-57fd-407a-8275-3266f925d386
      :END:
@@ -2676,11 +2700,9 @@ AMS calls:
    That is, if intents' action, data, type, class, and categories are the same.
    This does *not* compare any extra data included in the intents.
 
-** TODO [#A] Scroll
-*** Scroller
-*** GestureDetector
-*** VelocityTracker
-** TODO Service Manager
+** PowerManagment
+*** WakeLock
+** Service Manager
    see also [[binder]]
 ** SharedPreference
 ** DONE Strict Mode
@@ -2759,7 +2781,7 @@ AMS calls:
 *** AdapterView
 *** Layout
 **** LinearLayout
-**** TODO FrameLayout
+**** FrameLayout
 **** GridLayout
 **** CANCELED RelativeLayout
      - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
@@ -2843,15 +2865,14 @@ AMS calls:
 
      如果调用者在 onBinderView 中调用了 setXXX() 方法, 则会出现该 BUG.
 
-*** TODO view overlay
+*** view overlay
 *** GestureOverlayView
-*** TODO SurfaceView
+*** SurfaceView
 *** TabActivity
 *** TabHost
-*** TODO [#A] TextView
 *** ViewAnimator
 *** WebView
-**** TODO [#C] Cookie
+**** [#C] Cookie
      see [[@HTTP_Cookie]]
 ***** CookieManager
 ***** CookieSyncManager
@@ -2982,7 +3003,7 @@ AMS calls:
       SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
       - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
 *** View
-**** TODO [#A] View life cycle
+**** View life cycle
 ***** DONE requestLayout
       SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-26 Wed 17:22]
       - State "DONE"       [2011-01-26 Wed 17:22]
@@ -3074,7 +3095,7 @@ AMS calls:
 	- for horizontal LinearLayout:
 	  vice-versa
 
-***** TODO [#B] invalidate
+***** [#B] invalidate
 **** view padding and margin
      padding = 内边距
      margin =  外边距
@@ -3203,23 +3224,3 @@ AMS calls:
     CLOSED: [2011-06-30 Thu 16:42]
     - State "DONE"       from ""           [2011-06-30 Thu 16:42]
     see also [[System init]]
-** Debug related
-*** hprof & MAT
-    - 在代码中生成
-      Debug.dumpHprofData()
-    - 使用信号on-demand生成
-#+BEGIN_EXAMPLE
-    $ chmod 777 /data/misc -R
-    $ ps # 找到进程号
-    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
-    $ ls /data/misc/*.hprof 
-#+END_EXAMPLE
-    - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
-*** traceview
-**** dmtracedump
-     dmtracedump -g out.png -t 30% test.trace
-*** hierachyviewer
-*** Thread.dumpStack()
-*** logcat
-*** adb am start
-*** monkey

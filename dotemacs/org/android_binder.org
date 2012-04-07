@@ -683,7 +683,7 @@ seq graph:
 
 #+END_EXAMPLE
 
-**** TODO [#B] binder wait & todo
+**** [#B] binder wait & todo
 *** C++
 **** BpInterface
 12/9/2010

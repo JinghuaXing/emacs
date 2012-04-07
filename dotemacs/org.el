@@ -23,7 +23,7 @@
       '(("Todo" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/todo.org" "Tasks")
         ))
 (setq org-todo-keywords
-      '((sequence "TODO(t)" "DOING(g)" "|" "DONE(d)" )
+      '((sequence "PENDING(p)" "TODO(t)" "DOING(g)"  "|" "DONE(d)" )
 	))
 (setq org-use-fast-todo-selection t)
 (setq org-refile-use-outline-path t)
