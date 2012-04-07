@@ -6,7 +6,7 @@
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
 (setq org-log-done 'time)
-;;(global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
+(global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
 ;;(global-set-key (kbd "<f12>") 'org-agenda)
 (defalias 'agenda  'org-agenda)
 (require 'remember)

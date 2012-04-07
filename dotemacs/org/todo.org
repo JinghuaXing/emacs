@@ -41,17 +41,7 @@
 ** TODO bugzilla 4.0
    http://dev.spreadst.com/lion/
 ** TODO ImportVCardActivity use NIO?
-   
-   SCHEDULED: <2012-03-21 Wed>
 ** TODO activity orientation change?
-   
-   SCHEDULED: <2012-03-22 Thu>
 ** TODO sqlite single-thread model
-   
-   SCHEDULED: <2012-03-23 Fri>
-** TODO fast swith window in emacs?
-   
-   SCHEDULED: <2012-03-21 Wed>
 ** TODO browse java class hierachy in emacs?                         :emacs:
   
-  SCHEDULED: <2012-04-07 周六>
