@@ -79,6 +79,7 @@
  '(mo-git-blame-use-ido (quote always))
  '(newsticker-url-list-defaults nil)
  '(nxml-slash-auto-complete-flag t)
+ '(org-agenda-persistent-filter t)
  '(org-export-latex-emphasis-alist (quote (("*" "\\textbf{%s}" nil) ("/" "\\emph{%s}" nil) ("_" "\\underline{%s}" nil) ("+" "\\st{%s}" nil) ("=" "\\protectedtexttt" t) ("~" "\\verb" t))))
  '(org-startup-folded (quote showeverything))
  '(org-startup-indented t)

@@ -1,4 +1,4 @@
-a(require 'org-install)
+(require 'org-install)
 (require 'org-agenda)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;;(global-set-key (kbd "C-c o l") 'org-store-link)
