@@ -1,0 +1,8 @@
+* Borrow
+#+CATEGORY: BORROW
+** TODO huibin, 麦当劳和体检费
+  
+  SCHEDULED: <2012-04-13 周五>
+** TODO jun.li 物业费
+  
+  SCHEDULED: <2012-04-13 周五>

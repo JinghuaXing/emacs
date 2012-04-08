@@ -1,35 +1,37 @@
 (require 'org-install)
 (require 'org-agenda)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-;;(global-set-key (kbd "C-c o l") 'org-store-link)
-(global-set-key (kbd "C-c o a") 'org-agenda)
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
 (setq org-log-done 'time)
 (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
-;;(global-set-key (kbd "<f12>") 'org-agenda)
+
 (defalias 'agenda  'org-agenda)
 (require 'remember)
 (org-remember-insinuate)
 (defalias 'todo 'org-remember)
-(global-set-key (kbd "C-c o r") 'org-remember)
+
 (setq org-directory "~/.elisp/dotemacs/org/")
-;;(define-key global-map "\C-cor" 'org-remember)
-(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/")))
-;; (setq org-remember-templates
-;;       '(("Todo" ?t "* TODO %^{Title}\n  %?\n  SCHEDULED: %^t" "~/.elisp/dotemacs/org/todo.org" "Tasks")
-;;         ))
+
+(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd")))
+
 (setq org-remember-templates
-      '(("Todo" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/todo.org" "Tasks")
+      '(("Task" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/task.org" "Tasks")
+	("Coding" ?c "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/coding.org" "Coding")
+	("Borrow" ?b "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/borrow.org" "Borrow")
+	("Reading" ?r "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/reading.org" "Reading")
+	("Enjoy" ?e "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/enjoy.org" "Enjoy")
+	("Diary" ?d "* DONE %?\n  \n  %t" "~/.elisp/dotemacs/org/gtd/diary.org" "Diary")
         ))
+
 (setq org-todo-keywords
-      '((sequence "PENDING(p)" "TODO(t)" "DOING(g)"  "|" "DONE(d)" )
+      '((sequence "TODO(t)" "STARTED(s)" "WATING(w)"  "|" "DONE(d)" "CANCELLED(c)" "DEFERRED(f)" )
 	))
 (setq org-use-fast-todo-selection t)
 (setq org-refile-use-outline-path t)
 (setq org-refile-targets
       '((nil . (:maxlevel . 2))
-       ))
+	))
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-todo-ignore-scheduled t)
@@ -43,16 +45,16 @@
 
 (define-key org-agenda-mode-map (kbd "C-c C-c") 'org-agenda-set-tags)
 (setq org-agenda-sorting-strategy '((agenda time-up priority-down category-keep)
- (todo todo-state-down priority-down category-keep)
- (tags priority-down category-keep)
- (search category-keep)))
+				    (todo todo-state-down priority-down category-keep)
+				    (tags priority-down category-keep)
+				    (search category-keep)))
 (require 'org-latex)
 (setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")
 (setq org-src-fontify-natively t)
 
 (setq org-latex-to-pdf-process 
-  '("xelatex -interaction nonstopmode %f"
-     "xelatex -interaction nonstopmode %f"))
+      '("xelatex -interaction nonstopmode %f"
+	"xelatex -interaction nonstopmode %f"))
 
 
 (add-to-list 'org-export-latex-default-packages-alist
@@ -67,5 +69,5 @@
 (setq org-completion-use-ido t)
 
 (add-hook 'org-agenda-mode-hook
-   (lambda ()
-     (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))
+	  (lambda ()
+	    (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))

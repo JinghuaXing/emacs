@@ -1417,7 +1417,7 @@ This is called in 2 scen:
 	 deliverNewIntent will occurs in two cases:
 	 1. SINGLE\_TOP, w/ or w/o NEW\_TASK
 	 2. REORDER\_TO\_FRONT
-***** Launcher & Task
+***** Launcher & Task 
 ***** resetTaskIfNeededLocked
       FLAG\_ACTIVITY\_NEW\_TAKS && FLAG\_ACTIVITY\_RESET\_TASK\_IF\_NEEDED will trigger resetTaskIfNeededLocked
 

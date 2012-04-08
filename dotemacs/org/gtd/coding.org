@@ -1,0 +1,7 @@
+* Coding
+#+CATEGORY:CODING
+** TODO [#A] ImportVCardActivity use NIO?
+SCHEDULED: <2012-04-09 周一>
+** TODO [#B] sqlite single-thread model
+** TODO [#B] browse java class hierachy in emacs?
+SCHEDULED: <2012-04-11 周三>

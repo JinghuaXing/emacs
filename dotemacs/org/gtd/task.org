@@ -1,0 +1,7 @@
+* Task
+#+CATEGORY:TASK
+** TODO activity orientation change?
+** TODO GTD with emacs and org-mode
+http://www.yifeiyang.net/emacs/use-emacs-org-mode.html
+http://yangbin.tk/2011/11/28/%E7%94%A8emacs%E5%81%9A%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86-2/
+SCHEDULED: <2012-04-10 ÖÜ¶þ>

@@ -2,8 +2,11 @@
 #+CATEGORY:Task
 ** DONE Unicode Normalize
 CLOSED: [2012-04-08 周日 01:21]
-** DOING [#A] ImportVCardActivity use NIO?                             :nio:
+** TODO [#A] ImportVCardActivity use NIO?                        :nio:
 ** TODO activity orientation change?
-** DOING [#B] sqlite single-thread model                            :sqlite:
-** DOING [#B] browse java class hierachy in emacs?                   :emacs:
-  
+** TODO [#B] sqlite single-thread model                       :sqlite:
+** TODO [#B] browse java class hierachy in emacs?              :emacs:
+** TODO GTD with emacs and org-mode
+http://www.yifeiyang.net/emacs/use-emacs-org-mode.html
+http://yangbin.tk/2011/11/28/%E7%94%A8emacs%E5%81%9A%E6%97%B6%E9%97%B4%E7%AE%A1%E7%90%86-2/
+SCHEDULED: <2012-04-09 周一>
