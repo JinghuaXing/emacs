@@ -1718,8 +1718,6 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
    5. Intent.FLAG_RECEIVER_REGISTERED_ONLY
 **** BroadcastRecord
 **** Sticky
-*** DOING [#A] ContentProvider                           :android:provider:
-SCHEDULED: <2012-04-09 周一>
 *** ProcessRecord
 **** processName
 *** DONE AppDeathRecipient
@@ -2378,8 +2376,6 @@ AMS calls:
 ** LowMemoryKiller
 *** oom adj
 ** misc
-*** DOING [#B] Android eng-mode vs. user-mode
-SCHEDULED: <2012-04-10 周二>
 *** DONE [#A] bitmap recycle
     SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 11:46]
     - State "DONE"       [2011-02-10 Thu 11:46]

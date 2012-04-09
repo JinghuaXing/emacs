@@ -9,7 +9,9 @@
   (c-set-style "k&r")
   (c-subword-mode t)
   (dtrt-indent-mode t)
-  ;; (electric-pair-mode t)
+  (if (boundp electric-pair-mode)
+      (electric-pair-mode t)
+    )
   (setq c-subword-mode t)
   (c-toggle-auto-state -1)
   (c-toggle-hungry-state t)
@@ -101,7 +103,7 @@
             (goto-char (point-min)) 
             (if (re-search-forward "abnormally" nil t) 
                 (message "compilation errors, press C-x ` to visit") 
-              (run-at-time 0.5 nil 'kill-buffer buf)
+              (run-at-time 0.5 nil 'delete-windows-on buf)
               (message "NO COMPILATION ERRORS!"))))))
 
 

@@ -780,6 +780,14 @@
 ** NIO
 *** Buffer
 **** ByteBuffer
+*** DONE [#A] ImportVCardActivity use NIO?
+CLOSED: [2012-04-09 Mon 15:03] SCHEDULED: <2012-04-09 周一>
+CLOCK: [2012-04-09 Mon 14:58]--[2012-04-09 Mon 15:03] =>  0:05
+NIO, especially ByteBuffer.allocateDirect(), will improve performance in two
+aspects:
+1. allocateDirect use mmap to allocate buffer memory, thus bypass one
+   kernel-user copy
+2. mmapped memory won't trigger GC
 ** Optimization
 ** Java Collection Framework
 *** DONE Immutable Collection
