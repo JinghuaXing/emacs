@@ -231,8 +231,8 @@
 (global-set-key ";" 'eim-insert-ascii)
 
 ;; (cua-mode t)
-(require 'undo-tree)
-(global-undo-tree-mode)
+;; (require 'undo-tree)
+;; (global-undo-tree-mode)
 
 (require 'org2blog-autoloads)
 (setq org2blog/wp-blog-alist
