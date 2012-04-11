@@ -377,5 +377,3 @@ directory, select directory. Lastly the file is opened."
 
 (require 'tracker-dired)
 (global-set-key (kbd "C-x C-t") 'tracker-dired)
-
-(require 'autopair)
