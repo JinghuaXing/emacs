@@ -3,8 +3,8 @@
 ** TODO [#B] sqlite single-thread model
 ** TODO [#B] browse java class hierachy in emacs?
 SCHEDULED: <2012-04-11 周三>
-** TODO DOING [#A] ContentProvider                        :android:provider:
-SCHEDULED: <2012-04-11 Wed>
+** STARTED DOING [#A] ContentProvider                     :android:provider:
+SCHEDULED: <2012-04-11 周三>
 ** TODO DOING [#B] Android eng-mode vs. user-mode
 SCHEDULED: <2012-04-11 Wed>
 ** TODO write git tips
