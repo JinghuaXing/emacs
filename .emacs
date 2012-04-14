@@ -377,3 +377,7 @@ directory, select directory. Lastly the file is opened."
 
 (require 'tracker-dired)
 (global-set-key (kbd "C-x C-t") 'tracker-dired)
+
+(require 'auto-highlight-symbol)
+(global-auto-highlight-symbol-mode t)
+(setq ahs-default-range (quote ahs-range-beginning-of-defun))

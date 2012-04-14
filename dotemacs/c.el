@@ -3,7 +3,7 @@
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
-  (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
+;;  (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
   (c-set-style "k&r")
   (c-subword-mode t)
   (dtrt-indent-mode t)
@@ -41,7 +41,6 @@
   (local-set-key "\"" 'skeleton-pair-insert-maybe)
   (local-set-key "'" 'skeleton-pair-insert-maybe)
 
-  (outline-minor-mode t)
   ;; override hs key definition
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
@@ -151,30 +150,7 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 ;;(add-hook 'find-file-hook 'hs-hide-initial-comment-block)
 
-;;(require 'hideshow)
-;;(define-key hs-minor-mode-map (kbd "C-o C-o") 'hs-toggle-hiding)
-;;(define-key hs-minor-mode-map (kbd "C-o C-s") 'hs-show-all)
-;;(define-key hs-minor-mode-map (kbd "C-o C-h") 'hs-hide-level)
 
-(defun show-onelevel ()
-  "show entry and children in outline mode"
-  (interactive)
-  (show-entry)
-  (show-children))
-(require 'outline)    
-(defun cjm-outline-bindings ()
-  "sets shortcut bindings for outline minor mode"
-  (interactive)
-  (local-set-key [C-up] 'outline-previous-visible-heading)
-  (local-set-key [C-down] 'outline-next-visible-heading)
-  (local-set-key [C-left] 'hide-subtree)
-  (local-set-key [C-right] 'show-onelevel)
-  (local-set-key [M-up] 'outline-backward-same-level)
-  (local-set-key [M-down] 'outline-forward-same-level)
-  (local-set-key [M-left] 'hide-subtree)
-  (local-set-key [M-right] 'show-subtree))
 
-(add-hook 'outline-minor-mode-hook
-	  'cjm-outline-bindings)
 
 
