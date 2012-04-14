@@ -527,6 +527,7 @@ This variable can be set in three different types.
           (define-key map (kbd "M--"         ) 'ahs-back-to-start       )
           (define-key map (kbd "C-x C-'"     ) 'ahs-change-range        )
           (define-key map (kbd "C-x C-a"     ) 'ahs-edit-mode           )
+          (define-key map (kbd "M-w"    ) 'ahs-copy-hl)
           map)))
 
 (defmacro ahs-onekey-edit (keys plugin-name &optional keep keymap)
@@ -919,7 +920,18 @@ You can do these operations at One Key!
       (when hl
         (ahs-highlight (nth 0 hl)
                        (nth 1 hl)
-                       (nth 2 hl))))))
+                       (nth 2 hl))
+        (setq ahs-begin (nth 1 hl))
+        (setq ahs-end (nth 2 hl))
+        ))))
+
+(defun ahs-copy-hl ()
+  (interactive)
+  (if (region-active-p)
+      (call-interactively 'kill-ring-save)
+    (copy-region-as-kill ahs-begin ahs-end)
+      )
+  )
 
 (defmacro ahs-add-overlay-face (pos face)
   `(if ahs-face-check-include-overlay
@@ -939,6 +951,7 @@ You can do these operations at One Key!
                    (buffer-substring beg end))))
     (when (and symbol
                (not (ahs-dropdown-list-p))
+               (not (region-active-p))
                (not (ahs-face-p (ahs-add-overlay-face beg face) 'ahs-inhibit-face-list))
                (not (ahs-symbol-p ahs-exclude symbol t))
                (ahs-symbol-p ahs-include symbol))
