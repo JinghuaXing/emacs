@@ -1,0 +1,6 @@
+* Project
+#+CATEGORY: Project
+** TODO add support for import/export any account                  :project:
+  
+** TODO add support to default photo in contact provider           :project:
+  

@@ -21,6 +21,7 @@
 	("Borrow" ?b "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/borrow.org" "Borrow")
 	("Reading" ?r "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/reading.org" "Reading")
 	("Enjoy" ?e "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/enjoy.org" "Enjoy")
+	("Project" ?p "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/project.org" "Project")
 	("Diary" ?d "* DONE %?\n  \n  %t" "~/.elisp/dotemacs/org/gtd/diary.org" "Diary")
         ))
 

@@ -1,13 +1,11 @@
 * Coding
 #+CATEGORY:CODING
-** TODO [#B] sqlite single-thread model
-** STARTED DOING [#A] ContentProvider                     :android:provider:
-SCHEDULED: <2012-04-11 周三>
-** TODO DOING [#B] Android eng-mode vs. user-mode
-SCHEDULED: <2012-04-11 Wed>
+** TODO [#B] sqlite single-thread model                             :coding:
+** WATING DOING [#A] ContentProvider                                :coding:
+** WATING DOING [#B] Android eng-mode vs. user-mode                 :coding:
 ** TODO write git tips
   
-  SCHEDULED: <2012-04-13 Fri>
-** TODO try cedet for java class browsing
+  SCHEDULED: <2012-04-16 Mon>
+** TODO emacs dired encoding                                         :emacs:
   
-  SCHEDULED: <2012-04-12 周四>
+  SCHEDULED: <2012-04-13 Fri>
