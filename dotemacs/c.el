@@ -30,16 +30,6 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
-  (setq skeleton-pair t)
-  (setq skeleton-pair-filter-function
-      '(lambda ()
-	 (nth 8 (syntax-ppss (point)))
-	 ))
-  (local-set-key "(" 'skeleton-pair-insert-maybe)
-  (local-set-key "[" 'skeleton-pair-insert-maybe)
-  (local-set-key "{" 'skeleton-pair-insert-maybe)
-  (local-set-key "\"" 'skeleton-pair-insert-maybe)
-  (local-set-key "'" 'skeleton-pair-insert-maybe)
 
   ;; override hs key definition
   (setq c-hanging-braces-alist

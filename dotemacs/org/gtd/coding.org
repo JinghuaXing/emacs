@@ -1,11 +1,14 @@
 * Coding
 #+CATEGORY:CODING
-** TODO [#B] sqlite single-thread model                             :coding:
+** WATING [#B] sqlite single-thread model                           :coding:
 ** WATING DOING [#A] ContentProvider                                :coding:
 ** WATING DOING [#B] Android eng-mode vs. user-mode                 :coding:
-** TODO write git tips
+** TODO write git tips                                              :coding:
   
-  SCHEDULED: <2012-04-16 Mon>
-** TODO emacs dired encoding                                         :emacs:
+** WATING emacs dired encoding                                       :emacs:
   
-  SCHEDULED: <2012-04-13 Fri>
+** TODO android SparseIntArray                                      :coding:
+  
+** TODO android search                                              :coding:
+  
+** TODO activity orientation change?

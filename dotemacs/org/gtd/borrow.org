@@ -1,8 +1,6 @@
 * Borrow
 #+CATEGORY: BORROW
-** TODO huibin, 麦当劳和体检费
+** TODO huibin, 麦当劳和体检费                                        :life:
   
-  SCHEDULED: <2012-04-16 Mon>
-** TODO jun.li 物业费
+** TODO jun.li 物业费                                                 :life:
   
-  SCHEDULED: <2012-04-16 Mon>

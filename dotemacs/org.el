@@ -13,7 +13,7 @@
 
 (setq org-directory "~/.elisp/dotemacs/org/")
 
-(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd" "~/.elisp/dotemacs/org/")))
+(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd")))
 
 (setq org-remember-templates
       '(("Task" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/task.org" "Tasks")
@@ -31,7 +31,7 @@
 (setq org-use-fast-todo-selection t)
 (setq org-refile-use-outline-path t)
 (setq org-refile-targets
-      '((nil . (:maxlevel . 2))
+      '((org-agenda-files . (:maxlevel . 1))
 	))
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
