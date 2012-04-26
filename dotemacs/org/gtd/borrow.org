@@ -4,3 +4,7 @@
   
 ** TODO jun.li 物业费                                                 :life:
   
+** TODO 天津餐费                                                      :life:
+  to jun: 140
+  to jing: 70
+  

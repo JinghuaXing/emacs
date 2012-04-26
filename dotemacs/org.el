@@ -17,12 +17,12 @@
 
 (setq org-remember-templates
       '(("Task" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/task.org" "Tasks")
-	("Coding" ?c "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/coding.org" "Coding")
-	("Borrow" ?b "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/borrow.org" "Borrow")
-	("Reading" ?r "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/reading.org" "Reading")
-	("Enjoy" ?e "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/enjoy.org" "Enjoy")
-	("Project" ?p "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/project.org" "Project")
-	("Diary" ?d "* DONE %?\n  \n  %t" "~/.elisp/dotemacs/org/gtd/diary.org" "Diary")
+	("Coding" ?c "* TODO %?        :coding:\n  \n  " "~/.elisp/dotemacs/org/gtd/coding.org" "Coding")
+	("Borrow" ?b "* TODO %?        :life:\n  \n  " "~/.elisp/dotemacs/org/gtd/borrow.org" "Borrow")
+	("Reading" ?r "* TODO %?       :reading:\n  \n  " "~/.elisp/dotemacs/org/gtd/reading.org" "Reading")
+	("Enjoy" ?e "* TODO %?\n  \n  " "~/.elisp/dotemacs/org/gtd/enjoy.org" "Enjoy")
+	("Project" ?p "* TODO %?        :project:\n  \n  " "~/.elisp/dotemacs/org/gtd/project.org" "Project")
+	("Diary" ?d "* DONE %?           :diary:\n  \n  %t" "~/.elisp/dotemacs/org/gtd/diary.org" "Diary")
         ))
 
 (setq org-todo-keywords
