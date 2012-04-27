@@ -356,5 +356,6 @@
 
 (define-abbrev-table 'global-abbrev-table '(
     ("filer" "filter" nil 0)
+    ("filed" "field" nil 0)
     )
   )

@@ -4,6 +4,5 @@
   
 ** TODO add support to default photo in contact provider           :project:
   
-** TODO contact directory                                          :project:
+** WATING contact directory                                        :project:
   
-  SCHEDULED: <2012-04-16 Mon>

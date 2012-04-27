@@ -65,7 +65,6 @@
 (setq inhibit-startup-message t)
 (setq column-number-mode t)
 (setq mouse-yank-at-point t)
-(if window-system (mouse-avoidance-mode 'animate))
 (setq default-fill-column 80)
 (setq default-major-mode 'text-mode)
 (show-paren-mode t)
@@ -381,5 +380,16 @@ directory, select directory. Lastly the file is opened."
 (require 'auto-highlight-symbol)
 (global-auto-highlight-symbol-mode t)
 (setq ahs-default-range (quote ahs-range-beginning-of-defun))
-
 (require 'popup-ruler)
+
+(require 'sdcv)
+(setq sdcv-dictionary-simple-list       ;星际译王屏幕取词词典, 简单, 快速
+      '("朗道英汉字典5.0"
+        "朗道汉英字典5.0"
+        ))
+(setq sdcv-dictionary-complete-list     ;星际译王的词典, 完全, 详细
+      '("朗道英汉字典5.0"
+        "朗道汉英字典5.0"
+        ))
+(global-set-key (kbd "<f11>") 'sdcv-search-input+)
+

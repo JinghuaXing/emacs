@@ -3,13 +3,15 @@
 ** WATING [#B] sqlite single-thread model                           :coding:
 ** WATING DOING [#A] ContentProvider                                :coding:
 ** WATING DOING [#B] Android eng-mode vs. user-mode                 :coding:
-** TODO write git tips                                              :coding:
+** STARTED write git tips                                           :coding:
+SCHEDULED: <2012-04-18 Wed>
   
 ** WATING emacs dired encoding                                       :emacs:
   
+
 ** DONE android SparseIntArray                                      :coding:
 CLOSED: [2012-04-27 周五 00:14]
-  
 ** TODO android search                                              :coding:
   
-** TODO activity orientation change?
+** WATING activity orientation change?                              :coding:
+** TODO c set offset for various syntactic                           :emacs:
