@@ -2166,6 +2166,7 @@ AMS calls:
 *** hierachyviewer
 *** Thread.dumpStack()
 *** logcat
+adb shell setprop log.tag.mytag verbose
 *** adb am start
 *** monkey
 *** tombstone

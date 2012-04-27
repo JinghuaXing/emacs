@@ -62,6 +62,16 @@
   	  scope-operator
   	  )
   	)
+  (local-set-key (kbd "C-M-\\") (lambda ()
+				  (interactive)
+				  (save-excursion
+				    (if (not (region-active-p)) 
+					(c-mark-function)
+				      )
+				    (call-interactively 'indent-region)
+				    )
+				  
+				  ))
   )
 
 (setq compilation-scroll-output t)

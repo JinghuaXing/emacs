@@ -61,3 +61,12 @@
 (defalias 'mt 'magit-status)
 ;;(global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
+(global-set-key (kbd "C-x C-x") '(lambda ()
+				   (interactive)
+				   (cond
+				    ((get-buffer "*Tracker*") (switch-to-buffer "*Tracker*")) 
+				    ((get-buffer "*Find*") (switch-to-buffer "*Find*"))
+				    (t nil)
+				    )
+				   )
+		)

@@ -2,9 +2,11 @@
 #+CATEGORY: BORROW
 ** TODO huibin, 麦当劳和体检费                                        :life:
   
-** TODO jun.li 物业费                                                 :life:
+** DONE jun.li 物业费                                                 :life:
+CLOSED: [2012-04-27 Fri 14:30]
   
-** TODO 天津餐费                                                      :life:
+** DONE 天津餐费                                                      :life:
+CLOSED: [2012-04-27 Fri 14:30]
   to jun: 140
   to jing: 70
   

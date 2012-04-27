@@ -381,7 +381,7 @@ directory, select directory. Lastly the file is opened."
 (global-auto-highlight-symbol-mode t)
 (setq ahs-default-range (quote ahs-range-beginning-of-defun))
 (require 'popup-ruler)
-
+(defalias 'ruler 'popup-ruler)
 (require 'sdcv)
 (setq sdcv-dictionary-simple-list       ;星际译王屏幕取词词典, 简单, 快速
       '("朗道英汉字典5.0"
