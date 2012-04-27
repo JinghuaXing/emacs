@@ -393,3 +393,4 @@ directory, select directory. Lastly the file is opened."
         ))
 (global-set-key (kbd "<f11>") 'sdcv-search-input+)
 
+(require 'idutils)

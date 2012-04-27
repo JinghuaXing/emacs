@@ -108,7 +108,7 @@
             (goto-char (point-min)) 
             (if (re-search-forward "abnormally" nil t) 
                 (message "compilation errors, press C-x ` to visit") 
-              (run-at-time 0.5 nil 'delete-windows-on buf)
+              ;; (run-at-time 0.5 nil 'delete-windows-on buf)
               (message "NO COMPILATION ERRORS!"))))))
 
 

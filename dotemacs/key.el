@@ -64,9 +64,11 @@
 (global-set-key (kbd "C-x C-x") '(lambda ()
 				   (interactive)
 				   (cond
-				    ((get-buffer "*Tracker*") (switch-to-buffer "*Tracker*")) 
+				    ((get-buffer "*gid*") (switch-to-buffer "*gid*")) 
 				    ((get-buffer "*Find*") (switch-to-buffer "*Find*"))
 				    (t nil)
 				    )
 				   )
 		)
+
+(global-set-key (kbd "C-x C-g") 'gid)
