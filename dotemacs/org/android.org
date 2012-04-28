@@ -1509,6 +1509,8 @@ This is called in 2 scen:
        activity must be taks's root activity
 ****** ALLOW_TASK_REPARENTING
 ****** ALWAYS_RETAIN_TASK_STATE
+***** moveTaskToBack
+***** isTaskRoot
 *** Service							    :service:
 **** startService
 #+BEGIN_EXAMPLE
