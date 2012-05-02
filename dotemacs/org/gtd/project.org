@@ -1,9 +1,15 @@
 * Project
 #+CATEGORY: Project
-** TODO add support for import/export any account                  :project:
+** TODO import/export any account                                   :project:
   
-** TODO add support to default photo in contact provider           :project:
+** TODO set default photo in contact provider                       :project:
   
 ** TODO contact directory                                          :project:
   
-  SCHEDULED: <2012-04-16 Mon>
+** TODO icc provider should throw exception                        :project:
+  For:
+   - air-plain mode & 禁卡
+   - sim full
+   - mal-format filed
+   - any other restriction
+
