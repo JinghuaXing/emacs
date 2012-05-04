@@ -1,0 +1,4 @@
+* config
+- use GIT_CURL_VERBOSE env to debug curl problem
+- http.proxy
+- http.postBuffer
