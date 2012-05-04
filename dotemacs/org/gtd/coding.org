@@ -16,4 +16,4 @@ CLOSED: [2012-04-27 周五 00:14]
 ** WATING activity orientation change?                              :coding:
 ** TODO c set offset for various syntactic                           :emacs:
 ** TODO AsyncQueryHandler && loader                                 :coding:
-** TODO 文学编程 与 org-babel                                       :coding:
+** STARTED 文学编程 与 org-babel                                    :coding:
