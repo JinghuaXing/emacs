@@ -400,6 +400,18 @@ occurence of CHAR."
   (insert "</pre>\n#+END_HTML")
   )
 
+(defun org-enclose-code (beg end code)
+   "Count Chinese and English words in marked region."
+  (interactive "r\nMCode: ")
+  (kill-region beg end)
+  (beginning-of-line)
+  (insert (concat "#+begin_src " code "\n") )
+  (yank)
+  (insert "\n")
+  (beginning-of-line)
+  (insert "#+end_src")
+  )
+
 (setq last_buffer nil)
 (defun toggle-eshell ()
   "toggle eshell."

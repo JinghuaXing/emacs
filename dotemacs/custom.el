@@ -83,7 +83,7 @@
  '(newsticker-url-list-defaults nil)
  '(nxml-slash-auto-complete-flag t)
  '(org-agenda-persistent-filter t)
- '(org-babel-load-languages (quote ((emacs-lisp . t) (ditaa . t) (ruby . t) (sh . t) (python . t) (octave . t) (gnuplot . t))))
+ '(org-babel-load-languages (quote ((emacs-lisp . t) (ditaa . t) (ruby . t) (sh . t) (python . t) (octave . t) (gnuplot . t) (C . t) (sqlite . t))))
  '(org-export-latex-emphasis-alist (quote (("*" "\\textbf{%s}" nil) ("/" "\\emph{%s}" nil) ("_" "\\underline{%s}" nil) ("+" "\\st{%s}" nil) ("=" "\\protectedtexttt" t) ("~" "\\verb" t))))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 2))))
  '(org-startup-folded (quote showeverything))
