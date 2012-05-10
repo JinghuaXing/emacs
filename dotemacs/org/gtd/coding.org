@@ -21,3 +21,4 @@ http://www.jstatsoft.org/v46/i03/paper
 ** STARTED one git command per day [0/2]                            :coding:
   - [ ] git-push
 
+** TODO android root原理
