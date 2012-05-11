@@ -1964,8 +1964,10 @@ AMS calls:
     - State "DONE"       from "DOING"      [2011-07-19 Tue 10:08]
     see also [[Android Process Crash and Restart]]
     1. An application is persistent only when it is [[system application]]; 3rd application will never be taken as persistent.
-    2. when the persistent application is killed (crash, killPid ...), AMS will always restart it.
-    3. persistent application will be launched during system boot, before the BOOT_COMPLETED is broadcasted
+    2. application with `manifest.xml/application/android:persistent=true' is
+       considered to be persistent.
+    3. when the persistent application is killed (crash, killPid ...), AMS will always restart it.
+    4. persistent application will be launched during system boot, before the BOOT_COMPLETED is broadcasted
 ** AppWidget
 ** ASEC
    :PROPERTIES:

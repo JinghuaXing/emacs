@@ -12,4 +12,5 @@
    - sim full
    - mal-format filed
    - any other restriction
+** TODO what if contact importing failed due to radio-off          :project:
 
