@@ -353,6 +353,23 @@
     )
   )
 
+(define-skeleton skeleton-java-mode-cursor
+  "cursor" "Boundary? "
+  >"try {\n"
+  >"if (cursor.moveToFirst()) {"\n
+  >"do {"\n _ \n
+  -4"} while (cursor.moveToNext());"\n
+  -4"}"\n
+  -4"} finally {"\n
+  >"cursor.close();"\n
+  -4"}"
+ )
+
+
+(define-abbrev-table 'java-mode-abbrev-table '(
+    ("csor" "" skeleton-java-mode-cursor 1)
+    )
+  )
 
 (define-abbrev-table 'global-abbrev-table '(
     ("filer" "filter" nil 0)

@@ -1,5 +1,6 @@
 (require 'org-install)
 (require 'org-agenda)
+(require 'org-export-generic)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)

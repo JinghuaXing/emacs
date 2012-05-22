@@ -1,5 +1,6 @@
 (add-to-list 'load-path "~/.elisp") 
 (add-to-list 'load-path "~/.elisp/org-7.8.03/lisp/")
+(add-to-list 'load-path "~/.elisp/org-7.8.03/contrib/lisp/")
 (add-to-list 'load-path "~/.elisp/emacs-w3m")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/org2blog")
@@ -378,7 +379,7 @@ directory, select directory. Lastly the file is opened."
 (global-set-key (kbd "C-x C-t") 'tracker-dired)
 
 (require 'auto-highlight-symbol)
-(global-auto-highlight-symbol-mode t)
+;;(global-auto-highlight-symbol-mode t)
 (setq ahs-default-range (quote ahs-range-beginning-of-defun))
 (require 'popup-ruler)
 (defalias 'ruler 'popup-ruler)
