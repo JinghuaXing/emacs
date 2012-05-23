@@ -397,3 +397,6 @@ directory, select directory. Lastly the file is opened."
 (require 'idutils)
 
 (require 'highlight-current-line)
+
+(load "~/.elisp/git-wip/git-wip.el")
+
