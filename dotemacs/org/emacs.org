@@ -1,6 +1,8 @@
 * Emacs
 ** align
-** c-macro-expand C-c C-e
+** auto-highlight-symbol-mode
+** c-macro-expand 
+C-c C-e
 ** check-parens
 ** Completion
 *** AutoComplelete & AutoJavaComplete
@@ -19,6 +21,7 @@
 ** eim
    可以在EMACS中使用的输入法
 ** eshell
+** file-cache
 ** fill
    - fill-column
      C-x f
@@ -43,15 +46,19 @@
 ** ido
 ** list-colors-display
 ** M-spc M-\
+** magit-mode
 ** occur
    M-s o
 ** org-mode
-   - org-edit-src-code C-c '
+*** org-babel
+- org-edit-src-code C-c '
 ** re-builder
 ** rectangle操作
    C-x r t,C-x r k,C-x r o
    C-x r x,C-x r i 剪贴板
 ** reverse-region,sort-lines,sort-columns
+** save-some-buffers
+C-x s
 ** scroll-all-mode
 ** toggle-truncate-lines
 ** undo-tree-mode

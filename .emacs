@@ -182,8 +182,8 @@
   (setq linum-format (propertize "%5d " 'face 'fringe)))
 (setq ediff-split-window-function 'split-window-horizontally)
 
-(require 'etags-select)
-(global-set-key "\M-." 'etags-select-find-tag)
+;; (require 'etags-select)
+;; (global-set-key "\M-." 'etags-select-find-tag)
 
 (setq sentence-end "\\([¡££¡£¿]\\|¡­¡­\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]
 *")    
@@ -400,3 +400,4 @@ directory, select directory. Lastly the file is opened."
 
 (load "~/.elisp/git-wip/git-wip.el")
 
+(require 'xgtags)

@@ -13,6 +13,7 @@
   (c-toggle-electric-state t)
   (setq c-basic-offset 4)
   (glasses-mode t)
+  (xgtags-mode 1)
   (auto-highlight-symbol-mode t)
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)

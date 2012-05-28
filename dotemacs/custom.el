@@ -119,7 +119,9 @@
  '(wg-no-confirm t)
  '(wg-query-for-save-on-emacs-exit nil)
  '(wg-query-for-save-on-workgroups-mode-exit nil)
- '(wg-use-faces nil))
+ '(wg-use-faces nil)
+ '(xgtags-goto-tag (quote never))
+ '(xgtags-show-paths (quote expanded)))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
