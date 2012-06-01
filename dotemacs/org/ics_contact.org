@@ -1,0 +1,189 @@
+#+TITLE:     ICS Contact
+#+AUTHOR:    wei.sun
+#+EMAIL:     wei.sun@spreadtrum.com
+#+DATE:      2012-05-30 Wed
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+
+* ICS Contact
+** Key ideas
+- Account
+- Separate data and view
+- SIM cache
+- Phone account
+- use FSA (Finite State Automaton) to keep track of SIM importing
+- SIM capacity abstraction
+- multiple selection
+- 扩展性
+** Account (& Sync)
+- Account (帐户)的概念是从 android 2.0 开始被加入到 android 中的, 并且一般和
+  Sync (同步) 配合工作, 因此一般合称为 Account&Sync
+*** 出发点
+android 与 "移动互联网","社交网络","云"...似乎一开始就是紧密结合在一起的, 每天大
+量的信息交互, 纷繁复杂的社交网络, 对各类信息实时性的要求, 多个设备间信息的同步的
+需求...促使人们这样使用 android 来访问移动互联网:
+- 安装各种各样的客户端: twitter, facebook, blog, Email....
+- 这些客户端一般都可以将网络上的信息与本地的信息自动进行同步, 例如 twitter 可以
+  自动同步 tweet. 据说有些人没有及时收到 tweet 时会表现出忧虑...
+- 这些客户端一般还会与 android 自身一些本地应用进行整合, 例如 facebook 客户端可
+  以把 facebook 的好友同步到本地联系人应用中
+
+自动同步和深度整合, 是 Andorid Account&Sync 的一大特色
+*** 实现
+如何使用 Account&Sync 实现一个X客户端
+1. 实现一个 account authenticator, 例如 XAccountAuthenticator, 这个
+   authenticator 主要做两件事:
+   - 提供一个 xml 配置文件, 通过 PackageManager 通知系统: "现在我们支持 X 帐户了"
+   - 提供一个 addAccount 函数, 当系统要添加 X 帐户时, 会调用这个函数, 这个函数会
+     与 X 的服务器交互, 主要是进行鉴权
+2. 在 manifest.xml 写明该帐户支持哪些 SyncAdapter, 每个 SyncAdapter 有一个对应
+   的 xml 配置文件, 说明:
+   - 该 SyncAdapter 是用来同步哪个 content provider
+   - 该 SyncAdapter 属于哪个帐户类型
+
+3. 实现之前声明的 SyncAdapter
+   每个 SyncAdapter 都要提供一个 performSync 函数, 该系统要同步该帐户的某一类数
+   据时 (例如 contact, calendar...), 会调用相应 SyncAdapter 的 performSync 函数,
+   这个函数会负责把网络上的数据与本地数据库进行同步.
+*** Contact 对 Account 的支持
+Contact 中已经存在大量的关于 Account 的代码. 若一个 account 包含一个 sync
+adapter, 且这个 SyncAdapter 要同步的数据库是 contact provider, 则 contact 就会
+认为这个 account 是和 contact 应用相关的.
+
+
+Contact 对 Account 的支持主要体现在:
+- 显示选项
+  可以只显示属于某个帐户的联系人
+- 联系人分组
+  android 4.0 本身就支持联系人分组, 但分组是和帐户相关的, 即 要建立一个分组, 必
+  须要说明它属于哪一个帐户.
+- 上面提到各种社交网络客户端可以和 Contact 深度整合, 主要信赖于 contact 应用和
+  contact provider 针对这种需求进行了很好的设计.
+
+**** 显示选项
+在 contact provider 的 raw\_contact.tlb 中两个字段和 account 相关:
+- account\_name
+- account\_type
+
+当 SyncAdapter 从网络上向本地同步联系人时, 先建的联系人的这两个字段会被设置为
+SyncAdapter 对应的帐户的 account name 和 account type, 以表明这个联系人属于该帐
+户.
+
+显示选项里会自动列出所有和 contact 相关的帐户, 当用户选择只显示某一个帐户的联系
+人, contact 会通知 loader 只加载 raw\_contact 表中 account\_name 和 account\_type
+字段为该帐户的联系人.
+**** 联系人分组
+在 contact provider 中, groups.tbl 每一条记录都表示一个分组, 与 raw\_contact 记录
+类似, 其中中 account\_name, account\_type 表示这个分组是属于哪个 account
+
+实际上在 android 2.x 时, groups.tbl 在 contact provider 中就存在了, 但 contact
+应用并没有使用这张表, 所以那时的 contact 应用还不支持分组.
+
+有些厂商在 android 2.x 加了分组的支持时, 普遍的都没有使用自带的 groups.tbl, 而是
+自己建立一张新的表, 并且在 raw\_contact 中增加一个字段指明该联系人属于哪个分组,
+这种做法并没有把分组与帐户关联起来, 导致的问题是: 在选择联系人时, 分组与帐户变成
+同级的概念, 看起来不对称,且容易使人混淆.
+**** 深度整合
+不同的帐户建立的联系人可能有不同的字段, 例如有的帐户的联系人不支持电话, 而有的则
+支持一种新的类型的数据,  例如 twitter 客户端可能在同步联系人会将联系人最近的一条
+tweet 做为一种新的类型的数据写入到 contact 数据库中, 或者 twitter 客户端可以通过
+编辑一个帐户 owner 对应的本地联系人的该新型的数据向 twitter 发送一条新的 tweet.
+
+tweet 被抽象为本地联系人数据库的一条数据, contact 如何编辑和显示这种数据?
+
+实际上, contact 的编辑和显示界面完全是 account 通过"数据驱动"画出来的, account
+通过 xml 配置文件告诉 contact 如下信息:
+- 帐户支持哪些字段: 名字, 电话, email, ...
+- 每种字段最多支持几个输入框 : 最多几个电话, 几个 email ...
+- 每种字段支持哪些类型: 如电话的"家用", "手机", "传真" ...
+- 每种字段的输入框的类型: text, number, email, password ...
+- 每个输入框与 contact provider 的 data 表的哪一个字段对应, 这样 contact 就知道
+  如何从 contact provider 中读取和写入这些数据.
+- ...
+
+contact 通过 account 提供的这些信息就能完整的画出 contact 的编辑和显示界面.
+
+*** 同步: 分离界面与数据
+一般情况下, account 通过 SyncAdapter 与网络上的数据交互, 而不是在 contact 应用中
+直接与网络数据交互. 例如: facebook 客户端修改了本地一个 facebook 联系人的资料并同
+步到网络上的过程如下:
+1. 本地对 facebook 联系人的修改与修改一个手机本地的联系人没有任何区别, 都是直接
+   读写 contact 数据库, 但值得注意的是, 数据库中对应的 raw\_contact 的 is\_dirty
+   会被置位.
+2. facebook account 的 SyncAdapter 的 performSync 在某个时候被调用 (用户手动要
+   求同步或自动同步)时, performSync 函数会扫描 contact 数据库中 account 为
+   facebook 且 is\_dirty 被置位的联系人, 然后把这些联系人的所有数据同步到 facebook
+   服务器.
+3. facebook SyncAdapter 会负责将 本次同步的联系人的 is\_dirty 复位
+
+可见, 通过 account 的同步机制,  contact 应用部分的代码大大简化.
+
+SIM 卡抽象为 account 后, contact 应用仍然采用这种机制来简化 contact 应用对 SIM卡
+的处理,即 contact 应用不会直接操作 SIM 卡, 而是依赖于 ContactProvider 与 SIM 卡
+的同步. 但由于 SyncAdapter 机制本身的一个限制以及 SIM 卡区别于一般帐户的特殊性,
+我们采用了另一个方式来进行同步.
+
+** Contact 与 SIM 卡解耦合
+类似的需求, 决定了把 SIM 卡抽象为 Account 也就算水到渠成:
+- SIM 卡联系人与手机联系人需要分类显示
+- USIM 卡需要分组
+- 编辑和查看 SIM 卡联系人时需要使用不同于手机联系人的界面 (SIM 卡只支持一个电话,
+  USIM 卡支持多个电话, 多个 email ...)
+- SIM 卡中的联系人和手机存在 "sync" 的需求: 即 SIM 卡中的联系人需
+  要同步到手机, 手机对 SIM 卡联系人的修改需要同步到 SIM 卡上.
+*** 实现
+- 由于 SIM 卡与 USIM 卡支持的字段差别较大, 所以把 SIM 和 USIM 抽象为两种帐户类型
+- 分别实现 SimAccountAuthenticator, UsimAccountAuthenticator, 由于 SIM/USIM 帐户
+  并不需要真正在像社交客户端一样在添加帐户时向服务器鉴权, 所以 addAccount 的实现
+  为空
+- 分别实现 SimSyncAdapter, USimSyncAdapter, 注意的是, 虽然 SIM 卡需要与手机进行
+  同步, 但我们并没有依赖 SyncAdapter 的 performSync 函数, 所以该函数也为空 (原
+  因在后面描述)
+
+** ContactProvider 与 SIM 卡解耦合
+ContactProvider 的主要作用是将 ContactProvider 中 SIM 卡的改动同步到 SIM 卡中,
+本来使用 SyncAdapter 是一个很好的选择, 但出于以下考虑, 我们只能放弃 SyncAdapter
+这种方法:
+- 由于系统中所有的 SyncAdapter 都是串行执行的, 若一个 SyncAdapter 发起的同步迟迟
+  没有结束, 则 SIM 卡的 SyncAdapter 永远都无法进行同步
+- 用户写 SIM 卡时, 通常都希望能马上看到操作的结果
+
+因此, 我们采用了在 ContactProvider 中插入 SIM 卡操作相关的 hook 的方法来同步, 大
+致过程如下:
+
+#+begin_src ditaa :file hook.png
+
+                                                    ------\
+                                              Account     |    SIM
+Contact               Provider                            |
++----------+          +-----------+-------+               |
+| Name: {d}|     +--->| update() { {s}    |               |             SIM
+|  xxx     |     |    |   ..              |        +------+------+      +--------+
+| Phone:   |     |    |  SimProxy.update  +------->| SimProxy{io}+----->|     {s}|
+|  123     |     |    | }                 |        +------+------+      +--------+
+|     SAVE +-----+    +-------------------+               |
++----------+                                              |
+                                                    ------/
+
+#+end_src
+
+可见, ContactProvider 的主要改动是在 update(), insert(), delete() 等处插入对
+SimProxy 的调用, SimProxy 使用 IccProvider 直接操作 SIM 卡.
+*** ContactProvider Hook
+*** SimProxy
+SimProxy 通过 IccProvider 直接操作 SIM 卡, 它是 Account 与 SIM 卡之间的桥梁
+*** Account userData
+** SIM 卡联系人导入
+use FSA (Finite State Automaton) to keep track of SIM importing
+** 联系人多选
+** 可扩展性
+** 待改进
