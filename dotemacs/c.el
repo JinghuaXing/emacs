@@ -108,10 +108,10 @@
         (save-excursion 
           (with-current-buffer buf 
             (goto-char (point-min)) 
-            (if (re-search-forward "abnormally" nil t) 
-                (message "compilation errors, press C-x ` to visit") 
+            (if (re-search-forward "abnormally" nil t)
+                (tooltip-show "compilation errors, press C-x ` to visit") 
               ;; (run-at-time 0.5 nil 'delete-windows-on buf)
-              (message "NO COMPILATION ERRORS!"))))))
+              (tooltip-show "NO COMPILATION ERRORS!"))))))
 
 
 ;; (based on work by Arndt Gulbrandsen, Troll Tech)
