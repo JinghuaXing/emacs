@@ -285,7 +285,7 @@
     )
   )
 
-;; (define-key dired-mode-map "/" (lambda() (interactive) (call-interactively 'sunway/dired-keep-or-omit-regexp) (revert-buffer)))
+(define-key dired-mode-map "/" (lambda() (interactive) (call-interactively 'sunway/dired-keep-or-omit-regexp) (revert-buffer)))
 
 ;; (defun dired-hide-subdir (arg)
 ;;   "Hide or unhide the current subdirectory and move to next directory.

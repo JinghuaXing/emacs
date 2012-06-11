@@ -18,12 +18,9 @@
 ** Key ideas
 - Account
 - Separate data and view
-- SIM cache
-- Phone account
 - use FSA (Finite State Automaton) to keep track of SIM importing
-- SIM capacity abstraction
-- multiple selection
-- 扩展性
+- Multiple Selection
+- Expandability
 ** Account (& Sync)
 - Account (帐户)的概念是从 android 2.0 开始被加入到 android 中的, 并且一般和
   Sync (同步) 配合工作, 因此一般合称为 Account&Sync
@@ -183,7 +180,143 @@ SimProxy 的调用, SimProxy 使用 IccProvider 直接操作 SIM 卡.
 SimProxy 通过 IccProvider 直接操作 SIM 卡, 它是 Account 与 SIM 卡之间的桥梁
 *** Account userData
 ** SIM 卡联系人导入
-use FSA (Finite State Automaton) to keep track of SIM importing
+SIM 卡联系人需要在开机时从 SIM 卡导入到手机中, 然后 Contact 应用才能显示和处理
+SIM 卡中的联系人. 
+
+导入到手机中的 SIM 卡联系人和普通手机联系人都保存到 ContactProvider 中, 主要的不
+同是:
+- SIM 卡联系人的 accountType 和 accountName 字段为 SimAccount 或 UsimAccount, 而
+  手机联系人的 account 为 PhoneAccount
+- SIM 卡联系人的 SYNC1 和 SYNC2 字段分别是用来保存 SIM卡 相关信息, 比如 该联系人
+  在卡上的位置 (index), 有了这些 SIM 卡额外信息, ContactProvider 才知道如何中将
+  对这些联系人的操作反映到对应的 SIM 卡上. 
+
+导入 SIM 联系人的过程其实就是从 SIM 卡中读出联系人的名字,号码,邮件等, 然后将这些
+联系人信息以及卡的信息保存到 ContactProvider 中.
+
+由于每一个 SIM 卡帐户对应着一张 SIM 卡, 刚第二次开机时, SIM 卡的安装情况可能会变
+化, 所以简单起见, 开机直接删除所有 SIM 卡帐户以及 SIM 卡联系人, 然后重新根据 SIM
+卡的安装情况建立对应的 SIM 卡帐户并重新导入 SIM 卡联系人.
+
+开机导入 SIM 卡联系人的过程:
+
+# state: init->boot_completed->remove_account->purge_contact->add_account->import_contact
+#+begin_src dot :file fsa.png
+  
+  digraph G {
+   subgraph cluster1 {
+      label="Account State"
+      INIT->BOOT_COMPLETED[label="onEvent(BOOT_COMPLETED)"]
+      BOOT_COMPLETED->ACCOUNT_REMOVED [label="onAction(REMOVE_ACCOUNT)"]
+      ACCOUNT_REMOVED->CONTACT_PURGED [label="onAction(PURGE_CONTACT)"]
+      isIccLoaded [shape=diamond label="if ICC State == ICC_LOADED"]
+      isIccLoaded->CONTACT_PURGED [label="No"]
+      isIccLoaded->ACCOUNT_ADDED [label="Yes"]
+      CONTACT_PURGED->isIccLoaded [label="onAction(ADD_ACCOUNT)"] 
+      CONTACT_PURGED->isIccLoaded [label="onEvent(ICC_LOADED)"] 
+      ACCOUNT_ADDED->CONTACT_IMPORTED [label="onAction(IMPORT_CONTACT)"]
+   }
+  
+   subgraph cluster2 {
+       label="ICC State"
+       ICC_LOADED -> ICC_LOADED [label="onEvent(ICC_LOADED)"]
+   }
+   ICC_LOADED -> isIccLoaded [style=dashed]
+  
+  }
+#+end_src
+
+开机导入 SIM 卡联系人的过程被划分为6个状态:
+- INIT
+- BOOT\_COMPLETED
+- ACCOUNT\_REMOVED
+- CONTACT\_PURGED
+- ACCOUNT\_ADDED
+- CONTACT\_IMPORTED
+
+这样做的主要目的是为了处理在导入过程中可能出现的各种异常情况,例如:
+- 由于 framework 的 bug 或限制, BOOT\_COMPLETE, ICC\_LOADED 等 broadcast 反复触发
+  通过状态的控制,可以限制某些 broadcast 只能在 Account State 处于某些特定状态时
+  才被处理
+- 导入过程中发生飞行模式切换, 禁卡, 或进程异常终止, 甚至以后可能支持的一些新
+  feature, 如 SIM 热插拔等
+  
+  以 SIM 卡热插拔为例, 当程序检测到某张 SIM 卡被拔出时, 无论现在 Account State
+  处理哪个状态, 我们需要做的只有两步:
+  1. 将状态置为 BOOT_COMPLETED
+  2. 调用 onAction(REMOVE_ACCOUNT) 从 BOOT_COMPLETED 状态开始重新进行导入动作.
+
+  
+总之, 使用状态机来控制 SIM 卡联系人导入的过程主要是为了提高系统的容错性, 一旦发
+生错误或某些异常状态, 可以切换到某个状态重新开始. 
+
 ** 联系人多选
+Contact 提供了一个 ContactSelectionActivity 来对外提供各种各样的选择联系人的服务,
+如选择联系人, 选择电话号码, 选择电子邮件等, 但所有这些都只是提供了单选的功能, 没
+有多选, 而在 Contact 中有多处需要用到多选的情况, 例如:
+- 批量删除联系人
+- 批量导入导出联系人
+- 通过彩信, 蓝牙等分享多个联系人
+- SMS 一次选择多个联系人号码或电子邮件发送短信或彩信
+- ...
+
+4.0 的多选功能是直接到最底层的 ContactEntryLisFragment 及 ContactEntryListAdater
+上扩展的, 这样做主要有两个好处:
+1. 单选与多选在界面上是一致的
+2. 单选界面原来的一些功能, 如: 
+   - 查找联系人
+   - 根据帐户及分组过滤显示
+   - 帐户有变化时自动刷新界面
+   - ...
+   等可以直接使用. 
+
 ** 可扩展性
+*** 支持一种新的 SIM 卡
+目前我们支持 SIM 和 USIM 两种 SIM 卡, 分别对应两种不同的帐户, 之所以 SIM 和 USIM
+要区分, 主要是因为 SIM 卡和 USIM 支持的字段不同, 例如 USIM 支持电子邮件而 SIM 就
+不支持. 因为联系人的编辑界面完全是由帐户的属性定义的, 所以对于 SIM 和 USIM, 我们
+定义了两种帐户. 
+
+由于 SIM 卡联系人的编辑界面完全由 Contact 根据帐户的属性显示出来, 所以说如果我们
+要支持一个新的 SIM 卡, 只需要:
+1. 定义一种新的帐户类型, 并在代码中指明它支持的字段
+2. 在导入 SIM 卡联系人时导入这些字段到 ContactProvider
+3. 在编辑或新建 SIM 卡联系人时, ContactProvider 保存这些字段到 SIM 卡
+
+*** 支持 3/4/N 卡
+对于我们已经支持的 SIM 卡类型, N 张卡只是对应着 N 个该种 SIM 卡帐户类型的多个帐
+户, Contact 会在开机时根据卡槽的情况自动添加 SIM 卡帐户, 所以无需针对 N 卡的需求
+修改.
+
+*** 支持 SIM 卡热插拔
+如 [[ SIM 卡联系人导入]] 所述, 导入联系人使用 FSA 可以支持 SIM 卡热插拔.
+
 ** 待改进
+*** 删除 AccountRestrictionUtil 类
+Contact 对 SIM 卡联系人的修改是通过 ContactProvider 中设置的 HOOK 来直接操作 SIM
+卡的, 而 SIM 卡操作时会发生许多异常情况, 例如:
+- SIM 卡已满
+- 某个字段超出 SIM 卡支持的最大长度
+- 某个字段的值有问题, SIM 卡无法处理
+- ...
+
+理论上, 这些异常情况应该由 SIM 卡返回给 ContactProvider, 然后再返回给 Contact 应
+用, 以便 Contact 应用可以将这些 SIM 卡的异常反馈给用户, 但是, 由于 Contact 和
+ContactProvider 之间, 以及 ContactProvider 与 SIM 卡 (即 IccProvider) 之间都是通
+过 ContentProvider 进行沟通的, 而 ContentProvider 本身难以将异常情况的详细信息返
+回给调用者, 导致 Contact 中增加了一个非常丑陋的 AccountRestrictionUtil 类...
+
+这个类的主要作用是:
+- 在 Contact 编辑联系人并尝试保存时, 会先调用 AccountRestrictionUtil 的方法去检查
+  此次更改有没有可能因为`帐户限制`而失败.
+- `帐户限制`其实就是 SIM 卡里那些限制, 只不过被封装在帐户中, 而不是直接调用 SIM
+  卡的相关函数去获得这个限制信息.
+
+这个 AccountRestrictionUtil 与 SIM 卡紧紧耦合在一起, 并且使界面与数据也耦合在一
+起.
+
+虽然 ContentProvider 难以通过函数返回值返回详细的错误信息, 但我们其实可以通过重
+写 Binder 调用的 proxy 及 stub 部分代码使其通过`跨进程异常`返回详细的错误信息,
+到时就可以删除 AccountRestrictionUtil 类了.  
+
+
