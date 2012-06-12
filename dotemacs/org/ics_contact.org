@@ -17,139 +17,183 @@
 * ICS Contact
 ** Key ideas
 - Account
-- Separate data and view
-- use FSA (Finite State Automaton) to keep track of SIM importing
-- Multiple Selection
-- Expandability
-** Account (& Sync)
-- Account (帐户)的概念是从 android 2.0 开始被加入到 android 中的, 并且一般和
-  Sync (同步) 配合工作, 因此一般合称为 Account&Sync
+- Contact 与 SIM 解耦合
+- 分离数据与视图
+- 联系人多选
+- 使用状态机处理异常
+- 可扩展性
+** Account (& Sync) 介绍
+- Account (帐户)的概念是从 Android 2.0 开始被加入到 Android 中的, 并且一般和Sync
+  (同步) 配合工作, 因此一般合称为 Account&Sync
 *** 出发点
-android 与 "移动互联网","社交网络","云"...似乎一开始就是紧密结合在一起的, 每天大
+Android 与 "移动互联网","社交网络","云"...似乎一开始就是紧密结合在一起的, 每天大
 量的信息交互, 纷繁复杂的社交网络, 对各类信息实时性的要求, 多个设备间信息的同步的
-需求...促使人们这样使用 android 来访问移动互联网:
+需求...促使人们这样使用 Android 来访问移动互联网:
 - 安装各种各样的客户端: twitter, facebook, blog, Email....
 - 这些客户端一般都可以将网络上的信息与本地的信息自动进行同步, 例如 twitter 可以
   自动同步 tweet. 据说有些人没有及时收到 tweet 时会表现出忧虑...
-- 这些客户端一般还会与 android 自身一些本地应用进行整合, 例如 facebook 客户端可
+- 这些客户端一般还会与 Android 自身一些本地应用进行整合, 例如 facebook 客户端可
   以把 facebook 的好友同步到本地联系人应用中
 
 自动同步和深度整合, 是 Andorid Account&Sync 的一大特色
-*** 实现
-如何使用 Account&Sync 实现一个X客户端
-1. 实现一个 account authenticator, 例如 XAccountAuthenticator, 这个
-   authenticator 主要做两件事:
+*** 使用 Account&Sync 实现一个X客户端
+1. 实现一个 AccountAuthenticator, 例如 XAccountAuthenticator, 这个
+   Authenticator 主要做两件事:
    - 提供一个 xml 配置文件, 通过 PackageManager 通知系统: "现在我们支持 X 帐户了"
    - 提供一个 addAccount 函数, 当系统要添加 X 帐户时, 会调用这个函数, 这个函数会
      与 X 的服务器交互, 主要是进行鉴权
 2. 在 manifest.xml 写明该帐户支持哪些 SyncAdapter, 每个 SyncAdapter 有一个对应
    的 xml 配置文件, 说明:
-   - 该 SyncAdapter 是用来同步哪个 content provider
+   - 该 SyncAdapter 是用来同步哪个 ContentProvider
    - 该 SyncAdapter 属于哪个帐户类型
 
 3. 实现之前声明的 SyncAdapter
-   每个 SyncAdapter 都要提供一个 performSync 函数, 该系统要同步该帐户的某一类数
-   据时 (例如 contact, calendar...), 会调用相应 SyncAdapter 的 performSync 函数,
-   这个函数会负责把网络上的数据与本地数据库进行同步.
+   每个 SyncAdapter 都要提供一个 performSync 函数, 当系统要同步该帐户的某一类数
+   据时 (例如 Contact, Calendar...), 会调用相应 SyncAdapter 的 performSync 函数,
+   这个函数会负责把网络上的数据与本地数据库进行同步, 把本地的修改上传到网络上,同
+   时把网络上的变化下载到本地. (有的 SyncAdapter 只支持下载, 不支持上传)
 *** Contact 对 Account 的支持
-Contact 中已经存在大量的关于 Account 的代码. 若一个 account 包含一个 sync
-adapter, 且这个 SyncAdapter 要同步的数据库是 contact provider, 则 contact 就会
-认为这个 account 是和 contact 应用相关的.
-
+Contact 中已经存在大量的关于 Account 支持的代码. 若一个 Account 包含一个
+SyncAdapter, 且这个 SyncAdapter 要同步的数据库是 ContactProvider, 则 Contact 就会
+认为这个 Account 是和 Contact 应用相关的.
 
 Contact 对 Account 的支持主要体现在:
-- 显示选项
-  可以只显示属于某个帐户的联系人
-- 联系人分组
-  android 4.0 本身就支持联系人分组, 但分组是和帐户相关的, 即 要建立一个分组, 必
-  须要说明它属于哪一个帐户.
-- 上面提到各种社交网络客户端可以和 Contact 深度整合, 主要信赖于 contact 应用和
-  contact provider 针对这种需求进行了很好的设计.
+1) 新建不同帐户的联系人
+2) 帐户可以定义联系人的编辑界面
+3) 支持帐户的自定义字段
+4) 显示选项
+5) 联系人分组
 
-**** 显示选项
-在 contact provider 的 raw\_contact.tlb 中两个字段和 account 相关:
-- account\_name
-- account\_type
+**** 新建不同帐户的联系人
+在新建联系人时, Contact 可以通过 AccountManager 获知现在系统里有哪些帐户类型是和
+Contact 相关的, 并显示一个对话框提示用户要新建哪个帐户的联系人.
+**** 通过帐户定义联系人的编辑界面
+这可能是 Contact 强大的扩展性的最好的体现了. 以 SIM 帐户为例, 由于 SIM 卡只支持一
+个电话, 一个姓名, 所以 SIM 帐户会使用下面这段 XML 配置文件来定义它的联系人编辑界
+面:
 
-当 SyncAdapter 从网络上向本地同步联系人时, 先建的联系人的这两个字段会被设置为
-SyncAdapter 对应的帐户的 account name 和 account type, 以表明这个联系人属于该帐
-户.
+#+begin_src xml
+  <DataKind
+      mimeType="vnd.android.cursor.item/name"
+      title="@string/title_name"
+      icon="@drawable/icon_name"
+      editable="true">
+      <EditTypes column="data5" overallMax="1" />
+      <EditField column="data1" title="@string/field_name"/>
+  </DataKind>
+  <DataKind
+      mimeType="vnd.android.cursor.item/phone_v2"
+      title="@string/title_phone"
+      icon="@drawable/icon_phone"
+      editable="true">
+      <EditTypes column="data5" overallMax="1" />
+      <EditField column="data1" title="@string/field_phone"/>
+  </DataKind>
 
-显示选项里会自动列出所有和 contact 相关的帐户, 当用户选择只显示某一个帐户的联系
-人, contact 会通知 loader 只加载 raw\_contact 表中 account\_name 和 account\_type
-字段为该帐户的联系人.
-**** 联系人分组
-在 contact provider 中, groups.tbl 每一条记录都表示一个分组, 与 raw\_contact 记录
-类似, 其中中 account\_name, account\_type 表示这个分组是属于哪个 account
+#+end_src
 
-实际上在 android 2.x 时, groups.tbl 在 contact provider 中就存在了, 但 contact
-应用并没有使用这张表, 所以那时的 contact 应用还不支持分组.
+上面的配置文件表示:
+- SIM 帐户只支持 name 和 phone 两种数据.
+- overallMax=1 表示只支持一个名字和一个电话.
+- column 值表示编辑界面在显示和保存联系人时会从 ContactProvider 的 data 表的
+  data1 字段读取和写入数据.
 
-有些厂商在 android 2.x 加了分组的支持时, 普遍的都没有使用自带的 groups.tbl, 而是
-自己建立一张新的表, 并且在 raw\_contact 中增加一个字段指明该联系人属于哪个分组,
-这种做法并没有把分组与帐户关联起来, 导致的问题是: 在选择联系人时, 分组与帐户变成
-同级的概念, 看起来不对称,且容易使人混淆.
-**** 深度整合
-不同的帐户建立的联系人可能有不同的字段, 例如有的帐户的联系人不支持电话, 而有的则
-支持一种新的类型的数据,  例如 twitter 客户端可能在同步联系人会将联系人最近的一条
-tweet 做为一种新的类型的数据写入到 contact 数据库中, 或者 twitter 客户端可以通过
-编辑一个帐户 owner 对应的本地联系人的该新型的数据向 twitter 发送一条新的 tweet.
-
-tweet 被抽象为本地联系人数据库的一条数据, contact 如何编辑和显示这种数据?
-
-实际上, contact 的编辑和显示界面完全是 account 通过"数据驱动"画出来的, account
-通过 xml 配置文件告诉 contact 如下信息:
+实际上, 这个配置文件大致会包含以下的信息:
 - 帐户支持哪些字段: 名字, 电话, email, ...
 - 每种字段最多支持几个输入框 : 最多几个电话, 几个 email ...
 - 每种字段支持哪些类型: 如电话的"家用", "手机", "传真" ...
 - 每种字段的输入框的类型: text, number, email, password ...
-- 每个输入框与 contact provider 的 data 表的哪一个字段对应, 这样 contact 就知道
-  如何从 contact provider 中读取和写入这些数据.
+- 每个输入框与 ContactProvider 的 data 表的哪一个字段对应, 这样 Contact 就知道
+  如何从 Contact provider 中读取和写入这些数据.
 - ...
 
-contact 通过 account 提供的这些信息就能完整的画出 contact 的编辑和显示界面.
+当 Contact 应用要新建或编辑联系人时, 会从 Account 获得这些配置信息, 并使用这些信
+息动态的生成联系人编辑界面.
+
+这其实就是 MVC 模式:
+- Model
+  
+  ContactProvider
+- View
+  
+  Contact 应用的编辑界面
+- Controller
+ 
+  上面提到的配置文件
+
+**** 编辑和显示自定义字段
+如 [[通过帐户定义联系人的编辑界面]] 所述, 编辑界面完全是由帐户定义的, 所以帐户可以很
+轻松的通过定义一些新的 DataKind 使用 Contact 支持帐户的自定义字段.
+
+**** 显示选项
+显示选项里会自动列出所有和 Contact 相关的帐户, 当用户选择只显示某一个帐户的联系
+人, Contact 会通知 Loader 只加载属于该帐户的联系人.
+**** 联系人分组
+Android 4.0 自带了对联系人分组的支持, 但分组必须是和帐户相关的, 即分组必须隶属于
+某个帐户.
+
+实际上在 Android 2.x 时, ContactProvider 就存在关于分组的数据表, 但 Contact 应用
+并没有使用这张表, 所以那时的 Contact 应用还不支持分组.
+
+有些厂商在 Android 2.x 加了分组的支持时, 普遍的都没有使用自带的 groups 表, 而是自
+己建立一张新的表, 并且在 contact 表中增加一个字段指明该联系人属于哪个分组,这种做
+法并没有把分组与帐户关联起来, 导致的问题是: 在选择联系人时, 分组与帐户变成同级的
+概念, 看起来不一致, 容易使人混淆.
 
 *** 同步: 分离界面与数据
-一般情况下, account 通过 SyncAdapter 与网络上的数据交互, 而不是在 contact 应用中
+一般情况下, account 通过 SyncAdapter 与网络上的数据交互, 而不是在 Contact 应用中
 直接与网络数据交互. 例如: facebook 客户端修改了本地一个 facebook 联系人的资料并同
 步到网络上的过程如下:
 1. 本地对 facebook 联系人的修改与修改一个手机本地的联系人没有任何区别, 都是直接
-   读写 contact 数据库, 但值得注意的是, 数据库中对应的 raw\_contact 的 is\_dirty
+   读写 Contact 数据库, 但值得注意的是, 数据库中对应的 raw\_Contact 的 is\_dirty
    会被置位.
 2. facebook account 的 SyncAdapter 的 performSync 在某个时候被调用 (用户手动要
-   求同步或自动同步)时, performSync 函数会扫描 contact 数据库中 account 为
+   求同步或自动同步)时, performSync 函数会扫描 Contact 数据库中 account 为
    facebook 且 is\_dirty 被置位的联系人, 然后把这些联系人的所有数据同步到 facebook
    服务器.
 3. facebook SyncAdapter 会负责将 本次同步的联系人的 is\_dirty 复位
 
-可见, 通过 account 的同步机制,  contact 应用部分的代码大大简化.
+可见, 通过 account 的同步机制,  Contact 应用部分的代码大大简化.
 
-SIM 卡抽象为 account 后, contact 应用仍然采用这种机制来简化 contact 应用对 SIM卡
-的处理,即 contact 应用不会直接操作 SIM 卡, 而是依赖于 ContactProvider 与 SIM 卡
+SIM 卡抽象为 account 后, Contact 应用仍然采用这种机制来简化 Contact 应用对 SIM卡
+的处理,即 Contact 应用不会直接操作 SIM 卡, 而是依赖于 ContactProvider 与 SIM 卡
 的同步. 但由于 SyncAdapter 机制本身的一个限制以及 SIM 卡区别于一般帐户的特殊性,
 我们采用了另一个方式来进行同步.
 
-** Contact 与 SIM 卡解耦合
-类似的需求, 决定了把 SIM 卡抽象为 Account 也就算水到渠成:
+** 解耦: Contact 与 SIM 卡
+与 Account 类似的需求, 决定了把 SIM 卡抽象为 Account 也就算水到渠成:
+- 可以新建 SIM 卡联系人
 - SIM 卡联系人与手机联系人需要分类显示
 - USIM 卡需要分组
 - 编辑和查看 SIM 卡联系人时需要使用不同于手机联系人的界面 (SIM 卡只支持一个电话,
   USIM 卡支持多个电话, 多个 email ...)
-- SIM 卡中的联系人和手机存在 "sync" 的需求: 即 SIM 卡中的联系人需
-  要同步到手机, 手机对 SIM 卡联系人的修改需要同步到 SIM 卡上.
-*** 实现
-- 由于 SIM 卡与 USIM 卡支持的字段差别较大, 所以把 SIM 和 USIM 抽象为两种帐户类型
-- 分别实现 SimAccountAuthenticator, UsimAccountAuthenticator, 由于 SIM/USIM 帐户
-  并不需要真正在像社交客户端一样在添加帐户时向服务器鉴权, 所以 addAccount 的实现
-  为空
-- 分别实现 SimSyncAdapter, USimSyncAdapter, 注意的是, 虽然 SIM 卡需要与手机进行
-  同步, 但我们并没有依赖 SyncAdapter 的 performSync 函数, 所以该函数也为空 (原
-  因在后面描述)
+- SIM 卡中的联系人和手机存在 "同步" 的需求: 即 SIM 卡中的联系人需要同步到手机, 手
+  机对 SIM 卡联系人的修改需要同步到 SIM 卡上.
 
-** ContactProvider 与 SIM 卡解耦合
-ContactProvider 的主要作用是将 ContactProvider 中 SIM 卡的改动同步到 SIM 卡中,
-本来使用 SyncAdapter 是一个很好的选择, 但出于以下考虑, 我们只能放弃 SyncAdapter
-这种方法:
+除此以外, 将 SIM 卡抽象为 Account 带来的最大的收益就是 Contact 与 SIM 卡的解耦
+合: _Contact 只知道帐户, 不知道 SIM 卡_
+
+*** 实现
+1. 由于 SIM 卡与 USIM 卡支持的字段差别较大, 所以把 SIM 和 USIM 抽象为两种帐户类型
+2. 分别实现 SimAccountAuthenticator, UsimAccountAuthenticator, 由于 SIM/USIM 帐户
+   并不需要真正在像社交客户端一样在添加帐户时向服务器鉴权, 所以 addAccount 的实现
+   为空
+3. 分别实现 SimSyncAdapter, USimSyncAdapter, 注意的是, 虽然 SIM 卡需要与手机进行
+   同步, 但我们并没有依赖 SyncAdapter 的 performSync 函数, 所以该函数也为空 (原
+   因在后面描述)
+4. 如 [[通过帐户定义联系人的编辑界面]] 所述, 修改 SIM/USIM 帐户的配置文件, 以指明该帐
+   户支持的字段信息.
+
+基本上经过这四步, Contact 应用的修改就算完成了. Contact 的修改如此简单, 主要依赖两点:
+1. 界面上, Contact 对帐户的支持使得我们不需要再费力对 Contact 界面进行哪怕一点点修改
+2. 借助于"同步"的概念, 读写 SIM 卡数据的部分被推迟到 ContactProvider 执行.
+
+
+** 解耦: ContactProvider 与 SIM 卡
+借助于"同步"的概念, 读写 SIM 卡数据的部分被推迟到 ContactProvider 中.
+
+按照 Account&Sync 的设计, 使用 SyncAdapter 来同步似乎是一个很好的选择, 但出于以下
+考虑, 我们只能放弃 SyncAdapter这种方法:
 - 由于系统中所有的 SyncAdapter 都是串行执行的, 若一个 SyncAdapter 发起的同步迟迟
   没有结束, 则 SIM 卡的 SyncAdapter 永远都无法进行同步
 - 用户写 SIM 卡时, 通常都希望能马上看到操作的结果
@@ -159,29 +203,82 @@ ContactProvider 的主要作用是将 ContactProvider 中 SIM 卡的改动同步
 
 #+begin_src ditaa :file hook.png
 
-                                                    ------\
-                                              Account     |    SIM
-Contact               Provider                            |
-+----------+          +-----------+-------+               |
-| Name: {d}|     +--->| update() { {s}    |               |             SIM
-|  xxx     |     |    |   ..              |        +------+------+      +--------+
-| Phone:   |     |    |  SimProxy.update  +------->| SimProxy{io}+----->|     {s}|
-|  123     |     |    | }                 |        +------+------+      +--------+
-|     SAVE +-----+    +-------------------+               |
-+----------+                                              |
-                                                    ------/
+                                                    -----+
+                                              Account    |     SIM
+Contact               Provider                           |
++----------+          +-----------+----------+           |
+| Name: {d}|     +--->| update() { {s}       |           |             SIM
+|  xxx     |     |    |   ..                 |    +------+-----------+   +------+
+| Phone:   |     |    |  IContactProxy.update+--->+IContactProxy{io} +-->+   {s}| 
+|  123     |     |    | }                    |    +------+-----------+   +------+
+|     SAVE +-----+    +----------------------+           |
++----------+                                             |
+                                                    -----+
 
 #+end_src
 
 可见, ContactProvider 的主要改动是在 update(), insert(), delete() 等处插入对
-SimProxy 的调用, SimProxy 使用 IccProvider 直接操作 SIM 卡.
-*** ContactProvider Hook
-*** SimProxy
-SimProxy 通过 IccProvider 直接操作 SIM 卡, 它是 Account 与 SIM 卡之间的桥梁
-*** Account userData
-** SIM 卡联系人导入
+IContactProxy 的调用.
+
+即使在 ContactProvider 中需要直接操作 SIM 卡, 我们也还是希望 ContactProvider 能
+尽量的与 SIM 卡解耦合, 因此我们设计了一个 IContactProxy, 这个接口的作用是把对
+Account 的操作转化为对某个"外部设备"的操作. 目前, 这个接口只有一个实现就是
+SimContactProxy, 故名思义, 就是把 ContactProvider 对 SIM 卡帐户的操作转化为对
+SIM 卡的操作. 
+
+*** ContactProvider hook
+目前, ContactProvider 中在以下位置埋有 hook
+1. onCommit
+
+   这里是所有 ContactProvider 操作都必经的地方, 这里会对此次 transaction 新插入
+   的联系人调用 insert hook, 对标记为 dirty 的联系人调用 update hook
+2. insertGroup, deleteGroup, updateGroup
+
+   插入, 删除, 修改群组, 调用这里的 group 相关的 hook
+3. markRawContactAsDeleted
+
+   删除联系人, 调用 delete hook
+4. DataRowHandler
+
+   ContactProvider 在任何时候操作联系人数据时都会调用 DataRowHandler 去针对特定
+   类型的数据做特殊处理, 这里也提供了一个 onDataUpdate hook, IContactProxy 可以利用这个 hook
+   减少数据库查询.
+ 
+*** SimContactProxy
+如 [[ContactProvider hook]] 所述, SimContactProxy 主要是实现了如下几个 hook:
+1. insert
+   插入 SIM 卡联系人
+2. update
+   更新 SIM 卡联系人
+3. remove
+   删除 SIM 卡联系人
+4. insertGroup,  updateGroup,  removeGroup
+   插入, 更新, 删除分组
+5. onDataUpdate
+   联系人数据更新
+
+** Misc
+*** PhoneAccount
+Contact 本来没有 PhoneAccount 的概念, 但是为了使 Contact 在处理本机联系人与其它帐
+户的联系人时行为一致,例如分组[fn:1], 显示选项, 新建联系人等, 我们添加了一种新的
+PhoneAccount, PhoneAccount 与 SimAccount 类似, 主要的区别在于:
+- ContactProvider 中没有针对 PhoneAccount 的 PhoneContactProxy, 所以
+  PhoneAccount 不会触发 hook
+- 为了与第三方软件及 Legacy API 兼容, PhoneAccount 被指定为默认帐户, 即:若 ContactProvider 发现新建的联系人没有指明属
+  于哪个帐户时, 会被隐式的改为 Phone 帐户联系人.
+
+*** 添加帐户
+- 开机重新添加 SIM 帐户 
+
+  每张 SIM 卡都会对应着一个 SIM 帐户, 由于每次开机时 SIM 卡都可能被变化, 所以现在
+  的策略是:每次开机时都会删除原来的 SIM 帐户, 并重新添加帐户
+- 一次性添加 Phone 帐户
+
+  由于 Phone 帐户并不会像 SIM 帐户一样每次开机都变化, 所以 Phone 帐户只有在第一次开
+  机时会被添加
+*** SIM 卡联系人导入
 SIM 卡联系人需要在开机时从 SIM 卡导入到手机中, 然后 Contact 应用才能显示和处理
-SIM 卡中的联系人. 
+SIM 卡中的联系人.
 
 导入到手机中的 SIM 卡联系人和普通手机联系人都保存到 ContactProvider 中, 主要的不
 同是:
@@ -189,7 +286,7 @@ SIM 卡中的联系人.
   手机联系人的 account 为 PhoneAccount
 - SIM 卡联系人的 SYNC1 和 SYNC2 字段分别是用来保存 SIM卡 相关信息, 比如 该联系人
   在卡上的位置 (index), 有了这些 SIM 卡额外信息, ContactProvider 才知道如何中将
-  对这些联系人的操作反映到对应的 SIM 卡上. 
+  对这些联系人的操作反映到对应的 SIM 卡上.
 
 导入 SIM 联系人的过程其实就是从 SIM 卡中读出联系人的名字,号码,邮件等, 然后将这些
 联系人信息以及卡的信息保存到 ContactProvider 中.
@@ -200,33 +297,33 @@ SIM 卡中的联系人.
 
 开机导入 SIM 卡联系人的过程:
 
-# state: init->boot_completed->remove_account->purge_contact->add_account->import_contact
+# state: init->boot_completed->remove_account->purge_Contact->add_account->import_Contact
 #+begin_src dot :file fsa.png
-  
+
   digraph G {
    subgraph cluster1 {
       label="Account State"
       INIT->BOOT_COMPLETED[label="onEvent(BOOT_COMPLETED)"]
       BOOT_COMPLETED->ACCOUNT_REMOVED [label="onAction(REMOVE_ACCOUNT)"]
       ACCOUNT_REMOVED->CONTACT_PURGED [label="onAction(PURGE_CONTACT)"]
-      isIccLoaded [shape=diamond label="if ICC State == ICC_LOADED"]
+      isIccLoaded [shape=diamond label="ICC State == ICC_LOADED ?"]
       isIccLoaded->CONTACT_PURGED [label="No"]
       isIccLoaded->ACCOUNT_ADDED [label="Yes"]
-      CONTACT_PURGED->isIccLoaded [label="onAction(ADD_ACCOUNT)"] 
-      CONTACT_PURGED->isIccLoaded [label="onEvent(ICC_LOADED)"] 
+      CONTACT_PURGED->isIccLoaded [label="onAction(ADD_ACCOUNT)"]
+      CONTACT_PURGED->isIccLoaded [label="onEvent(ICC_LOADED)"]
       ACCOUNT_ADDED->CONTACT_IMPORTED [label="onAction(IMPORT_CONTACT)"]
    }
-  
+
    subgraph cluster2 {
        label="ICC State"
        ICC_LOADED -> ICC_LOADED [label="onEvent(ICC_LOADED)"]
    }
    ICC_LOADED -> isIccLoaded [style=dashed]
-  
+
   }
 #+end_src
 
-开机导入 SIM 卡联系人的过程被划分为6个状态:
+开机导入 SIM 卡联系人的过程被划分为6个状态, 并通过 FSA (Finite State Automaton) 进行管理:
 - INIT
 - BOOT\_COMPLETED
 - ACCOUNT\_REMOVED
@@ -234,23 +331,24 @@ SIM 卡中的联系人.
 - ACCOUNT\_ADDED
 - CONTACT\_IMPORTED
 
-这样做的主要目的是为了处理在导入过程中可能出现的各种异常情况,例如:
-- 由于 framework 的 bug 或限制, BOOT\_COMPLETE, ICC\_LOADED 等 broadcast 反复触发
-  通过状态的控制,可以限制某些 broadcast 只能在 Account State 处于某些特定状态时
-  才被处理
-- 导入过程中发生飞行模式切换, 禁卡, 或进程异常终止, 甚至以后可能支持的一些新
-  feature, 如 SIM 热插拔等
-  
-  以 SIM 卡热插拔为例, 当程序检测到某张 SIM 卡被拔出时, 无论现在 Account State
-  处理哪个状态, 我们需要做的只有两步:
-  1. 将状态置为 BOOT_COMPLETED
-  2. 调用 onAction(REMOVE_ACCOUNT) 从 BOOT_COMPLETED 状态开始重新进行导入动作.
+这样做的主要目的有两点:
+1. 将开机导入 SIM 联系人的逻辑集中在一处.
+2. 处理在导入过程中可能出现的各种异常情况,例如:
+   - 由于 framework 的 bug 或限制, BOOT\_COMPLETE, ICC\_LOADED 等 broadcast 反复触发
+     通过状态的控制,可以限制某些 broadcast 只能在 Account State 处于某些特定状态时
+     才被处理
+   - 导入过程中发生飞行模式切换, 禁卡, 或进程异常终止, 甚至以后可能支持的一些新
+     feature, 如 SIM 热插拔等
 
-  
+     以 SIM 卡热插拔为例, 当程序检测到某张 SIM 卡被拔出时, 无论现在 Account State
+     处理哪个状态, 我们需要做的只有两步:
+     - 将状态置为 BOOT\_COMPLETED
+     - 调用 onAction(REMOVE_ACCOUNT) 从 BOOT\_COMPLETED 状态开始重新进行导入动作.
+
 总之, 使用状态机来控制 SIM 卡联系人导入的过程主要是为了提高系统的容错性, 一旦发
-生错误或某些异常状态, 可以切换到某个状态重新开始. 
+生错误或某些异常状态, 可以切换到某个状态重新开始.
 
-** 联系人多选
+*** 联系人多选
 Contact 提供了一个 ContactSelectionActivity 来对外提供各种各样的选择联系人的服务,
 如选择联系人, 选择电话号码, 选择电子邮件等, 但所有这些都只是提供了单选的功能, 没
 有多选, 而在 Contact 中有多处需要用到多选的情况, 例如:
@@ -260,22 +358,35 @@ Contact 提供了一个 ContactSelectionActivity 来对外提供各种各样的�
 - SMS 一次选择多个联系人号码或电子邮件发送短信或彩信
 - ...
 
-4.0 的多选功能是直接到最底层的 ContactEntryLisFragment 及 ContactEntryListAdater
-上扩展的, 这样做主要有两个好处:
+4.0 的多选功能是在底层的 ContactEntryLisFragment 及 ContactEntryListAdater 上扩展
+的, 这样做主要有两个好处:
 1. 单选与多选在界面上是一致的
-2. 单选界面原来的一些功能, 如: 
+2. 单选界面原来的一些功能, 如:
    - 查找联系人
    - 根据帐户及分组过滤显示
    - 帐户有变化时自动刷新界面
    - ...
-   等可以直接使用. 
+   等可以直接使用.
+
+*** 飞行模式及禁卡
+当手机处到飞行模式或 SIM 卡被禁卡时, 在我们的手机上, 由于 radio 会掉电, 所以手机
+是无法修改 SIM 卡联系人, 这时 Contact 的策略是隐藏该帐户的联系人, 防止用户去操作
+这些联系人.
+
+为了实现该功能, Contact 借用了 Account 的 syncable 的概念. 具体过程是:
+1. 用户禁卡
+2. 我们收到禁卡相关的 broadcast 后, 调用 AccountManager.setIsSyncable(false) 将
+   SIM 卡对应的帐户设为 unsyncable
+3. Contact 自带的监听 Account 变化的代码会检测到这个事件, 然后刷新联系人列表
+
+通过 Account 自带的 syncable 的概念, Contact 在处理飞行模式及禁卡时与 SIM 卡解耦.
 
 ** 可扩展性
 *** 支持一种新的 SIM 卡
 目前我们支持 SIM 和 USIM 两种 SIM 卡, 分别对应两种不同的帐户, 之所以 SIM 和 USIM
 要区分, 主要是因为 SIM 卡和 USIM 支持的字段不同, 例如 USIM 支持电子邮件而 SIM 就
-不支持. 因为联系人的编辑界面完全是由帐户的属性定义的, 所以对于 SIM 和 USIM, 我们
-定义了两种帐户. 
+不支持. 因为联系人的编辑界面完全是由帐户类型定义的, 所以对于 SIM 和 USIM, 我们定
+义了两种帐户.
 
 由于 SIM 卡联系人的编辑界面完全由 Contact 根据帐户的属性显示出来, 所以说如果我们
 要支持一个新的 SIM 卡, 只需要:
@@ -288,12 +399,9 @@ Contact 提供了一个 ContactSelectionActivity 来对外提供各种各样的�
 户, Contact 会在开机时根据卡槽的情况自动添加 SIM 卡帐户, 所以无需针对 N 卡的需求
 修改.
 
-*** 支持 SIM 卡热插拔
-如 [[ SIM 卡联系人导入]] 所述, 导入联系人使用 FSA 可以支持 SIM 卡热插拔.
-
 ** 待改进
 *** 删除 AccountRestrictionUtil 类
-Contact 对 SIM 卡联系人的修改是通过 ContactProvider 中设置的 HOOK 来直接操作 SIM
+Contact 对 SIM 卡联系人的修改是通过 ContactProvider 中设置的 hook 来直接操作 SIM
 卡的, 而 SIM 卡操作时会发生许多异常情况, 例如:
 - SIM 卡已满
 - 某个字段超出 SIM 卡支持的最大长度
@@ -317,6 +425,14 @@ ContactProvider 之间, 以及 ContactProvider 与 SIM 卡 (即 IccProvider) 之
 
 虽然 ContentProvider 难以通过函数返回值返回详细的错误信息, 但我们其实可以通过重
 写 Binder 调用的 proxy 及 stub 部分代码使其通过`跨进程异常`返回详细的错误信息,
-到时就可以删除 AccountRestrictionUtil 类了.  
+到时就可以删除 AccountRestrictionUtil 类了.
+*** 开机不一定要删除 SIM 帐户和 SIM 联系人
+每次开机时都不分青红皂白的删除 SIM 帐户和 SIM 联系人,然后重新添加 SIM 帐户和导入
+SIM 联系人有点简单粗暴, 最好是能尽量保存之前的 SIM 帐户和 SIM 联系人, 这就需要:
+1. 根据 SIM 卡的 IMSI 判断是否已经存在对应的 SIM 帐户
+2. 使用某些同步算法来从 SIM 卡更新 SIM 帐户联系人.
+* Footnotes
+
+[fn:1] 分组必须隶属于某个帐户
 
 
