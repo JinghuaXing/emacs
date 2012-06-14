@@ -120,7 +120,7 @@
   :group 'quick-jump)
 
 (defvar qj-current-marker nil)
-(defvar qj-marker-ring (make-ring 2))
+(defvar qj-marker-ring (make-ring 5))
 (defvar qj-previous-action-flag nil)
 
 ;;; util func

@@ -151,7 +151,5 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 ;;(add-hook 'find-file-hook 'hs-hide-initial-comment-block)
 
-
-
-
-
+(require 'idomenu)
+(global-set-key (kbd "M-,") 'idomenu)
