@@ -400,8 +400,8 @@ directory, select directory. Lastly the file is opened."
 
 (load "~/.elisp/git-wip/git-wip.el")
 
-(add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-(ac-flyspell-workaround)
+;; (add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
+;; (require 'auto-complete-config)
+;; (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+;; (ac-config-default)
+;; (ac-flyspell-workaround)

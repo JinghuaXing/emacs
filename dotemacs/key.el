@@ -27,7 +27,8 @@
 (global-set-key (kbd "C-x C-k") 'ido-kill-buffer)
 ;;(global-set-key [(meta .)] 'lev/find-tag)
 ;; (global-set-key (kbd "<f11>") 'calendar)
-(global-set-key (kbd "C-c SPC") 'ace-jump-mode)
+;; (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
+(global-set-key (kbd "s-SPC") 'ace-jump-mode)
 ;;(define-key global-map (kbd "C-x C-x") 'toggle-eshell)
 
 (global-set-key (kbd "M-z") 'wy-go-to-char)
