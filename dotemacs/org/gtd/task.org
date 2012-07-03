@@ -7,7 +7,4 @@ CLOSED: [2012-04-11 周三 23:51]
   SCHEDULED: <2012-04-10 Tue>
 ** TODO gfw 工作原理
   
-  SCHEDULED: <2012-05-09 Wed>
-** TODO 迈腾首付
-  
-  SCHEDULED: <2012-06-15 Fri>
+

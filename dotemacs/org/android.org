@@ -1639,6 +1639,8 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
        if !ordered:
          BroadcastRecord r=new BroadcastRecord(registeredReceivers);
 	 mParallelBroadcasts.add(r);
+         add/update mStickyBroadcasts if the broadcast is STICKY 
+         ;; note: mStickyBroadcasts is only re-broadcasted on registerReceiver()
 	 scheduleBroadcastsLocked()
 	   sendMessage(BROADCAST_INTENT_MSG);
 	     processNextBroadcast();

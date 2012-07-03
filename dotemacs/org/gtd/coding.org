@@ -39,3 +39,6 @@ http://www.jstatsoft.org/v46/i03/paper
 - [ ] Pair
 - [ ] SparseArray
 - [ ] TimingLogger
+** TODO sticky broadcast                                            :coding:
+SCHEDULED: <2012-06-21 Thu>
+** TODO LocalBroadcastManager                                       :coding:
