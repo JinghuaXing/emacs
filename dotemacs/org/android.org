@@ -1747,7 +1747,7 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
     - thread.attach() will establish reverse connection (AMS --> ActivityThread) with AMS, (set IApplicationThread IBinder to AMS.app.thread),
       so that AMS can use the IApplicationThread to interact with ActivityThread, e.g. scheduleResumeaCtivity, scheduleLaunchActivity.
       AMS use [[@AppDeathRecipient]] to reset app.thread to null, which means the process has gone.
-*** DONE Android Process Crash and Restart
+*** DONE Android Process Crash, Die and Restart
     SCHEDULED: <2011-07-18 Mon> CLOSED: [2011-07-18 Mon 14:39]
     - State "DONE"       from "DOING"      [2011-07-18 Mon 14:39]
       see also [[persistent application]]
@@ -1755,6 +1755,7 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
       see also [[Java Process Creation]]
       see also [[binder's death]]
       Note: we can also restart process manually by: AM.restartPackage()
+**** APP crash: process crashed because of UncaughtException
   1. setDefaultUncaughtExceptionHandler during process creation
 #+BEGIN_EXAMPLE
      1	    Thread.setDefaultUncaughtExceptionHandler @ RuntimeInit.java
@@ -1814,12 +1815,47 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
            // Whoops, no reason to restart! since no one bind the service
            bringDownServiceLocked(sr, true);
 #+END_EXAMPLE
- To summaries:
-   After an uncaught exception occurs in any thread, the process will crash through the registered Thread.UncaughtExceptionHandler.
-   The handler will firstly finish activities, and if the service has crashed >=2 times, the service will be bringDown (service.onDestroy will be called)
-   If the service is crashing for the 1st time, doesn't bring it down (service.onDestroy will not be called, although the service will be killed due to the
-   process will be killed later), and schedule the restart of the service after the process is killed later.
-** Alarm
+ To summaries: After an uncaught exception occurs in any thread, the process
+   will crash through the registered Thread.UncaughtExceptionHandler. The
+   handler will firstly finish activities, and if the service has crashed >=2
+   times, the service will be bringDown (service.onDestroy will be called) If
+   the service is crashing for the 1st time, doesn't bring it down
+   (service.onDestroy will not be called, although the service will be killed
+   due to the process will be killed later), and schedule the restart of the
+   service after the process is killed later.
+   
+**** APP die: process crashed because of KILL
+when process is killed, AMS mainly rely on DeathRecipient to clean it up or
+restart it.
+
+#+BEGIN_EXAMPLE
+DeathRecipient:
+  appDiedLocked(mApp, mPid, mAppThread);
+    handleAppDiedLocked()
+      cleanUpApplicationRecordLocked(app, restarting, allowRestart, -1);
+        killServicesLocked(app, allowRestart);
+          if (sr.crashCount >= 2 && (sr.serviceInfo.applicationInfo.flags
+                  &ApplicationInfo.FLAG_PERSISTENT) == 0) {
+              bringDownServiceLocked(sr, true);
+          } else if (!allowRestart) {
+              bringDownServiceLocked(sr, true);
+          } else {
+              boolean canceled = scheduleServiceRestartLocked(sr, true);
+              if (sr.stopIfKilled) {
+                // NOTE: stopIfKilled means not STICKY
+                bringDownServiceLocked(sr, true);
+              }
+          }
+        if (app.persistent) {
+          startProcessLocked(app, "restart", app.processName);
+        }
+
+#+END_EXAMPLE
+To summarize:
+
+Died app will be restarted if:
+- has STICKY service
+- is persistent ** Alarm
 ** Android coredump
 ** Android IMF
 

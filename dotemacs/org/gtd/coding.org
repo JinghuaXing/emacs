@@ -39,6 +39,8 @@ http://www.jstatsoft.org/v46/i03/paper
 - [ ] Pair
 - [ ] SparseArray
 - [ ] TimingLogger
-** TODO sticky broadcast                                            :coding:
-SCHEDULED: <2012-06-21 Thu>
+** DONE sticky broadcast                                            :coding:
+CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
 ** TODO LocalBroadcastManager                                       :coding:
+** TODO android killed-app detection                                :coding:
+maybe using Watchdog?

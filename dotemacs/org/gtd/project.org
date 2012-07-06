@@ -2,7 +2,8 @@
 #+CATEGORY: Project
 ** TODO import/export any account                                   :project:
   
-** TODO set default photo in contact provider                       :project:
+** CANCELLED set default photo in contact provider                 :project:
+CLOSED: [2012-07-05 Thu 13:31]
   
 ** TODO contact directory                                          :project:
   
@@ -12,5 +13,6 @@
    - sim full
    - mal-format filed
    - any other restriction
-** TODO what if contact importing failed due to radio-off          :project:
+** CANCELLED what if contact importing failed due to radio-off     :project:
+CLOSED: [2012-07-05 Thu 13:32]
 
