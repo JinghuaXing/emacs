@@ -1,6 +1,7 @@
 * Project
 #+CATEGORY: Project
-** TODO import/export any account                                   :project:
+** DONE import/export any account                                  :project:
+CLOSED: [2012-07-11 Wed 17:15]
   
 ** CANCELLED set default photo in contact provider                 :project:
 CLOSED: [2012-07-05 Thu 13:31]
