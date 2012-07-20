@@ -16,4 +16,5 @@ CLOSED: [2012-07-05 Thu 13:31]
    - any other restriction
 ** CANCELLED what if contact importing failed due to radio-off     :project:
 CLOSED: [2012-07-05 Thu 13:32]
+** TODO use gerrit hook to verify my commit automatically          :project:
 

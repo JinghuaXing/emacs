@@ -64,7 +64,7 @@
 	)
     ))
 
-(defun remove-session ()
+(defun session-remove ()
   (interactive)
   (setq name (my-desktop-get-session-name (concat "Remove session (" (my-desktop-get-current-name) ")")))
   (setq current (my-desktop-get-current-name))
@@ -74,6 +74,16 @@
 	(message (concat name " removed"))
 	)
     (message "Can't remove desktop")
+    )
+  )
+
+(defun session-dup ()
+  (interactive)
+  (let ((name (my-desktop-get-current-name))
+	(new_name (concat my-desktop-session-dir (my-desktop-get-current-name) "-" (format-time-string "%m-%d-%T")))
+	)
+    (copy-directory (concat my-desktop-session-dir name) new_name)
+    (message new_name)
     )
   )
 

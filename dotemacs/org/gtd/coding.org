@@ -45,3 +45,11 @@ CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
 CLOSED: [2012-07-09 Mon 09:33]
 maybe using Watchdog? Nop! STICKY service should be one of the solutions
 ** TODO orientation change & dialog & save state                   :reading:
+** TODO sticky broadcast experiment                                 :coding:
+** TODO different contact in the same app, with different pid?      :coding:
+** STARTED sqlite java architecture                                 :coding:
+SCHEDULED: <2012-07-20 Fri>
+  - database
+  - statement
+  - program
+  - cursor

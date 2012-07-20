@@ -51,7 +51,7 @@
 (global-set-key (kbd "<f9>") (lambda ()
 			       (interactive)
 			       (if  my-ecb-activated-p
-				   (ecb-deactivate)
+				   (ecb-toggle-ecb-windows)
 				 (ecb-activate)
 				 )
 			       ))

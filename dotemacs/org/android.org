@@ -1996,7 +1996,7 @@ AMS calls:
 ** Ant & android
 ** ANT and android project
 ** Application
-   see also [[Context.getApplicationContext()]]
+see also [[Context.getApplicationContext()]]
 *** DONE persistent application
     SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 10:08]
     - State "DONE"       from "DOING"      [2011-07-19 Tue 10:08]
@@ -2103,14 +2103,14 @@ AMS calls:
 				    |	     			      |
 				    |		       	       	      |
 	    		     ContextWrapper    	                 ContextImpl
-       	       	       	       	    |		    		      ^
+                              |		    		      ^    	       	       	       	    
 	    -+------------------+---+---------+-		      |
 	     |			| 	      |		 	      |
 	     |			| 	      |		 	      | composition
-   ContextThemeWrapper       Service   Application      	      |
-  	    |	  |    	       	|      	      |		 	      |
+  ContextThemeWrapper  Service     Application      	      |
+ 	    |	  |    	       	|      	      |		 	      |
 	    |	 -+-------------+-------------+----------+------------+
-        Activity
+  Activity
 
 #+END_EXAMPLE
     Actually, Activity,Receiver,Service all use ContextImpl as the common implementation of the Context, but instead of inherit from ContextImpl,
@@ -2171,6 +2171,16 @@ AMS calls:
     - We can inherit the `Application` class and set it to the `Application` field in AndroidManifest.xml, so that getApplicationContext() can return our own `Application` instance.
     - since `Application` extends ContextWrapper and has been init with a ContextImpl, it is a context of the full functionality.
       You can use it as a `persistent` Context.
+    
+    *Note:*
+    getApplicationContext() return a context:
+    - with full functionality
+    - with less data dependency than activty/service/receiver
+    Thus it makes it meaningful for us to use application context instead of
+    activty/service/receiver as the CONTEXT if we need to STORE the context to
+    somewhere else, e.g. in a static place, since activty/service/receiver is
+    volatile, and often has dependency with mass of data.
+
 **** onCreate()
      Called when the application is stopping.  There are no more application
      objects running and the process will exit.  <em>Note: never depend on
