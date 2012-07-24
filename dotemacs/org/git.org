@@ -2,23 +2,170 @@
 - use GIT_CURL_VERBOSE env to debug curl problem
 - http.proxy
 - http.postBuffer
+* Git basis
+- git 是一个基于 key-value 的文件系统
+- git 中四种主要对象: commit, tree, tag, object
+- git 将对象存在三个地方: snapshot, staging area, working directory
 
 * Command
 ** Porcelain
 *** add
+将 working directory的内容复制到 staging area
+- git add .
+- git add foo.java
 *** bisect
+binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交引入的
 *** blame
+显示一个文件的每一行的最近一次修改, 包括 commit 及 author
+- git blame foo.java
 *** branch
+显示, 建立, 删除分支
+- git branch -d test_branch
+  删除本地的 test_branch 分支, 如果该分支有新的 commit 没有 merge 到其
+  start-point, 则操作失败
+- git branch -D test_branch
+  强制删除 test_branch 分支
+- git branch test_branch
+  创建 test_branch
+- git branch test_branch 5c505c15cf761
+  以 5c505c15cf761 为 start-point 创建新分支 test_branch (start-point 可以是任意
+  有效的 commit, 如 commit hash, tag, branch name, ...)
+- git branch -r
+  显示远程分支
+- git branch --set-upstream test_branch remote/test_branch
+  设置 test_branch 的 upstream 分支为 remote/test_branch, 这样在 test_branch 下
+  push, pull, fetch 等不再需要指明 远程仓库及远程分支
 *** checkout
+checkout 一个 snapshot 到 working directory
+- git checkout android_2.3.5
+
+  切换到 android_2.3.5分支, 即使用 android_2.3.5 分支的 snapshot 覆盖 staging
+  area 及 working directory. 由于这个操作会覆盖 staging area 及 working
+  directory, 所以 git 要求这个操作前当前分支必须是 clean 的, 即没有 un-staged 和
+  un-commit 的内容, 否则会提示操作失败.
+
+- git checkout -b android_2.3.5_local remote/android_2.3.5
+
+  这个操作是 git branch android_2.3.5_local remote/android_2.3.5 是一样的效果的.正
+  常情况下, 由于 remote/android_2.3.5 不是本地分支, 不加 -b 参数的 checkout 命令
+  会使当前处于 detached head 状态, 即没有一个显式的引用指向当前 HEAD, 所以一旦
+  checkout 后做了一些修改, 然后不小心又将 HEAD 指向其它地方(通过 reset 或
+  branch, checkout 命令), 会导致我们难以回到之前的点, 之前的修改就可能会丢失. (通
+  过后面提到的 reflog 实际上还是能回去的)
+
+  checkout 还有第二个重要的用法: 
+- git checkout -- working_file
+
+  这个命令是使用 staging area 中的 对应的file 覆盖 working directory, 例如对本地
+  一个已经纳入 git 管理的文件做了修改的动作, 尚未 git add, 则这时修改还没有进入
+  staging area, 使用这个命令就可以丢弃本地的修改. 后面有会提到 git reset 命令,
+  和这个很容易混淆
+- git checkout --patch tree-dish -- working_file
+
+  与上一个命令不同的是, 这个命令不是从 staging area 恢复 working file, 而是从某个
+  tree-dish 中恢复.  tree-dish, 是指某个 commit 包含的 snapshot 的 hash, 通过这个
+  命令, 可以直接 checkout 某个分支的单个文件.  
+
+git checkout 命令容易与 git reset 混淆,  为了便于区分, 一般情况下, 可以认为 git
+checkout 操作的是 staging area, 而 git reset 操作的是 snapshot (或者叫 tree 对象)
+
 *** cherry-pick
+刚某个分支上的某些 commit merge到另一个分支
+- git cherry-pick commit1 commit2 commit3
+  
+  cherry-pick 实际上是使用 merge 进行工作的, 具体来说, 它的工作过程大约是:
+  1. checkout 出当前分支与 commit1 的 merge-base (即两个分支的交点) 作为 base
+  2. 在 base 上 apply commit1, 由于 commit1 本来就在 base 的上游
+     (fast-forward), 所以这一步不会冲突
+  3. 把 base merge 到 当前分支 (这一步可能冲突)
+
+所以, 不要认为 cherry-pick 可以简单的把一个 commit 搬到另一个分支, cherry-pick
+使用 merge 会在另一个分支上生成新的 commit, 而且可能冲突, 还可能因为 merge 的原
+因导致与原分支不同的结果, 最后一定要 double check 一下. 
 *** commit
+git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 commit 对象的过
+程.
+- git commit
+  git commit 之前, 需要将 working directory 的修改通过 git add 添加到 staging
+  area.
+  
+  一旦 git commit, 一般情况下数据是很难丢失的, 除非你删除了 .git 目录 ... , 或者执行
+  了一些特定的操作..
+  
 *** diff
+显示文件更改
+- git diff 
+  显示 working-directory 与 staging area 的不同
+- git diff --staged
+  显示 staging area 与 snapshot 的不同
+- git diff -- path
+  与前两个命令不同的是, 这个只显示对应于 path 的修改
+- git diff commit
+  显示 HEAD 与 commit 的不同
+- git diff commit1..commit2
+  显示 commit1 与 commit2 的不同
+- git diff A...B
+  与 git diff $(git-merge-base A B) B 相同, 即 显示 B相对于 A,B 的共同祖先的修改. 
 *** fetch
+获取远程仓库的更新, 并更新本地的远程分支
+
+每次 fetch 后,  refs/remotes/REMOTE/.. 下的各个远程分支所指向的 commit 会被更新, 
+远程更新的对象和其他一些 ref, 例如 lightweight tag 也会被下载到本地,
+
+远程分支记录的只是上次 fetch 时远程仓库的状况, 所以不要以为通过查找远程分支可以
+知道当前远程仓库的状况, 如果想的话, 先 fetch
+
+- git fetch
+  若当前分支是远程分支的跟踪分支, 则会更新对应的远程分支.
+- git fetch REMOTE
+  更新 REMOTE 仓库中远程分支
+- git fetch REMOTE <ref-spec>
+
+  ref-spec 更进一步指明远程仓库中的分支与本地远程分支的对应关系, 例如:
+  git fetch korg refs/heads/android2.3.5_vlx:refs/remotes/korg/android2.3.5_vlx
+  
+  其中 : 之前的部分对应的是 korg 仓库上的绝对路径, 而 : 后面的部分对应的是本地
+  .git 目录下的绝对路径. 
+
+  通过 git fetch 将远程仓库更新到本地远程分支后, 就可以对远程分支进行 rebase,
+  merge 等操作了, 远程分支其实类似于一个"只读"的分支.
 *** log
+- git log
+- git log --since
+- git log --author
+- git log commit1...commit2
+  显示存在于 commit2 对应的 branch 中, 但没有存在于 commit1 对应的 branch中的
+  commit, 类似于:
+  git log $(git merge-base commit1 commit2) commit2
+
+  这个命令用来比较远程分支与本地分支的不同时比较有用.
 *** merge
+- git merge commit
+  将 commit 与 HEAD merge,  之后 HEAD 指向新生成的 commit
+
+  与 rebase 不同的是, merge 会生成一个新的 commit
+
+  merge 与 rebase 的选择:
+  1. rebase 可以有机会修改之前的 commit
+  2. rebase 不会生成新的 commit
+  3. rebase 会使 commit history 好看一些 ...
+  4. rebase 会丢失 merge 信息, 有时会给 review 带来困扰
+  5. 小规模合并用 rebase,  大规模时用 merge
+  6. 个人倾向于尽量用 rebase 而不是 merge...
+
+git merge 可以通过参数指定不同的 strategy, 例如 ours strategy 是指遇到冲突时总是
+丢弃对方的修改.
+  
 *** pull
+- git pull <REMOTE> <ref-spec>
+git pull === git fetch ; git merge
+
+推荐不要使用 git pull, 而用 git fetch; git merge 或 git rebase 代替, 因为这样可
+以有机会在 merge 远程代码时先看一下有什么变化. 
 *** push
+
 *** rebase
+一般情况下不要把一个分支 rebase 到一个远程分支
 *** reflog
 *** reset
 *** revert

@@ -53,3 +53,4 @@ SCHEDULED: <2012-07-20 Fri>
   - statement
   - program
   - cursor
+** WATING auto generate log message according to cedet              :coding:
