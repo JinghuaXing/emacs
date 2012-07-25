@@ -1,16 +1,13 @@
-* config
-- use GIT_CURL_VERBOSE env to debug curl problem
-- http.proxy
-- http.postBuffer
 * Git basis
 - git 是一个基于 key-value 的文件系统
-- git 中四种主要对象: commit, tree, tag, object
-- git 将对象存在三个地方: snapshot, staging area, working directory
+- git 的 value 主要是四种对象: commit, tree, tag, object
+- git 的 key 是一个 40B 的 hash 值, 以及各种各样的与 hash 等价的 reference 名
+- git 会将同一个文件存在三个地方: snapshot, staging area (index), working tree
 
 * Command
 ** Porcelain
 *** add
-将 working directory的内容复制到 staging area
+将 working tree的内容复制到 staging area
 - git add .
 - git add foo.java
 *** bisect
@@ -20,31 +17,31 @@ binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交
 - git blame foo.java
 *** branch
 显示, 建立, 删除分支
-- git branch -d test_branch
-  删除本地的 test_branch 分支, 如果该分支有新的 commit 没有 merge 到其
+- ~git branch -d test_branch~
+  删除本地的 test\_branch 分支, 如果该分支有新的 commit 没有 merge 到其
   start-point, 则操作失败
-- git branch -D test_branch
-  强制删除 test_branch 分支
-- git branch test_branch
-  创建 test_branch
-- git branch test_branch 5c505c15cf761
-  以 5c505c15cf761 为 start-point 创建新分支 test_branch (start-point 可以是任意
+- ~git branch -D test_branch~
+  强制删除 test\_branch 分支
+- ~git branch test_branch~
+  创建 test\_branch
+- ~git branch test_branch 5c505c15cf761~
+  以 5c505c15cf761 为 start-point 创建新分支 test\_branch (start-point 可以是任意
   有效的 commit, 如 commit hash, tag, branch name, ...)
-- git branch -r
+- ~git branch -r~
   显示远程分支
-- git branch --set-upstream test_branch remote/test_branch
-  设置 test_branch 的 upstream 分支为 remote/test_branch, 这样在 test_branch 下
+- ~git branch --set-upstream test_branch remote/test_branch~
+  设置 test\_branch 的 upstream 分支为 remote/test\_branch, 这样在 test\_branch 下
   push, pull, fetch 等不再需要指明 远程仓库及远程分支
 *** checkout
-checkout 一个 snapshot 到 working directory
-- git checkout android_2.3.5
+checkout 一个 snapshot 到 working tree
+- ~git checkout android_2.3.5~
 
   切换到 android_2.3.5分支, 即使用 android_2.3.5 分支的 snapshot 覆盖 staging
-  area 及 working directory. 由于这个操作会覆盖 staging area 及 working
+  area 及 working tree. 由于这个操作会覆盖 staging area 及 working
   directory, 所以 git 要求这个操作前当前分支必须是 clean 的, 即没有 un-staged 和
   un-commit 的内容, 否则会提示操作失败.
 
-- git checkout -b android_2.3.5_local remote/android_2.3.5
+- ~git checkout -b android_2.3.5_local remote/android_2.3.5~
 
   这个操作是 git branch android_2.3.5_local remote/android_2.3.5 是一样的效果的.正
   常情况下, 由于 remote/android_2.3.5 不是本地分支, 不加 -b 参数的 checkout 命令
@@ -54,21 +51,26 @@ checkout 一个 snapshot 到 working directory
   过后面提到的 reflog 实际上还是能回去的)
 
   checkout 还有第二个重要的用法: 
-- git checkout -- working_file
+- ~git checkout -- working_file~
 
-  这个命令是使用 staging area 中的 对应的file 覆盖 working directory, 例如对本地
+  这个命令是使用 staging area 中的 对应的file 覆盖 working tree, 例如对本地
   一个已经纳入 git 管理的文件做了修改的动作, 尚未 git add, 则这时修改还没有进入
   staging area, 使用这个命令就可以丢弃本地的修改. 后面有会提到 git reset 命令,
   和这个很容易混淆
-- git checkout --patch tree-dish -- working_file
 
-  与上一个命令不同的是, 这个命令不是从 staging area 恢复 working file, 而是从某个
-  tree-dish 中恢复.  tree-dish, 是指某个 commit 包含的 snapshot 的 hash, 通过这个
-  命令, 可以直接 checkout 某个分支的单个文件.  
+git checkout 命令容易与 git reset 混淆, 为了便于区分, 一般情况下, 可以认为: 
 
-git checkout 命令容易与 git reset 混淆,  为了便于区分, 一般情况下, 可以认为 git
-checkout 操作的是 staging area, 而 git reset 操作的是 snapshot (或者叫 tree 对象)
+1. _git  checkout 操作的是 staging area 与 working tree_
+2. _git reset 操作的是 snapshot(或者叫 tree 对象) 与 staging area_
 
+*** cherry
+find commit not merged upstream
+- ~git cherry~
+
+类似于: 
+~git log <remote/branch>...HEAD && git log HEAD...<remote/branch>~
+或者:
+~git rev-list HEAD --not <remote/branch> && git rev-list <remote/branch> --not HEAD~
 *** cherry-pick
 刚某个分支上的某些 commit merge到另一个分支
 - git cherry-pick commit1 commit2 commit3
@@ -86,7 +88,7 @@ checkout 操作的是 staging area, 而 git reset 操作的是 snapshot (或者�
 git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 commit 对象的过
 程.
 - git commit
-  git commit 之前, 需要将 working directory 的修改通过 git add 添加到 staging
+  git commit 之前, 需要将 working tree 的修改通过 git add 添加到 staging
   area.
   
   一旦 git commit, 一般情况下数据是很难丢失的, 除非你删除了 .git 目录 ... , 或者执行
@@ -106,6 +108,12 @@ git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 c
   显示 commit1 与 commit2 的不同
 - git diff A...B
   与 git diff $(git-merge-base A B) B 相同, 即 显示 B相对于 A,B 的共同祖先的修改. 
+*** difftool
+add these to .gitconfig:
+#+BEGIN_EXAMPLE
+[diff]
+        tool = meld
+#+END_EXAMPLE
 *** fetch
 获取远程仓库的更新, 并更新本地的远程分支
 
@@ -144,15 +152,18 @@ git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 c
   将 commit 与 HEAD merge,  之后 HEAD 指向新生成的 commit
 
   例如当前分支为 master:
+#+BEGIN_EXAMPLE
            A---B---C topic
           /
      D---E---F---G master
-
+#+END_EXAMPLE
   执行 git merge topic 后的结果为:
 
+#+BEGIN_EXAMPLE
            A---B---C topic
           /         \
      D---E---F---G---H master
+#+END_EXAMPLE
 
   与 rebase 不同的是, merge 会生成一个新的 commit (上例中的H)
 
@@ -167,6 +178,12 @@ git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 c
 git merge 可以通过参数指定不同的 strategy, 例如 ours strategy 是指遇到冲突时总是
 丢弃对方的修改.
   
+*** mergetool
+add these to .gitconfig:
+#+BEGIN_EXAMPLE
+[merge]
+        tool = meld
+#+END_EXAMPLE
 *** pull
 - git pull <REMOTE> <ref-spec>
 git pull === git fetch ; git merge
@@ -184,15 +201,19 @@ git pull === git fetch ; git merge
 
 设当前分支为 topic, 当前分支的状态为:
 
+#+BEGIN_EXAMPLE
                  A---B---C topic
                 /
            D---E---F---G master
+#+END_EXAMPLE
 
 git rebase master 后分支的状态为:
 
+#+BEGIN_EXAMPLE
               A'--B'--C' topic
              /
 D---E---F---G master
+#+END_EXAMPLE
 
 即 git rebase 的过程是:
 1. 先从当前分支找到位于 HEAD 与 $(git merge-base master topic) 之间的 commit: A, B,C
@@ -219,11 +240,11 @@ git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存
 1. 不加 path
    - git reset --soft commit
      将当前分支的 HEAD 指向另一个 commit, 但是只更新 snaptshot (或 tree), 完全不
-     修改 staging area 和 working directory
+     修改 staging area 和 working tree
    - git reset --mixed commit
      在前一个命令的基础上, 还会更新 staging area
    - git reset --hard commit
-     在前一个命令的基础上, 还会更新 working directory
+     在前一个命令的基础上, 还会更新 working tree
 
      所以, soft --> mixed --> hard 更新的内容是由少变多, 危险程度也依次递增, 使
      用时应格外小心. 另外, 虽然通过 reflog 可以恢复到 reset 之前的状态, 但
@@ -236,7 +257,7 @@ git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存
      git reset commit -- path 与它类似, 不过它是使用 snapshot 恢复 staging area
      ...
 
-     如果我们想使用 snapshot 直接恢复 working directory 呢? 
+     如果我们想使用 snapshot 直接恢复 working tree 呢? 
      - 通过这两个命令配合
      - 或者使用 git checkout --patch tree-dish -- path :)
 *** revert
@@ -252,6 +273,19 @@ git revert 大致的工作过程是:
    生成 当前 HEAD 与 commit 的逆向 diff
 2. git apply patch_file
    
+*** rm
+- 直接使用 rm 命令
+  rm file1 后, working tree 没有了 file1, 但 staging area 还存在, 所以这时要恢复
+  该文件的话需要:
+  ~git checkout -- file1~
+- ~git rm --cached file1~
+  该命令直接从 staging area 中删除 file1, 所以要恢复的话:
+  - 使用 ~git reset HEAD file1~, 从 snapshot 恢复 file1 到 staging area
+  - 或 ~git add file1~, 将同一个文件重新复制到 staging area
+- ~git rm~
+  该命令同时删除 staging area 和 working tree 中的 file1, 要恢复的话:
+  - ~git reset HEAD file1 && git checkout -- file1~
+
 *** show
 git show 实际上算一个 plumbing command, 但一般用户可以使用它来查看某次 commit 的
 内容, 如 git show HEAD
@@ -263,13 +297,13 @@ fix, 如果这时我们直接 git checkout branch2 切换到 branch2, 则 git �
 1. 将所有当前分支的修改 commit
 2. 或者使用 stash
   
-- git stash save <message>
+- ~git stash save <message>~
 
 将当前的更改保存到一个 stash 中, 并使用 message 来标识. 然后 git 会自动使用
-reset --hard HEAD 丢弃我们的更改. 
+~git reset --hard HEAD~ 丢弃我们的更改. 
 
-- git stash list
-- git stash apply <stash>
+- ~git stash list~
+- ~git stash apply <stash>~
 
 *** status
 git status 显示的信息可能有:
@@ -277,6 +311,7 @@ git status 显示的信息可能有:
   说明你该 push 了
 - your local branch is n commits fall behind the remote ..
   说明你该 rebase 了
+*** submodule
 *** tag
 tag 分为两种: light weight tag 和 annotated tag
 - light weight tag 只是 refs/tags/中的一些引用
@@ -293,7 +328,8 @@ tag 分为两种: light weight tag 和 annotated tag
 *** update-index
 *** update-ref
 *** write-tree
-* File system
+* Best practice
+* Files
 ** config
 ** HEAD
 ** index
@@ -302,7 +338,11 @@ tag 分为两种: light weight tag 和 annotated tag
 *** heads
 *** remotes
 *** tags
-* extension
+* Extension
 ** TopGit
 ** StGit
 ** WIP
+* Misc
+- use GIT_CURL_VERBOSE env to debug curl problem
+- http.proxy
+- http.postBuffer
