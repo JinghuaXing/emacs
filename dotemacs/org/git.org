@@ -143,7 +143,18 @@ git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 c
 - git merge commit
   将 commit 与 HEAD merge,  之后 HEAD 指向新生成的 commit
 
-  与 rebase 不同的是, merge 会生成一个新的 commit
+  例如当前分支为 master:
+           A---B---C topic
+          /
+     D---E---F---G master
+
+  执行 git merge topic 后的结果为:
+
+           A---B---C topic
+          /         \
+     D---E---F---G---H master
+
+  与 rebase 不同的是, merge 会生成一个新的 commit (上例中的H)
 
   merge 与 rebase 的选择:
   1. rebase 可以有机会修改之前的 commit
@@ -163,18 +174,116 @@ git pull === git fetch ; git merge
 推荐不要使用 git pull, 而用 git fetch; git merge 或 git rebase 代替, 因为这样可
 以有机会在 merge 远程代码时先看一下有什么变化. 
 *** push
+- git push <REMOTE> <ref-spec>
+  
+  git push 必须保证本地分支与远程分支是 fast-forward 关系, 即 本地分支通过
+  parent 上溯可以到达远程分支, 否则操作会失败. 如果通过指定 ref-spec 的 + 参数强
+  制 non-fast-forward push, 可能会给远程仓库造成严重的后果. 
 
 *** rebase
-一般情况下不要把一个分支 rebase 到一个远程分支
+
+设当前分支为 topic, 当前分支的状态为:
+
+                 A---B---C topic
+                /
+           D---E---F---G master
+
+git rebase master 后分支的状态为:
+
+              A'--B'--C' topic
+             /
+D---E---F---G master
+
+即 git rebase 的过程是:
+1. 先从当前分支找到位于 HEAD 与 $(git merge-base master topic) 之间的 commit: A, B,C
+2. 将 topic reset 到 master, 然后依次 merge A, B, C
+3. merge 过程中会生成新的 commit: A', B', C'
+
+将 git rebase 过程中有冲突时, 可以使用:
+- 解决冲突, 然后 git rebase --continue 来 merge 下一个 commit
+- 使用 git rebase --abort 全部放弃, 回到 rebase 前的状态
+- 使用 git rebase --skip 忽略当前 commit, 继续 merge 下一个 commit
+
+一般情况下不要把一个远程分支 rebase 到其他分支, 或者更一般的情况: 不要把一个与别
+人共享的分支 rebase 到其他分支.
 *** reflog
+reflog 是对付 detached head, 错误的 reset 等情况的神器.
+
+简单的说, reflog 就是 reference log, 它会记录 HEAD 指针的变化, 例如, 如果使用
+git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存 reset 之间
+的 HEAD, 我们可以通过 reflog 中的这条记录轻松的恢复到 reset 之前的状态.
+
+注意: reflog 只会保存在本地. 
 *** reset
+与 checkout 类似, reset 有两种格式: 加 path 与不加 path
+1. 不加 path
+   - git reset --soft commit
+     将当前分支的 HEAD 指向另一个 commit, 但是只更新 snaptshot (或 tree), 完全不
+     修改 staging area 和 working directory
+   - git reset --mixed commit
+     在前一个命令的基础上, 还会更新 staging area
+   - git reset --hard commit
+     在前一个命令的基础上, 还会更新 working directory
+
+     所以, soft --> mixed --> hard 更新的内容是由少变多, 危险程度也依次递增, 使
+     用时应格外小心. 另外, 虽然通过 reflog 可以恢复到 reset 之前的状态, 但
+     staging area 和 working tree 一旦丢失是无法恢复的.
+2. 使用 path 参数
+   - git reset commit -- path
+     还记得 git checkout -- path 么? 这个命令是使用 staging area 恢复 working
+     directory
+     
+     git reset commit -- path 与它类似, 不过它是使用 snapshot 恢复 staging area
+     ...
+
+     如果我们想使用 snapshot 直接恢复 working directory 呢? 
+     - 通过这两个命令配合
+     - 或者使用 git checkout --patch tree-dish -- path :)
 *** revert
+如果发现某次 commit 有严重的 side effect 想取消那次 commit 的话:
+1. 若 commit 只是在本地分支, 还没有 push 到远程, 而且该 commit 是 HEAD, 那我们可
+   以简单的通过 git reset --hard HEAD~ 丢弃这个 commit
+2. 若 commit 还没有 push 到远程, 但该 commit 不是 HEAD, 我们可以 reset 到
+   commit~, 然后 cherry pick 该 commit 之上的所有 commit
+3. 若 commit 已经 push 到远程, 那只有使用 revert 了
+
+git revert 大致的工作过程是:
+1. git diff -R commit > patch_file
+   生成 当前 HEAD 与 commit 的逆向 diff
+2. git apply patch_file
+   
 *** show
+git show 实际上算一个 plumbing command, 但一般用户可以使用它来查看某次 commit 的
+内容, 如 git show HEAD
 *** stash
+git stash 的作用相当于多个 staging area. 
+当我们正在某个 topic branch 中工作, 这时有个严重的 bug 需要立即切换到其他分支去
+fix, 如果这时我们直接 git checkout branch2 切换到 branch2, 则 git 会自动将当前分
+支上没有 commit 的修改 merge 到 branch2 ..., 这肯定不是我们想要的, 所以我们需要:
+1. 将所有当前分支的修改 commit
+2. 或者使用 stash
+  
+- git stash save <message>
+
+将当前的更改保存到一个 stash 中, 并使用 message 来标识. 然后 git 会自动使用
+reset --hard HEAD 丢弃我们的更改. 
+
+- git stash list
+- git stash apply <stash>
+
 *** status
+git status 显示的信息可能有:
+- your local branch is n commits ahead of the remote branch
+  说明你该 push 了
+- your local branch is n commits fall behind the remote ..
+  说明你该 rebase 了
 *** tag
+tag 分为两种: light weight tag 和 annotated tag
+- light weight tag 只是 refs/tags/中的一些引用
+- annotated tag 是真正的 git object, 会包含更多的信息, 如 message, signature ...
 ** Plumbing
 *** commit-tree
+*** cat-file
 *** fsck
 *** gc
 *** hash-object
