@@ -248,6 +248,9 @@
 
 (require 'magit)
 (require 'magit-topgit)
+(require 'magit-wip)
+(require 'rebase-mode)
+(require 'magit-bisect)
 (add-hook 'magit-mode-hook
 	  'magit-topgit-mode)
 
@@ -400,3 +403,18 @@ directory, select directory. Lastly the file is opened."
 (require 'highlight-current-line)
 
 (load "~/.elisp/git-wip/git-wip.el")
+
+(eval-after-load 'rcirc
+  '(add-to-list 'rcirc-markup-text-functions 'rcirc-smileys))
+
+(defun rcirc-smileys (&rest ignore)
+  "Run smiley-buffer on the buffer
+but add a temporary space at the end to ensure matches of smiley
+regular expressions."
+  (goto-char (point-max))
+  (insert " ")
+  (smiley-buffer)
+  (delete-char -1))
+
+(eval-after-load 'rcirc '(require 'rcirc-notify))
+
