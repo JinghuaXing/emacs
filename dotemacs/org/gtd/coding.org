@@ -55,3 +55,5 @@ SCHEDULED: <2012-07-20 Fri>
   - cursor
 ** WATING auto generate log message according to cedet              :coding:
 ** TODO android resource arch                                       :coding:
+** TODO atomic, CAS, volatile vs. lock                              :coding:
+** TODO 特殊字符文件名为啥无法打开?                                 :coding:

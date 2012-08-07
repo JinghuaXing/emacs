@@ -9,6 +9,8 @@
 (add-to-list 'load-path "~/.elisp/magit/")
 (add-to-list 'load-path "~/.elisp/eim")
 (add-to-list 'load-path "~/.elisp/slime")
+(add-to-list 'load-path "~/.elisp/ruby")
+(add-to-list 'load-path "~/.elisp/emacs-rails/")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
 (load custom-file)
@@ -26,7 +28,7 @@
 (load-file "~/.elisp/dotemacs/escreen.el")
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
-
+(load-file "~/.elisp/dotemacs/ruby.el")
 
 (autoload
   'ace-jump-mode

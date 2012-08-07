@@ -2031,7 +2031,7 @@ see also [[Context.getApplicationContext()]]
 *** MediaPlayerService
 ** Bionic libc
 *** Prelink
-** CANCELED [#B] Preference
+** Preference
    - State "CANCELED"   from "DOING"      [2011-07-26 Tue 16:25]
 *** PreferenceActivity
     - PreferenceActivity extends ListActivity
@@ -2819,6 +2819,7 @@ adb shell setprop log.tag.mytag verbose
      .android/ddms.cfg:
        profilerBufferSizeMb=100
 ** Uri
+*** uri encoding
 ** vold
    :PROPERTIES:
    :CUSTOM_ID: @vold
