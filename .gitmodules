@@ -4,3 +4,6 @@
 [submodule "emacs-rails"]
 	path = emacs-rails
 	url = https://github.com/remvee/emacs-rails.git
+[submodule "rhtml"]
+	path = rhtml
+	url = https://github.com/eschulte/rhtml.git
