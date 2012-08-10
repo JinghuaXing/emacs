@@ -1,7 +1,5 @@
 * Borrow
 #+CATEGORY: BORROW
-** TODO huibin, 麦当劳和体检费,书                                      :life:
-  
 ** DONE jun.li 物业费                                                 :life:
 CLOSED: [2012-04-27 Fri 14:30]
   

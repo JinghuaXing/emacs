@@ -13,3 +13,5 @@
 
 (require 'rdoc-mode)
 (require 'rails)
+(add-to-list 'load-path "~/.elisp/rhtml/")
+(require 'rhtml-mode)

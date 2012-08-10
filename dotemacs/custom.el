@@ -90,6 +90,7 @@
  '(org-startup-indented t)
  '(org2blog/wp-show-post-in-browser nil)
  '(python-use-skeletons t)
+ '(rails-ws:default-server-type "webrick")
  '(rcirc-always-use-server-buffer-flag t)
  '(rcirc-encode-coding-system (quote utf-8))
  '(rcirc-log-flag t)
