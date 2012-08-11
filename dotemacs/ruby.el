@@ -12,7 +12,29 @@
 (add-hook 'ruby-mode-hook 'turn-on-font-lock)  
 
 (require 'rdoc-mode)
-(require 'rails)
+
+(require 'ido)
+(ido-mode t)
+(add-to-list 'load-path "~/.elisp/rinari/")
+(require 'rinari)
+
 (add-to-list 'load-path "~/.elisp/rhtml/")
 (require 'rhtml-mode)
+(add-hook 'rhtml-mode-hook
+     	  (lambda () (rinari-launch)))
+(define-key rhtml-mode-map
+  "\C-c\C-e" '(lambda ()
+		(interactive)
+		(insert "<%  %>")
+		(backward-char 3)
+		(indent-for-tab-command)
+		))
+(define-key rhtml-mode-map
+  "\C-c\C-d" '(lambda ()
+		(interactive)
+		(insert "<%=  %>")
+		(backward-char 3)
+		(indent-for-tab-command)
+		))
 
+(setq rinari-tags-file-name "TAGS")

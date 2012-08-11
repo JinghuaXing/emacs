@@ -10,3 +10,6 @@
 [submodule "evil"]
 	path = evil
 	url = https://git.gitorious.org/evil/evil.git
+[submodule "rinari"]
+	path = rinari
+	url = https://github.com/eschulte/rinari.git
