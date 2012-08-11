@@ -344,5 +344,42 @@ tag 分为两种: light weight tag 和 annotated tag
 ** WIP
 * Misc
 - use GIT_CURL_VERBOSE env to debug curl problem
-- http.proxy
-- http.postBuffer
+
+[color]
+	ui = auto
+[user]
+	name = wei.sun
+	email = wei.sun@spreadtrum.com
+[http]
+	postBuffer = 524288000
+[commit]
+	template = /home/apuser/.gitmessage
+[giggle]
+	main-window-maximized = true
+	main-window-geometry = 700x550+0+25
+	main-window-view = FileView
+	history-view-vpane-position = 501
+	file-view-vpane-position = 469
+[alias]
+	co = checkout
+	ad = add
+	ci = commit
+	cp = cherry-pick
+	st = status
+	br = branch
+	mt = mergetool
+	dt = difftool 
+	ps = push
+	pl = pull
+	cl = clean
+	lg = log
+[merge]
+	tool = meld 
+[diff]
+	tool = meld
+[difftool]
+	prompt = No
+[core]
+      # ignore file mode change
+	filemode = false 
+

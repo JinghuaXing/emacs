@@ -77,7 +77,7 @@
   :group 'workgroups)
 
 ;; FIXME: This complicates loading and byte-comp too much
-(defcustom wg-prefix-key (kbd "C-z")
+(defcustom wg-prefix-key (kbd "C-o")
   "Workgroups' prefix key."
   :type 'string
   :group 'workgroups

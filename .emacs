@@ -420,3 +420,7 @@ regular expressions."
 
 (eval-after-load 'rcirc '(require 'rcirc-notify))
 
+(add-to-list 'load-path "~/.elisp/evil/")
+(require 'evil)
+(evil-mode t)
+
