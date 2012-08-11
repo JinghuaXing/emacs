@@ -193,6 +193,10 @@ occurence of CHAR."
 			      (insert "#!/usr/bin/env perl\n")
 			      )
 	 )
+	((string= ext "rb") (progn
+			      (insert "#!/usr/bin/env ruby\n")
+			      )
+	 )
 	((string= ext "ac") (progn
 			      (insert-file "~/.elisp/my-template/configure.ac")
 			      )
@@ -269,6 +273,7 @@ occurence of CHAR."
 	    "^#!/.*python"
 	    "^#!/.*awk"
 	    "^#!/.*sed"
+	    "^#!/.*ruby"
 	    "^#!/bin/bash"
 	    "^#!.*env .*"
 	    ))
