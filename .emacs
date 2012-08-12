@@ -16,7 +16,7 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
-(load-file "~/.elisp/dotemacs/cedet.el")
+;;(load-file "~/.elisp/dotemacs/cedet.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
@@ -418,8 +418,4 @@ regular expressions."
   (delete-char -1))
 
 (eval-after-load 'rcirc '(require 'rcirc-notify))
-
-(add-to-list 'load-path "~/.elisp/evil/")
-(require 'evil)
-(evil-mode t)
 

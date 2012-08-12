@@ -1,15 +1,9 @@
 [submodule "magit"]
 	path = magit
 	url = https://github.com/magit/magit.git
-[submodule "emacs-rails"]
-	path = emacs-rails
-	url = https://github.com/remvee/emacs-rails.git
 [submodule "rhtml"]
 	path = rhtml
 	url = https://github.com/eschulte/rhtml.git
-[submodule "evil"]
-	path = evil
-	url = https://git.gitorious.org/evil/evil.git
 [submodule "rinari"]
 	path = rinari
 	url = https://github.com/eschulte/rinari.git
