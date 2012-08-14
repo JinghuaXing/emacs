@@ -3027,7 +3027,7 @@ adb shell setprop log.tag.mytag verbose
 	- KeyEvent: 先调用 ViewGroup.superDispatchKeyEvent(), 若没处理,再调用 mFocused.dispatchKeyEvent()
 	- TouchEvent: 先调用 child.dispatchTouchEvent(),若没处理, 再调用 super.dispatchTouchEvent()
      2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
-     3. onInterceptTouchEvent and mMotionTarget
+     3. onInterceptTouchEvent and mMotionTarget and requestDisallowInterceptTouchEvent
 ***** DONE ListView TouchEvent dispatch
       SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
       - State "DONE"       [2011-02-16 Wed 15:04]
@@ -3049,7 +3049,7 @@ adb shell setprop log.tag.mytag verbose
       1. ListView's onTouchEvent will not invoke `onClickListener`, but `onItemClickedListener`
       2. before invoke onItemClickedListener, onTouchEvent will make sure that child.hasFocusable() is false
 
-***** DONE ViewGroup.onInterceptTouchEvent & mMotionTarget
+***** DONE ViewGroup.onInterceptTouchEvent & mMotionTarget & requestDisallowInterceptTouchEvent
       SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
       - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
 *** View

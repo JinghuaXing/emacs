@@ -104,7 +104,6 @@
  '(show-paren-mode t)
  '(slime-auto-connect (quote always))
  '(sql-electric-stuff (quote semicolon))
- '(sql-sqlite-program "/home/apuser/source/android-sdk/tools/sqlite3")
  '(sr-avfs-root "~/.avfs")
  '(sr-virtual-listing-switches "--time-style=long-iso  -aldpgG")
  '(switch-window-increase 15)

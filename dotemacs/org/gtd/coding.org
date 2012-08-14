@@ -58,3 +58,4 @@ SCHEDULED: <2012-07-20 Fri>
 ** TODO atomic, CAS, volatile vs. lock                              :coding:
 ** TODO android theme                                               :coding:
 ** TODO ICU multiple PINYIN                                         :coding:
+** TODO android language                                            :coding:
