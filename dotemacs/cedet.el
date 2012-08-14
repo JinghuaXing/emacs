@@ -48,10 +48,25 @@
 	  (lambda () (setq my-ecb-activated-p nil)))
 (add-hook 'ecb-activate-hook
 	  (lambda () (setq my-ecb-activated-p t)))
-(global-set-key (kbd "<f9>") (lambda ()
-			       (interactive)
-			       (if  my-ecb-activated-p
-				   (ecb-toggle-ecb-windows)
-				 (ecb-activate)
-				 )
-			       ))
+
+(add-hook 'c-mode-common-hook   (lambda ()
+				  (local-set-key (kbd "<f1>") (lambda ()
+								(interactive)
+								(if  my-ecb-activated-p
+								    (ecb-toggle-ecb-windows)
+								  (ecb-activate)
+								  )
+								))
+				  ))
+;; (global-set-key (kbd "<f9>") (lambda ()
+;; 			       (interactive)
+;; 			       (if  my-ecb-activated-p
+;; 				   (ecb-toggle-ecb-windows)
+;; 				 (ecb-activate)
+;; 				 )
+;; 			       ))
+
+(ecb-layout-define "my-cscope-layout" left nil  
+                   (ecb-set-methods-buffer)  
+)
+(setq ecb-layout-name "my-cscope-layout")

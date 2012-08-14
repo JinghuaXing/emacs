@@ -65,7 +65,7 @@ names in scope."
    ;; Environment
    semantic-imenu-summary-function 'semantic-format-tag-prototype
    semantic-imenu-expandable-tag-classes '(type variable)
-   imenu-create-index-function 'semantic-create-imenu-index
+   ;; imenu-create-index-function 'semantic-create-imenu-index
    semantic-type-relation-separator-character '(".")
    semantic-command-separation-character ";"
    ;; speedbar and imenu buckets name

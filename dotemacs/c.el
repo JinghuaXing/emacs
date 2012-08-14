@@ -181,6 +181,8 @@
    "abstract\\|final\\|static\\|"
    "synchronized\\|native"
    "\\|[ \t\n\r]\\)*"                          ; or whitespace
+   "\\(<.*?>\\)?"                                     ; meta
+   "[ \t\n\r]+"                                ; whitespace
    "[a-zA-Z0-9_$]+"                            ; return type
    "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
    "[ \t\n\r]+"                                ; whitespace
@@ -212,7 +214,7 @@
   "Matches interface names in java code, select match 2")
 
 (defvar java-imenu-regexp
-  (list (list nil java-function-regexp 2)
+  (list (list nil java-function-regexp 3)
         (list nil java-class-regexp 2)
         (list nil java-interface-regexp 2))
   "Imenu expression for Java")

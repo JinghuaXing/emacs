@@ -2051,8 +2051,8 @@ provides."
     )
   "List of tag classes in a datatype decl, and strings to describe them.")
 
-(defvar-mode-local c-mode imenu-create-index-function 'semantic-create-imenu-index
-  "Imenu index function for C.")
+;; (defvar-mode-local c-mode imenu-create-index-function 'semantic-create-imenu-index
+;;   "Imenu index function for C.")
 
 (defvar-mode-local c-mode semantic-type-relation-separator-character
   '("." "->" "::")

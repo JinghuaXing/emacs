@@ -1,0 +1,15 @@
+;;;; Emacs Bookmark Format Version 1 ;;;;
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("org"
+ (filename . "~/.elisp/dotemacs/org/")
+ (front-context-string . "attachment\n  drw")
+ (rear-context-string . "012-08-01 22:41 ")
+ (position . 97))
+(".elisp"
+ (filename . "~/.elisp/")
+ (front-context-string . "clipper.el\n  -rw")
+ (rear-context-string . "012-08-01 22:41 ")
+ (position . 1797))
+)
