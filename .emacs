@@ -423,3 +423,10 @@ regular expressions."
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
 (ac-config-default)
 (ac-flyspell-workaround)
+
+(add-to-list 'load-path "~/.elisp/helm")
+(require 'helm-config)
+
+(define-key helm-command-map (kbd "y") 'helm-show-kill-ring)
+(define-key helm-command-map (kbd "o") 'helm-occur)
+(define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings) 

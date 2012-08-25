@@ -64,6 +64,7 @@
  '(file-cache-filter-regexps (quote ("~$" "\\.o$" "\\.exe$" "\\.a$" "\\.elc$" ",v$" "\\.output$" "\\.$" "#$" "\\.class$" "\\.git")))
  '(find-grep-options "-q  -I -i")
  '(gdb-enable-debug t)
+ '(helm-command-prefix-key "s-SPC")
  '(highlight-current-line-globally nil nil (highlight-current-line))
  '(highlight-current-line-whole-line nil)
  '(icicle-command-abbrev-alist nil)
