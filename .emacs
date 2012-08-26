@@ -429,4 +429,6 @@ regular expressions."
 
 (define-key helm-command-map (kbd "y") 'helm-show-kill-ring)
 (define-key helm-command-map (kbd "o") 'helm-occur)
-(define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings) 
+(define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings)
+
+(require 'helm-ls-git)
