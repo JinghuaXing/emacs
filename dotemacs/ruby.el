@@ -102,7 +102,7 @@
 	))
 
 
-(setq rsense-home "/home/sunway/.elisp/rsense-0.3/")
+(setq rsense-home "~/.elisp/rsense-0.3/")
 (add-to-list 'load-path (concat rsense-home "/etc"))
 (require 'rsense)
 (eval-after-load 'auto-complete

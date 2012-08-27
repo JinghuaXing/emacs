@@ -295,7 +295,7 @@
 
 (require 'saveplace)
 (setq-default save-place t)
-(transient-mark-mode t)
+(transient-mark-mode nil)
 
 (require 'quick-jump)
 (global-set-key (kbd "C-,") 'quick-jump-go-back)

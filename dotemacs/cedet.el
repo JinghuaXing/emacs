@@ -49,22 +49,13 @@
 (add-hook 'ecb-activate-hook
 	  (lambda () (setq my-ecb-activated-p t)))
 
-(add-hook 'c-mode-common-hook   (lambda ()
-				  (local-set-key (kbd "<f1>") (lambda ()
-								(interactive)
-								(if  my-ecb-activated-p
-								    (ecb-toggle-ecb-windows)
-								  (ecb-activate)
-								  )
-								))
-				  ))
-;; (global-set-key (kbd "<f9>") (lambda ()
-;; 			       (interactive)
-;; 			       (if  my-ecb-activated-p
-;; 				   (ecb-toggle-ecb-windows)
-;; 				 (ecb-activate)
-;; 				 )
-;; 			       ))
+(global-set-key (kbd "<f9>") (lambda ()
+			       (interactive)
+			       (if  my-ecb-activated-p
+				   (ecb-toggle-ecb-windows)
+				 (ecb-activate)
+				 )
+			       ))
 
 (ecb-layout-define "my-cscope-layout" left nil  
                    (ecb-set-methods-buffer)  
