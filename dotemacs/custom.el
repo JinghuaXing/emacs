@@ -64,8 +64,6 @@
  '(file-cache-filter-regexps (quote ("~$" "\\.o$" "\\.exe$" "\\.a$" "\\.elc$" ",v$" "\\.output$" "\\.$" "#$" "\\.class$" "\\.git")))
  '(find-grep-options "-q  -I -i")
  '(gdb-enable-debug t)
- '(helm-command-prefix-key "s-SPC")
- '(helm-for-files-preferred-list (quote (helm-c-source-ls-git helm-c-source-ffap-line helm-c-source-ffap-guesser helm-c-source-buffers-list helm-c-source-bookmarks helm-c-source-recentf helm-c-source-file-cache helm-c-source-files-in-current-dir helm-c-source-locate)))
  '(highlight-current-line-globally nil nil (highlight-current-line))
  '(highlight-current-line-whole-line nil)
  '(icicle-command-abbrev-alist nil)

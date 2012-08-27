@@ -40,21 +40,21 @@
 ;;(setq w3m-use-cookies t)
 
 (add-hook 'write-file-hooks 'time-stamp)
-(if (string= window-system "x")
-    (progn
-      (create-fontset-from-fontset-spec
-       "-*-terminus-medium-r-normal--16-*-*-*-*-*-fontset-gbk,
-        chinese-gb2312:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
-        chinese-gbk:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
-        chinese-cns11643-5:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-        chinese-cns11643-6:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-        chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
-      (setq default-frame-alist
-	    '(
-	      (font . "fontset-gbk")
-	      )
-	    )
-      ))
+ (if (string= window-system "x")
+     (progn
+       (create-fontset-from-fontset-spec
+        "-*-terminus-medium-r-normal--16-*-*-*-*-*-fontset-gbk,
+         chinese-gb2312:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
+         chinese-gbk:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
+         chinese-cns11643-5:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
+         chinese-cns11643-6:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
+         chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
+       (setq default-frame-alist
+ 	    '(
+ 	      (font . "fontset-gbk")
+ 	      )
+ 	    )
+       ))
 
 (global-font-lock-mode t)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
@@ -295,7 +295,7 @@
 
 (require 'saveplace)
 (setq-default save-place t)
-(transient-mark-mode nil)
+(transient-mark-mode t)
 
 (require 'quick-jump)
 (global-set-key (kbd "C-,") 'quick-jump-go-back)
@@ -423,12 +423,3 @@ regular expressions."
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
 (ac-config-default)
 (ac-flyspell-workaround)
-
-(add-to-list 'load-path "~/.elisp/helm")
-(require 'helm-config)
-
-(define-key helm-command-map (kbd "y") 'helm-show-kill-ring)
-(define-key helm-command-map (kbd "o") 'helm-occur)
-(define-key helm-command-map (kbd "<SPC>") 'helm-all-mark-rings)
-
-(require 'helm-ls-git)
