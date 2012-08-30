@@ -217,13 +217,15 @@ gravity 获得 mMaxAscent 里对应的 baseline 的值, layout 时考虑这个�
 ** onDraw
 ** To summarize
 - measure 过程
+  - getChildMeasureSpec 很重要
+    WRAP_CONTENT, FILL_PARENT 如何转换为 AT_MOST 或 EXACTLY 的? 大小如何确定的?
   - layout_weight
     1. LinearLayout 会 measure 两次
     2. 第一次 measure 时会有些优化和特殊处理, 例如: 
-    3. layout_height 为 0 时可能会省略一次 measure;
-    4. 若 measure 某个 child view 时, 这个 child view 或之前的 child view 有
-       layout_weight 属性, 则 LinearLayout 尝试给该 child view 更大的空间.
-    5. 第二次 measure 时会通过第一次 measure 计算的 mTotalHeight 与 heightSize 计
+       1. layout_height 为 0 时可能会省略一次 measure;
+       2. 若 measure 某个 child view 时, 这个 child view 或之前的 child view 有
+          layout_weight 属性, 则 LinearLayout 尝试给该 child view 更大的空间.
+    3. 第二次 measure 时会通过第一次 measure 计算的 mTotalHeight 与 heightSize 计
        算一个 delta 值 (可正可负), 然后按 weight 做权值分配到各个 child view 上.
 - layout 过程
   - graivty && layout_gravity
@@ -232,4 +234,3 @@ gravity 获得 mMaxAscent 里对应的 baseline 的值, layout 时考虑这个�
   - layout_gravity 与 gravity
   - layout_height 与 height
   - margin 与 padding
-
