@@ -101,8 +101,7 @@
 	(define-key pd-rinari-map2 "z" 'rinari-find-rspec-fixture)
 	))
 
-
-(setq rsense-home "~/.elisp/rsense-0.3/")
+(setq rsense-home (concat (getenv "HOME")  "/.elisp/rsense-0.3/"))
 (add-to-list 'load-path (concat rsense-home "/etc"))
 (require 'rsense)
 (eval-after-load 'auto-complete
