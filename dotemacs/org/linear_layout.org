@@ -227,6 +227,9 @@ gravity 获得 mMaxAscent 里对应的 baseline 的值, layout 时考虑这个�
           layout_weight 属性, 则 LinearLayout 尝试给该 child view 更大的空间.
     3. 第二次 measure 时会通过第一次 measure 计算的 mTotalHeight 与 heightSize 计
        算一个 delta 值 (可正可负), 然后按 weight 做权值分配到各个 child view 上.
+  - 由于 measure 的过程只是一个 for 循环, 没有回溯的过程, 所以在没有 weight 的情
+    况下, fill_parent 是极具杀伤力的...
+    
 - layout 过程
   - graivty && layout_gravity
   - baselineAlligned 
