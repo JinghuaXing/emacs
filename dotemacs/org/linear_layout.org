@@ -1,17 +1,12 @@
+#+TITLE: LinearLayout
+#+AUTHOR: 孙伟
 * LinearLayout
 ** onMeasure
 LinearLayout 的 measure 过程用于确定整个 LinearLayout 及其 child view 的大小,
-这个过程可能是一个多次迭代,不断协商的过程,因为每个 child view 的大小经常无法通过
-一次遍历就确定, 例如:
-   - Horienzontal LinearLayout 带有 baselineAlligned 属性的
-   - 某个 child view 包含 layout_weight 属性的, 要求第一次 measure 完成后根据
-     layout_weight 重新分配剩余空间
-   - wrap_content
 
 #+begin_src java
   if mOrientation == VERTICAL:
       measureVertical(widthMeasureSpec, heightMeasureSpec);
-
   else
       measureHorizontal(widthMeasureSpec, heightMeasureSpec);
 #+end_src
@@ -155,8 +150,8 @@ TextView, Button 都实现了 getBaseline 方法.
 
 由于 baseline alignment 属于 layout 的范畴, 所以在 measure 阶段系统需要做的只是
 顺便将各个 child view 的 getBaseline 的返回值保存在一个名为 mMaxAscent 的
-int[VERTICAL_GRAVITY_COUNT] 数组中, 其意义为:
-若 mMaxAscent[GRAVITY_CENTER_VERTICAL] 为 10, 则表示在 center_vertical gravity
+int[VERTICAL\_GRAVITY\_COUNT] 数组中, 其意义为:
+若 mMaxAscent[GRAVITY\_CENTER\_VERTICAL] 为 10, 则表示在 center\_vertical gravity
 的位置 baseline 最大的一个控件的 baseline 为10, 其它的小控件需要与其 baseline alignment
 
 ** onLayout
@@ -210,30 +205,57 @@ FrameLayout 和 AbsoluteLayout 还是要复杂一些.
   // for ... ends here
 #+END_EXAMPLE
 可见, LinearLayout 的 layout 过程是相关简单的, 对于 vertical LinearLayout, 只需
-要考虑 LinearLayout 的 gravity 属性和 child view 的 layout_gravity 属性. 
+要考虑 LinearLayout 的 gravity 属性和 child view 的 layout\_gravity 属性. 
 *** layoutHorizontal
 layoutHorizontal 与 layoutVertical 类似, 唯一不同的就是需要根据 child view 的
 gravity 获得 mMaxAscent 里对应的 baseline 的值, layout 时考虑这个值就可以了. 
 ** onDraw
 ** To summarize
 - measure 过程
-  - getChildMeasureSpec 很重要
-    WRAP_CONTENT, FILL_PARENT 如何转换为 AT_MOST 或 EXACTLY 的? 大小如何确定的?
-  - layout_weight
+  - *ViewGroup.getChildMeasureSpec 非常重要*
+
+    WRAP\_CONTENT, FILL\_PARENT 如何转换为 AT\_MOST 或 EXACTLY 的? 大小如何确定的?
+  - layout\_weight
     1. LinearLayout 会 measure 两次
     2. 第一次 measure 时会有些优化和特殊处理, 例如: 
-       1. layout_height 为 0 时可能会省略一次 measure;
+       1. layout\_height 为 0 时可能会省略一次 measure;
        2. 若 measure 某个 child view 时, 这个 child view 或之前的 child view 有
-          layout_weight 属性, 则 LinearLayout 尝试给该 child view 更大的空间.
+          layout\_weight 属性, 则 LinearLayout 尝试给该 child view 更大的空间.
     3. 第二次 measure 时会通过第一次 measure 计算的 mTotalHeight 与 heightSize 计
        算一个 delta 值 (可正可负), 然后按 weight 做权值分配到各个 child view 上.
   - 由于 measure 的过程只是一个 for 循环, 没有回溯的过程, 所以在没有 weight 的情
-    况下, fill_parent 是极具杀伤力的...
+    况下, fill\_parent 是极具杀伤力的...
     
 - layout 过程
-  - graivty && layout_gravity
+  - graivty && layout\_gravity
   - baselineAlligned 
-- 区分 layout_xxx 与 xxx 属性, 例如: 
-  - layout_gravity 与 gravity
-  - layout_height 与 height
+- 区分 layout\_xxx 与 xxx 属性, 例如: 
+  - layout\_gravity 与 gravity
+  - layout\_height 与 height
   - margin 与 padding
+** Q&A
+*** MeasureSpec.UNSPECIFIED 何时被用到?
+
+UNSPECIFIED 相当于没有 AT_MOST 限制的 WRAP_CONTENT.当 parent view 完全无法确定
+child view 的 measure spec 时, 会使用这个 mode, 表示没有任何限制.
+
+UNSPECIFIED 很少被用到, 因为大部分 layout 都会用 EXACTLY, AT_MOST 确保其 child
+view 不会超过固定的大小. 但 ListView, ScrollView 这种高度不限的 Layout 除外.
+
+
+ListView 在 measure 它的 child view 时会使用这个 mode, 因为 ListView 没有高度的限
+制, 所以它没有必要给 child view 强加一个 AT_MOST 的measure spec, 换句话说: child
+view, 你想多高就多高吧!
+
+ListView.measureScrapChild():
+
+#+BEGIN_EXAMPLE
+  if (lpHeight > 0) {
+      childHeightSpec = MeasureSpec.makeMeasureSpec(lpHeight, MeasureSpec.EXACTLY);
+  } else {
+      childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+  }
+#+END_EXAMPLE
+
+由此可见, 在 List item 的 layout 中声明 layout_height 时, 除了明确的数值, 如 10dp, 其它的值
+是没有区别的.
