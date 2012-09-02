@@ -73,3 +73,18 @@
 (add-hook 'org-agenda-mode-hook
 	  (lambda ()
 	    (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))
+
+(setq org-babel-default-header-args '((:session . "none")
+				      (:results . "replace")
+				      (:exports . "both")
+				      (:cache . "no")
+				      (:noweb . "no")
+				      (:hlines . "no")
+				      (:tangle . "no")
+				      (:padnewline . "yes")))
+
+(require 'org-crypt)
+(org-crypt-use-before-save-magic)
+(setq org-tags-exclude-from-inheritance (quote ("crypt")))
+(setq org-crypt-key nil)
+(setq auto-save-default nil)
