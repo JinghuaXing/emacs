@@ -8,12 +8,6 @@ CLOSED: [2012-07-05 Thu 13:31]
   
 ** TODO contact directory                                          :project:
   
-** TODO icc provider should throw exception                        :project:
-  For:
-   - air-plain mode & 禁卡
-   - sim full
-   - mal-format filed
-   - any other restriction
 ** CANCELLED what if contact importing failed due to radio-off     :project:
 CLOSED: [2012-07-05 Thu 13:32]
 ** TODO use gerrit hook to verify my commit automatically          :project:

@@ -14,7 +14,7 @@
 
 (setq org-directory "~/.elisp/dotemacs/org/")
 
-(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd")))
+(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/" "~/.elisp/dotemacs/org/gtd") ))
 
 (setq org-remember-templates
       '(("Task" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/task.org" "Tasks")
