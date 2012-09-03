@@ -75,7 +75,7 @@
 	    (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))
 
 (setq org-babel-default-header-args '((:session . "none")
-				      (:results . "replace")
+				      (:results . "output replace")
 				      (:exports . "both")
 				      (:cache . "no")
 				      (:noweb . "no")
@@ -88,3 +88,9 @@
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 (setq org-crypt-key nil)
 (setq auto-save-default nil)
+
+;; (eval-after-load 'auto-complete
+;;   '(progn
+;;      (define-key ac-complete-mode-map [tab] 'ac-expand)
+;;     ) 
+;;   )

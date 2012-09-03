@@ -11,6 +11,7 @@ CLOSED: [2012-04-27 周五 00:14]
   
 ** TODO c set offset for various syntactic                           :emacs:
 ** TODO AsyncQueryHandler && loader                                 :coding:
+SCHEDULED: <2012-09-03 Mon>
 ** STARTED 文学编程 与 org-babel                                    :coding:
 http://www.jstatsoft.org/v46/i03/paper
 ** STARTED one git command per day [0/7]                             :coding:
@@ -44,7 +45,7 @@ maybe using Watchdog? Nop! STICKY service should be one of the solutions
 ** TODO sticky broadcast experiment                                 :coding:
 ** TODO different contact in the same app, with different pid?      :coding:
 ** STARTED sqlite java architecture                                 :coding:
-SCHEDULED: <2012-07-20 Fri>
+SCHEDULED: <2012-09-04 Tue>
   - database
   - statement
   - program
@@ -55,3 +56,7 @@ SCHEDULED: <2012-07-20 Fri>
 ** TODO android theme                                               :coding:
 ** TODO ICU multiple PINYIN                                         :coding:
 ** TODO android language                                            :coding:
+** DONE java inner class can't have static member?                  :coding:
+CLOSED: [2012-09-03 Mon 17:33] SCHEDULED: <2012-09-03 Mon>
+because java inner class is always associated with an outer class instance, thus
+it can't define static members or methods. 
