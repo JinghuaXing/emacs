@@ -1,6 +1,6 @@
 (add-to-list 'load-path "~/.elisp") 
-(add-to-list 'load-path "~/.elisp/org-7.8.03/lisp/")
-(add-to-list 'load-path "~/.elisp/org-7.8.03/contrib/lisp/")
+(add-to-list 'load-path "~/.elisp/org-7.9.1/lisp/")
+(add-to-list 'load-path "~/.elisp/org-7.9.1/contrib/lisp/")
 (add-to-list 'load-path "~/.elisp/emacs-w3m")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/org2blog")
@@ -16,7 +16,7 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
-;;(load-file "~/.elisp/dotemacs/cedet.el")
+(load-file "~/.elisp/dotemacs/cedet.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
@@ -423,3 +423,6 @@ regular expressions."
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
 (ac-config-default)
 (ac-flyspell-workaround)
+
+(load-file "~/.elisp/dot-mode.el")
+ 

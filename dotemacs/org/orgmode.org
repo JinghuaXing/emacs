@@ -55,3 +55,7 @@ there are 3 kinds of :results header argument:
 
 ***** for example
 :results output replace raw
+
+* Tips
+** in-line images
+org-toggle-inline-images (C-c-x-v)

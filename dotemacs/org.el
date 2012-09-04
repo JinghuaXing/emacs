@@ -52,6 +52,7 @@
 				    (search category-keep)))
 (require 'org-latex)
 (setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")
+(setq org-plantuml-jar-path "~/.elisp/plantuml.jar")
 (setq org-src-fontify-natively t)
 
 (setq org-latex-to-pdf-process 
@@ -74,14 +75,14 @@
 	  (lambda ()
 	    (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))
 
-(setq org-babel-default-header-args '((:session . "none")
-				      (:results . "output replace")
-				      (:exports . "both")
-				      (:cache . "no")
-				      (:noweb . "no")
-				      (:hlines . "no")
-				      (:tangle . "no")
-				      (:padnewline . "yes")))
+;; (setq org-babel-default-header-args '((:session . "none")
+;; 				      (:results . "output replace")
+;; 				      (:exports . "code")
+;; 				      (:cache . "no")
+;; 				      (:noweb . "no")
+;; 				      (:hlines . "no")
+;; 				      (:tangle . "no")
+;; 				      (:padnewline . "yes")))
 
 (require 'org-crypt)
 (org-crypt-use-before-save-magic)
@@ -89,8 +90,21 @@
 (setq org-crypt-key nil)
 (setq auto-save-default nil)
 
-;; (eval-after-load 'auto-complete
-;;   '(progn
-;;      (define-key ac-complete-mode-map [tab] 'ac-expand)
-;;     ) 
-;;   )
+(org-babel-do-load-languages
+ (quote org-babel-load-languages)
+ (quote ((emacs-lisp . t)
+         (dot . t)
+         (ditaa . t)
+         (R . t)
+         (python . t)
+         (ruby . t)
+         (gnuplot . t)
+         (clojure . t)
+         (sh . t)
+         (ledger . t)
+         (org . t)
+         (plantuml . t)
+         (latex . t))))
+
+(add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
+(add-to-list 'org-src-lang-modes (quote ("dot" . dot)))
