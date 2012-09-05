@@ -1,4 +1,54 @@
 * Android Loader
-#+BEGIN_SRC dot
+#+BEGIN_SRC plantuml :file 1.png :results output
+  partition Fragment {
+  (*)-->"onStart"
+  (*)-->"onStop"
+  (*)-->"onDestroy"
+  }
+  partition LoadManager {
+  "onStart"-->"doStart"
+  "onStop"-->"doStop"
+  "onDestroy"-->"doDestroy"
+  }
+  partition LoaderInfo {
+  "doStart"-->"Start"
+  "doStop"-->"Stop"
+  "doDestroy"-->"Destroy"
+  "Start"-->"mStarted=true"
+   -->"startLoading"
+  }
+ 
+  partition CursorLoader {
+  -->"onStartLoading"
+  if "mCursor is null?" then
+    -->[true] "deliverResult"
+    -->"check_content_changed"
+  else
+    -->"check_content_changed"
+    if "content_changed?" then
+      -->[true] "forceReload"
+  }
+  
+  partition CursorLoader.ForceLoadContentObserver {
+   () --> "onChange"
+   -->"onCotentChanged"
+   if "mStarted?" then
+     -->"forceReload"
+   else
+     -->"mContentChanged"
+     -->(*)
+  }
 
+  partition AsyncLoader {
+  -->"onForceReload"
+  -->"executePendingTask"
+  -->"check update throttle"
+  note right: 1.If there is any pending task due to update throttle, remove them. \n2. if the load has set an update throttle, schedule a pending task and return
+  -->"AsyncTask.executeOnExecutor(THREAD_POOL_EXECUTOR)"
+  }
+  
 #+END_SRC
+
+#+RESULTS:
+[[file:1.png]]
+
