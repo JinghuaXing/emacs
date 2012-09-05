@@ -16,7 +16,7 @@
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
-(load-file "~/.elisp/dotemacs/cedet.el")
+;; (load-file "~/.elisp/dotemacs/cedet.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
@@ -426,3 +426,14 @@ regular expressions."
 
 (load-file "~/.elisp/dot-mode.el")
  
+(add-to-list 'load-path "~/.elisp/emacs-eclim/")
+;; only add the vendor path when you want to use the libraries provided with emacs-eclim
+(add-to-list 'load-path "~/.elisp/emacs-eclim/vendor/")
+(require 'eclim)
+
+(setq eclim-auto-save t)
+(global-eclim-mode)
+(require 'ac-emacs-eclim-source)
+(add-hook 'eclim-mode-hook (lambda ()
+			     (add-to-list 'ac-sources 'ac-source-emacs-eclim)
+			     (add-to-list 'ac-sources 'ac-source-emacs-eclim-c-dot)))
