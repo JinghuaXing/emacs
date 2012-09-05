@@ -437,3 +437,4 @@ regular expressions."
 (add-hook 'eclim-mode-hook (lambda ()
 			     (add-to-list 'ac-sources 'ac-source-emacs-eclim)
 			     (add-to-list 'ac-sources 'ac-source-emacs-eclim-c-dot)))
+(require 'eclimd)
