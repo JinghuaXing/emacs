@@ -13,6 +13,7 @@ first-char=abcdefghijklmnopqrstuvwxyz
 [Table]
 akxe 巨噬细胞
 alxe 基因组
+biwf 孙伟
 btqe 降解
 btqi 孟德尔
 bwtu 孙公科

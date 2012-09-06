@@ -1,54 +1,204 @@
+#+TITLE: Android Loader
 * Android Loader
-#+BEGIN_SRC plantuml :file 1.png :results output
-  partition Fragment {
-  (*)-->"onStart"
-  (*)-->"onStop"
-  (*)-->"onDestroy"
-  }
-  partition LoadManager {
-  "onStart"-->"doStart"
-  "onStop"-->"doStop"
-  "onDestroy"-->"doDestroy"
-  }
-  partition LoaderInfo {
-  "doStart"-->"Start"
-  "doStop"-->"Stop"
-  "doDestroy"-->"Destroy"
-  "Start"-->"mStarted=true"
-   -->"startLoading"
-  }
- 
-  partition CursorLoader {
-  -->"onStartLoading"
-  if "mCursor is null?" then
-    -->[true] "deliverResult"
-    -->"check_content_changed"
-  else
-    -->"check_content_changed"
-    if "content_changed?" then
-      -->[true] "forceReload"
-  }
+** Source Code
+Fragment.onStart/onStop/onDestroy
+#+BEGIN_EXAMPLE
+  Fragment.onStart
+    mLoaderManager.doStart()
+      foreach loaderInfo in mLoaders:
+        loaderInfo.start()
+          mStarted = true;
+          // LoaderInfo mainly contains 3 member:
+          // 1. mLoader , of Loader
+          // 2. mPendingLoader, of Loader
+          // 3. mCallbacks, of LoaderCallback
+          // mLoader is an instance of Loader
+          mLoader.startLoading();
+            Loader.onStartLoading();
+              if CursorLoader.mCursor!=null:
+                deliverResult(mCursor);
+              if takeContentChanged || mCursor==null:
+                takeContentChanged?
+                  ForceLoadContentObserver
+                    onContentChanged:
+                      if mStarted:
+                        forceLoad
+                      else:
+                        mContentChanged=true
+                forceLoad();
   
-  partition CursorLoader.ForceLoadContentObserver {
-   () --> "onChange"
-   -->"onCotentChanged"
-   if "mStarted?" then
-     -->"forceReload"
-   else
-     -->"mContentChanged"
-     -->(*)
-  }
-
-  partition AsyncLoader {
-  -->"onForceReload"
-  -->"executePendingTask"
-  -->"check update throttle"
-  note right: 1.If there is any pending task due to update throttle, remove them. \n2. if the load has set an update throttle, schedule a pending task and return
-  -->"AsyncTask.executeOnExecutor(THREAD_POOL_EXECUTOR)"
-  }
+  Fragment.onStop
+    foreach loaderInfo in mLoaders:
+      loaderInfo.stop
+        mStarted=false
+        AsyncTaskLoader.cancelLoad 
+      mStarted = false;
   
-#+END_SRC
+  Fragment.onDestroy
+    foreach loaderInfo in mLoaders:
+      loaderInfo.destroy
+        mCallbacks.onLoaderReset(mLoader)
+      
+  Loader.forceLoad
+    AsyncTaskLoader.onForceLoad
+      cancelLoad()
+        if mTask.waiting
+          // There is a task, but it is waiting for the time it should
+          // execute.  We can just toss it.
+          mHandler.removeCallbacks(mTask);
+        else:
+          mTask.cancel
+          mTask=null;
+      mTask = new LoadTask();
+      executePendingTask();
+        if mUpdateThrottle>0:
+          // current task ask has set a throttle
+          if should_be_delayed:
+            mTask.waiting=true;
+            mHandler.postAtTime(mTask,..throttle..);
+        mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    
+  
+  CursorLoader.deliverResult (cursor)
+    if isReset():
+      // isReset? means whether the Loader is destroyed
+      // e.g. through LoaderManager.destroyLoader or LoaderManager.restartLoader
+      cursor.close();
+      return;
+    if isStarted():
+      // isStarted? means where the Loader is stopped
+      // mainly toggled through LoaderManager.doStop/doStart
+      Loader.deliverResult();
+        LoaderManager.onLoadComplete(cursor);
+          LoaderInfo pending = mPendingLoader;
+          // The completed loader has a mPendingLoader?
+          // this means when user previously called LoaderManager.restartLoader(), for the same
+          // loaderId, there is already an inactive loader, and a running active loader, so, before
+          // the runing active loader is completed, the lastest LOADER_RESTART request will be stored
+          // in mPendingLoader
+          
+          // STEP 1: check pending
+          if pending!=null:
+            // There is a new request pending and we were just
+            // waiting for the old one to complete before starting
+            // it.  So now it is time, switch over to the new loader.
+            mPendingLoader=null;
+            destroy();
+            installLoader(pending);
+              pending.start();
+            // just drop the "stale" data, and kill of the pending loader
+            return;
+          
+          // STEP 2: check new data is valid
+          if (mData != data || !mHaveData):
+             mData = data;
+             mHaveData = true;
+             // Notify of the new data so the app can switch out the old data before
+             // we try to destroy it.
+             if mStarted:
+               callOnLoadFinished(loader,data);
+                 mCallbacks.onLoadFinished(loader, data);
+          
+          // STEP 3: destroy inactive loader             
+          // now that the new data has been delivered, we can safely destroy the inactive loader
+          LoaderInfo inactive = mInactiveLoaders.get(mId);
+          inactive.destroy();
+      // after new data is delivered, old data will be destroyed. so, after
+      // LoaderCallback.onLoadFinished, we should never use the old cursor data.
+      oldCursor.close();                                                            
+                                                                  
+#+END_EXAMPLE
 
-#+RESULTS:
-[[file:1.png]]
+LoaderManager.initloader/restartloader
+#+BEGIN_EXAMPLE
+  LoaderManager.initLoader
+    LoaderInfo info = mLoaders.get(id);
+    if (info == null):
+      info = createAndInstallLoader(id, args, callback);
+    if info.mHaveData && mStarted:
+      // If the loader has already generated its data, report it now.
+      info.callOnLoadFinished;
+    return info.mLoader;
+  
+  LoaderManager.restartLoader
+    LoaderInfo info = mLoaders.get(id);
+    if info!=null:
+    // there is already an old loader
+      LoaderInfo inactive = mInactiveLoaders.get(id);
+      if inactive!=null:
+        if !info.mStarted:
+          // we already have an inactive loader, and the current loader has not yet started..
+          // destroy the current loader
+          info.destroy
+        else:
+          // we already have an inactive loader, and the current loader has been started...
+          // we could only set a pending loader..
+          // Note: pending loader is not started
+          info.mPendingLoader=createLoader;
+      else:
+        // inactive==null? means there is no inactive loader yet.
+        // put current loader to inactive loader
+        mInactiveLoaders.put(id,info);
+    // currently there is not loader, create and start a new one
+    info=createAndInstallLoader();
+    return info.mLoader;
+#+END_EXAMPLE
 
+** To summaries:
+- LoaderManager is invoked in two ways:
+  1. LoaderManager.initLoader/restartLoader/destroyLoader
+     
+     these methods are invoked by user, to manually init/restart/destroy a
+     loader, but note that there is no way by the user to manually `STOP` a loader
+
+  2. LoaderManager.doStart/doStop/doDestroy
+
+     these methods are invoked by Fragment, which is controlled by the
+     Fragment/Activity life cycle.
+
+  Case 2 is especially important, since it is invisible to user...However,
+  thanks to these methods, user need not to do these trivial things any more:
+
+  - reload data on activity start
+  - stop monitoring data changes on activity stop
+  - release resources (e.g. cursor) on activity destroy
+  - what about when cursor data arrives while the activity is not started yet.
+  - ...
+
+- inactive/active loader and resources management
+  loader tends to manage resources by itself: the main problem is, how to
+  discard old data? since loader client may be using it. 
+
+  1. LoaderManager.restartLoader
+
+     If the current loader already have delivered data to client, LoaderManager
+     can't simply destroy current loader, since it's resource maybe using by
+     client... so LoaderManager will put the current loader to inactive
+     loaders, and install a new loader as active loader. 
+     
+     After the new loader got it's data, the inactive loader will be destroyed.
+
+  2. CursorLoader.deliverResult
+
+     After CursorLoader got new cursor, it will first deliver it the client,
+     then close the old cursor automatically.
+
+- Pending loader
+  With pending loader, for the same loader id, there could be at most 3 loaders
+  at the same time.
+
+- There are some optimizations for `onLoadFinished`
+
+  1. initLoader may cause an immediate onLoadFinished  (mHaveData && mStarted)
+  2. Although CursorLoader may always deliver result to LoaderManager,
+     LoaderManager will keeping those unchanged result from being delivered to
+     client thought onLoadFinished.
+
+- Loader keep running in the background, regardless of the state of
+  Activity/Fragment
+  
+  CursorLoader use a ForceLoadContentObserver to monitor DB change, once DB
+  changed, it will `forceLoad ` (if mStarted) or mark the event
+  (takeContentChanged), next time onStart will notice the flag and `forceLoad`
+
+- mStarted flag

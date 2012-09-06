@@ -104,13 +104,6 @@
 (setq rsense-home (concat (getenv "HOME")  "/.elisp/rsense-0.3/"))
 (add-to-list 'load-path (concat rsense-home "/etc"))
 (require 'rsense)
-(eval-after-load 'auto-complete
-  '(progn
-    (add-hook 'ruby-mode-hook '(lambda ()
-				 (add-to-list 'ac-sources 'ac-source-rsense)
-				 ))
-    ) 
-  )
 
 
 (require 'yari)

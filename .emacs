@@ -5,7 +5,6 @@
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/org2blog")
 (add-to-list 'load-path "~/.elisp/cc-mode")
-;; (add-to-list 'load-path "~/.elisp/magit-1.1.1/")
 (add-to-list 'load-path "~/.elisp/magit/")
 (add-to-list 'load-path "~/.elisp/eim")
 (add-to-list 'load-path "~/.elisp/slime")
@@ -231,9 +230,9 @@
 (toggle-input-method nil)          ; default is turn off
 (global-set-key ";" 'eim-insert-ascii)
 
-;; (cua-mode t)
-;; (require 'undo-tree)
-;; (global-undo-tree-mode)
+(cua-mode t)
+(require 'undo-tree)
+(global-undo-tree-mode)
 
 (require 'org2blog-autoloads)
 (setq org2blog/wp-blog-alist
@@ -274,13 +273,6 @@
 
 (require 'htmlize)
 (require 'boxquote)
-(require 'clipper)
-
-(global-set-key "\C-cci" 'clipper-insert)
-(global-set-key "\C-ccc" 'clipper-create)
-(global-set-key "\C-ccd" 'clipper-delete)
-
-;;(defalias 'vc-diff 'vc-ediff)
 
 (add-hook 'nxml-mode-hook '(lambda () (auto-fill-mode -1)))
 
@@ -418,23 +410,4 @@ regular expressions."
 
 (eval-after-load 'rcirc '(require 'rcirc-notify))
 
-(add-to-list 'load-path "~/.elisp/auto-complete-1.3.1")
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-(ac-flyspell-workaround)
-
-(load-file "~/.elisp/dot-mode.el")
- 
-(add-to-list 'load-path "~/.elisp/emacs-eclim/")
-;; only add the vendor path when you want to use the libraries provided with emacs-eclim
-(add-to-list 'load-path "~/.elisp/emacs-eclim/vendor/")
-(require 'eclim)
-
-(setq eclim-auto-save t)
-(global-eclim-mode)
-(require 'ac-emacs-eclim-source)
-(add-hook 'eclim-mode-hook (lambda ()
-			     (add-to-list 'ac-sources 'ac-source-emacs-eclim)
-			     (add-to-list 'ac-sources 'ac-source-emacs-eclim-c-dot)))
-(require 'eclimd)
+(load-file "~/.elisp/dot-mode.el") 

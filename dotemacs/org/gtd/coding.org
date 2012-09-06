@@ -60,3 +60,4 @@ SCHEDULED: <2012-09-04 Tue>
 CLOSED: [2012-09-03 Mon 17:33] SCHEDULED: <2012-09-03 Mon>
 because java inner class is always associated with an outer class instance, thus
 it can't define static members or methods. 
+** TODO CR 66717                                                    :coding:
