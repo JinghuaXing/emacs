@@ -90,7 +90,7 @@ Fragment.onStart/onStop/onDestroy
             return;
           
           // STEP 2: check new data is valid
-          if (mData != data || !mHaveData):
+          if (mData != data || !mHaveData):   (ref:checkDataNew)
              mData = data;
              mHaveData = true;
              // Notify of the new data so the app can switch out the old data before
@@ -117,7 +117,7 @@ LoaderManager.initloader/restartloader
       info = createAndInstallLoader(id, args, callback);
     if info.mHaveData && mStarted:
       // If the loader has already generated its data, report it now.
-      info.callOnLoadFinished;
+      info.callOnLoadFinished;      (ref:retriveOldData)
     return info.mLoader;
   
   LoaderManager.restartLoader
@@ -166,6 +166,7 @@ LoaderManager.initloader/restartloader
   - ...
 
 - inactive/active loader and resources management
+
   loader tends to manage resources by itself: the main problem is, how to
   discard old data? since loader client may be using it. 
 
@@ -184,6 +185,7 @@ LoaderManager.initloader/restartloader
      then close the old cursor automatically.
 
 - Pending loader
+
   With pending loader, for the same loader id, there could be at most 3 loaders
   at the same time.
 
@@ -192,7 +194,7 @@ LoaderManager.initloader/restartloader
   1. initLoader may cause an immediate onLoadFinished  (mHaveData && mStarted)
   2. Although CursorLoader may always deliver result to LoaderManager,
      LoaderManager will keeping those unchanged result from being delivered to
-     client thought onLoadFinished.
+     client (thought onLoadFinished).
 
 - Loader keep running in the background, regardless of the state of
   Activity/Fragment
@@ -202,3 +204,18 @@ LoaderManager.initloader/restartloader
   (takeContentChanged), next time onStart will notice the flag and `forceLoad`
 
 - mStarted flag
+
+- Loader.mUpdateThrottle
+
+- initLoader vs. restartLoader: 
+  
+  1. initLoader will reuse the `stale` loader, although the client may supply
+     different `args` for this call, since mCallbacks.onCreateLoader is not
+     invoked at all, the new `args` make no sense. thus, When the loader's args
+     need to be changed (new uri/new projection), initLoader doesn't work as
+     expected.
+     
+  2. Although Fragment.onStart will re-deliver data, but because of
+     [[(checkDataNew)]], the data may be not delivered to client. thus, sometimes a
+     manual call to initLoader is still needed ([[(retriveOldData)]]) to `retrieve
+     old data`.
