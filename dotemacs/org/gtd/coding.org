@@ -10,6 +10,8 @@ CLOSED: [2012-04-27 周五 00:14]
 ** TODO android search                                              :coding:
   
 ** TODO c set offset for various syntactic                           :emacs:
+** DONE AsyncQueryHandler && loader                                 :coding:
+CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
 ** STARTED 文学编程 与 org-babel                                    :coding:
 http://www.jstatsoft.org/v46/i03/paper
 ** STARTED one git command per day [0/7]                             :coding:
@@ -48,7 +50,10 @@ SCHEDULED: <2012-09-04 Tue>
   - statement
   - program
   - cursor
-** TODO android resource arch                                       :coding:
+** WATING auto generate log message according to cedet              :coding:
+** STARTED android resource arch                                    :coding:
+SCHEDULED: <2012-09-10 Mon>
+
 ** TODO atomic, CAS, volatile vs. lock                              :coding:
 ** TODO android theme                                               :coding:
 ** TODO ICU multiple PINYIN                                         :coding:

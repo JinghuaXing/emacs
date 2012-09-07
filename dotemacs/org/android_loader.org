@@ -1,4 +1,5 @@
 #+TITLE: Android Loader
+#+AUTHOR: wei.sun
 * Android Loader
 ** Source Code
 Fragment.onStart/onStop/onDestroy
@@ -215,7 +216,12 @@ LoaderManager.initloader/restartloader
      need to be changed (new uri/new projection), initLoader doesn't work as
      expected.
      
-  2. Although Fragment.onStart will re-deliver data, but because of
-     [[(checkDataNew)]], the data may be not delivered to client. thus, sometimes a
-     manual call to initLoader is still needed ([[(retriveOldData)]]) to `retrieve
-     old data`.
+  2. Although Fragment.onStart will re-deliver data, because of [[(checkDataNew)]],
+     the data may not be delivered to client eventually. thus, sometimes a manual call to
+     initLoader is still needed ([[(retriveOldData)]]) to `retrieve old data`.
+
+- Threading Rule
+  1. onLoadFinished is assured by the AsyncTaskLoader that `it runs in the UI thread`
+  2. Loader client should make sure that initLoader/restartLoader/destroyLoader
+     runs in the UI thread, to avoid the condition that `loader is destroyed
+     while it is delivering data to client`
