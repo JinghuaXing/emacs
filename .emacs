@@ -411,3 +411,5 @@ regular expressions."
 (eval-after-load 'rcirc '(require 'rcirc-notify))
 
 (load-file "~/.elisp/dot-mode.el") 
+(require 'browse-kill-ring)
+(global-set-key (kbd "C-y") 'browse-kill-ring)
