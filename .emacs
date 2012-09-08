@@ -412,4 +412,4 @@ regular expressions."
 
 (load-file "~/.elisp/dot-mode.el") 
 (require 'browse-kill-ring)
-(global-set-key (kbd "C-y") 'browse-kill-ring)
+(global-set-key (kbd "M-y") 'browse-kill-ring)
