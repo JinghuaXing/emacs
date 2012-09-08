@@ -4,3 +4,9 @@
 [submodule "rhtml"]
 	path = rhtml
 	url = https://github.com/eschulte/rhtml.git
+[submodule "back-button"]
+	path = back-button
+	url = https://github.com/rolandwalker/back-button.git
+[submodule "nav-flash"]
+	path = nav-flash
+	url = https://github.com/rolandwalker/nav-flash.git

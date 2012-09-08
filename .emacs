@@ -1,7 +1,7 @@
 (add-to-list 'load-path "~/.elisp") 
 (add-to-list 'load-path "~/.elisp/org-7.9.1/lisp/")
 (add-to-list 'load-path "~/.elisp/org-7.9.1/contrib/lisp/")
-(add-to-list 'load-path "~/.elisp/emacs-w3m")
+(add-to-list 'load-path "~/.elisp/org-7.9.1/contrib/lisp/"))
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/org2blog")
 (add-to-list 'load-path "~/.elisp/cc-mode")
@@ -289,15 +289,15 @@
 (setq-default save-place t)
 (transient-mark-mode t)
 
-(require 'quick-jump)
-(global-set-key (kbd "C-,") 'quick-jump-go-back)
-(global-set-key (kbd "C-.") 'quick-jump-push-marker)
-(add-hook 
- 'flyspell-mode-hook 
- '(lambda ()
-    (define-key flyspell-mode-map (kbd "C-.") nil)
-    (define-key flyspell-mode-map (kbd "C-,") nil))
- )
+;;(require 'quick-jump)
+;;(global-set-key (kbd "C-,") 'quick-jump-go-back)
+;;(global-set-key (kbd "C-.") 'quick-jump-push-marker)
+;; (add-hook 
+;;  'flyspell-mode-hook 
+;;  '(lambda ()
+;;     (define-key flyspell-mode-map (kbd "C-.") nil)
+;;     (define-key flyspell-mode-map (kbd "C-,") nil))
+;;  )
 
 ;; (require 'find-file-in-project)
 ;; (global-set-key (kbd "C-x f") 'find-file-in-project)
@@ -413,3 +413,15 @@ regular expressions."
 (load-file "~/.elisp/dot-mode.el") 
 (require 'browse-kill-ring)
 (global-set-key (kbd "M-y") 'browse-kill-ring)
+
+(add-to-list 'load-path "~/.elisp/back-button/") 
+(require 'back-button)
+(back-button-mode 1)
+(add-to-list 'load-path "~/.elisp/nav-flash//")
+(require 'nav-flash)
+(nav-flash-show)
+(add-hook 'imenu-after-jump-hook 'nav-flash-show nil t)
+(global-set-key (kbd "M-n") 'back-button-local-forward)
+(global-set-key (kbd "M-p") 'back-button-local-backward)
+(global-set-key (kbd "M-N") 'back-button-global-forward)
+(global-set-key (kbd "M-P") 'back-button-global-backward)
