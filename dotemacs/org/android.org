@@ -3274,3 +3274,5 @@ adb shell setprop log.tag.mytag verbose
     CLOSED: [2011-06-30 Thu 16:42]
     - State "DONE"       from ""           [2011-06-30 Thu 16:42]
     see also [[System init]]
+** DONE AsyncQueryHandler && loader                                 :coding:
+CLOSED: [2012-09-08 周六 16:12] SCHEDULED: <2012-09-03 Mon>

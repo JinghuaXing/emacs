@@ -32,7 +32,7 @@
 (setq org-use-fast-todo-selection t)
 (setq org-refile-use-outline-path t)
 (setq org-refile-targets
-      '((org-agenda-files . (:maxlevel . 1))
+      '((org-agenda-files . (:maxlevel . 2))
 	))
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)

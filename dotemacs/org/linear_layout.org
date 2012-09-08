@@ -24,7 +24,7 @@ alignment.
   // 是第二次 measure 时计算`空闲空间`的依据.                                o
   int totalWeight;
   // totalWeight 为第一次 measure 时计算的各个 child view 的 layout_weight 的总和
-
+  
   for (int i = 0; i < child_view_count; ++i):
     if child.getVisibility() == View.GONE:
        // visibility 为 GONE 的 child view 的高度不会被计算
@@ -41,7 +41,7 @@ alignment.
            else if (mShowDividers & SHOW_DIVIDER_MIDDLE) != 0:
               ...
          mTotalLength += mDividerHeight;
-
+  
      LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) child.getLayoutParams();
      totalWeight += lp.weight;
      if heightMode == MeasureSpec.EXACTLY && lp.height == 0 && lp.weight > 0:
@@ -50,7 +50,7 @@ alignment.
        // 表示该 child view 并不知道自己需要多高, 只是希望 LinearLayout 在第二次 measure
        // 时能根据 child view 指定的 layout_weight 值分配一点剩余空间给它. 这时 LinearLayout
        // 在第一次 measure 时没有必要去 measure 它.
-
+  
        // 为什么不直接写成:
        // mTotalLength = totalLength + lp.topMargin + lp.bottomMargin; ?
        // 因为 child view 的 top, bottom margin 可能为负值 ...
@@ -68,7 +68,7 @@ alignment.
          // android orig comment like this:
          //         "when determine how big next child would like to be, If this or previous children have given a weight, then we allow it to
          //   use all available space (and we will shrink things later if needed)."
-
+  
            childHeightMeasureSpec = getChildMeasureSpec(parentHeightMeasureSpec,mPaddingTop + mPaddingBottom + lp.topMargin + lp.bottomMargin+ heightUsed,
                                   lp.height);
            // 第一个参数是 spec 是 LinearLayout 的 measurespec, child view 不可能突破 parent view 的 mearsure spec, 比如请求一个比 parent view 更大的高度
@@ -94,7 +94,7 @@ alignment.
        // if heightMode.. ends here
        mTotalLength += mPaddingTop + mPaddingBottom;
        // for ... ends here
-
+  
   int heightSize = mTotalLength;
   // considure android:minHeight
   heightSize = Math.max(heightSize, getSuggestedMinimumHeight());

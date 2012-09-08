@@ -6,8 +6,3 @@ CLOSED: [2012-04-11 周三 23:51]
   
   SCHEDULED: <2012-04-10 Tue>
 ** TODO gfw 工作原理
-** TODO [[http://doc.norang.ca/org-mode.html][Organize Your Life In Plain Text!]]
-  
-  SCHEDULED: <2012-09-04 Tue>
-  
-
