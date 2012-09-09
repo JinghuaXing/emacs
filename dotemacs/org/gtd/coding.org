@@ -48,10 +48,12 @@ SCHEDULED: <2012-09-04 Tue>
   - statement
   - program
   - cursor
-** WATING auto generate log message according to cedet              :coding:
 ** TODO android resource arch                                       :coding:
 ** TODO atomic, CAS, volatile vs. lock                              :coding:
 ** TODO android theme                                               :coding:
 ** TODO ICU multiple PINYIN                                         :coding:
 ** TODO android language                                            :coding:
-** TODO CR 66717                                                    :coding:
+** STARTED static synchronized vs. synchronized(Test.class) 是否是一回事? :coding:
+SCHEDULED: <2012-09-10 周一>
+** STARTED try groovy                                               :coding:
+SCHEDULED: <2012-09-11 周二>
