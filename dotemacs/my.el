@@ -545,3 +545,34 @@ occurence of CHAR."
   (interactive)
   (isearch-yank-internal (lambda () (forward-sexp 1) (point))))
 (define-key isearch-mode-map    "\C-w" 'isearch-yank-sexp)
+
+
+;; show Unicode table
+;; inspired by http://www.chrislott.org/geek/emacs/dotemacs.html
+(defun unicode-table ()
+  "Print the utf16 table. Based on a defun by Alex Schroeder <asc@bsiag.com>"
+  (interactive)
+  (switch-to-buffer "*Unicode Table*")
+  (erase-buffer)
+  (insert (format "Unicode characters:\n"))
+
+  ;; Generate list of all unicode code points
+  ;; See http://en.wikipedia.org/wiki/Unicode_plane#Overview
+  (setq code-points (append (number-sequence  ?\x0000  ?\xffff) 
+			    (number-sequence ?\x10000 ?\x1ffff)
+			    (number-sequence ?\x20000 ?\x2ffff)
+			    (number-sequence ?\xe0000 ?\xeffff)))
+
+  ;; Iterate code points
+  (dolist (code-point code-points)
+    ;; Get description from emacs internals
+    (let ((description (get-char-code-property code-point
+					       'name)))
+      ;; Insert code-point, character and description
+      (insert (format "%4d 0x%02X %c %s\n" 
+		      code-point 
+		      code-point 
+		      code-point 
+		      description))))
+  ;; Jump to beginning of buffer
+  (beginning-of-buffer))

@@ -68,6 +68,7 @@
 				    ((get-buffer "*Tracker*") (switch-to-buffer "*Tracker*")) 
 				    ((get-buffer "*gid*") (switch-to-buffer "*gid*")) 
 				    ((get-buffer "*Find*") (switch-to-buffer "*Find*"))
+				    ((get-buffer "*Moccur*") (switch-to-buffer "*Moccur*"))
 				    (t nil)
 				    )
 				   )
