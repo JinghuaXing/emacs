@@ -11,4 +11,5 @@ CLOSED: [2012-07-05 Thu 13:31]
 ** CANCELLED what if contact importing failed due to radio-off     :project:
 CLOSED: [2012-07-05 Thu 13:32]
 ** TODO use gerrit hook to verify my commit automatically          :project:
+SCHEDULED: <2012-09-14 Fri>
 

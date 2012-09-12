@@ -1,7 +1,6 @@
 * Coding
 #+CATEGORY:CODING
-** WATING DOING [#A] ContentProvider                                :coding:
-** WATING DOING [#B] Android eng-mode vs. user-mode                 :coding:
+** TODO DOING [#B] Android eng-mode vs. user-mode                   :coding:
 ** DONE write git tips                                              :coding:
 CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
   
@@ -9,18 +8,10 @@ CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
 CLOSED: [2012-04-27 周五 00:14]
 ** TODO android search                                              :coding:
   
-** TODO c set offset for various syntactic                           :emacs:
 ** DONE AsyncQueryHandler && loader                                 :coding:
 CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
-** STARTED 文学编程 与 org-babel                                    :coding:
+** TODO 文学编程 与 org-babel                                       :coding:
 http://www.jstatsoft.org/v46/i03/paper
-** STARTED one git command per day [0/7]                             :coding:
-  - [ ] git-push
-  - [ ] git-pull
-  - [ ] git-log
-  - [ ] git-merge
-  - [ ] git-rebase
-  - [ ] git-cherry-pick
 ** TODO android root原理
 ** TODO android widget [0/3]                                         :coding:
   - [ ] SlidingDrawer
@@ -37,33 +28,26 @@ http://www.jstatsoft.org/v46/i03/paper
 - [ ] TimingLogger
 ** DONE sticky broadcast                                            :coding:
 CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
-** TODO LocalBroadcastManager                                       :coding:
 ** DONE android killed-app detection                                :coding:
 CLOSED: [2012-07-09 Mon 09:33]
 maybe using Watchdog? Nop! STICKY service should be one of the solutions
-** TODO orientation change & dialog & save state                   :reading:
-** TODO sticky broadcast experiment                                 :coding:
-** TODO different contact in the same app, with different pid?      :coding:
 ** STARTED sqlite java architecture                                 :coding:
 SCHEDULED: <2012-09-17 Mon>
   - database
   - statement
   - program
   - cursor
-** WATING auto generate log message according to cedet              :coding:
 ** STARTED android resource arch                                    :coding:
 SCHEDULED: <2012-09-19 Wed>
 
-** TODO atomic, CAS, volatile vs. lock                              :coding:
 ** TODO android theme                                               :coding:
-** TODO android language                                            :coding:
 ** STARTED static synchronized vs. synchronized(Test.class) 是否是一回事? :coding:
 SCHEDULED: <2012-09-13 Thu>
 ** STARTED try groovy                                               :coding:
 SCHEDULED: <2012-09-21 Fri>
-** TODO unciode, java utf-16, surrogate pair                        :coding:
-SCHEDULED: <2012-09-11 Tue>
+** DONE unciode, java utf-16, surrogate pair                        :coding:
+CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
 ** TODO ICU                                                         :coding:
-SCHEDULED: <2012-09-12 Wed>
+SCHEDULED: <2012-09-13 Thu>
 ** TODO java language specification                                 :coding:
 DEADLINE: <2012-10-21 Sun> SCHEDULED: <2012-09-21 Fri>

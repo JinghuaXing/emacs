@@ -1,8 +1,6 @@
 #+TITLE: Unicode
 #+AUTHOR:sunwayforever@gmail.com
 * Unicode
-[[http://userguide.icu-project.org/unicode][Unicode basis from ICU]]
-
 Representing text-format data in computers is a matter of:
 1. repertoires: defining a set of characters
    defining a repertoires of an *unordered* collection of characters
@@ -68,13 +66,14 @@ For historical reasons, there are also another two encoding schemes:
 ** UTF-16
 UTF-16 is the default encoding form of Unicode. it is a variable length
 encoding scheme: 
-- for code points between 0-ffff, UTF-16 using one 16-bit unit to encode
-- for code points between 10000-10ffff, UTF-16 using two 16-bit unit to encode
-  code points between 10000-10ffff, are encoded with two code units, called
-  `surrogates pair`, the first surrogates in the pair must be in the range of
-  D800-DBFF, and the second one must be in the range of DC00-DFFF, The coide
-  point values D800-DFFF are just set aside for this mechanism and will never,
-  by themselves, be assigned any characters.
+- for code points between 0-ffff (Basic Multilingual Plane), UTF-16 using one
+  16-bit unit to encode
+- for code points between 10000-10ffff (Supplementary Multilingual Plane),
+  UTF-16 using two 16-bit unit to encode code points between 10000-10ffff, are
+  encoded with two code units, called `surrogates pair`, the first surrogates in
+  the pair must be in the range of D800-DBFF, and the second one must be in the
+  range of DC00-DFFF, The coide point values D800-DFFF are just set aside for
+  this mechanism and will never, by themselves, be assigned any characters.
 
   For historical reason, sometimes UCS2 is taken for UTF-16. e.g. JAVA alleged
   that a char represent a UTF-16 character, in face, JAVA is using the older
