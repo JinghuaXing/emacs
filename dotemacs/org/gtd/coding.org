@@ -45,20 +45,25 @@ maybe using Watchdog? Nop! STICKY service should be one of the solutions
 ** TODO sticky broadcast experiment                                 :coding:
 ** TODO different contact in the same app, with different pid?      :coding:
 ** STARTED sqlite java architecture                                 :coding:
-SCHEDULED: <2012-09-04 Tue>
+SCHEDULED: <2012-09-17 Mon>
   - database
   - statement
   - program
   - cursor
 ** WATING auto generate log message according to cedet              :coding:
 ** STARTED android resource arch                                    :coding:
-SCHEDULED: <2012-09-10 Mon>
+SCHEDULED: <2012-09-19 Wed>
 
 ** TODO atomic, CAS, volatile vs. lock                              :coding:
 ** TODO android theme                                               :coding:
-** TODO ICU multiple PINYIN                                         :coding:
 ** TODO android language                                            :coding:
 ** STARTED static synchronized vs. synchronized(Test.class) 是否是一回事? :coding:
-SCHEDULED: <2012-09-10 周一>
+SCHEDULED: <2012-09-13 Thu>
 ** STARTED try groovy                                               :coding:
-SCHEDULED: <2012-09-11 周二>
+SCHEDULED: <2012-09-21 Fri>
+** TODO unciode, java utf-16, surrogate pair                        :coding:
+SCHEDULED: <2012-09-11 Tue>
+** TODO ICU                                                         :coding:
+SCHEDULED: <2012-09-12 Wed>
+** TODO java language specification                                 :coding:
+DEADLINE: <2012-10-21 Sun> SCHEDULED: <2012-09-21 Fri>
