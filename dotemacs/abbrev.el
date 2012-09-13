@@ -237,7 +237,7 @@
 (define-skeleton skeleton-c++-mode-try
   "try" nil
   > "try {" \n _ \n
-  -4 "} catch () {" \n \n
+  -4 "} catch (Exception e) {" \n \n
   -4 "} " \n)
 (define-abbrev-table 'c++-mode-abbrev-table '(
     ("try" "" skeleton-c++-mode-try 1)

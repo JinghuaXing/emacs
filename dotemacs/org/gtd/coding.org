@@ -51,3 +51,4 @@ CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
 SCHEDULED: <2012-09-13 Thu>
 ** TODO java language specification                                 :coding:
 DEADLINE: <2012-10-21 Sun> SCHEDULED: <2012-09-21 Fri>
+** TODO how to deltect GC reason                                    :coding:
