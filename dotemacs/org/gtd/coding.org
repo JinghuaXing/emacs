@@ -33,14 +33,15 @@ SCHEDULED: <2012-09-17 Mon>
 SCHEDULED: <2012-09-19 Wed>
 
 ** TODO android theme                                               :coding:
-** STARTED static synchronized vs. synchronized(Test.class) 是否是一回事? :coding:
-SCHEDULED: <2012-09-13 Thu>
+** DONE static synchronized vs. synchronized(Test.class) 是否是一回事? :coding:
+CLOSED: [2012-09-14 Fri 13:13] SCHEDULED: <2012-09-13 Thu>
+according to JLS, YES
 ** STARTED try groovy                                               :coding:
 SCHEDULED: <2012-09-21 Fri>
 ** DONE unciode, java utf-16, surrogate pair                        :coding:
 CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
 ** TODO ICU                                                         :coding:
-SCHEDULED: <2012-09-13 Thu>
+SCHEDULED: <2012-09-20 Thu>
 ** TODO java language specification                                 :coding:
 DEADLINE: <2012-10-21 Sun> SCHEDULED: <2012-09-21 Fri>
 ** TODO how to deltect GC reason                                    :coding:

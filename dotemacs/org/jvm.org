@@ -24,7 +24,6 @@
     - 对于 string literal, 再显式调用 intern() 没有意义
     - 对于 运行时 string, 若 string 经常重复, 可以通过 intern() 做 cache
 ** Constant Pool
-    SCHEDULED: <2011-08-02 Tue> CLOSED: [2011-08-01 Mon 15:11]
     - State "DONE"       from "DOING"      [2011-08-01 Mon 15:11]
     see also [[String.intern()]]
     see also [[autoboxing]]
