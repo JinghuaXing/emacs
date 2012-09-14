@@ -154,6 +154,8 @@
    - jstack
    - jinfo
    - MAT
+   - gcviewer
+   - visualvm
    - keytool
    - jarsigner
      http://download.oracle.com/javase/1.3/docs/tooldocs/win32/jarsigner.html
