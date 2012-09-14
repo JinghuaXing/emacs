@@ -7,21 +7,18 @@
 #+TITLE: Java Puzzle:Local Variable Slot
 * Java Puzzle:Local Variable Slot
 ** case 1
-   TestA.java
+TestA.java
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
-public class TestA {
-    public static void main(String[] args) {
-	{
-	    Byte [] buffer=new Byte[100*1024*1024];
-	}
-	System.gc();
-    }
-}
-</pre>
-#+END_HTML
-
+#+BEGIN_SRC java
+  public class TestA {
+      public static void main(String[] args) {
+          {
+              Byte [] buffer=new Byte[100*1024*1024];
+          }
+          System.gc();
+      }
+  }
+#+END_SRC
 
 #+BEGIN_EXAMPLE
 ~>javac TestA.java
@@ -31,10 +28,9 @@ public class TestA {
 #+END_EXAMPLE
 
 ** case 2 
-   TestA.java
+TestA.java
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
   public class TestA {
       public static void main(String[] args) {
           {
@@ -44,8 +40,7 @@ public class TestA {
           System.gc();
       }
   }
-</pre>
-#+END_HTML
+#+END_SRC
 
 #+BEGIN_EXAMPLE
 ~>javac TestA.java
@@ -72,7 +67,7 @@ in case 2:
 
 #+BEGIN_EXAMPLE
 [GC 409913K->409952K(469504K), 0.0013590 secs]
-# see..400MB array is GCed
+# oh..400MB array is GCed
 [Full GC 409952K->121K(469504K), 0.0034800 secs]
 #+END_EXAMPLE
 

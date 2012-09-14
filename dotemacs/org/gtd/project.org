@@ -6,8 +6,6 @@ CLOSED: [2012-07-11 Wed 17:15]
 ** CANCELLED set default photo in contact provider                 :project:
 CLOSED: [2012-07-05 Thu 13:31]
   
-** TODO contact directory                                          :project:
-  
 ** CANCELLED what if contact importing failed due to radio-off     :project:
 CLOSED: [2012-07-05 Thu 13:32]
 ** TODO use gerrit hook to verify my commit automatically          :project:

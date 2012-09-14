@@ -2,11 +2,16 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-remember-last-stored"
+(("org-refile-last-stored"
+ (filename . "~/.elisp/dotemacs/org/android.org")
+ (front-context-string . "** TODO Util [0/")
+ (rear-context-string . "012-09-03 Mon>\n\n")
+ (position . 163123))
+("org-remember-last-stored"
  (filename . "~/.elisp/dotemacs/org/gtd/coding.org")
- (front-context-string . "** TODO how to d")
- (rear-context-string . "2012-09-21 Fri>\n")
- (position . 2326))
+ (front-context-string . "** TODO 类似于 spar")
+ (rear-context-string . "       :coding:\n")
+ (position . 2403))
 ("framework_4.0.3_3.0"
  (filename . "~/source/vlx_4.0.3_3.0/frameworks/base/")
  (front-context-string . "api\n  drwxr-xr-x")

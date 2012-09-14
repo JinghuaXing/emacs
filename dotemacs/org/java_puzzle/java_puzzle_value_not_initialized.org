@@ -10,25 +10,21 @@
 
 TestA.java
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
 public class TestA {
    public static void main(String[] args) {
        System.out.println(TestB.value);
    }
 }
-</pre>
-#+END_HTML
+#+END_SRC
 
 TestB.java
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
 class TestB {
     public static final String value="abc"
 }
-</pre>
-#+END_HTML
+#+END_SRC
 
 #+BEGIN_EXAMPLE
 ~>javac TestA.java TestB.java
@@ -38,13 +34,11 @@ abc
 
 modify TestB.java:
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
 class TestB {
     public static final String value="abcd"
 }
-</pre>
-#+END_HTML
+#+END_SRC
 
 and recompile the sole TestB.java:
 
@@ -57,32 +51,28 @@ abc
 instead of "abcd"!
 ** case 2
 
-    TestB is modified as:
+TestB is modified as:
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
 class TestB {
     public static String value="abc";
 }
-</pre>
-#+END_HTML
+#+END_SRC
 
-  when modify "abc" to "abcd" and recompile TestB.java, nothing strange happens: 
-  after value is changed to "abcd", the program will output "abcd" normally.
+when modify "abc" to "abcd" and recompile TestB.java, nothing strange happens: 
+after value is changed to "abcd", the program will output "abcd" normally.
 
 ** case 3
 
-    TestB is modified as:
+TestB is modified as:
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
 class TestB {
     public static final String value;
     static {
        value="abc";
     }
 }
-</pre>
-#+END_HTML
+#+END_SRC
 
-  nothing strange happens.
+nothing strange happens.

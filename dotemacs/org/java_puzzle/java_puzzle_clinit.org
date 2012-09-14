@@ -8,28 +8,25 @@
 * Java Puzzle:class not initialized?
 TestA.java
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
-public class TestA {
-   public static void main(String[] args) {
-       System.out.println(TestB.value);
-   }
-}
-</pre>
-#+END_HTML
+#+BEGIN_SRC java
+  public class TestA {
+     public static void main(String[] args) {
+         System.out.println(TestB.value);
+     }
+  }
+  
+#+END_SRC
 
 TestB.java
 
-#+BEGIN_HTML
-<pre lang="java" line="1">
+#+BEGIN_SRC java
 class TestB {
     public static final String value="abc";
     static {
         System.out.println("TestB clazz initialized");
     }
 }
-</pre>
-#+END_HTML
+#+END_SRC
 
 #+BEGIN_EXAMPLE
 ~>javac TestA.java TestB.java

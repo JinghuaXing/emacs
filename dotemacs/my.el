@@ -205,6 +205,10 @@ occurence of CHAR."
 			      (insert-file "~/.elisp/my-template/Makefile.am")
 			      )
 	 )
+	((string= ext "org") (progn
+			      (insert-file "~/.elisp/my-template/template.org")
+			      )
+	 )
 	((or (string= ext "h")
 	     (string= ext "hpp")
 	     )

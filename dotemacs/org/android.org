@@ -3276,3 +3276,10 @@ adb shell setprop log.tag.mytag verbose
     see also [[System init]]
 ** DONE AsyncQueryHandler && loader                                 :coding:
 CLOSED: [2012-09-08 周六 16:12] SCHEDULED: <2012-09-03 Mon>
+
+** DONE Util [4/4]                                                  :coding:
+CLOSED: [2012-09-14 Fri 10:37]
+- [X] LruCache
+- [X] Pair
+- [X] SparseArray
+- [X] TimingLogger
