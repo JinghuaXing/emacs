@@ -82,6 +82,7 @@
  '(magit-completing-read-function (quote magit-ido-completing-read))
  '(magit-set-upstream-on-push t)
  '(mail-host-address nil)
+ '(mark-ring-max 6)
  '(midnight-mode t nil (midnight))
  '(mm-inline-text-html-with-images t)
  '(mm-text-html-renderer (quote w3m-standalone))
