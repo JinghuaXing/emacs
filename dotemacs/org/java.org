@@ -614,7 +614,8 @@ aspects:
 ** ClassLoader
    see also [[Java Module System]]
 *** Thread.setContextClassLoader() / Thread.getContextClassLoader()
-    a backdoor in the ClassLoader architecture, which broken up the `Parents Delegation Scheme`, mainly used by JNDI,JDBC,JAXP and OSGi
+http://stackoverflow.com/questions/4330885/setcontextclassloader-implications
+a backdoor in the ClassLoader architecture, which broken up the `Parents Delegation Scheme`, mainly used by JNDI,JDBC,JAXP and OSGi
 *** Class.getClassLoader()
     This is the default ClassLoader for Class.forName()
 *** ClassLoader.getSystemClassLoader()
@@ -645,3 +646,11 @@ aspects:
 	xxx.dsa is encoded in two parts:
 	1. digital signature of the xxx.sf
 	2. certificate used to verify the signature
+
+** JVM based programming language
+*** Closure
+- lisp implementation based on JVM
+*** Scala
+- `actor pattern` based concurrent programming
+*** JRuby
+*** Groovy
