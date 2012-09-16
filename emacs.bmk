@@ -8,10 +8,10 @@
  (rear-context-string . "012-09-03 Mon>\n\n")
  (position . 163123))
 ("org-remember-last-stored"
- (filename . "~/.elisp/dotemacs/org/gtd/coding.org")
- (front-context-string . "** TODO scala ac")
- (rear-context-string . "-map ô :coding:\n")
- (position . 2322))
+ (filename . "~/.elisp/dotemacs/org/gtd/reading.org")
+ (front-context-string . "** TODO SICP    ")
+ (rear-context-string . "      :reading:\n")
+ (position . 124))
 ("framework_4.0.3_3.0"
  (filename . "~/source/vlx_4.0.3_3.0/frameworks/base/")
  (front-context-string . "api\n  drwxr-xr-x")
