@@ -27,6 +27,7 @@
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/dotemacs/abbrev.el")
 (load-file "~/.elisp/dotemacs/ruby.el")
+(load-file "~/.elisp/dotemacs/scala.el")
 
 (autoload
   'ace-jump-mode
@@ -261,7 +262,7 @@
 (add-hook 'text-mode-hook '(lambda () (abbrev-mode t)))
 (add-hook 'emacs-lisp-mode-hook '(lambda () (abbrev-mode t)))
 
-;; (require 'unicad)
+(require 'unicad)
 
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))

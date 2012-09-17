@@ -10,3 +10,6 @@
 [submodule "nav-flash"]
 	path = nav-flash
 	url = https://github.com/rolandwalker/nav-flash.git
+[submodule "scala-mode"]
+	path = scala-mode
+	url = https://github.com/haxney/scala-mode.git

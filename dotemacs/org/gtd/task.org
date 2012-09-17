@@ -1,8 +1,8 @@
 * Task
 #+CATEGORY:TASK
 * Tasks
-** DONE ¹«Ô¢½»·¿×â
-CLOSED: [2012-04-11 ÖÜÈý 23:51]
+** DONE å…¬å¯“äº¤æˆ¿ç§Ÿ
+CLOSED: [2012-04-11 å‘¨ä¸‰ 23:51]
   
   SCHEDULED: <2012-04-10 Tue>
-** TODO gfw ¹¤×÷Ô­Àí
+** TODO gfw å·¥ä½œåŽŸç†

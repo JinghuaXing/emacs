@@ -1,7 +1,7 @@
 #+TITLE:
 #+AUTHOR: sunwayforever@gmail.com
 * Reading
-** TODO 深入理解 java虚拟机                                        :reading:
+** TODO 娣卞叆鐞嗚В jvm                                                :reading:
 ** TODO SICP                                                       :reading:
 
 
