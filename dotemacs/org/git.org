@@ -84,6 +84,8 @@ find commit not merged upstream
 所以, 不要认为 cherry-pick 可以简单的把一个 commit 搬到另一个分支, cherry-pick
 使用 merge 会在另一个分支上生成新的 commit, 而且可能冲突, 还可能因为 merge 的原
 因导致与原分支不同的结果, 最后一定要 double check 一下. 
+*** clean
+git clean -df
 *** commit
 git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 commit 对象的过
 程.

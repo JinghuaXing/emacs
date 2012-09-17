@@ -105,7 +105,7 @@
 
 ***** sendBroadcast
       just as startService, priority are considered, and a list of all candidates are return to support OrderedBroadcast
-*** Activity							   :activity:
+*** Activity                                                     :activity:
 **** AMS side
 ***** finishedActivityLocked
       finishCurrentActivity eventually will not stop and destroy activity at once, it will pose it in an array, when idle, it will call activityIdle to purge the activities.
@@ -2255,6 +2255,7 @@ adb shell setprop log.tag.mytag verbose
     2. framework/base/core/jni
     3. system/core/init
     4. system/core/include/private/android_filesystem_config.h
+    5. build/target/product/security/
 ** init
 *** init.rc
 *** DONE System init
@@ -2616,6 +2617,10 @@ adb shell setprop log.tag.mytag verbose
      google: Android APK 签名比对
 
      [[file:~/codebase/cb_study/build/tools/signapk/SignApk.java::for%20(String%20name%20:%20names)%20{][signApk.java]]
+     
+     
+***** Android 证书文件位置
+- build/target/product/security/
 
 *** installd
     installd is a system binary running as `root` and listening on `installd` socket.
