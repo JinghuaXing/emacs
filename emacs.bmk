@@ -2,7 +2,22 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-refile-last-stored"
+(("Dropbox"
+ (filename . "~/Dropbox/")
+ (front-context-string)
+ (rear-context-string . "012-09-24 18:54 ")
+ (position . 301))
+("7f"
+ (filename . "~/source/vlx4.0.3_3.0/frameworks/base/tools/aapt/ResourceTable.cpp")
+ (front-context-string . ");\n        } els")
+ (rear-context-string . "age(package, 127")
+ (position . 143366))
+("org-capture-last-stored"
+ (filename . "~/.elisp/dotemacs/org/gtd/todo.org")
+ (front-context-string . "* TODO test\nCLOC")
+ (rear-context-string . ":37\n* TODO SICP\n")
+ (position . 2803))
+("org-refile-last-stored"
  (filename . "~/.elisp/dotemacs/org/android.org")
  (front-context-string . "** TODO Util [0/")
  (rear-context-string . "012-09-03 Mon>\n\n")
@@ -39,9 +54,9 @@
  (position . 139))
 ("org"
  (filename . "~/.elisp/dotemacs/org/")
- (front-context-string . "attachment\n  drw")
- (rear-context-string . "012-08-01 22:41 ")
- (position . 97))
+ (front-context-string . "visitor_pattern.")
+ (rear-context-string . "012-09-18 16:11 ")
+ (position . 2611))
 (".elisp"
  (filename . "~/.elisp/")
  (front-context-string . "clipper.el\n  -rw")

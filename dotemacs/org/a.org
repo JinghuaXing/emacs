@@ -1,0 +1,14 @@
+* AV                                                                  :crypt:
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.7 (MingW32)
+
+jA0EAwMCre0HPy0JCQJgycCazkfIKWvcPpEyt4dejgyJcE7GVh8T1BqIOS3L9SKw
+InauNmpfhSxEztSPkii41ZSkFdQMLCnP9C0UIKbhBoq6qJIC8nHSoJuxSyWSsHrm
+oyFQWzOkcCUGskEuJP69f+VPubh1cOViSBpRATdr8L+K0P/AgHpEQkzN6UoUD6cu
+cO7S099XJdBHfUimoFqQCIQ+VDnS5UwpSRTazz8mkZ2U34wBOe7mR8BXHfkOpfzU
+4JkwDu4LrbGMJo8A8P3JeXJwydyoQ0qPF3QsDMtli5DFPbTJYVCfPoVyMaSGiOtN
+FwD5tUyfckZn1zSyXcEobckg4o5zTpssaZWhARKvN1qXlAIla73cq1T9ePlyyCUc
+G8ziFiLchzGOsinQWWnE64Hd6oF7sl3t8CS5lEgPT0HWayXWExB+wyE6CFNbTc3g
+/hDVT8g8P3Y2yu3J+oyScA9XwptWwOLSdNvtqA==
+=PTdF
+-----END PGP MESSAGE-----

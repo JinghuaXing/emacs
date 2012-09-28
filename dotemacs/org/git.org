@@ -319,13 +319,17 @@ tag 分为两种: light weight tag 和 annotated tag
 - light weight tag 只是 refs/tags/中的一些引用
 - annotated tag 是真正的 git object, 会包含更多的信息, 如 message, signature ...
 ** Plumbing
-*** commit-tree
 *** cat-file
+*** commit-tree
 *** fsck
 *** gc
 *** hash-object
+*** ls-remote
 *** merge-base
+*** receive-pack
 *** rev-list
+*** rev-parse
+*** send-pack
 *** symbolic-ref
 *** update-index
 *** update-ref
@@ -384,4 +388,46 @@ tag 分为两种: light weight tag 和 annotated tag
 [core]
       # ignore file mode change
 	filemode = false 
+
+
+* Gerrit
+[[http://review.coreboot.org/Documentation/index.html][Gerrit Code Review for Git]]
+** Hook
+.git/hooks/commit-msg
+
+主要有两个功能:
+- verify_commit
+- add_changeid
+  若 commit-msg 包含 Change-ID, 则使用这个 Change-ID, 否则,生成新的 change-id,
+  并附加到 commit message 中.
+
+  生成 change_id 基本上是 head commit 去掉 commit message 后通过 hash_object 生成的
+  SHA-1, 所以 :
+  - cherry-pick 生成的 commit 的 change_id 是一样的
+  - 但 merge 不行, 因为它会生成新的 commit
+  - commit --amend 生成的 commit 也是一样的, 因为在生成 change_id 时,  commit
+    message 不会考虑在内
+** Uploading changes
+当用户向 gerrit push 时, 不能直接向 refs/heads/xxx_branch push, 而是需要向一个特
+定的 refs/for/xxx_branch push, 但 gerrit 在这个 refs 下并不创建任何 ref, 而是在
+refs/changes/{nn}/{task}/{patch_set} 下创建对应于该 commit 的 ref, 其中  task 是
+根据 change_id 生成的 task 号, nn 是 task 的最后两位数,  patch_set 则是根据同一
+个 change_id 的多个 commit 自动递增的. 通过 git fetch gerrit_url
+refs/changes/{nn}/{task}/{patch_set}, gerrit 评审者可以看到该 commit 的修改.
+
+对同一个 task (或 change-id) 的多次 push, 会导致 gerrit 对同一个 task 生成多个
+patch-set, 前提是:
+1. 要 push 的 各个 commit 的 parent 必须是相同的[fn:1]
+2. 有相同的 change-id 或 通过 git push gerrit_url commit:refs/changes/{task_id}
+   形式 push 的并指定了相同的 task_id
+*** gerrit receive-pack
+gerrit 重写了一个 git-receive-pack, 提供了几个和 gerrit 相关的参数, 如
+--reviewer
+
+** Command line tools
+* Footnotes
+
+[fn:1] 有待证实
+
+
 

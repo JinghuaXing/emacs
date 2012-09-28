@@ -1,11 +1,11 @@
 * C/C++
 #+CATEGORY:C++
-** staticå˜é‡ä¸è¦å†™åœ¨å¤´æ–‡ä»¶ä¸­
-   é€šå¸¸staticå˜é‡åœ¨å¤´æ–‡ä»¶ä¸­æ˜¯é”™è¯¯çš„, é™¤éå¤šä¸ªç¼–è¯‘å•å…ƒçœŸçš„æƒ³å„è‡ªä½¿ç”¨ç‹¬ç«‹çš„è¯¥å˜é‡
-** voidå‚æ•°ä¸ç©ºå‚æ•°
-   å¼•ç”¨ç½‘å€ï¼šhttp://david.tribble.com/text/cdiffs.htm#C99-func-vararg
+** static±äÁ¿²»ÒªĞ´ÔÚÍ·ÎÄ¼şÖĞ
+   Í¨³£static±äÁ¿ÔÚÍ·ÎÄ¼şÖĞÊÇ´íÎóµÄ, ³ı·Ç¶à¸ö±àÒëµ¥ÔªÕæµÄÏë¸÷×ÔÊ¹ÓÃ¶ÀÁ¢µÄ¸Ã±äÁ¿
+** void²ÎÊıÓë¿Õ²ÎÊı
+   ÒıÓÃÍøÖ·£ºhttp://david.tribble.com/text/cdiffs.htm#C99-func-vararg
 
-   â€œ
+   ¡°
    Empty parameter lists
 
    C distinguishes between a function declared with an empty parameter list and
@@ -47,20 +47,20 @@
 #+END_EXAMPLE
     Empty function prototypes are a deprecated feature in C99 (as they were in C89).
 
-    å³ åœ¨cä¸­,void f()è¡¨ç¤ºå‚æ•°ä¸ªæ•°æœªæŒ‡å®š,è€Œä¸æ˜¯è¡¨ç¤ºæ— å‚æ•°,è¡¨ç¤ºæ— å‚æ•°è¦ä½¿ç”¨void f(void)
-    åœ¨c++ä¸­,void f()å’Œvoid f(void)æ˜¯ä¸€æ ·çš„.
+    ¼´ ÔÚcÖĞ,void f()±íÊ¾²ÎÊı¸öÊıÎ´Ö¸¶¨,¶ø²»ÊÇ±íÊ¾ÎŞ²ÎÊı,±íÊ¾ÎŞ²ÎÊıÒªÊ¹ÓÃvoid f(void)
+    ÔÚc++ÖĞ,void f()ºÍvoid f(void)ÊÇÒ»ÑùµÄ.
 
-    å³ å°½é‡ä½¿ç”¨void f(void) è€Œä¸è¦ä½¿ç”¨void f()
+    ¼´ ¾¡Á¿Ê¹ÓÃvoid f(void) ¶ø²»ÒªÊ¹ÓÃvoid f()
 
     --
-    å‘ä¿¡äºº: sunway (sunway), ä¿¡åŒº: CPP
-    æ ‡  é¢˜: Re: å…³äºå‡½æ•°å‚æ•°ä¸ªæ•°çš„é—®é¢˜
-    å‘ä¿¡ç«™: åŒ—é‚®äººè®ºå› (Wed Oct 14 13:01:02 2009), ç«™å†…
+    ·¢ĞÅÈË: sunway (sunway), ĞÅÇø: CPP
+    ±ê  Ìâ: Re: ¹ØÓÚº¯Êı²ÎÊı¸öÊıµÄÎÊÌâ
+    ·¢ĞÅÕ¾: ±±ÓÊÈËÂÛÌ³ (Wed Oct 14 13:01:02 2009), Õ¾ÄÚ
 
-    gccç¡®å®èƒ½ç¼–è¯‘è¿‡å»...ç¥å¥‡
-    ä¸€èˆ¬æƒ…å†µä¸‹ä¸ä¼šé”™è¯¯,gccé»˜è®¤ä½¿ç”¨cdeclè°ƒç”¨çº¦å®š,è°ƒç”¨è€…ä¼šè´Ÿè´£æ¸…ç†æ ˆä¸Šçš„å‚æ•°,ä½†å¦‚æœä½¿
-    ç”¨äº†stdcall,è¢«è°ƒç”¨çš„fä¸çŸ¥é“æœ‰å‚æ•°è¦æ¸…ç†,è€Œè°ƒç”¨è€…åˆè®¤ä¸ºfä¼šæ¸…ç†å‚æ•°...ç„¶åå°±æœ‰é—®é¢˜
-    äº†,æ¯”å¦‚:
+    gccÈ·ÊµÄÜ±àÒë¹ıÈ¥...ÉñÆæ
+    Ò»°ãÇé¿öÏÂ²»»á´íÎó,gccÄ¬ÈÏÊ¹ÓÃcdeclµ÷ÓÃÔ¼¶¨,µ÷ÓÃÕß»á¸ºÔğÇåÀíÕ»ÉÏµÄ²ÎÊı,µ«Èç¹ûÊ¹
+    ÓÃÁËstdcall,±»µ÷ÓÃµÄf²»ÖªµÀÓĞ²ÎÊıÒªÇåÀí,¶øµ÷ÓÃÕßÓÖÈÏÎªf»áÇåÀí²ÎÊı...È»ºó¾ÍÓĞÎÊÌâ
+    ÁË,±ÈÈç:
 
 #+BEGIN_EXAMPLE
     void  __attribute__((stdcall)) f (int a,int b) {
@@ -74,9 +74,9 @@
     }
 #+END_EXAMPLE
 
-    ã€ åœ¨ SuperBrother (xiaohui) çš„å¤§ä½œä¸­æåˆ°: ã€‘
-    : æ ‡  é¢˜: å…³äºå‡½æ•°å‚æ•°ä¸ªæ•°çš„é—®é¢˜
-    : å‘ä¿¡ç«™: åŒ—é‚®äººè®ºå› (Wed Oct 14 11:29:31 2009), ç«™å†…
+    ¡¾ ÔÚ SuperBrother (xiaohui) µÄ´ó×÷ÖĞÌáµ½: ¡¿
+    : ±ê  Ìâ: ¹ØÓÚº¯Êı²ÎÊı¸öÊıµÄÎÊÌâ
+    : ·¢ĞÅÕ¾: ±±ÓÊÈËÂÛÌ³ (Wed Oct 14 11:29:31 2009), Õ¾ÄÚ
     :
     : void f() {}
     : void g(int a) {}
@@ -84,18 +84,18 @@
     : int main()
     : {
     :     f(1);
-    :     //g(1, 1);  ç¼–è¯‘ä¸è¿‡ï¼Œæç¤ºå‚æ•°ä¸ªæ•°è¿‡å¤š
+    :     //g(1, 1);  ±àÒë²»¹ı£¬ÌáÊ¾²ÎÊı¸öÊı¹ı¶à
     :     return 0;
     : }
     :
-    : ç”¨çš„æ˜¯GCC 4.2.4
-    : æƒ³é—®é—®ä¸ºå•¥f(1)èƒ½è¿‡ï¼Œè€Œg(1, 1)ä¸èƒ½ï¼Ÿ
-    : å¦å¤–ï¼Œå‡è®¾f()ä¸ç”¨å‚æ•°å°±èƒ½å®Œæˆç›¸åº”åŠŸèƒ½ï¼Œè°ƒç”¨f(1)ä¼šå¼•èµ·è¿è¡Œæ—¶é”™è¯¯å—ï¼Ÿ
+    : ÓÃµÄÊÇGCC 4.2.4
+    : ÏëÎÊÎÊÎªÉ¶f(1)ÄÜ¹ı£¬¶øg(1, 1)²»ÄÜ£¿
+    : ÁíÍâ£¬¼ÙÉèf()²»ÓÃ²ÎÊı¾ÍÄÜÍê³ÉÏàÓ¦¹¦ÄÜ£¬µ÷ÓÃf(1)»áÒıÆğÔËĞĞÊ±´íÎóÂğ£¿
     : --
     :
-    â€» ä¿®æ”¹:ãƒ»sunway äº Oct 14 13:02:34 ä¿®æ”¹æœ¬æ–‡ãƒ»[FROM: 2001:da8:215:1800:211:11ff:
-    : â€» æ¥æº:ãƒ»åŒ—é‚®äººè®ºå› http://forum.byr.edu.cnãƒ»[FROM: 2001:da8:215:5200:0:5efe:
-** switchä¸è·³è½¬è¡¨
+    ¡ù ĞŞ¸Ä:¡¤sunway ÓÚ Oct 14 13:02:34 ĞŞ¸Ä±¾ÎÄ¡¤[FROM: 2001:da8:215:1800:211:11ff:
+    : ¡ù À´Ô´:¡¤±±ÓÊÈËÂÛÌ³ http://forum.byr.edu.cn¡¤[FROM: 2001:da8:215:5200:0:5efe:
+** switchÓëÌø×ª±í
 #+BEGIN_EXAMPLE
 int
 main (int argc, char * argv[]) {
@@ -142,8 +142,8 @@ main (int argc, char * argv[]) {
     return 0;
 }
 #+END_EXAMPLE
-å½“caseåˆ†æ”¯è¾ƒå°‘æ—¶,å’Œif..elseä¸€æ ·,é€šè¿‡ä¸€ç³»åˆ—cmp,je..è·³è½¬.
-å½“caseåˆ†æ”¯è¾ƒå¤šæ—¶,ä¼šæ ¹æ®æƒ…å†µç”Ÿæˆä¸€ä¸ªè·³è½¬è¡¨,å¦‚:
+µ±case·ÖÖ§½ÏÉÙÊ±,ºÍif..elseÒ»Ñù,Í¨¹ıÒ»ÏµÁĞcmp,je..Ìø×ª.
+µ±case·ÖÖ§½Ï¶àÊ±,»á¸ù¾İÇé¿öÉú³ÉÒ»¸öÌø×ª±í,Èç:
 #+BEGIN_EXAMPLE
         movl    -24(%ebp), %edx
         movl    .L14(,%edx,4), %eax
@@ -163,9 +163,9 @@ main (int argc, char * argv[]) {
         .long   .L10
         .long   .L2
 #+END_EXAMPLE
-.L14å°±æ˜¯è·³è½¬è¡¨çš„å…¥å£, %eaxæ˜¯åˆ†æ”¯åœ¨è¡¨ä¸­çš„åç§»,å¦‚caseä¸º100,åˆ™å…¶åç§»é‡ä¸º100*4(å› ä¸ºæ¯ä¸ªè¡¨é¡¹ä¸º4å­—èŠ‚)
-è¿™æ—¶å­˜åœ¨ä¸€ä¸ªé—®é¢˜æ˜¯:å¦‚æœcaseå€¼èŒƒå›´è¿‡å¤§,æ¯”å¦‚ä¸€å…±100ä¸ªcase,ä½†æœ‰ä¸€ä¸ªcaseçš„å€¼ä¸º1000,åˆ™è¡¨ä¸­æœ‰900ä¸ªé¡¹éœ€è¦ç”¨defaultåˆ†æ”¯çš„åœ°å€å»å¡«å……,æµªè´¹ç©ºé—´.
-æ‰€ä»¥gccåœ¨è¿™ç§æƒ…å†µä¸‹åˆä¼šè½¬è€Œä½¿ç”¨åŸå§‹çš„cmp,je..è·³è½¬.
+.L14¾ÍÊÇÌø×ª±íµÄÈë¿Ú, %eaxÊÇ·ÖÖ§ÔÚ±íÖĞµÄÆ«ÒÆ,ÈçcaseÎª100,ÔòÆäÆ«ÒÆÁ¿Îª100*4(ÒòÎªÃ¿¸ö±íÏîÎª4×Ö½Ú)
+ÕâÊ±´æÔÚÒ»¸öÎÊÌâÊÇ:Èç¹ûcaseÖµ·¶Î§¹ı´ó,±ÈÈçÒ»¹²100¸öcase,µ«ÓĞÒ»¸öcaseµÄÖµÎª1000,Ôò±íÖĞÓĞ900¸öÏîĞèÒªÓÃdefault·ÖÖ§µÄµØÖ·È¥Ìî³ä,ÀË·Ñ¿Õ¼ä.
+ËùÒÔgccÔÚÕâÖÖÇé¿öÏÂÓÖ»á×ª¶øÊ¹ÓÃÔ­Ê¼µÄcmp,je..Ìø×ª.
 
 ** volatile keyword in C
 #+BEGIN_EXAMPLE
@@ -182,8 +182,8 @@ main (int argc, char * argv[]) {
    }
 #+END_EXAMPLE
 
-   1. ç¨‹åºæ­£å¸¸ç»ˆæ­¢,æ‰“å°å‡º0-16
-   2. åœ¨ int i; å‰åŠ ä¸Š volatile, æ­»å¾ªç¯
+   1. ³ÌĞòÕı³£ÖÕÖ¹,´òÓ¡³ö0-16
+   2. ÔÚ int i; Ç°¼ÓÉÏ volatile, ËÀÑ­»·
 
    Volatile is an ANSI C type modifier that is frequently needed in C code that
    is part of signal/interrupt handlers, threaded code, and other kernel code,
@@ -239,7 +239,7 @@ main (int argc, char * argv[]) {
    http://en.allexperts.com/q/C-1587/volatile.htm
    http://www.netrino.com/node/80
 
-** æ ˆå¯¹é½ stack align
+** Õ»¶ÔÆë stack align
 #+BEGIN_EXAMPLE
   int
   main (int argc, char * argv[]) {
@@ -250,9 +250,9 @@ main (int argc, char * argv[]) {
      return 0;
   }
 #+END_EXAMPLE
-  c+8åæ‰æ˜¯açš„åœ°å€,è€Œä¸æ˜¯c+4
+  c+8ºó²ÅÊÇaµÄµØÖ·,¶ø²»ÊÇc+4
 
-  gccä¿è¯,å¯¹äº8 bytesçš„ç±»å‹å¦‚double,åœ¨æ ˆä¸Šæ˜¯8å­—èŠ‚å¯¹é½çš„
+  gcc±£Ö¤,¶ÔÓÚ8 bytesµÄÀàĞÍÈçdouble,ÔÚÕ»ÉÏÊÇ8×Ö½Ú¶ÔÆëµÄ
 
   On the Pentium and subsequent x86 processors, there is a substantial
   performance penalty if double-precision variables are not stored 8-byte
@@ -266,15 +266,15 @@ main (int argc, char * argv[]) {
   documentation). If you are not certain whether your compiler maintains stack
   alignment by default, it is a good idea to make sure.
 
-  Unfortunately, gcc only preserves the stack alignmentâ€•as a result, if the
+  Unfortunately, gcc only preserves the stack alignment¡ªas a result, if the
   stack starts off misaligned, it will always be misaligned, with a disastrous
   effect on performance (in double precision).
 
   http://www.fftw.org/doc/Stack-alignment-on-x86.html
 
 ** gcc -E
-** ç»“æ„ä½“çš„ struct A a={.a=1,.b=2};å½¢å¼çš„åˆå§‹åŒ–
-   gccæ‰©å±•:
+** ½á¹¹ÌåµÄ struct A a={.a=1,.b=2};ĞÎÊ½µÄ³õÊ¼»¯
+   gccÀ©Õ¹:
 
 #+BEGIN_EXAMPLE
    struct A {
@@ -284,7 +284,7 @@ main (int argc, char * argv[]) {
 
    int
    main(int argc, char *argv[]) {
-     struct A a={.b=1,.a=2}; //æˆ–è€… struct A a={2,1};
+     struct A a={.b=1,.a=2}; //»òÕß struct A a={2,1};
      printf ("%d %d\n",a.a,a.b);
      return 0;
    }
@@ -293,7 +293,7 @@ main (int argc, char * argv[]) {
 ** do {} while (0)
    http://c2.com/cgi/wiki?TrivialDoWhileLoop
 ** char * str[MAXSIZE]
-   å½“æ‰“ç®—å°†strlenæ˜¯nçš„å­—ç¬¦ä¸²å­˜å…¥stræ—¶ï¼Œè¦åˆ†é…n+1ä¸ªcharçš„ç©ºé—´ï¼Œå› ä¸ºç»“å°¾çš„'\0'ä¸åŒ…æ‹¬åœ¨strlené‡Œ
+   µ±´òËã½«strlenÊÇnµÄ×Ö·û´®´æÈëstrÊ±£¬Òª·ÖÅän+1¸öcharµÄ¿Õ¼ä£¬ÒòÎª½áÎ²µÄ'\0'²»°üÀ¨ÔÚstrlenÀï
 ** scanf
 *** %n
 #+BEGIN_EXAMPLE
@@ -313,8 +313,8 @@ main (int argc, char * argv[]) {
     1234
     a=4
 #+END_EXAMPLE
-*** ç©ºç™½å­—ç¬¦çš„å¤„ç†
-    ç©ºç™½å­—ç¬¦åŒ…æ‹¬ ç©ºæ ¼,tab,\n
+*** ¿Õ°××Ö·ûµÄ´¦Àí
+    ¿Õ°××Ö·û°üÀ¨ ¿Õ¸ñ,tab,\n
 #+BEGIN_EXAMPLE
     int a,b;
     scanf("%d",&a);
@@ -323,10 +323,10 @@ main (int argc, char * argv[]) {
     1234 123
     a=1234,b=123
 #+END_EXAMPLE
-    å®é™…ä¸Š,ç¬¬ä¸€ä¸ªscanfæ‰§è¡Œå,è¾“å…¥æµé‡Œè¿˜æœ‰ä¸€ä¸ª\n,ä½†æ˜¯,ä¸‹ä¸€å¥scanfç”¨%dåšå‚æ•°æ—¶,ä¼šå¿½ç•¥è¾“å…¥æµå¼€å¤´çš„ç©ºç™½å­—ç¬¦.
-    å¤§å¤šæ•°%..ä¼šå¿½ç•¥å¼€å¤´çš„ç©ºç™½å­—ç¬¦,ä½†ä»¥ä¸‹å‡ ä¸ªé™¤å¤–:
+    Êµ¼ÊÉÏ,µÚÒ»¸öscanfÖ´ĞĞºó,ÊäÈëÁ÷Àï»¹ÓĞÒ»¸ö\n,µ«ÊÇ,ÏÂÒ»¾äscanfÓÃ%d×ö²ÎÊıÊ±,»áºöÂÔÊäÈëÁ÷¿ªÍ·µÄ¿Õ°××Ö·û.
+    ´ó¶àÊı%..»áºöÂÔ¿ªÍ·µÄ¿Õ°××Ö·û,µ«ÒÔÏÂ¼¸¸ö³ıÍâ:
     %c,%[]
-    æ‰€ä»¥:
+    ËùÒÔ:
 #+BEGIN_EXAMPLE
     int a,b;
     scanf("%d",&a);
@@ -335,26 +335,26 @@ main (int argc, char * argv[]) {
     1234
     a=1234,b=134513674
 #+END_EXAMPLE
-    bæ²¡æœ‰è¦æ±‚è¾“å…¥å€¼,è€Œæ˜¯ç›´æ¥ç”¨çš„æµä¸­å‰©ä½™çš„\n,å¯¹äº%c,%[]è¿™ç§æƒ…å†µ,éœ€è¦æ‰‹å·¥ç”¨%så¿½ç•¥å¼€å¤´çš„ç©ºç™½å­—ç¬¦,å¦‚:
+    bÃ»ÓĞÒªÇóÊäÈëÖµ,¶øÊÇÖ±½ÓÓÃµÄÁ÷ÖĞÊ£ÓàµÄ\n,¶ÔÓÚ%c,%[]ÕâÖÖÇé¿ö,ĞèÒªÊÖ¹¤ÓÃ%sºöÂÔ¿ªÍ·µÄ¿Õ°××Ö·û,Èç:
 #+BEGIN_EXAMPLE
     int a,b;
     scanf("%d",&a);
     scanf("%*[ \t\n]%c",&b);
 #+END_EXAMPLE
 
-*** å›è½¦çš„ä½œç”¨
-    å›è½¦ç”¨æ¥è¡¨ç¤ºå°†è¾“å…¥æäº¤åˆ°è¾“å…¥æµä¸­,ä½†å›è½¦æœ¬èº«ä¹Ÿä¼šè¢«æ­£å¸¸æ”¾åœ¨è¾“å…¥æµä¸­,æ‰€ä»¥
-    scanf("%d\n",&a) ä¹Ÿæ˜¯å¯ä»¥è¢«åŒ¹é…çš„
-*** scanfç±»å‹ä¸åŒ¹é…æ—¶æ­»å¾ªç¯?
+*** »Ø³µµÄ×÷ÓÃ
+    »Ø³µÓÃÀ´±íÊ¾½«ÊäÈëÌá½»µ½ÊäÈëÁ÷ÖĞ,µ«»Ø³µ±¾ÉíÒ²»á±»Õı³£·ÅÔÚÊäÈëÁ÷ÖĞ,ËùÒÔ
+    scanf("%d\n",&a) Ò²ÊÇ¿ÉÒÔ±»Æ¥ÅäµÄ
+*** scanfÀàĞÍ²»Æ¥ÅäÊ±ËÀÑ­»·?
 #+BEGIN_EXAMPLE
     int a;
     label:
     scanf("%d",&a);
     goto label;
 #+END_EXAMPLE
-    è‹¥è¾“å…¥ä¸ä¸ºæ•´æ•°,å¦‚'a',åˆ™åé¢çš„scanfä¼šè¢«è·³è¿‡,æ­»å¾ªç¯
-    åŸå› :
-    scanfç±»å‹ä¸åŒ¹é…æ—¶,scanfå¤±è´¥,ä¸åŒ¹é…çš„æ•°æ®ä»ç„¶ç•™åœ¨è¾“å…¥æµä¸­,å¿…é¡»ç”¨%*..ä¸¢å¼ƒè¿™äº›é”™è¯¯çš„æ•°æ®.
+    ÈôÊäÈë²»ÎªÕûÊı,Èç'a',ÔòºóÃæµÄscanf»á±»Ìø¹ı,ËÀÑ­»·
+    Ô­Òò:
+    scanfÀàĞÍ²»Æ¥ÅäÊ±,scanfÊ§°Ü,²»Æ¥ÅäµÄÊı¾İÈÔÈ»ÁôÔÚÊäÈëÁ÷ÖĞ,±ØĞëÓÃ%*..¶ªÆúÕâĞ©´íÎóµÄÊı¾İ.
 #+BEGIN_EXAMPLE
     int a;
     label:
@@ -363,10 +363,10 @@ main (int argc, char * argv[]) {
     goto label;
 #+END_EXAMPLE
 
-** scanfä¸­çš„%sä¸%[]
+** scanfÖĞµÄ%sÓë%[]
 scanf ("%s,%d",a,&b);
-ç„¶åè¾“å…¥ abc,2,æ‰“å°açš„å€¼æ˜¯ abc,2 ,ä¸æ˜¯abc,å°±æ˜¯è¯´%sä¼šè´ªå©ªçš„åæ‰å®ƒåé¢æ‰€æœ‰çš„è¾“å…¥,
-é™¤éä½ è¾“å…¥ç©ºæ ¼è®©å®ƒåœæ­¢
+È»ºóÊäÈë abc,2,´òÓ¡aµÄÖµÊÇ abc,2 ,²»ÊÇabc,¾ÍÊÇËµ%s»áÌ°À·µÄÍÌµôËüºóÃæËùÓĞµÄÊäÈë,
+³ı·ÇÄãÊäÈë¿Õ¸ñÈÃËüÍ£Ö¹
 
 s
 
@@ -378,16 +378,16 @@ The input string stops at white  space  or  at  the  maximum  field  width,
 whichever occurs first.
 
 
-å¦‚æœä½ ç¡®å®å–œæ¬¢ç”¨abc,2è¿™ç§å½¢å¼è¾“å…¥,å¯ä»¥è¯•è¯•è¿™ä¸ª:
+Èç¹ûÄãÈ·ÊµÏ²»¶ÓÃabc,2ÕâÖÖĞÎÊ½ÊäÈë,¿ÉÒÔÊÔÊÔÕâ¸ö:
 scanf("%[^,]%d",a,&b);
-æ¯”è¾ƒçˆ½
+±È½ÏË¬
 
-æˆ‘è§‰å¾—%så¯èƒ½å°±æ˜¯%[^ \t\n]å§
+ÎÒ¾õµÃ%s¿ÉÄÜ¾ÍÊÇ%[^ \t\n]°É
 
-** cä¸­çš„å£°æ˜ä¸å®šä¹‰
-   åœ¨1.cå’Œ2.cä¸¤ä¸ªæ–‡ä»¶ä¸­,
+** cÖĞµÄÉùÃ÷Óë¶¨Òå
+   ÔÚ1.cºÍ2.cÁ½¸öÎÄ¼şÖĞ,
 
-ä»¥ä¸‹æƒ…å½¢æ—¶ç¼–è¯‘æ­£ç¡®:
+ÒÔÏÂÇéĞÎÊ±±àÒëÕıÈ·:
 #+BEGIN_EXAMPLE
    |----------------+----------------|
    | 1.c            | 2.c            |
@@ -402,7 +402,7 @@ scanf("%[^,]%d",a,&b);
    |----------------+----------------|
 #+END_EXAMPLE
 
-ä»¥ä¸‹æƒ…å½¢æ—¶å‡ºé”™:
+ÒÔÏÂÇéĞÎÊ±³ö´í:
 #+BEGIN_EXAMPLE
    |---------+----------|
    | 1.c     | 2.c      |
@@ -412,14 +412,14 @@ scanf("%[^,]%d",a,&b);
    | int a=2 | int a=2  |
    |---------+----------|
 #+END_EXAMPLE
-ç»“è®º:
-   æ²¡æœ‰èµ‹å€¼çš„å®šä¹‰å¦‚ int a å’Œ å£°æ˜ extern int a ä¸€æ ·,å¯ä»¥å£°æ˜å¤šæ¬¡,ç±»å‹ä¹Ÿå¯ä»¥ä¸åŒ(è™½ç„¶è¿™æ˜¯ä¸ªé”™è¯¯)
-   èµ‹å€¼çš„å®šä¹‰åªèƒ½å®šä¹‰ä¸€æ¬¡
-   staticçš„å®šä¹‰å’Œå£°æ˜ä¸å¹²æ‰°
-å³:æ²¡èµ‹å€¼çš„å¯ä»¥éšä¾¿å†™,èµ‹å€¼çš„åªèƒ½å†™ä¸€æ¬¡.externå…³é”®å­—æ²¡æœ‰ç”¨.
+½áÂÛ:
+   Ã»ÓĞ¸³ÖµµÄ¶¨ÒåÈç int a ºÍ ÉùÃ÷ extern int a Ò»Ñù,¿ÉÒÔÉùÃ÷¶à´Î,ÀàĞÍÒ²¿ÉÒÔ²»Í¬(ËäÈ»ÕâÊÇ¸ö´íÎó)
+   ¸³ÖµµÄ¶¨ÒåÖ»ÄÜ¶¨ÒåÒ»´Î
+   staticµÄ¶¨ÒåºÍÉùÃ÷²»¸ÉÈÅ
+¼´:Ã»¸³ÖµµÄ¿ÉÒÔËæ±ãĞ´,¸³ÖµµÄÖ»ÄÜĞ´Ò»´Î.extern¹Ø¼ü×ÖÃ»ÓĞÓÃ.
 ** DONE compile time assert						:ATTACH:
-   CLOSED: [2008-11-03 ä¸€ 16:13]
-   - State "DONE"       [2008-11-03 ä¸€ 16:13]
+   CLOSED: [2008-11-03 Ò» 16:13]
+   - State "DONE"       [2008-11-03 Ò» 16:13]
    :PROPERTIES:
    :Attachments: compile-time-assertions_1.pdf
    :ID:       7xl4i9z0ife0@sunway-lab.bupt.edu.cn
@@ -427,70 +427,70 @@ scanf("%[^,]%d",a,&b);
    #define ASSERT_STATIC(e) char UXXX[(e)-1]
 
 ** DONE C Preprocessor -- the whole story
-   CLOSED: [2008-11-03 ä¸€ 16:15]
-   - State "DONE"       [2008-11-03 ä¸€ 16:15]
+   CLOSED: [2008-11-03 Ò» 16:15]
+   - State "DONE"       [2008-11-03 Ò» 16:15]
    http://developer.apple.com/documentation/DeveloperTools/gcc-4.0.1/cpp/
    http://en.wikipedia.org/wiki/C_preprocessor
    http://blog.chinaunix.net/u1/41845/showart_446562.html
 
-** c++å®¹å™¨å½“popå…ƒç´ æ—¶å…ƒç´ å¦‚æœè¢«è‡ªåŠ¨ææ„
+** c++ÈİÆ÷µ±popÔªËØÊ±ÔªËØÈç¹û±»×Ô¶¯Îö¹¹
    Test t;
    vector<Test> v;
    v.push_back(t);
    v.pop_back();
-   v pop_backæ—¶,å®¹å™¨ä¸­ç›¸åº”çš„å…ƒç´ (tçš„æ‹·è´)è¢«è‡ªåŠ¨ææ„.
-   ä½†
+   v pop_backÊ±,ÈİÆ÷ÖĞÏàÓ¦µÄÔªËØ(tµÄ¿½±´)±»×Ô¶¯Îö¹¹.
+   µ«
    Test * t=new Test;
    v.push_back(t);
-   v.pop_back()æ—¶,tæŒ‡å‘çš„å…ƒç´ å´å¹¶ä¸ä¼šè¢«ææ„.
-   åŒæ ·,è‹¥vectorä¸­å…ƒç´ ä¸ºå…¶å®ƒå†…ç½®ç±»å‹ä¹Ÿ,ä¹Ÿä¸å¯èƒ½è¢«è‡ªåŠ¨ææ„
+   v.pop_back()Ê±,tÖ¸ÏòµÄÔªËØÈ´²¢²»»á±»Îö¹¹.
+   Í¬Ñù,ÈôvectorÖĞÔªËØÎªÆäËüÄÚÖÃÀàĞÍÒ²,Ò²²»¿ÉÄÜ±»×Ô¶¯Îö¹¹
 
-   vectorçš„æºç ä¸­,
+   vectorµÄÔ´ÂëÖĞ,
    pop_back() {
    __M_content;
    destroy(..);
    }
-   è€Œdestroy(p)åªæ˜¯ç®€å•çš„è°ƒç”¨ p->~T()
+   ¶ødestroy(p)Ö»ÊÇ¼òµ¥µÄµ÷ÓÃ p->~T()
 
-   ä¸ºäº†å®¹å™¨çš„ä¸€è‡´,C++è§„å®š,å†…ç½®ç±»å‹çš„ææ„ä¹Ÿèƒ½ç¼–è¯‘é€šè¿‡,ä½†è¿™äº›ææ„å®é™…ä¸Šä»€ä¹ˆä¹Ÿä¸åš,
-   å³å½“Tä¸ºintæ—¶,p->~int()ä¹Ÿèƒ½ç¼–è¯‘é€šè¿‡,æŒ‡é’ˆä¹Ÿå±äºå†…ç½®ç±»å‹,æ‰€ä»¥å®¹å™¨ä¸­ä¸ºæŒ‡é’ˆæ—¶,ä¹Ÿèƒ½
-   ç¼–è¯‘é€šè¿‡,ä½†ææ„æ—¶å®é™…ä¸Šä»€ä¹ˆä¹Ÿä¸åš.
+   ÎªÁËÈİÆ÷µÄÒ»ÖÂ,C++¹æ¶¨,ÄÚÖÃÀàĞÍµÄÎö¹¹Ò²ÄÜ±àÒëÍ¨¹ı,µ«ÕâĞ©Îö¹¹Êµ¼ÊÉÏÊ²Ã´Ò²²»×ö,
+   ¼´µ±TÎªintÊ±,p->~int()Ò²ÄÜ±àÒëÍ¨¹ı,Ö¸ÕëÒ²ÊôÓÚÄÚÖÃÀàĞÍ,ËùÒÔÈİÆ÷ÖĞÎªÖ¸ÕëÊ±,Ò²ÄÜ
+   ±àÒëÍ¨¹ı,µ«Îö¹¹Ê±Êµ¼ÊÉÏÊ²Ã´Ò²²»×ö.
 
-   ä»ä¸Šé¢vectorçš„ä»£ç ä¸­ä¹Ÿå¯ä»¥çœ‹åˆ°,vector pop_backæ—¶å¹¶ä¸é‡Šæ”¾å†…å­˜,è€Œlistä¸æ­¤ä¸åŒ:
-   listçš„pop_backå¤§è‡´ä¸º:
+   ´ÓÉÏÃævectorµÄ´úÂëÖĞÒ²¿ÉÒÔ¿´µ½,vector pop_backÊ±²¢²»ÊÍ·ÅÄÚ´æ,¶ølistÓë´Ë²»Í¬:
+   listµÄpop_back´óÖÂÎª:
    destroy();
    deallocate();
    ..
-   å…¶ä¸­deallocateè´Ÿè´£é‡Šæ”¾å†…å­˜
+   ÆäÖĞdeallocate¸ºÔğÊÍ·ÅÄÚ´æ
 
-   ä¸Šé¢æåˆ°çš„destroy,deallocate,è¿˜æœ‰allocate,constructéƒ½æ˜¯å®¹å™¨çš„allocatorçš„åŠŸèƒ½,
-   å¯ä»¥è‡ªå·±é‡å†™ä¸€ä¸ªallocator,å®ç°ä¸åŒçš„allocate,deallocate,construct,destroyè¡Œä¸º,ç„¶åæŠŠ
-   æ–°çš„allocatoråšä¸ºå®¹å™¨çš„æ¨¡æ¿å‚æ•°
+   ÉÏÃæÌáµ½µÄdestroy,deallocate,»¹ÓĞallocate,construct¶¼ÊÇÈİÆ÷µÄallocatorµÄ¹¦ÄÜ,
+   ¿ÉÒÔ×Ô¼ºÖØĞ´Ò»¸öallocator,ÊµÏÖ²»Í¬µÄallocate,deallocate,construct,destroyĞĞÎª,È»ºó°Ñ
+   ĞÂµÄallocator×öÎªÈİÆ÷µÄÄ£°å²ÎÊı
 
-** c++å¼•å…¥å¼•ç”¨çš„æœ€æ ¹æœ¬åŸå› 
-   c++å¼•å…¥å¼•ç”¨,æ˜¯å› ä¸ºå®¹å™¨çš„å­˜åœ¨.
+** c++ÒıÈëÒıÓÃµÄ×î¸ù±¾Ô­Òò
+   c++ÒıÈëÒıÓÃ,ÊÇÒòÎªÈİÆ÷µÄ´æÔÚ.
 
-   å¯¹æ¯”Cè¯­è¨€ä¸­ç»å…¸çš„å®¹å™¨:æ•°ç»„. æ•°ç»„å¯ä»¥ä¿å­˜å„ç§ç±»å‹,åŒ…æ‹¬å†…ç½®ç±»å‹,è‡ªå®šä¹‰structç­‰,
-   å¦‚array[0]=structA,åˆ™åé¢array[0].value1=1æ—¶,å³æ˜¯ä¿®æ”¹structA,æ•°ç»„çš„[]æ˜¯Cå†…ç½®è¿
-   ç®—ç¬¦,ä¸å­˜åœ¨array[0]å–å¾—çš„æ˜¯structAçš„æ‹·è´çš„é—®é¢˜
+   ¶Ô±ÈCÓïÑÔÖĞ¾­µäµÄÈİÆ÷:Êı×é. Êı×é¿ÉÒÔ±£´æ¸÷ÖÖÀàĞÍ,°üÀ¨ÄÚÖÃÀàĞÍ,×Ô¶¨ÒåstructµÈ,
+   Èçarray[0]=structA,ÔòºóÃæarray[0].value1=1Ê±,¼´ÊÇĞŞ¸ÄstructA,Êı×éµÄ[]ÊÇCÄÚÖÃÔË
+   Ëã·û,²»´æÔÚarray[0]È¡µÃµÄÊÇstructAµÄ¿½±´µÄÎÊÌâ
 
-   ä½†åœ¨c++ä¸­,å®¹å™¨ç±»çš„[],at,get...éƒ½æ˜¯å‡½æ•°,å¦‚vector<struct> v; v[0]=structA;
-   v[0].value=1;è‹¥operator[]ç›´æ¥è¿”å›structç±»å‹,è€Œä¸æ˜¯å¼•ç”¨æˆ–æŒ‡é’ˆ,åˆ™v[0].value=1ä¿®
-   æ”¹çš„å®é™…ä¸Šæ˜¯structAçš„æ‹·è´.æ‰€ä»¥C++çš„å®¹å™¨ç±»çš„getter,ä¸ºäº†ä¸cè¯­ä¹‰ä¸Šçš„ä¸€è‡´,éƒ½æ˜¯è¿”å›
-   å¼•ç”¨.å¦‚æœæ²¡æœ‰å¼•ç”¨,C++å®¹å™¨åªèƒ½è®¾è®¡æˆå¿…é¡»å­˜å‚¨æŒ‡é’ˆç±»å‹
+   µ«ÔÚc++ÖĞ,ÈİÆ÷ÀàµÄ[],at,get...¶¼ÊÇº¯Êı,Èçvector<struct> v; v[0]=structA;
+   v[0].value=1;Èôoperator[]Ö±½Ó·µ»ØstructÀàĞÍ,¶ø²»ÊÇÒıÓÃ»òÖ¸Õë,Ôòv[0].value=1ĞŞ
+   ¸ÄµÄÊµ¼ÊÉÏÊÇstructAµÄ¿½±´.ËùÒÔC++µÄÈİÆ÷ÀàµÄgetter,ÎªÁËÓëcÓïÒåÉÏµÄÒ»ÖÂ,¶¼ÊÇ·µ»Ø
+   ÒıÓÃ.Èç¹ûÃ»ÓĞÒıÓÃ,C++ÈİÆ÷Ö»ÄÜÉè¼Æ³É±ØĞë´æ´¢Ö¸ÕëÀàĞÍ
 
-   å¦å¤–,ç”¨cå†™çš„glibä¸­å®¹å™¨,å¦‚garray,getteréƒ½æ˜¯ä½¿ç”¨å®æ¥å®Œæˆçš„,å®å¯ä»¥è®¤ä¸ºæ˜¯
-   return-by-name, å’Œå¼•ç”¨çš„æ•ˆæœç±»ä¼¼.å¦‚ #define g_array_index(a,t,i) (((t*) (void
-   *) (a)->data) [(i)]), aæ˜¯array,tæ˜¯å®¹å™¨ä¸­æˆå‘˜ç±»å‹,iæ˜¯åç§»é‡
+   ÁíÍâ,ÓÃcĞ´µÄglibÖĞÈİÆ÷,Èçgarray,getter¶¼ÊÇÊ¹ÓÃºêÀ´Íê³ÉµÄ,ºê¿ÉÒÔÈÏÎªÊÇ
+   return-by-name, ºÍÒıÓÃµÄĞ§¹ûÀàËÆ.Èç #define g_array_index(a,t,i) (((t*) (void
+   *) (a)->data) [(i)]), aÊÇarray,tÊÇÈİÆ÷ÖĞ³ÉÔ±ÀàĞÍ,iÊÇÆ«ÒÆÁ¿
 
-   ç»¼ä¸Š:å®¹å™¨ç±»çš„getteræ–¹æ³•éƒ½æ˜¯å‡½æ•°è°ƒç”¨,ä¸ºäº†é¿å…return-by-value,ä½¿ç”¨äº† return-by-name
+   ×ÛÉÏ:ÈİÆ÷ÀàµÄgetter·½·¨¶¼ÊÇº¯Êıµ÷ÓÃ,ÎªÁË±ÜÃâreturn-by-value,Ê¹ÓÃÁË return-by-name
 
 ** operator->()								:ATTACH:
    :PROPERTIES:
    :Attachments: 1.cpp
    :ID:       shn19b504ie0@sunway-lab.bupt.edu.cn
    :END:
-   operator->()ç”¨æ¥ä½¿æŸä¸ªç±»åƒæŒ‡é’ˆ,å¦‚iteraotr
+   operator->()ÓÃÀ´Ê¹Ä³¸öÀàÏñÖ¸Õë,Èçiteraotr
 
 ** [23.11] How can I set up my class so it won't be inherited from?	:ATTACH:
    :PROPERTIES:
@@ -578,7 +578,7 @@ destructed. If one of those destructors throws an exception (say it throws a Bar
 object), the C++ runtime system is in a no-win situation: should it ignore the
 Bar and end up in the } catch (Foo e) { where it was originally headed? Should
 it ignore the Foo and look for a } catch (Bar e) { handler? There is no good
-answer â€• either choice loses information.
+answer ¡ª either choice loses information.
 
 So the C++ language guarantees that it will call terminate() at this point, and
 terminate() kills the process. Bang you're dead.
@@ -599,9 +599,9 @@ time this is a good rule of thumb.
 
 ** what is type-safe and strong type
    http://hi.baidu.com/chenfalei/blog/item/f33ac0133500ac21dd540186.html
-   æ²¡æœ‰ç»å¯¹çš„ç±»å‹å®‰å…¨ä¸å¼ºç±»å‹è¯­è¨€ã€‚ç±»å‹å®‰å…¨éƒ½æ˜¯ç›¸å¯¹çš„ã€‚
-   æ¯”å¦‚C/C++åŸºæœ¬çš„ç±»å‹æ£€æŸ¥ä¿è¯äº†ä¸€éƒ¨åˆ†çš„ç±»å‹å®‰å…¨ï¼Œä½†å®ƒçš„ union/æŒ‡é’ˆ/å¼ºåˆ¶è½¬æ¢/æ•°ç»„ å´ç ´åäº†ç±»å‹å®‰å…¨ã€‚
-   ç»å¯¹çš„ç±»å‹å®‰å…¨æ˜¯æŒ‡ï¼šä¸€æ—¦ç¨‹åºé€šè¿‡ç¼–è¯‘ï¼Œå³ä¸å†å­˜åœ¨é™¤é€»è¾‘é”™è¯¯å¤–çš„å…¶ä»–é”™è¯¯ã€‚
+   Ã»ÓĞ¾ø¶ÔµÄÀàĞÍ°²È«ÓëÇ¿ÀàĞÍÓïÑÔ¡£ÀàĞÍ°²È«¶¼ÊÇÏà¶ÔµÄ¡£
+   ±ÈÈçC/C++»ù±¾µÄÀàĞÍ¼ì²é±£Ö¤ÁËÒ»²¿·ÖµÄÀàĞÍ°²È«£¬µ«ËüµÄ union/Ö¸Õë/Ç¿ÖÆ×ª»»/Êı×é È´ÆÆ»µÁËÀàĞÍ°²È«¡£
+   ¾ø¶ÔµÄÀàĞÍ°²È«ÊÇÖ¸£ºÒ»µ©³ÌĞòÍ¨¹ı±àÒë£¬¼´²»ÔÙ´æÔÚ³ıÂß¼­´íÎóÍâµÄÆäËû´íÎó¡£
 ** why pop_back returns void instead of the removed object?
    - The SGI's docs contain the reasoning - it's from queue's documentation
      but it also applies for deque:
@@ -618,7 +618,7 @@ time this is a good rule of thumb.
      at all and to require clients to use front() to inspect the value at
      the front of the queue."
    - exception safety
-     å‡è®¾ pop_back()å®šä¹‰ä¸ºï¼š
+     ¼ÙÉè pop_back()¶¨ÒåÎª£º
 #+BEGIN_EXAMPLE
      T topValue=vector1.pop();
 
@@ -629,7 +629,7 @@ time this is a good rule of thumb.
      }
 #+END_EXAMPLE
 
-** æ•°ç»„èœ•åŒ–ä¸ºæŒ‡é’ˆåŠæ•°ç»„å¼•ç”¨åšä¸ºå‡½æ•°å‚æ•°
+** Êı×éÍÉ»¯ÎªÖ¸Õë¼°Êı×éÒıÓÃ×öÎªº¯Êı²ÎÊı
 
 #+BEGIN_EXAMPLE
 #include <iostream>
@@ -649,7 +649,7 @@ main(int argc, char *argv[]) {
     return 0;
 }
 #+END_EXAMPLE
-ç¼–è¯‘é”™è¯¯
+±àÒë´íÎó
 
 #+BEGIN_EXAMPLE
 #include <iostream>
@@ -666,25 +666,25 @@ main(int argc, char *argv[]) {
     return 0;
 }
 #+END_EXAMPLE
-ç¼–è¯‘æ­£ç¡®
+±àÒëÕıÈ·
 
-å¯è§,æ•°ç»„ä½œä¸ºå‚æ•°ä¼šèœ•åŒ–ä¸ºæŒ‡é’ˆ,ä½†æ•°ç»„å¼•ç”¨åšä¸ºå‚æ•°ä¸ä¼š
-** c++ template é“¾æ¥é—®é¢˜					   :template:æ¨¡æ¿:
-   or ä¸ºä»€ä¹ˆc++ templateçš„å£°æ˜å’Œå®šä¹‰é€šå¸¸åœ¨åŒä¸€ä¸ªæ–‡ä»¶,è€Œä¸æŠŠå®šä¹‰å•ç‹¬ç¼–è¯‘æˆç›®æ ‡æ–‡ä»¶
-   å› ä¸ºc++ template is instantiated at compile time.
+¿É¼û,Êı×é×÷Îª²ÎÊı»áÍÉ»¯ÎªÖ¸Õë,µ«Êı×éÒıÓÃ×öÎª²ÎÊı²»»á
+** c++ template Á´½ÓÎÊÌâ					   :template:Ä£°å:
+   or ÎªÊ²Ã´c++ templateµÄÉùÃ÷ºÍ¶¨ÒåÍ¨³£ÔÚÍ¬Ò»¸öÎÄ¼ş,¶ø²»°Ñ¶¨Òåµ¥¶À±àÒë³ÉÄ¿±êÎÄ¼ş
+   ÒòÎªc++ template is instantiated at compile time.
    http://en.wikibooks.org/wiki/C%2B%2B_Programming/Template
 ** The Standard Librarian: Containers of Incomplete Types
    http://www.ddj.com/database/184403814
-** ä¸´æ—¶å¯¹è±¡çš„constå¼•ç”¨						   :å¼•ç”¨:const:å¸¸é‡:
+** ÁÙÊ±¶ÔÏóµÄconstÒıÓÃ						   :ÒıÓÃ:const:³£Á¿:
    string foo() {return string("abc");}
    const string & a=foo();
-   æ˜¯åˆæ³•çš„,è¿™æ˜¯C++å¯¹å¤§é‡å­˜åœ¨çš„ foo (const & T) ç±»å‹çš„å‡½æ•°çš„æŠ˜è¡·
-   string & a=foo()æ˜¯éæ³•çš„
-   ç±»ä¼¼çš„,å¯¹äºfoo("abc")çš„è°ƒç”¨,void foo(const string & s)æ˜¯åˆæ³•çš„,void foo(string & s)æ˜¯éæ³•çš„,é™¤é
+   ÊÇºÏ·¨µÄ,ÕâÊÇC++¶Ô´óÁ¿´æÔÚµÄ foo (const & T) ÀàĞÍµÄº¯ÊıµÄÕÛÖÔ
+   string & a=foo()ÊÇ·Ç·¨µÄ
+   ÀàËÆµÄ,¶ÔÓÚfoo("abc")µÄµ÷ÓÃ,void foo(const string & s)ÊÇºÏ·¨µÄ,void foo(string & s)ÊÇ·Ç·¨µÄ,³ı·Ç
    string a("abc");string & b=a; foo(b);
 
-   è™½ç„¶c++è¦æ±‚è¿”å›çš„ä¸´æ—¶å¯¹è±¡çš„å¼•ç”¨å¿…é¡»æ˜¯const,ä½†åœ¨gccé‡Œ,å¤æ‚å¯¹è±¡é€šå¸¸éƒ½æ˜¯ç”¨
-   named-return-value,æ‰€ä»¥è¿”å›çš„ä¸´æ—¶å¯¹è±¡å®é™…ä¸Šå¿…ç„¶åœ¨è°ƒç”¨è€…çš„æ ˆä¸­,æ‰€ä»¥
+   ËäÈ»c++ÒªÇó·µ»ØµÄÁÙÊ±¶ÔÏóµÄÒıÓÃ±ØĞëÊÇconst,µ«ÔÚgccÀï,¸´ÔÓ¶ÔÏóÍ¨³£¶¼ÊÇÓÃ
+   named-return-value,ËùÒÔ·µ»ØµÄÁÙÊ±¶ÔÏóÊµ¼ÊÉÏ±ØÈ»ÔÚµ÷ÓÃÕßµÄÕ»ÖĞ,ËùÒÔ
 
 #+BEGIN_EXAMPLE
    main (int argc, char * argv[]) {
@@ -695,21 +695,21 @@ main(int argc, char *argv[]) {
     return 0;
     }
 #+END_EXAMPLE
-    å¹¶æ²¡æœ‰é—®é¢˜
-    mainçš„æ ˆ:
-    ä¸´æ—¶å¯¹è±¡a
-    å¼•ç”¨tçš„æŒ‡é’ˆ,æŒ‡å‘ä¸´æ—¶å¯¹è±¡a
+    ²¢Ã»ÓĞÎÊÌâ
+    mainµÄÕ»:
+    ÁÙÊ±¶ÔÏóa
+    ÒıÓÃtµÄÖ¸Õë,Ö¸ÏòÁÙÊ±¶ÔÏóa
 
 ** bitwise copy
    http://blogs.msdn.com/slippman/archive/2004/01/20/60655.aspx
    http://www.cppblog.com/jerysun0818/archive/2006/05/05/6632.html
 
    In practice, a good compiler can generate bitwise copies for most class objects since they
-   have bitwise copy semanticsâ€¦.
+   have bitwise copy semantics¡­.
    That is, a copy constructor is not automatically generated by the compiler for each class that
    does not explicitly define one.
 
-   Default constructors and copy constructorsâ€¦are generated (by the compiler) where needed.
+   Default constructors and copy constructors¡­are generated (by the compiler) where needed.
    Needed in this instance means when the class does not exhibit bitwise copy semantics
    When are bitwise copy semantics not exhibited by a class? There are four instances:
 
@@ -722,26 +722,26 @@ main(int argc, char *argv[]) {
    4. When the class is derived from an inheritance chain in which one or more base classes are virtual
 
 
-   å¦‚æœä¸€ä¸ªç±»çš„æˆå‘˜ä¸­æœ‰æŒ‡é’ˆæˆå‘˜ï¼Œå¦‚æœå®ƒåˆæœ‰bitwise copy semantics(å¦‚æ— è™šå‡½æ•°ï¼Œæˆ
-   å‘˜ç±»æ²¡æœ‰å®šä¹‰copy constructor..),é»˜è®¤ä¼šä½¿ç”¨bitwise copy,ä½†æ˜¯å¯¹æŒ‡é’ˆåšshadow
-   copyåœ¨å¯¹è±¡ææ„æ—¶æŒ‡é’ˆæˆå‘˜å¯èƒ½ä¼šè¢«å¤šæ¬¡delete,æ‰€ä»¥å¯¹äºè¿™ä¸ªç±»è¦è‡ªå®šä¹‰copy
-   constructorä½¿å…¶ä¸§å¤±bitwise copy semantics
+   Èç¹ûÒ»¸öÀàµÄ³ÉÔ±ÖĞÓĞÖ¸Õë³ÉÔ±£¬Èç¹ûËüÓÖÓĞbitwise copy semantics(ÈçÎŞĞéº¯Êı£¬³É
+   Ô±ÀàÃ»ÓĞ¶¨Òåcopy constructor..),Ä¬ÈÏ»áÊ¹ÓÃbitwise copy,µ«ÊÇ¶ÔÖ¸Õë×öshadow
+   copyÔÚ¶ÔÏóÎö¹¹Ê±Ö¸Õë³ÉÔ±¿ÉÄÜ»á±»¶à´Îdelete,ËùÒÔ¶ÔÓÚÕâ¸öÀàÒª×Ô¶¨Òåcopy
+   constructorÊ¹ÆäÉ¥Ê§bitwise copy semantics
 
-** å¯æ€œçš„bool
-å‘ä¿¡äºº: Oversense (ç©º), ä¿¡åŒº: CPlusPlus
-æ ‡  é¢˜: å¯æ€œçš„bool
-å‘ä¿¡ç«™: BBS æ°´æœ¨æ¸…åç«™ (Mon Oct 21 17:53:11 2002), è½¬ä¿¡
+** ¿ÉÁ¯µÄbool
+·¢ĞÅÈË: Oversense (¿Õ), ĞÅÇø: CPlusPlus
+±ê  Ìâ: ¿ÉÁ¯µÄbool
+·¢ĞÅÕ¾: BBS Ë®Ä¾Çå»ªÕ¾ (Mon Oct 21 17:53:11 2002), ×ªĞÅ
 
-å¯æ€œçš„bool
+¿ÉÁ¯µÄbool
 
-ä½œè€…: Jim Hyslop å’Œ Herb Sutter
-ç¿»è¯‘ï¼šoversense <17:33 2002-10-21>
-å‡ºå¤„: http://www.cuj.com/experts/2011/hyslop.htm?topic=experts
+×÷Õß: Jim Hyslop ºÍ Herb Sutter
+·­Òë£ºoversense <17:33 2002-10-21>
+³ö´¦: http://www.cuj.com/experts/2011/hyslop.htm?topic=experts
 
-å˜¿å˜¿...ä»Šå¤©çš„æ´»æ¯”è¾ƒçˆ½ï¼å‰å‡ å¤©å†™äº†ç‚¹ç ´ç¨‹åºï¼Œä»Šå¤©æ”¹æ”¹å°±æå®šäº†ã€‚
-å“ï¼ŒçœŸå›°ï¼å–ç‚¹å’–å•¡ï¼Œé åœ¨æˆ‘çš„å°æ¤…å­ä¸Šï¼Œçœ‹çœ‹æˆ‘çš„ä»£ç ...
+ºÙºÙ...½ñÌìµÄ»î±È½ÏË¬£¡Ç°¼¸ÌìĞ´ÁËµãÆÆ³ÌĞò£¬½ñÌì¸Ä¸Ä¾Í¸ã¶¨ÁË¡£
+°¥£¬ÕæÀ§£¡ºÈµã¿§·È£¬¿¿ÔÚÎÒµÄĞ¡ÒÎ×ÓÉÏ£¬¿´¿´ÎÒµÄ´úÂë...
 
-ç¥å¥‡ï¼Œè¿™æ˜¯å•¥ï¼Ÿ
+ÉñÆæ£¬ÕâÊÇÉ¶£¿
 void f()
 {
  TextHandler t;
@@ -749,7 +749,7 @@ void f()
 // ...
 }
 
-åé¢é‚£ä¸ªtrueæ˜¯ä»€ä¹ˆä¸œä¸œï¼Ÿç¿»ç¿»å®šä¹‰:
+ºóÃæÄÇ¸ötrueÊÇÊ²Ã´¶«¶«£¿·­·­¶¨Òå:
 class TextHandler
 {
 public:
@@ -758,78 +758,78 @@ public:
 //...
 };
 
-å–ç‚¹coffeeï¼Œæˆ‘æƒ³èµ·æ¥äº†ï¼Œtrueè¡¨ç¤ºsendTextå‡½æ•°è‡ªåŠ¨åŠ ä¸Šä¸€ä¸ªå›è½¦æ¢è¡Œï¼Œæˆ‘æ€
-ä¹ˆå¿˜äº†ï¼Ÿéš¾é“æ˜¯æˆ‘ç¬¨ï¼Ÿæˆ‘é™·å…¥è¿·èŒ«çš„æ²‰æ€...
+ºÈµãcoffee£¬ÎÒÏëÆğÀ´ÁË£¬true±íÊ¾sendTextº¯Êı×Ô¶¯¼ÓÉÏÒ»¸ö»Ø³µ»»ĞĞ£¬ÎÒÔõ
+Ã´ÍüÁË£¿ÄÑµÀÊÇÎÒ±¿£¿ÎÒÏİÈëÃÔÃ£µÄ³ÁË¼...
 
-ç °ï¼ï¼ï¼çš„ä¸€å£°å·¨å“ï¼Œæˆ‘ä¸€æ…Œå¼ ï¼Œå˜´é‡Œçš„å’–å•¡å·®ç‚¹å–·å‡ºæ¥ï¼Œè¿˜å¥½æˆ‘å˜´ç´§ã€‚ä¸€å®šæ˜¯Guruåˆä¸Š
-äº†å¥¹çš„ä»€ä¹ˆå¤§å¤´ä¹¦ã€‚æˆ‘è½¬å‘å¥¹ï¼ŒæŒ¤å‡ºä¸€ç‚¹å¾®ç¬‘ã€‚å¥¹æ‰‹é‡Œæ‹¿ç€ä¸€æœ¬ä¸åˆ°ä¸€ç™¾é¡µçš„å°å†Œå­ã€‚
-ç¥å¥‡ï¼Œè¿™ä¹ˆå°çš„ä¹¦å¼„å¾—è¿™ä¹ˆå“ï¼Œå¥¹æ˜¯æ€ä¹ˆå¼„å¾—ï¼Ÿ
+Åé£¡£¡£¡µÄÒ»Éù¾ŞÏì£¬ÎÒÒ»»ÅÕÅ£¬×ìÀïµÄ¿§·È²îµãÅç³öÀ´£¬»¹ºÃÎÒ×ì½ô¡£Ò»¶¨ÊÇGuruºÏÉÏ
+ÁËËıµÄÊ²Ã´´óÍ·Êé¡£ÎÒ×ªÏòËı£¬¼·³öÒ»µãÎ¢Ğ¦¡£ËıÊÖÀïÄÃ×ÅÒ»±¾²»µ½Ò»°ÙÒ³µÄĞ¡²á×Ó¡£
+ÉñÆæ£¬ÕâÃ´Ğ¡µÄÊéÅªµÃÕâÃ´Ïì£¬ËıÊÇÔõÃ´ÅªµÃ£¿
 
-æ˜¾ç„¶ï¼Œå¥¹ä»€ä¹ˆéƒ½çŸ¥é“äº†ã€‚
+ÏÔÈ»£¬ËıÊ²Ã´¶¼ÖªµÀÁË¡£
 
-"æˆ‘çš„å®è´ï¼å¦‚æœä½ è¿™ä¹ˆå¿«å°±å¿˜äº†å‚æ•°çš„å«ä¹‰ï¼Œé‚£ä¹ˆå½“å…¶ä»–ç¨‹åºå‘˜ç¬¬ä¸€æ¬¡çœ‹ä½ çš„ä»£
-ç çš„æ—¶å€™ï¼Œä»–æ€ä¹ˆæ˜ç™½ä½ è¦è¡¨è¾¾çš„æ„æ€å‘¢ï¼Ÿ"
+"ÎÒµÄ±¦±´£¡Èç¹ûÄãÕâÃ´¿ì¾ÍÍüÁË²ÎÊıµÄº¬Òå£¬ÄÇÃ´µ±ÆäËû³ÌĞòÔ±µÚÒ»´Î¿´ÄãµÄ´ú
+ÂëµÄÊ±ºò£¬ËûÔõÃ´Ã÷°×ÄãÒª±í´ïµÄÒâË¼ÄØ£¿"
 
-"å—¯ï¼Œæ˜¯å•Š" æˆ‘å’•å™œé“ "ä½†æ˜¯åœ¨IDEé‡Œé¢ï¼Œä»–åªè¦æŠŠé¼ æ ‡ç§»åˆ°å‡½æ•°ä¸Šï¼Œä»–å°±å¯ä»¥çœ‹
-åˆ°å‚æ•°è¯´æ˜äº†å•Šï¼"
+"àÅ£¬ÊÇ°¡" ÎÒ¹¾ààµÀ "µ«ÊÇÔÚIDEÀïÃæ£¬ËûÖ»Òª°ÑÊó±êÒÆµ½º¯ÊıÉÏ£¬Ëû¾Í¿ÉÒÔ¿´
+µ½²ÎÊıËµÃ÷ÁË°¡£¡"
 
-"æœ‰äº›IDEå¦‚æ­¤ï¼Œå¹¶éå…¨éƒ¨ï¼Œç”šè‡³ä¸æ˜¯å¤§å¤šæ•°ï¼æˆ‘è¯´è¿‡å¾ˆå¤šæ¬¡ï¼Œæºä»£ç æœ€ä¸»è¦çš„ç”¨é€”
-æ˜¯ç”¨æ¥äº¤æµï¼Œå¯¹æ„å›¾çš„äº¤æµã€‚æˆ‘æ‰‹ä¸­è¿™æœ¬å¤è€çš„ï¼Œä»¤äººå°Šæ•¬çš„å·å†Œé˜è¿°äº†äº¤æµçš„è‰ºæœ¯ã€‚
-åœ¨è¿™å„¿ï¼Œå®ƒå†™é“ï¼Œ'ä½¿ç”¨æ˜ç¡®ï¼Œè¯¦ç»†ï¼Œå…·ä½“çš„è¯­è¨€'[1]ï¼Œä½ ä»£ç ä¸­çš„boolä¸æ­¤æ— ç¼˜ï¼Œ
-ä»–ä¸èƒ½ä¼ é€’ä»»ä½•æœ‰ç”¨çš„ä¿¡æ¯ç»™è¯»è€…ã€‚ "
+"ÓĞĞ©IDEÈç´Ë£¬²¢·ÇÈ«²¿£¬ÉõÖÁ²»ÊÇ´ó¶àÊı£¡ÎÒËµ¹ıºÜ¶à´Î£¬Ô´´úÂë×îÖ÷ÒªµÄÓÃÍ¾
+ÊÇÓÃÀ´½»Á÷£¬¶ÔÒâÍ¼µÄ½»Á÷¡£ÎÒÊÖÖĞÕâ±¾¹ÅÀÏµÄ£¬ÁîÈË×ğ¾´µÄ¾í²á²ûÊöÁË½»Á÷µÄÒÕÊõ¡£
+ÔÚÕâ¶ù£¬ËüĞ´µÀ£¬'Ê¹ÓÃÃ÷È·£¬ÏêÏ¸£¬¾ßÌåµÄÓïÑÔ'[1]£¬Äã´úÂëÖĞµÄboolÓë´ËÎŞÔµ£¬
+Ëû²»ÄÜ´«µİÈÎºÎÓĞÓÃµÄĞÅÏ¢¸ø¶ÁÕß¡£ "
 
-"ä¸å“ˆï¼Œä¸€æ—¦ä»–çŸ¥é“è¿™ä¸ªboolæ˜¯ä»€ä¹ˆæ„æ€ï¼Œå°±å¾ˆå®¹æ˜“è®°ä½äº†å“ˆï¼"æˆ‘ä¸­æ°”ä¸è¶³çš„è¯´ã€‚
+"²»¹ş£¬Ò»µ©ËûÖªµÀÕâ¸öboolÊÇÊ²Ã´ÒâË¼£¬¾ÍºÜÈİÒ×¼Ç×¡ÁË¹ş£¡"ÎÒÖĞÆø²»×ãµÄËµ¡£
 
-Guruç”¨å¥¹ç¾ä¸½è€Œåšå®šçš„è“çœ¼ç›ç›¯ç€æˆ‘ï¼Œæˆ‘å¿ƒé‡Œæ‰‘é€šæ‰‘é€šè·³èµ·æ¥ã€‚
+GuruÓÃËıÃÀÀö¶ø¼á¶¨µÄÀ¶ÑÛ¾¦¶¢×ÅÎÒ£¬ÎÒĞÄÀïÆËÍ¨ÆËÍ¨ÌøÆğÀ´¡£
 
-"ä½ å¤šä¹…ä»¥å‰å†™çš„è¿™æ®µä»£ç ï¼Ÿ"Guruå¾ˆæ¸©æŸ”çš„è¯´é“--é‚£ç§æˆ‘å–œæ¬¢çš„æ¸©æŸ”ã€‚
-"å—¯ï¼Œå¥½ï¼Œå—¯ï¼Œé‚£å¦‚ä½•æ”¹æ­£å‘¢ï¼Ÿ"æˆ‘å·§å¦™çš„å›é¿å¥¹çš„é—®é¢˜ã€‚
-"ä½ ä¸èƒ½å¦å¤–æƒ³ä¸€ç§æ–¹å¼å»è¡¨è¾¾ä½ çš„æ„å›¾å—ï¼Ÿ"å¥¹ä¹Ÿä¸ç›´æ¥å›ç­”æˆ‘ï¼Œæˆ‘ä»¬å°±å¥½åƒåœ¨
-ç…é¸¡è›‹ã€‚
+"Äã¶à¾ÃÒÔÇ°Ğ´µÄÕâ¶Î´úÂë£¿"GuruºÜÎÂÈáµÄËµµÀ--ÄÇÖÖÎÒÏ²»¶µÄÎÂÈá¡£
+"àÅ£¬ºÃ£¬àÅ£¬ÄÇÈçºÎ¸ÄÕıÄØ£¿"ÎÒÇÉÃîµÄ»Ø±ÜËıµÄÎÊÌâ¡£
+"Äã²»ÄÜÁíÍâÏëÒ»ÖÖ·½Ê½È¥±í´ïÄãµÄÒâÍ¼Âğ£¿"ËıÒ²²»Ö±½Ó»Ø´ğÎÒ£¬ÎÒÃÇ¾ÍºÃÏñÔÚ
+¼å¼¦µ°¡£
 
-"æˆ‘å¯ä»¥ä¸è¦ç¬¬äºŒä¸ªå‚æ•°ï¼Œè®©ç”¨æˆ·è‡ªå·±åŠ  '\n' å¥½äº†ã€‚"æˆ‘è¾¹è¯´è¾¹å†™:
+"ÎÒ¿ÉÒÔ²»ÒªµÚ¶ş¸ö²ÎÊı£¬ÈÃÓÃ»§×Ô¼º¼Ó '\n' ºÃÁË¡£"ÎÒ±ßËµ±ßĞ´:
 {
  t.sendText("Hello, world\n");
 }
-"å¦‚æœä¼ é€’ç»™sendTextæ˜¯ä¸€ä¸ªå˜é‡å‘¢ï¼Ÿ" Gurué—®ã€‚
-"é‚£å°±è¿™æ ·å¥½äº†"
+"Èç¹û´«µİ¸øsendTextÊÇÒ»¸ö±äÁ¿ÄØ£¿" GuruÎÊ¡£
+"ÄÇ¾ÍÕâÑùºÃÁË"
 {
  t.sendText( variable );
  t.sendText( "\n" );
 }
-æˆ‘æŠ¬å¤´çœ‹åˆ°Guruè„¸è‰²ä¸å–„ï¼Œèµ¶ç´§è¯´é“:
-"é‚£å°±è¿™æ ·ï¼Œæˆ‘æä¾›ä¸¤ä¸ªå‡½æ•°"
+ÎÒÌ§Í·¿´µ½GuruÁ³É«²»ÉÆ£¬¸Ï½ôËµµÀ:
+"ÄÇ¾ÍÕâÑù£¬ÎÒÌá¹©Á½¸öº¯Êı"
 void sendText( const std::string & );
 void sendTextWithNewLine( const std::string & );
 
-"æ²¡æœ‰å…¶ä»–çš„åŠæ³•äº†å—ï¼Ÿ"Guruæ€è€ƒçš„æ—¶å€™ï¼Œå¾®å¾®çš±çœ‰ã€‚
-å“ï¼Œçœ‹æ¥æˆ‘ä»Šå¤©ä¸è¦æƒ³è½»æ¾æºœèµ°äº†ï¼Œæˆ‘ä¸€é˜µçŒ›æƒ³......ä»€ä¹ˆä¹Ÿæ²¡æƒ³å‡ºæ¥ï¼Œæˆ‘æŠ•é™
-äº†ï¼Œ"å°±è¿™æ ·å§ï¼"
+"Ã»ÓĞÆäËûµÄ°ì·¨ÁËÂğ£¿"GuruË¼¿¼µÄÊ±ºò£¬Î¢Î¢ÖåÃ¼¡£
+°¥£¬¿´À´ÎÒ½ñÌì²»ÒªÏëÇáËÉÁï×ßÁË£¬ÎÒÒ»ÕóÃÍÏë......Ê²Ã´Ò²Ã»Ïë³öÀ´£¬ÎÒÍ¶½µ
+ÁË£¬"¾ÍÕâÑù°É£¡"
 
-"å…³äºä½ çš„é—®é¢˜ï¼Œä½ è¿˜è¦è®¤è¯†ä¸€ç‚¹" Guruå†™é“:
+"¹ØÓÚÄãµÄÎÊÌâ£¬Äã»¹ÒªÈÏÊ¶Ò»µã" GuruĞ´µÀ:
 void displayText( const std::string &,
                   bool applyItalics,
                   bool applyBold );
 void f(){
     displayText( "This is bold but not italic",true, false );
 }
-"å¦‚æœä¸€ä¸ªç¨‹åºå‘˜è¦ç”¨æ–œä½“æ˜¾ç¤ºæ–‡å­—ï¼Œä½†æ˜¯å¼„é”™äº†å‚æ•°é¡ºåºï¼Œé‚£ä¹ˆè¿™äº›æ–‡å­—å°±è¦ç”¨
-ç²—ä½“æ˜¾ç¤ºäº†ï¼Œè€Œä¸”æ˜¾ç„¶ç¼–è¯‘å™¨æ— æ³•å‘ç°è¿™ä¸ªé”™è¯¯ã€‚"
+"Èç¹ûÒ»¸ö³ÌĞòÔ±ÒªÓÃĞ±ÌåÏÔÊ¾ÎÄ×Ö£¬µ«ÊÇÅª´íÁË²ÎÊıË³Ğò£¬ÄÇÃ´ÕâĞ©ÎÄ×Ö¾ÍÒªÓÃ
+´ÖÌåÏÔÊ¾ÁË£¬¶øÇÒÏÔÈ»±àÒëÆ÷ÎŞ·¨·¢ÏÖÕâ¸ö´íÎó¡£"
 
-"å¦‚æœBobæ‹¿åˆ°äº†è¿™æ®µä»£ç ï¼Œæ”¹å˜äº†å‚æ•°çš„é¡ºåºï¼Œä¸€ç§å«åš'Permute And Baffle'
-çš„æŠ€æœ¯[2]ã€‚ä¼šæ€æ ·ï¼Ÿ"
+"Èç¹ûBobÄÃµ½ÁËÕâ¶Î´úÂë£¬¸Ä±äÁË²ÎÊıµÄË³Ğò£¬Ò»ÖÖ½Ğ×ö'Permute And Baffle'
+µÄ¼¼Êõ[2]¡£»áÔõÑù£¿"
 
-"æ˜¾ç„¶ï¼Œé—®é¢˜å¤šå¤šçš„displayTextä¸èƒ½å¾—åˆ° 'æ˜ç¡®ï¼Œè¯¦ç»†ï¼Œå…·ä½“' çš„å‚æ•°ã€‚"
+"ÏÔÈ»£¬ÎÊÌâ¶à¶àµÄdisplayText²»ÄÜµÃµ½ 'Ã÷È·£¬ÏêÏ¸£¬¾ßÌå' µÄ²ÎÊı¡£"
 
-"ç°åœ¨æ¥çœ‹ä½ çš„é—®é¢˜ï¼Œä½ çš„ç¬¬ä¸€ä¸ªæ–¹æ¡ˆï¼Œå› ä¸ºdisplayTextéœ€è¦å…¶ä»–å‚æ•°è€Œæ²¡æ³•ç”¨
-ã€‚ä½ çš„ç¬¬äºŒä¸ªæ–¹æ¡ˆï¼Œ
-å¯ä»¥å·¥ä½œï¼Œä½†æ˜¯å¦‚æœdisplayTextéœ€è¦å¾ˆå¤šä¿¡æ¯ï¼Œæ¯”å¦‚é¢œè‰²ï¼Œå­—ä½“ç­‰ï¼Œä½ æ˜¯ä¸æ˜¯è¦
-æä¾›å¦‚æ­¤å¤šçš„å‡½æ•°å‘¢ï¼Ÿ"
+"ÏÖÔÚÀ´¿´ÄãµÄÎÊÌâ£¬ÄãµÄµÚÒ»¸ö·½°¸£¬ÒòÎªdisplayTextĞèÒªÆäËû²ÎÊı¶øÃ»·¨ÓÃ
+¡£ÄãµÄµÚ¶ş¸ö·½°¸£¬
+¿ÉÒÔ¹¤×÷£¬µ«ÊÇÈç¹ûdisplayTextĞèÒªºÜ¶àĞÅÏ¢£¬±ÈÈçÑÕÉ«£¬×ÖÌåµÈ£¬ÄãÊÇ²»ÊÇÒª
+Ìá¹©Èç´Ë¶àµÄº¯ÊıÄØ£¿"
 
-"æ‰€ä»¥ï¼Œæˆ‘ä»¬å¯ä»¥ç”¨enumerated."
-"Enumerations?"æˆ‘å¥‡æ€ªçš„è¯´ã€‚
+"ËùÒÔ£¬ÎÒÃÇ¿ÉÒÔÓÃenumerated."
+"Enumerations?"ÎÒÆæ¹ÖµÄËµ¡£
 
-"æ˜¯çš„ï¼ŒEnumerationsåœ¨è¿™å„¿èƒ½å¾—åˆ°å¾ˆå¥½çš„åº”ç”¨ï¼Œçœ‹ï¼Œ"
+"ÊÇµÄ£¬EnumerationsÔÚÕâ¶ùÄÜµÃµ½ºÜºÃµÄÓ¦ÓÃ£¬¿´£¬"
 class TextHandler
 {
 public:
@@ -842,15 +842,15 @@ void f()
  t.sendText( "Hello, ", TextHandler::noNewLine );
  t.sendText( "world", TextHandler::sendNewLine );
 }
-"è¿™ç§å†™æ³•å¾ˆå¥½ï¼Œè¿™æ®µä»£ç ç°åœ¨self-documentingäº†ï¼Œä¸éœ€è¦æ³¨é‡Šï¼Œæ„å›¾å’Œç»“æœéƒ½
-å¾ˆæ¸…æ¥šã€‚çœ‹å¾—äººä¸éœ€è¦å»æŸ¥æ‰¾å‡½æ•°çš„å®šä¹‰äº†ã€‚"
-"è€Œä¸”ï¼Œè¿™ç§å†™æ³•æœ‰å¾ˆå¥½çš„æ‰©å±•æ€§ï¼Œå¦‚æœä½ éœ€è¦åªåŠ ä¸€ä¸ªå›è½¦ï¼Œä½ åªéœ€è¦åœ¨enume
-rationä¸­åŠ ä¸ŠprependNewLineå°±å¯ä»¥äº†ï¼Œç°æœ‰çš„ä»£ç æ— éœ€ä»»ä½•æ”¹å˜ã€‚"
+"ÕâÖÖĞ´·¨ºÜºÃ£¬Õâ¶Î´úÂëÏÖÔÚself-documentingÁË£¬²»ĞèÒª×¢ÊÍ£¬ÒâÍ¼ºÍ½á¹û¶¼
+ºÜÇå³ş¡£¿´µÃÈË²»ĞèÒªÈ¥²éÕÒº¯ÊıµÄ¶¨ÒåÁË¡£"
+"¶øÇÒ£¬ÕâÖÖĞ´·¨ÓĞºÜºÃµÄÀ©Õ¹ĞÔ£¬Èç¹ûÄãĞèÒªÖ»¼ÓÒ»¸ö»Ø³µ£¬ÄãÖ»ĞèÒªÔÚenume
+rationÖĞ¼ÓÉÏprependNewLine¾Í¿ÉÒÔÁË£¬ÏÖÓĞµÄ´úÂëÎŞĞèÈÎºÎ¸Ä±ä¡£"
 
-"ä¸è¦æŠ›å¼ƒä½ ç¬¬ä¸€ä¸ªæ–¹æ¡ˆï¼Œå®è´ã€‚åœ¨æœ‰çš„æƒ…å†µä¸‹ï¼Œä»–æ˜¯æœ€ä¼˜çš„ã€‚"Guruè½¬è¿‡èº«ï¼Œé‡
-æ–°æ‰“å¼€é‚£æœ¬ä¹¦ï¼Œä¼˜é›…è€Œè½»å¿«çš„èµ°å¼€ï¼Œæ¶ˆå¤±åœ¨æ‹è§’å¤„ã€‚
+"²»ÒªÅ×ÆúÄãµÚÒ»¸ö·½°¸£¬±¦±´¡£ÔÚÓĞµÄÇé¿öÏÂ£¬ËûÊÇ×îÓÅµÄ¡£"Guru×ª¹ıÉí£¬ÖØ
+ĞÂ´ò¿ªÄÇ±¾Êé£¬ÓÅÑÅ¶øÇá¿ìµÄ×ß¿ª£¬ÏûÊ§ÔÚ¹Õ½Ç´¦¡£
 
-æ³¨è§£:
+×¢½â:
 [1] William Strunk Jr. and E.B. White. The Elements of Style (MacMilla
 n Publishing Co. Ltd,
 1979).
@@ -871,13 +871,13 @@ public:
     Test (int v):val (v) {cout<<val<<endl;}
     void * operator new (size_t size,int count) {cout<<__LINE__<<endl;return malloc (size);}
     void operator delete( void * p,size_t size ) {cout<<size<<endl;free (p);}
-    //newå’Œdeleteåªè´Ÿè´£åˆ†é…é‡Šæ”¾å†…å­˜ï¼Œä¸è´Ÿè´£ctorå’Œdtorè°ƒç”¨
+    //newºÍdeleteÖ»¸ºÔğ·ÖÅäÊÍ·ÅÄÚ´æ£¬²»¸ºÔğctorºÍdtorµ÷ÓÃ
 };
 
 int
 main(int argc, char ** argv) {
     Test * t=new (10) Test (20);
-    Test tt; //å±€éƒ¨å˜é‡ä¸ä½¿ç”¨operator newå’Œoperator delete
+    Test tt; //¾Ö²¿±äÁ¿²»Ê¹ÓÃoperator newºÍoperator delete
     return 0;
 }
 #+END_EXAMPLE
@@ -941,7 +941,7 @@ main(int argc, char ** argv) {
 }
 #+END_EXAMPLE
 
-** ä¸€ä¸ªPrintableç±»
+** Ò»¸öPrintableÀà
 #+BEGIN_EXAMPLE
 #include <iostream>
 #include <string>
@@ -977,18 +977,18 @@ main(int argc, char ** argv) {
     return 0;
 }
 #+END_EXAMPLE
-** ç±»å‹è½¬æ¢
-   å‡è®¾éœ€è¦ä¸€ä¸ªXåˆ°Yçš„è½¬æ¢ï¼š
+** ÀàĞÍ×ª»»
+   ¼ÙÉèĞèÒªÒ»¸öXµ½YµÄ×ª»»£º
 
-   - Yå†…å®šä¹‰ Y(const X &) ()æ„é€ å‡½æ•°
-   - Xå†…å®šä¹‰ operator Y() {return Y;}å‡½æ•°
+   - YÄÚ¶¨Òå Y(const X &) ()¹¹Ôìº¯Êı
+   - XÄÚ¶¨Òå operator Y() {return Y;}º¯Êı
 
-   è‡ªå®šä¹‰çš„ç±»å‹è½¬æ¢ä¹Ÿå¯ä»¥è¢«éšå¼è°ƒç”¨ï¼Œ
-   ä¾‹å¦‚ Yå®ç°äº† friend ostream & operator <<(ostream &,const Y &) ä½¿Yå¯ä»¥é€šè¿‡ cout<<Yçš„
-   å½¢å¼è°ƒç”¨ï¼Œå¦‚æœåœ¨Yæˆ–Xä¸­å®šä¹‰äº†Xåˆ°Yçš„è½¬æ¢ï¼Œåˆ™cout<<Xæ—¶ï¼ŒXä¼šè¢«éšå¼çš„è½¬æ¢ä¸ºYå¹¶è°ƒç”¨operator<<(cout,Y)
-   å¦å¤–ï¼Œè‡ªå®šä¹‰çš„ç±»å‹è½¬æ¢ä¹Ÿæ˜¯static_castèƒ½å¦æˆåŠŸçš„æ ¹æ®ä¹‹ä¸€
+   ×Ô¶¨ÒåµÄÀàĞÍ×ª»»Ò²¿ÉÒÔ±»ÒşÊ½µ÷ÓÃ£¬
+   ÀıÈç YÊµÏÖÁË friend ostream & operator <<(ostream &,const Y &) Ê¹Y¿ÉÒÔÍ¨¹ı cout<<YµÄ
+   ĞÎÊ½µ÷ÓÃ£¬Èç¹ûÔÚY»òXÖĞ¶¨ÒåÁËXµ½YµÄ×ª»»£¬Ôòcout<<XÊ±£¬X»á±»ÒşÊ½µÄ×ª»»ÎªY²¢µ÷ÓÃoperator<<(cout,Y)
+   ÁíÍâ£¬×Ô¶¨ÒåµÄÀàĞÍ×ª»»Ò²ÊÇstatic_castÄÜ·ñ³É¹¦µÄ¸ù¾İÖ®Ò»
 ** cast
-   - 'reinterpret_cast' åªèƒ½ç”¨äºæŒ‡é’ˆæˆ–å¼•ç”¨'reinterpret_cast' casts a pointer to
+   - 'reinterpret_cast' Ö»ÄÜÓÃÓÚÖ¸Õë»òÒıÓÃ'reinterpret_cast' casts a pointer to
      any other type of pointer. It also allows casting from pointer to an
      integer type and vice versa. This operator can cast pointers between
      non-related classed. The operation results is a simple binary copy of the
@@ -1011,7 +1011,7 @@ main(int argc, char ** argv) {
 
      'reinterpret_cast' treats all pointers exactly as traditional type-casting operators do.
 
-   - 'dynamic_cast' åªèƒ½ç”¨äºæŒ‡é’ˆæˆ–å¼•ç”¨
+   - 'dynamic_cast' Ö»ÄÜÓÃÓÚÖ¸Õë»òÒıÓÃ
 
      'dynamic_cast' is exclusively used with pointers and references to
      objects. It allows any type-casting that can be implicitly performed as
@@ -1023,8 +1023,8 @@ main(int argc, char ** argv) {
      complete object of the requested type, the value returned is a 'NULL'
      pointer.
 
-     dynamic_castä½¿ç”¨äº†RTTIæ¥ç¡®å®šèƒ½å¦è½¬æ¢æˆåŠŸ,è€Œåªæœ‰æ”¯æŒå¤šæ€çš„ç±»(æœ‰è™šå‡½æ•°)æ‰åœ¨
-     vtblä¸­æœ‰ç›¸åº”çš„RTTIä¿¡æ¯,æ‰€ä»¥:
+     dynamic_castÊ¹ÓÃÁËRTTIÀ´È·¶¨ÄÜ·ñ×ª»»³É¹¦,¶øÖ»ÓĞÖ§³Ö¶àÌ¬µÄÀà(ÓĞĞéº¯Êı)²ÅÔÚ
+     vtblÖĞÓĞÏàÓ¦µÄRTTIĞÅÏ¢,ËùÒÔ:
 #+BEGIN_EXAMPLE
      class Base {
 
@@ -1034,7 +1034,7 @@ main(int argc, char ** argv) {
      };
 
      Base * b=new Derived();
-     dynamic_cast<Derived *>(b)ä¸ä¼šæˆåŠŸ,å› ä¸ºæ²¡æœ‰vtbl,å³æ²¡æœ‰RTTIä¿¡æ¯
+     dynamic_cast<Derived *>(b)²»»á³É¹¦,ÒòÎªÃ»ÓĞvtbl,¼´Ã»ÓĞRTTIĞÅÏ¢
 
 #+END_EXAMPLE
 
@@ -1104,18 +1104,18 @@ main(int argc, char ** argv) {
      It is undefined behaviour if the pointer is used to write on an constant object (an object declared as 'const').
      The 'const_cast' operator can also change the 'volatile' qualifier on a type.
 
-     æ€»ç»“:
-     reinterpret_castæ˜¯ä¸æ‡‚c++è¯­æ³•çš„,ä¹Ÿä¸ä¼šä½¿ç”¨rttiä¿¡æ¯,è¿™å°±å†³å®šäº†å®ƒä¸èƒ½è§£æc++çš„ç±»ç»“æ„,å¦‚å¤šé‡ç»§æ‰¿,è™šæ‹Ÿç»§æ‰¿è¿™äº›å¤æ‚çš„ç»“æ„.
-     æŒ‡é’ˆçš„reinterpret_castçš„è¿‡ç¨‹ä¸­,å€¼æ˜¯ä¸ä¼šå˜çš„,æ”¹å˜çš„åªæ˜¯å¯¹è¿™ä¸ªå€¼çš„å¤„ç†æ–¹å¼(å½“ä½œcçš„æŒ‡é’ˆè¿˜æ˜¯å½“ä½œdçš„æŒ‡é’ˆ)
+     ×Ü½á:
+     reinterpret_castÊÇ²»¶®c++Óï·¨µÄ,Ò²²»»áÊ¹ÓÃrttiĞÅÏ¢,Õâ¾Í¾ö¶¨ÁËËü²»ÄÜ½âÎöc++µÄÀà½á¹¹,Èç¶àÖØ¼Ì³Ğ,ĞéÄâ¼Ì³ĞÕâĞ©¸´ÔÓµÄ½á¹¹.
+     Ö¸ÕëµÄreinterpret_castµÄ¹ı³ÌÖĞ,ÖµÊÇ²»»á±äµÄ,¸Ä±äµÄÖ»ÊÇ¶ÔÕâ¸öÖµµÄ´¦Àí·½Ê½(µ±×÷cµÄÖ¸Õë»¹ÊÇµ±×÷dµÄÖ¸Õë)
 
-     static_castæ˜¯æ‡‚c++çš„è¯­æ³•çš„,å®ƒèƒ½äº†è§£ç¼–è¯‘æ—¶çš„cttiä¿¡æ¯,èƒ½å¤Ÿåœ¨å¤„ç†å¤šé‡ç»§æ‰¿,è™šæ‹Ÿç»§æ‰¿ç­‰å¤æ‚ç»“æ„.
+     static_castÊÇ¶®c++µÄÓï·¨µÄ,ËüÄÜÁË½â±àÒëÊ±µÄcttiĞÅÏ¢,ÄÜ¹»ÔÚ´¦Àí¶àÖØ¼Ì³Ğ,ĞéÄâ¼Ì³ĞµÈ¸´ÔÓ½á¹¹.
      B
      C1:virtual B
      C2:virtual B
      D:C1,C2
-     D * d=new D()èƒ½æˆåŠŸstatic_caståˆ°B*,C1*æˆ–C2*,å› ä¸ºstatic_castäº†è§£ç»§æ‰¿çš„æ ‘
+     D * d=new D()ÄÜ³É¹¦static_castµ½B*,C1*»òC2*,ÒòÎªstatic_castÁË½â¼Ì³ĞµÄÊ÷
 
-     static_castæ˜¯ç¼–è¯‘æ—¶çš„è¡Œä¸º,å®ƒä¸èƒ½æ­£ç¡®å¤„ç†çš„æƒ…å†µæ˜¯:
+     static_castÊÇ±àÒëÊ±µÄĞĞÎª,Ëü²»ÄÜÕıÈ·´¦ÀíµÄÇé¿öÊÇ:
      B
      C1:virtual B
      C2:virtual B
@@ -1123,26 +1123,26 @@ main(int argc, char ** argv) {
      void foo(B * b) {
      D * d=static_cast<D *>(b);
      }
-     å¦‚æœ:
+     Èç¹û:
      B * b=new B();
-     foo(b); ç¨‹åºä¼šå‡ºé”™,å› ä¸ºstatic_castä¸çŸ¥é“fooçš„å‚æ•°båˆ°åº•æ˜¯ä¸æ˜¯çœŸçš„D*,ç¼–è¯‘æ—¶çš„static_caståªèƒ½å‡è®¾å®ƒæ˜¯äº†
+     foo(b); ³ÌĞò»á³ö´í,ÒòÎªstatic_cast²»ÖªµÀfooµÄ²ÎÊıbµ½µ×ÊÇ²»ÊÇÕæµÄD*,±àÒëÊ±µÄstatic_castÖ»ÄÜ¼ÙÉèËüÊÇÁË
 
-     è¿™æ—¶å°±éœ€è¦dynamic_castäº†,dynamic_castçš„static_castçš„åŠŸèƒ½åŸºæœ¬ç›¸åŒ,ä½†å®ƒä½¿ç”¨äº†
-     rttiä¿¡æ¯,å¯ä»¥æ­£ç¡®å¤„ç†ä»åŸºç±»åˆ°æ´¾ç”Ÿç±»çš„è½¬æ¢,ç”±äºä½¿ç”¨äº†rtti,åªæœ‰æœ‰è™šå‡½æ•°æˆ–è™šåŸºç±»çš„ç±»æ‰èƒ½ä½¿ç”¨.
+     ÕâÊ±¾ÍĞèÒªdynamic_castÁË,dynamic_castµÄstatic_castµÄ¹¦ÄÜ»ù±¾ÏàÍ¬,µ«ËüÊ¹ÓÃÁË
+     rttiĞÅÏ¢,¿ÉÒÔÕıÈ·´¦Àí´Ó»ùÀàµ½ÅÉÉúÀàµÄ×ª»»,ÓÉÓÚÊ¹ÓÃÁËrtti,Ö»ÓĞÓĞĞéº¯Êı»òĞé»ùÀàµÄÀà²ÅÄÜÊ¹ÓÃ.
 
-     å¦å¤–,c++ä¸­çš„(B *)då¼çš„è½¬æ¢ç›¸å½“äºç¼–è¯‘å™¨æŒ‰
-     const_cast,static_cast,dynamic_cast,reinterpret_castçš„é¡ºåºæŒ¨ä¸ªæµ‹è¯•èƒ½å¦è½¬æ¢æˆ
-     åŠŸ,reinterpret_castæ˜¯æœ€åçš„é€‰æ‹©
+     ÁíÍâ,c++ÖĞµÄ(B *)dÊ½µÄ×ª»»Ïàµ±ÓÚ±àÒëÆ÷°´
+     const_cast,static_cast,dynamic_cast,reinterpret_castµÄË³Ğò°¤¸ö²âÊÔÄÜ·ñ×ª»»³É
+     ¹¦,reinterpret_castÊÇ×îºóµÄÑ¡Ôñ
 
-** RTTIä¸CTTI
-   RTTIæ˜¯åœ¨å¤šæ€ç±»çš„vtblä¸­å­˜å‚¨çš„ç±»å‹ä¿¡æ¯,éå¤šæ€ç±»æ²¡æœ‰RTTIä¿¡æ¯
-   dynamic_castå’Œtypeidéœ€è¦ä½¿ç”¨RTTIä¿¡æ¯
-   typeidå¯ä»¥å¾—åˆ°ç±»å‹ä¿¡æ¯,å¦‚typeid(1).name(),æˆ–typeid(myclass).name()
-   ä½†å¹¶éæ‰€æœ‰çš„typeidéƒ½æ˜¯ä½¿ç”¨äº†RTTI,å› ä¸º:
-   - typeidæ˜¯è¿ç®—ç¬¦,è€Œä¸æ˜¯å‡½æ•°,æ‰€ä»¥typeidçš„å€¼å¯èƒ½åœ¨ç¼–è¯‘æ—¶å°±èƒ½ç¡®å®š
-   - å¯¹äºéå¤šæ€ç±»å‹,å¦‚å†…ç½®æ•°æ®ç±»å‹,æˆ–è‡ªå®šä¹‰çš„éå¤šæ€çš„ç±»,typeidä½¿ç”¨çš„æ˜¯CTTI,å³ç¼–è¯‘æ—¶å°±ç¡®å®šç±»å‹
-     è€Œå¯¹äºå¤šæ€ç±»å‹,typeidé€šè¿‡æŸ¥è¯¢å¤šæ€ç±»çš„vtblä¸­çš„RTTIä¿¡æ¯ç¡®å®šç±»å‹
-** é‡è½½ <<
+** RTTIÓëCTTI
+   RTTIÊÇÔÚ¶àÌ¬ÀàµÄvtblÖĞ´æ´¢µÄÀàĞÍĞÅÏ¢,·Ç¶àÌ¬ÀàÃ»ÓĞRTTIĞÅÏ¢
+   dynamic_castºÍtypeidĞèÒªÊ¹ÓÃRTTIĞÅÏ¢
+   typeid¿ÉÒÔµÃµ½ÀàĞÍĞÅÏ¢,Èçtypeid(1).name(),»òtypeid(myclass).name()
+   µ«²¢·ÇËùÓĞµÄtypeid¶¼ÊÇÊ¹ÓÃÁËRTTI,ÒòÎª:
+   - typeidÊÇÔËËã·û,¶ø²»ÊÇº¯Êı,ËùÒÔtypeidµÄÖµ¿ÉÄÜÔÚ±àÒëÊ±¾ÍÄÜÈ·¶¨
+   - ¶ÔÓÚ·Ç¶àÌ¬ÀàĞÍ,ÈçÄÚÖÃÊı¾İÀàĞÍ,»ò×Ô¶¨ÒåµÄ·Ç¶àÌ¬µÄÀà,typeidÊ¹ÓÃµÄÊÇCTTI,¼´±àÒëÊ±¾ÍÈ·¶¨ÀàĞÍ
+     ¶ø¶ÔÓÚ¶àÌ¬ÀàĞÍ,typeidÍ¨¹ı²éÑ¯¶àÌ¬ÀàµÄvtblÖĞµÄRTTIĞÅÏ¢È·¶¨ÀàĞÍ
+** ÖØÔØ <<
 #+BEGIN_EXAMPLE
 #include <iostream>
 using std::cout;
@@ -1213,7 +1213,7 @@ main(int argc, char ** argv) {
    }
    //}}}
 #+END_EXAMPLE
-** copyæ„é€ å‡½æ•°ä¸vtl
+** copy¹¹Ôìº¯ÊıÓëvtl
 
 #+BEGIN_EXAMPLE
 #include <iostream>
@@ -1244,23 +1244,23 @@ main(int argc, char ** argv) {
 }
 #+END_EXAMPLE
 
-** ç±»å¯¹è±¡çš„å‡ ç§å£°æ˜æ–¹æ³•ï¼š
-ä½¿ç”¨æ„é€ å‡½æ•°å’Œcopyæ„é€ å‡½æ•°ï¼ˆä½†copyæ„é€ å‡½æ•°çš„è°ƒç”¨é€šå¸¸è¢«ç¼–è¯‘å™¨ä¼˜åŒ–æ‰ï¼‰
+** Àà¶ÔÏóµÄ¼¸ÖÖÉùÃ÷·½·¨£º
+Ê¹ÓÃ¹¹Ôìº¯ÊıºÍcopy¹¹Ôìº¯Êı£¨µ«copy¹¹Ôìº¯ÊıµÄµ÷ÓÃÍ¨³£±»±àÒëÆ÷ÓÅ»¯µô£©
 - A a=A();
 - A a=A(1);
-æ²¡ä½¿ç”¨copyæ„é€ å‡½æ•°
+Ã»Ê¹ÓÃcopy¹¹Ôìº¯Êı
 - A a;
 - A a(1);
-ä½¿ç”¨äº†copyæ„é€ å‡½æ•°ä½†è¢«ä¼˜åŒ–æ‰å’Œæ²¡ä½¿ç”¨copyæ„é€ å‡½æ•°çš„åŒºåˆ«æ˜¯ï¼šå½“copyæ„é€ å‡½æ•°ä¸ºprivateæ—¶....
+Ê¹ÓÃÁËcopy¹¹Ôìº¯Êıµ«±»ÓÅ»¯µôºÍÃ»Ê¹ÓÃcopy¹¹Ôìº¯ÊıµÄÇø±ğÊÇ£ºµ±copy¹¹Ôìº¯ÊıÎªprivateÊ±....
 
-æŒ‡é’ˆå½¢å¼
+Ö¸ÕëĞÎÊ½
 - A * a=new A()
 - A * a=new A(1)
 
-æ³¨æ„ï¼š
-- A a() å¹¶ä¸ç­‰åŒäº A a=A(),è™½ç„¶å®ƒå’ŒA a(1)å¾ˆåƒï¼Œå®é™…ä¸Š A a()æ˜¯ä¸€ä¸ªå‡½æ•°å£°æ˜......a is a function returning A......
+×¢Òâ£º
+- A a() ²¢²»µÈÍ¬ÓÚ A a=A(),ËäÈ»ËüºÍA a(1)ºÜÏñ£¬Êµ¼ÊÉÏ A a()ÊÇÒ»¸öº¯ÊıÉùÃ÷......a is a function returning A......
 
-** virtualå‡½æ•°,vpträ¾‹å­
+** virtualº¯Êı,vptrÀı×Ó
 
 #+BEGIN_EXAMPLE
 #include <iostream>
@@ -1289,7 +1289,7 @@ main(int argc, char ** argv) {
 }
 #+END_EXAMPLE
 
-** æˆå‘˜å‡½æ•°çš„è°ƒç”¨
+** ³ÉÔ±º¯ÊıµÄµ÷ÓÃ
 
 #+BEGIN_EXAMPLE
 #include <iostream>
@@ -1317,7 +1317,7 @@ main(int argc, char ** argv) {
 }
 #+END_EXAMPLE
 
-** virtualææ„å‡½æ•°
+** virtualÎö¹¹º¯Êı
 #+BEGIN_EXAMPLE
 <iostream>
 using std::cout;
@@ -1338,28 +1338,28 @@ Base *b=new Derived();
 delete b;
 }
 #+END_EXAMPLE
-//æ‰§è¡Œç»“æœ
+//Ö´ĞĞ½á¹û
 #+BEGIN_EXAMPLE
 ~D
 ~B
 #+END_EXAMPLE
-//è§£é‡Š
-æ²¿ç€ç¨‹åºæ‰§è¡Œæµç¨‹ï¼Œä»mainå‡½æ•°è¿›å…¥
-é¦–å…ˆï¼Œæ‰§è¡Œè¯­å¥Base *b=new Derived();
-ç»“æœæ˜¯åœ¨å †ä¸­åˆ›å»ºç±»Derivedçš„ä¸€ä¸ªå¯¹è±¡ï¼Œå¹¶ä¸”è®©ç±»å‹ä¸ºBase *çš„æŒ‡é’ˆbæŒ‡å‘è¿™ä¸ªå¯¹è±¡ï¼›
-å…¶æ¬¡ï¼Œæ‰§è¡Œè¯­å¥delete b;
-è¿è¡Œç»“æœæ˜¯é‡Šæ”¾bæŒ‡å‘å¯¹è±¡çš„å†…å­˜ç©ºé—´ã€‚æŒ‰ç…§C++çš„deleteæ“ä½œç¬¦çš„è¯­ä¹‰ï¼Œç¼–è¯‘å™¨ä¼šæŒ‡é’ˆbâ€œå¯¹åº”ç±»å‹â€çš„å¯¹è±¡çš„ææ„å‡½æ•°è°ƒç”¨ï¼ˆä½ æˆ–è®¸è®¤ä¸ºæ˜¯Base::~Base()ï¼‰ï¼Œä½†æ˜¯ç”±äºç±»Baseçš„ææ„å‡½æ•°å£°æ˜ä¸ºè™šå‡½æ•°ï¼Œå› æ­¤å®ç°æ–¹å¼å…·æœ‰å¤šæ€ç‰¹å¾ï¼ˆå…·ä½“å®ç°é‡‡ç”¨çš„æŠ€æœ¯è¯·æŸ¥çœ‹ç›¸å…³ä¹¦ç±ï¼Œä¾‹å¦‚ç»å…¸çš„Inside The C++ Object Modelï¼‰ï¼Œå› æ­¤è¿è¡Œæ—¶è°ƒç”¨çš„ææ„å‡½æ•°æ˜¯Derived::~Derived()ã€‚
-ç¬¬ä¸‰ï¼Œå­ç±»çš„ææ„å‡½æ•°Derived::~Derived()å†…éƒ¨ä¼šè°ƒç”¨çˆ¶ç±»çš„ææ„å‡½æ•°ï¼Œå› æ­¤æ‰§è¡Œç»“æœå¦‚ä¸Šï¼
+//½âÊÍ
+ÑØ×Å³ÌĞòÖ´ĞĞÁ÷³Ì£¬´Ómainº¯Êı½øÈë
+Ê×ÏÈ£¬Ö´ĞĞÓï¾äBase *b=new Derived();
+½á¹ûÊÇÔÚ¶ÑÖĞ´´½¨ÀàDerivedµÄÒ»¸ö¶ÔÏó£¬²¢ÇÒÈÃÀàĞÍÎªBase *µÄÖ¸ÕëbÖ¸ÏòÕâ¸ö¶ÔÏó£»
+Æä´Î£¬Ö´ĞĞÓï¾ädelete b;
+ÔËĞĞ½á¹ûÊÇÊÍ·ÅbÖ¸Ïò¶ÔÏóµÄÄÚ´æ¿Õ¼ä¡£°´ÕÕC++µÄdelete²Ù×÷·ûµÄÓïÒå£¬±àÒëÆ÷»áÖ¸Õëb¡°¶ÔÓ¦ÀàĞÍ¡±µÄ¶ÔÏóµÄÎö¹¹º¯Êıµ÷ÓÃ£¨Äã»òĞíÈÏÎªÊÇBase::~Base()£©£¬µ«ÊÇÓÉÓÚÀàBaseµÄÎö¹¹º¯ÊıÉùÃ÷ÎªĞéº¯Êı£¬Òò´ËÊµÏÖ·½Ê½¾ßÓĞ¶àÌ¬ÌØÕ÷£¨¾ßÌåÊµÏÖ²ÉÓÃµÄ¼¼ÊõÇë²é¿´Ïà¹ØÊé¼®£¬ÀıÈç¾­µäµÄInside The C++ Object Model£©£¬Òò´ËÔËĞĞÊ±µ÷ÓÃµÄÎö¹¹º¯ÊıÊÇDerived::~Derived()¡£
+µÚÈı£¬×ÓÀàµÄÎö¹¹º¯ÊıDerived::~Derived()ÄÚ²¿»áµ÷ÓÃ¸¸ÀàµÄÎö¹¹º¯Êı£¬Òò´ËÖ´ĞĞ½á¹ûÈçÉÏ£¡
 
-åŸºç±»ä¸­çš„è™šææ„å‡½æ•°ä½¿å¾—æ´¾ç”Ÿç±»åœ¨ä½¿ç”¨å¤šæ€æ€§æ—¶ä¹Ÿèƒ½è¢«æ­£ç¡®çš„ææ„ã€‚
-** DONE c++ string literalçš„ç±»å‹æ˜¯ä»€ä¹ˆ?
-   CLOSED: [2008-10-07 äºŒ 15:23]
-   - State "DONE"       [2008-10-07 äºŒ 15:23]
-   "abc"çš„ç±»å‹ä¸ºconst char [4]
+»ùÀàÖĞµÄĞéÎö¹¹º¯ÊıÊ¹µÃÅÉÉúÀàÔÚÊ¹ÓÃ¶àÌ¬ĞÔÊ±Ò²ÄÜ±»ÕıÈ·µÄÎö¹¹¡£
+** DONE c++ string literalµÄÀàĞÍÊÇÊ²Ã´?
+   CLOSED: [2008-10-07 ¶ş 15:23]
+   - State "DONE"       [2008-10-07 ¶ş 15:23]
+   "abc"µÄÀàĞÍÎªconst char [4]
 
 ** DONE internal linkage , external linkage & no linkage
-   CLOSED: [2008-10-06 ä¸€ 15:51]
-   - State "DONE"       [2008-10-06 ä¸€ 15:51]
+   CLOSED: [2008-10-06 Ò» 15:51]
+   - State "DONE"       [2008-10-06 Ò» 15:51]
      http://www.informit.com/guides/content.aspx?g=cplusplus&seqNum=41
  3.5 Program and linkage
 
@@ -1391,17 +1391,17 @@ delete b;
      namespace.
 
 
-     å¯¹ä¸åŒlinkage typeçš„ç¬¦å·ï¼Œldéœ€è¦åšä¸åŒçš„å¤„ç†ï¼š
+     ¶Ô²»Í¬linkage typeµÄ·ûºÅ£¬ldĞèÒª×ö²»Í¬µÄ´¦Àí£º
    1. external linkage
       1.c: extern int a;
       2.c: extern int a;
-      1.c 2.cè¢«ç¼–è¯‘æˆç›®æ ‡æ–‡ä»¶æ—¶ï¼Œ1.o, 2.oä¸­å¯¹açš„å¼•ç”¨åœ°å€éƒ½ä¸º0,ldå°†1.o, 2.oé“¾æ¥ä»¥åæ‰èƒ½ç¡®å®šaçš„å®é™…åœ°å€
+      1.c 2.c±»±àÒë³ÉÄ¿±êÎÄ¼şÊ±£¬1.o, 2.oÖĞ¶ÔaµÄÒıÓÃµØÖ·¶¼Îª0,ld½«1.o, 2.oÁ´½ÓÒÔºó²ÅÄÜÈ·¶¨aµÄÊµ¼ÊµØÖ·
    2. internal linkage
       1.c: static int a;
-      1.cè¢«ç¼–è¯‘æˆ1.oæ—¶ï¼Œå¯¹açš„å¼•ç”¨åœ°å€æ˜¯aåœ¨.dataæ®µæ˜¯çš„åç§»é‡ï¼Œ1.oè¢«é“¾æ¥åaçš„å®é™…åœ°å€æ˜¯.dataåŸºå€+açš„åç§»é‡
+      1.c±»±àÒë³É1.oÊ±£¬¶ÔaµÄÒıÓÃµØÖ·ÊÇaÔÚ.data¶ÎÊÇµÄÆ«ÒÆÁ¿£¬1.o±»Á´½ÓºóaµÄÊµ¼ÊµØÖ·ÊÇ.data»ùÖ·+aµÄÆ«ÒÆÁ¿
    3. no linkage
       1.c: main () {int a;a=1;}
-      1.oä¸­a=1ä¸­å¯¹açš„å¼•ç”¨åœ°å€å³æ˜¯aåœ¨.textæ®µä¸­çš„åç§»é‡,å³ä¸éœ€è¦é“¾æ¥
+      1.oÖĞa=1ÖĞ¶ÔaµÄÒıÓÃµØÖ·¼´ÊÇaÔÚ.text¶ÎÖĞµÄÆ«ÒÆÁ¿,¼´²»ĞèÒªÁ´½Ó
 
 1.c:
 #+BEGIN_EXAMPLE
@@ -1436,19 +1436,19 @@ Disassembly of section .text:
    b:	89 e5                	mov    %esp,%ebp
    d:	51                   	push   %ecx
    e:	83 ec 10             	sub    $0x10,%esp
-  11:	a1 08 00 00 00       	mov    0x8,%eax                 å¯¹açš„å¼•ç”¨åœ°å€æ˜¯aåœ¨.dataæ®µçš„offset 0x8,internal linkage
+  11:	a1 08 00 00 00       	mov    0x8,%eax                 ¶ÔaµÄÒıÓÃµØÖ·ÊÇaÔÚ.data¶ÎµÄoffset 0x8,internal linkage
   16:	83 c0 01             	add    $0x1,%eax
   19:	a3 08 00 00 00       	mov    %eax,0x8
-  1e:	a1 0c 00 00 00       	mov    0xc,%eax                 å¯¹bçš„å¼•ç”¨åœ°å€æ˜¯båœ¨.dataæ®µçš„offset 0xc,internal linkage
+  1e:	a1 0c 00 00 00       	mov    0xc,%eax                 ¶ÔbµÄÒıÓÃµØÖ·ÊÇbÔÚ.data¶ÎµÄoffset 0xc,internal linkage
   23:	83 c0 02             	add    $0x2,%eax
   26:	a3 0c 00 00 00       	mov    %eax,0xc
-  2b:	a1 00 00 00 00       	mov    0x0,%eax                 å¯¹cçš„å¼•ç”¨åœ°å€æ˜¯0x0,extern linkage
+  2b:	a1 00 00 00 00       	mov    0x0,%eax                 ¶ÔcµÄÒıÓÃµØÖ·ÊÇ0x0,extern linkage
   30:	83 c0 03             	add    $0x3,%eax
   33:	a3 00 00 00 00       	mov    %eax,0x0
-  38:	a1 00 00 00 00       	mov    0x0,%eax                 å¯¹dçš„å¼•ç”¨åœ°å€æ˜¯0x0,extern linkage
+  38:	a1 00 00 00 00       	mov    0x0,%eax                 ¶ÔdµÄÒıÓÃµØÖ·ÊÇ0x0,extern linkage
   3d:	83 c0 04             	add    $0x4,%eax
   40:	a3 00 00 00 00       	mov    %eax,0x0
-  45:	83 45 f8 05          	addl   $0x5,-0x8(%ebp)          å¯¹eçš„å¼•ç”¨åœ°å€æ˜¯æ ˆä¸Šçš„åœ°å€,no linkage
+  45:	83 45 f8 05          	addl   $0x5,-0x8(%ebp)          ¶ÔeµÄÒıÓÃµØÖ·ÊÇÕ»ÉÏµÄµØÖ·,no linkage
   49:	b8 00 00 00 00       	mov    $0x0,%eax
   4e:	83 c4 10             	add    $0x10,%esp
   51:	59                   	pop    %ecx
@@ -1457,7 +1457,7 @@ Disassembly of section .text:
   56:	c3                   	ret
 #+END_EXAMPLE
 
-** ä¸´æ—¶å¯¹è±¡(å³å€¼)å¯è¢«ä¿®æ”¹?
+** ÁÙÊ±¶ÔÏó(ÓÒÖµ)¿É±»ĞŞ¸Ä?
 #+BEGIN_EXAMPLE
  #include <iostream>
  #include <stdlib.h>
@@ -1483,18 +1483,18 @@ Disassembly of section .text:
  }
 #+END_EXAMPLE
 
- foo(2)è¿”å›ä¸€ä¸ªTest()ä¸´æ—¶å¯¹è±¡,æ˜¯ä¸€ä¸ª å³å€¼,ä½†å®ƒå´æ˜¯å¯ä»¥è°ƒç”¨è‡ªå·±çš„æˆå‘˜è€Œè¢«ä¿®æ”¹! è¿™æ˜¯C++ä¸­ç±»å¯¹è±¡åšä¸ºå³å€¼æ—¶çš„ç‰¹ä¾‹,å¯¹äºæ ‡å‡†ç±»å‹å¦‚int,C++è¿˜æ˜¯ä¸Cå…¼å®¹çš„.
- ä¸´æ—¶å¯¹è±¡åšä¸ºå³å€¼å´å¯ä»¥é€šè¿‡è‡ªå·±çš„æˆå‘˜å‡½æ•°è¢«ä¿®æ”¹,è¿™ä¸»è¦æ˜¯ä¸ºäº†æ–¹ä¾¿ä»¥ä¸‹çš„åº”ç”¨:
- ä¸´æ—¶å¯¹è±¡ä¹Ÿå¯ä»¥è°ƒç”¨æˆå‘˜å‡½æ•°,å¦‚ getClassA().getVal(),è€Œä¸ç”¨å†™æˆ Class A a=getClassA(), a.getVal()
+ foo(2)·µ»ØÒ»¸öTest()ÁÙÊ±¶ÔÏó,ÊÇÒ»¸ö ÓÒÖµ,µ«ËüÈ´ÊÇ¿ÉÒÔµ÷ÓÃ×Ô¼ºµÄ³ÉÔ±¶ø±»ĞŞ¸Ä! ÕâÊÇC++ÖĞÀà¶ÔÏó×öÎªÓÒÖµÊ±µÄÌØÀı,¶ÔÓÚ±ê×¼ÀàĞÍÈçint,C++»¹ÊÇÓëC¼æÈİµÄ.
+ ÁÙÊ±¶ÔÏó×öÎªÓÒÖµÈ´¿ÉÒÔÍ¨¹ı×Ô¼ºµÄ³ÉÔ±º¯Êı±»ĞŞ¸Ä,ÕâÖ÷ÒªÊÇÎªÁË·½±ãÒÔÏÂµÄÓ¦ÓÃ:
+ ÁÙÊ±¶ÔÏóÒ²¿ÉÒÔµ÷ÓÃ³ÉÔ±º¯Êı,Èç getClassA().getVal(),¶ø²»ÓÃĞ´³É Class A a=getClassA(), a.getVal()
 
- å¦å¤–,foo(2)=tæ—¶,foo(2)è¿”å›çš„ä¸´æ—¶å¯¹è±¡ç›´åˆ°è¿™æ¡è¯­å¥æ‰§è¡Œå®Œåæ‰è¢«ææ„.
+ ÁíÍâ,foo(2)=tÊ±,foo(2)·µ»ØµÄÁÙÊ±¶ÔÏóÖ±µ½ÕâÌõÓï¾äÖ´ĞĞÍêºó²Å±»Îö¹¹.
  http://www.9php.com/FAQ/cxsjl/c/2007/11/925528897440.html
-** DONE å·¦å€¼ä¸å³å€¼
-   [[*lval & rval][å·¦å€¼ä¸å³å€¼]]
-   - State "DONE"       [2008-08-21 å›› 11:19]
-*** å‡½æ•°è¿”å›å¼•ç”¨
-    foo & fun() è¿”å›åˆ°fooçš„å€¼ç”¨,æ˜¯å·¦å€¼(å½“ç„¶å†³ä¸èƒ½è¿”å›ä¸´æ—¶å¯¹è±¡çš„å¼•ç”¨)
-    ä¾‹å¦‚:
+** DONE ×óÖµÓëÓÒÖµ
+   [[*lval & rval][×óÖµÓëÓÒÖµ]]
+   - State "DONE"       [2008-08-21 ËÄ 11:19]
+*** º¯Êı·µ»ØÒıÓÃ
+    foo & fun() ·µ»Øµ½fooµÄÖµÓÃ,ÊÇ×óÖµ(µ±È»¾ö²»ÄÜ·µ»ØÁÙÊ±¶ÔÏóµÄÒıÓÃ)
+    ÀıÈç:
     - [[*prefrer%20i%20to%20i][prefer ++i to i++]]
     - [[*Decorator%20pattern][decorator pattern]]
 *** *(void **)(&func_pointer)=...
@@ -1529,9 +1529,9 @@ Disassembly of section .text:
 #+END_EXAMPLE
 
 ** DONE when does cast alter the pointer's address
-   CLOSED: [2008-12-15 ä¸€ 17:35]
-   - State "DONE"       [2008-12-15 ä¸€ 17:35]
-   - å¤šé‡ç»§æ‰¿æ—¶
+   CLOSED: [2008-12-15 Ò» 17:35]
+   - State "DONE"       [2008-12-15 Ò» 17:35]
+   - ¶àÖØ¼Ì³ĞÊ±
 #+BEGIN_EXAMPLE
      class B1 {};
      class B2 {};
@@ -1541,7 +1541,7 @@ Disassembly of section .text:
      B2 * pb2=pd; //pb2!=pd
 #+END_EXAMPLE
 
-     å›¾:
+     Í¼:
 #+BEGIN_EXAMPLE
      +-----------------+
      | B1 subclass  -  |<-------pd,pb1 point to here
@@ -1552,16 +1552,16 @@ Disassembly of section .text:
      +-----------------+
 #+END_EXAMPLE
 
-   - virtualç»§æ‰¿æ—¶
+   - virtual¼Ì³ĞÊ±
 #+BEGIN_EXAMPLE
      class B {};
      class D:public virtual B {};
      D * pd=new D();
-     B * pb=pd;  //å³ä½¿æ˜¯å•ç»§æ‰¿,pbä¹Ÿä¸ç­‰äºpd
+     B * pb=pd;  //¼´Ê¹ÊÇµ¥¼Ì³Ğ,pbÒ²²»µÈÓÚpd
 #+END_EXAMPLE
 #+BEGIN_EXAMPLE
 			 +--pd point to here
-     å›¾:		 |
+     Í¼:		 |
 			 |
      +------------+	 |
      |D subclass  |<-----+
@@ -1575,27 +1575,27 @@ Disassembly of section .text:
      			 +--pb point to here,pb equals to pd+_vptr[0]
 
 #+END_EXAMPLE
-** c++å¼±åŒ–äº†dataæ®µè¿˜æ˜¯bssæ®µ?
-   å’Œcä¸€æ ·,åœ¨c++é‡Œ,main()ä¹‹å¤–çš„å…¨å±€å˜é‡,å‡½æ•°ä¸­çš„staticå˜é‡,ç±»å®šä¹‰ä¸­çš„staticå˜é‡éƒ½è¢«è‡ªåŠ¨åˆå§‹åŒ–
-   ä½†ä¸cä¸åŒçš„æ˜¯,å¦‚æœè¿™äº›å˜é‡æ˜¯ç±»,ä¼šè‡ªåŠ¨è°ƒç”¨å®ƒä»¬çš„ctor,çœ‹èµ·æ¥æ˜¯bssè¢«å¼±åŒ–äº†? å› ä¸ºè¿™äº›ç±»ä¸ä¼šè¢«
-   è‡ªåŠ¨åˆå§‹åŒ–ä¸º0
-   å®é™…ä¸Š,æ˜¯dataè¢«å¼±åŒ–äº†. è¿™äº›ç±»è¢«æ”¾åœ¨bssé‡Œ,ç¨‹åºæ‰§è¡Œå,åœ¨main()ä¹‹å‰,æŸäº›å‡½æ•°(å¦‚elfä¸­çš„.initæ®µ)ä¼šè°ƒç”¨
-   å®ƒä»¬çš„ctoræ¥åˆå§‹åŒ–è¿™äº›ç±»
-** é™¤äº†ctor,åœ¨ä¸€ä¸ªç±»çš„æ‰€æœ‰æˆå‘˜å‡½æ•°ä¸­è°ƒç”¨è™šå‡½æ•°éƒ½æ˜¯é€šè¿‡vptræœºåˆ¶		:ATTACH:
+** c++Èõ»¯ÁËdata¶Î»¹ÊÇbss¶Î?
+   ºÍcÒ»Ñù,ÔÚc++Àï,main()Ö®ÍâµÄÈ«¾Ö±äÁ¿,º¯ÊıÖĞµÄstatic±äÁ¿,Àà¶¨ÒåÖĞµÄstatic±äÁ¿¶¼±»×Ô¶¯³õÊ¼»¯
+   µ«Óëc²»Í¬µÄÊÇ,Èç¹ûÕâĞ©±äÁ¿ÊÇÀà,»á×Ô¶¯µ÷ÓÃËüÃÇµÄctor,¿´ÆğÀ´ÊÇbss±»Èõ»¯ÁË? ÒòÎªÕâĞ©Àà²»»á±»
+   ×Ô¶¯³õÊ¼»¯Îª0
+   Êµ¼ÊÉÏ,ÊÇdata±»Èõ»¯ÁË. ÕâĞ©Àà±»·ÅÔÚbssÀï,³ÌĞòÖ´ĞĞºó,ÔÚmain()Ö®Ç°,Ä³Ğ©º¯Êı(ÈçelfÖĞµÄ.init¶Î)»áµ÷ÓÃ
+   ËüÃÇµÄctorÀ´³õÊ¼»¯ÕâĞ©Àà
+** ³ıÁËctor,ÔÚÒ»¸öÀàµÄËùÓĞ³ÉÔ±º¯ÊıÖĞµ÷ÓÃĞéº¯Êı¶¼ÊÇÍ¨¹ıvptr»úÖÆ		:ATTACH:
    :PROPERTIES:
    :Attachments: 2.cpp
    :ID:       6b44moj04he0@sunway-lab.bupt.edu.cn
    :END:
-   å› ä¸º:
-   1. test1çš„æ„é€ å‡½æ•°è°ƒç”¨fun2æ—¶,test2è¿˜æ²¡å»ºç«‹èµ·æ¥,test1()é¦–æ¬¡å°†vptræŒ‡å‘è‡ªå·±çš„fun2,ä½†test1()ä¸­å¯¹fun2çš„è°ƒç”¨ä¸é€šè¿‡vptr
-   2. ä»»ä½•æ—¶å€™,é€šè¿‡test1çš„å…¶ä»–æˆå‘˜å‡½æ•°å¦‚fun1è°ƒç”¨fun2æ—¶,éƒ½æ˜¯é€šè¿‡vptr,å› ä¸ºæœ¬è´¨ä¸Šå‡½æ•°è°ƒç”¨éƒ½æ˜¯é€šè¿‡thisæŒ‡é’ˆ
-      test1 t; t.fun2() æ—¶ç¼–è¯‘å™¨å¯ä»¥çŸ¥é“tæ˜¯ç¡®å®šçš„ç±»,æ‰€ä»¥ä¸ä½¿ç”¨vptr.ä½†å½“ç¨‹åºè¿›å…¥fun1å,ç¼–è¯‘å™¨å·²æ— æ³•ç¡®å®šfun1(this)é‡Œçš„thisåˆ°åº•
-      æ˜¯ä»€ä¹ˆç±»å‹
-   å› ä¸ºæˆå‘˜å‡½æ•°éƒ½æ˜¯é€šè¿‡thisæŒ‡é’ˆè°ƒç”¨,å±äºæŒ‡é’ˆè°ƒç”¨,æ‰€ä»¥åœ¨æˆå‘˜å‡½æ•°ä¸­å¯¹è™šå‡½æ•°çš„è°ƒç”¨éƒ½æ˜¯é€šè¿‡vptr
+   ÒòÎª:
+   1. test1µÄ¹¹Ôìº¯Êıµ÷ÓÃfun2Ê±,test2»¹Ã»½¨Á¢ÆğÀ´,test1()Ê×´Î½«vptrÖ¸Ïò×Ô¼ºµÄfun2,µ«test1()ÖĞ¶Ôfun2µÄµ÷ÓÃ²»Í¨¹ıvptr
+   2. ÈÎºÎÊ±ºò,Í¨¹ıtest1µÄÆäËû³ÉÔ±º¯ÊıÈçfun1µ÷ÓÃfun2Ê±,¶¼ÊÇÍ¨¹ıvptr,ÒòÎª±¾ÖÊÉÏº¯Êıµ÷ÓÃ¶¼ÊÇÍ¨¹ıthisÖ¸Õë
+      test1 t; t.fun2() Ê±±àÒëÆ÷¿ÉÒÔÖªµÀtÊÇÈ·¶¨µÄÀà,ËùÒÔ²»Ê¹ÓÃvptr.µ«µ±³ÌĞò½øÈëfun1ºó,±àÒëÆ÷ÒÑÎŞ·¨È·¶¨fun1(this)ÀïµÄthisµ½µ×
+      ÊÇÊ²Ã´ÀàĞÍ
+   ÒòÎª³ÉÔ±º¯Êı¶¼ÊÇÍ¨¹ıthisÖ¸Õëµ÷ÓÃ,ÊôÓÚÖ¸Õëµ÷ÓÃ,ËùÒÔÔÚ³ÉÔ±º¯ÊıÖĞ¶ÔĞéº¯ÊıµÄµ÷ÓÃ¶¼ÊÇÍ¨¹ıvptr
 
 ** DONE virtual inhereit in c++
-   CLOSED: [2008-12-16 äºŒ 20:51]
-   - State "DONE"       [2008-12-16 äºŒ 20:51]
+   CLOSED: [2008-12-16 ¶ş 20:51]
+   - State "DONE"       [2008-12-16 ¶ş 20:51]
 #+BEGIN_EXAMPLE
    class B {int a;};
    class D1:public virtual B {}
@@ -1629,32 +1629,32 @@ Disassembly of section .text:
 #+END_EXAMPLE
 
    - why a offset to base class is needed
-     åœ¨D1,D2å’ŒEä¸­,éƒ½éœ€è¦åœ¨vptré‡ŒæŒ‡å®šä¸€ä¸ªåˆ°Bçš„offset,è™½ç„¶Bå­˜å‚¨çš„ä½ç½®å°±åœ¨d1,d2,eé™„è¿‘
-     å¦‚æœæ˜¯é€šè¿‡Bçš„æ´¾ç”Ÿç±»(è€Œä¸æ˜¯é€šè¿‡æ´¾ç”Ÿç±»æŒ‡é’ˆ)ä½¿ç”¨Bçš„æˆå‘˜,ä¸éœ€è¦é€šè¿‡vptræŒ‡å®šçš„offset,å› ä¸ºå¯¹äºç¡®å®šçš„ç±»å‹,å¦‚E,å®ƒçš„å†…å­˜å¸ƒå±€åœ¨ç¼–è¯‘æ—¶å°±ç¡®å®šäº†,
-     Bçš„æˆå‘˜åœ¨Eä¸­çš„ä½ç½®ç¼–è¯‘æ—¶å°±å·²ç»ç¡®å®š,ç›´æ¥ä½¿ç”¨å³å¯.
-     è€Œå¦‚æœæ˜¯é€šè¿‡æ´¾ç”Ÿç±»çš„æŒ‡é’ˆä½¿ç”¨Bçš„æˆå‘˜,å¿…é¡»é€šè¿‡vptræŒ‡å®šçš„offset,ä¾‹å¦‚:
-     D1 * dp=new D1(), Bç´§æ¥dp
-     D1 * dp=new E(),Bå’Œdpä¹‹é—´è¿˜é—´éš”äº†ä¸€ä¸ªsizeof(D2)çš„è·ç¦»
-     D2 * dp2=new E(), Bç´§æ¥dp2
-     æ‰€ä»¥å¿…é¡»é€šè¿‡D1çš„vpträ¸­æŒ‡å®šçš„offsetæ‰èƒ½æ‰¾åˆ°B
+     ÔÚD1,D2ºÍEÖĞ,¶¼ĞèÒªÔÚvptrÀïÖ¸¶¨Ò»¸öµ½BµÄoffset,ËäÈ»B´æ´¢µÄÎ»ÖÃ¾ÍÔÚd1,d2,e¸½½ü
+     Èç¹ûÊÇÍ¨¹ıBµÄÅÉÉúÀà(¶ø²»ÊÇÍ¨¹ıÅÉÉúÀàÖ¸Õë)Ê¹ÓÃBµÄ³ÉÔ±,²»ĞèÒªÍ¨¹ıvptrÖ¸¶¨µÄoffset,ÒòÎª¶ÔÓÚÈ·¶¨µÄÀàĞÍ,ÈçE,ËüµÄÄÚ´æ²¼¾ÖÔÚ±àÒëÊ±¾ÍÈ·¶¨ÁË,
+     BµÄ³ÉÔ±ÔÚEÖĞµÄÎ»ÖÃ±àÒëÊ±¾ÍÒÑ¾­È·¶¨,Ö±½ÓÊ¹ÓÃ¼´¿É.
+     ¶øÈç¹ûÊÇÍ¨¹ıÅÉÉúÀàµÄÖ¸ÕëÊ¹ÓÃBµÄ³ÉÔ±,±ØĞëÍ¨¹ıvptrÖ¸¶¨µÄoffset,ÀıÈç:
+     D1 * dp=new D1(), B½ô½Ódp
+     D1 * dp=new E(),BºÍdpÖ®¼ä»¹¼ä¸ôÁËÒ»¸ösizeof(D2)µÄ¾àÀë
+     D2 * dp2=new E(), B½ô½Ódp2
+     ËùÒÔ±ØĞëÍ¨¹ıD1µÄvptrÖĞÖ¸¶¨µÄoffset²ÅÄÜÕÒµ½B
 
    - difference when accessing base class member from pointer to derived class or from a derived class
      (something like access virtual function through pointer or not)
      http://www.phpcompiler.org/articles/virtualinheritance.html
 ** DONE c++ pointer-to-member variable and functions			:ATTACH:
-   CLOSED: [2008-12-17 ä¸‰ 17:07]
-   - State "DONE"       [2008-12-17 ä¸‰ 17:07]
+   CLOSED: [2008-12-17 Èı 17:07]
+   - State "DONE"       [2008-12-17 Èı 17:07]
    - what on earth a pointer-to-member pointer 'point' to?
-     1. åˆ°ç±»çš„æ™®é€šæˆå‘˜å‡½æ•°çš„æŒ‡é’ˆæ˜¯å‡½æ•°çš„çœŸå®ç‰©ç†åœ°å€
-     2. åˆ°ç±»çš„è™šæˆå‘˜å‡½æ•°çš„æŒ‡é’ˆæ˜¯è™šå‡½æ•°åœ¨vtblä¸­çš„åç§»é‡
-     3. åˆ°ç±»çš„æˆå‘˜çš„æŒ‡é’ˆæ˜¯ç±»æˆå‘˜åœ¨ç±»ä¸­çš„åç§»é‡
+     1. µ½ÀàµÄÆÕÍ¨³ÉÔ±º¯ÊıµÄÖ¸ÕëÊÇº¯ÊıµÄÕæÊµÎïÀíµØÖ·
+     2. µ½ÀàµÄĞé³ÉÔ±º¯ÊıµÄÖ¸ÕëÊÇĞéº¯ÊıÔÚvtblÖĞµÄÆ«ÒÆÁ¿
+     3. µ½ÀàµÄ³ÉÔ±µÄÖ¸ÕëÊÇÀà³ÉÔ±ÔÚÀàÖĞµÄÆ«ÒÆÁ¿
    :PROPERTIES:
    :Attachments: 1.cpp
    :ID:       41b8eg214he0@sunway-lab.bupt.edu.cn
    :END:
 ** DONE c++ inline function
-   CLOSED: [2008-12-23 äºŒ 10:23]
-   - State "DONE"       [2008-12-23 äºŒ 10:23]
+   CLOSED: [2008-12-23 ¶ş 10:23]
+   - State "DONE"       [2008-12-23 ¶ş 10:23]
 #+BEGIN_EXAMPLE
    5.cpp
    #include <stdio.h>
@@ -1679,30 +1679,30 @@ Disassembly of section .text:
    }
 #+END_EXAMPLE
 
-   - gccé»˜è®¤ä¸ä¼šinline,é™¤éæŒ‡å®š-Oæˆ–-finline
+   - gccÄ¬ÈÏ²»»áinline,³ı·ÇÖ¸¶¨-O»ò-finline
      g++ 5.cpp -c
-     nm -a 5.o|grep fun æ˜¾ç¤º 00000000 W _Z3funv
-     g++ 5.cpp -c -O3 æˆ– -finline
-     nm -a 5.o|grep fun æ— ç»“æœ
-   - 5.cppä¸­æ³¨é‡Šçš„ä¸¤è¡Œ(å–inlineå‡½æ•°çš„åœ°å€)ä¼šé˜»æ­¢compile inline
-     å–æ¶ˆæ³¨é‡Šå,
+     nm -a 5.o|grep fun ÏÔÊ¾ 00000000 W _Z3funv
+     g++ 5.cpp -c -O3 »ò -finline
+     nm -a 5.o|grep fun ÎŞ½á¹û
+   - 5.cppÖĞ×¢ÊÍµÄÁ½ĞĞ(È¡inlineº¯ÊıµÄµØÖ·)»á×èÖ¹compile inline
+     È¡Ïû×¢ÊÍºó,
      g++ 5.cpp -c
-     nm -a 5.o|grep fun æ˜¾ç¤º 00000000 W _Z3funv
-   - inlineå‡½æ•°å’Œæ™®é€šå‡½æ•°ä¸€æ ·,å…·æœ‰external linkage
-     å¦‚æœinlineå‡½æ•°é€šè¿‡å–å‡½æ•°åœ°å€æˆ–ä¸æŒ‡å®šä¼˜åŒ–ç­‰æ‰‹æ®µä½¿ç¼–è¯‘å™¨ä¸Inlineå®ƒ,åˆ™ç›®æ ‡
-     æ–‡ä»¶ä¸­åŒ…å«è¿™ä¸ªå‡½æ•°,å¦‚W_Z3funv,è¿™ä¸ªå‡½æ•°å…·æœ‰external linkage,ä¸”è¿™ä¸ªå‡½æ•°åœ¨ç›®æ ‡æ–‡ä»¶ä¸­æ˜¯
-     ä¸€ä¸ª[[*weak%20symbol][weak symbol]]
-     g++ 5.cpp 6.cpp -O3æ—¶,linkå‡ºé”™,æ‰¾ä¸åˆ°fun
-     g++ 5.cpp 6.cpp æ—¶,ç¼–è¯‘æˆåŠŸ,main()ä¸­è°ƒç”¨çš„æ˜¯5.cppä¸­çš„fun
-   - æ ‡å‡†è§„å®š,æ¯ä¸€ä¸ªtranslation unitéƒ½è¦æœ‰inlineå‡½æ•°çš„å®šä¹‰
+     nm -a 5.o|grep fun ÏÔÊ¾ 00000000 W _Z3funv
+   - inlineº¯ÊıºÍÆÕÍ¨º¯ÊıÒ»Ñù,¾ßÓĞexternal linkage
+     Èç¹ûinlineº¯ÊıÍ¨¹ıÈ¡º¯ÊıµØÖ·»ò²»Ö¸¶¨ÓÅ»¯µÈÊÖ¶ÎÊ¹±àÒëÆ÷²»InlineËü,ÔòÄ¿±ê
+     ÎÄ¼şÖĞ°üº¬Õâ¸öº¯Êı,ÈçW_Z3funv,Õâ¸öº¯Êı¾ßÓĞexternal linkage,ÇÒÕâ¸öº¯ÊıÔÚÄ¿±êÎÄ¼şÖĞÊÇ
+     Ò»¸ö[[*weak%20symbol][weak symbol]]
+     g++ 5.cpp 6.cpp -O3Ê±,link³ö´í,ÕÒ²»µ½fun
+     g++ 5.cpp 6.cpp Ê±,±àÒë³É¹¦,main()ÖĞµ÷ÓÃµÄÊÇ5.cppÖĞµÄfun
+   - ±ê×¼¹æ¶¨,Ã¿Ò»¸ötranslation unit¶¼ÒªÓĞinlineº¯ÊıµÄ¶¨Òå
 
-     æ€»ç»“:æ¯ä¸ªtranslation unitéƒ½åº”è¯¥æœ‰inlineå‡½æ•°çš„å®šä¹‰,å¦‚å°†inlineå‡½æ•°çš„å®šä¹‰æ”¾åœ¨å¤´æ–‡ä»¶ä¸­
-     è‹¥ä¸ç¬¦åˆè¿™ä¸ªæ ‡å‡†,ä¹Ÿæœ‰å¯èƒ½ç¼–è¯‘é€šè¿‡,å¦‚å°†inlineå‡½æ•°çš„å®šä¹‰æ”¾åœ¨æŸä¸€ä¸ªcppæ–‡ä»¶ä¸­
-     å› ä¸ºinlineå‡½æ•°å¦‚æœæ²¡æœ‰è¢«inlineå°±å’Œæ™®é€šå‡½æ•°ä¸€æ ·,å…·æœ‰external linkage
+     ×Ü½á:Ã¿¸ötranslation unit¶¼Ó¦¸ÃÓĞinlineº¯ÊıµÄ¶¨Òå,Èç½«inlineº¯ÊıµÄ¶¨Òå·ÅÔÚÍ·ÎÄ¼şÖĞ
+     Èô²»·ûºÏÕâ¸ö±ê×¼,Ò²ÓĞ¿ÉÄÜ±àÒëÍ¨¹ı,Èç½«inlineº¯ÊıµÄ¶¨Òå·ÅÔÚÄ³Ò»¸öcppÎÄ¼şÖĞ
+     ÒòÎªinlineº¯ÊıÈç¹ûÃ»ÓĞ±»inline¾ÍºÍÆÕÍ¨º¯ÊıÒ»Ñù,¾ßÓĞexternal linkage
 
 ** DONE static_cast<Derived *>(virtual base *) is not supported in C++
-   CLOSED: [2008-12-29 ä¸€ 09:18]
-   - State "DONE"       [2008-12-29 ä¸€ 09:18]
+   CLOSED: [2008-12-29 Ò» 09:18]
+   - State "DONE"       [2008-12-29 Ò» 09:18]
 
 #+BEGIN_EXAMPLE
    class A {};
@@ -1711,7 +1711,7 @@ Disassembly of section .text:
    class D : public B, public C {};
 #+END_EXAMPLE
 
-   æ¥çœ‹Bæ˜¯ä»€ä¹ˆæ ·å­(Aæ˜¯virtualçš„ï¼Œæ‰€ä»¥æ”¾åœ¨åº•éƒ¨)ï¼š
+   À´¿´BÊÇÊ²Ã´Ñù×Ó(AÊÇvirtualµÄ£¬ËùÒÔ·ÅÔÚµ×²¿)£º
 
 #+BEGIN_EXAMPLE
      +-----+
@@ -1722,9 +1722,9 @@ Disassembly of section .text:
      +--- -+
 #+END_EXAMPLE
 
-     è¿™é‡Œæˆ‘ä»¬å‡è®¾Aå’ŒBç›¸å·®4
+     ÕâÀïÎÒÃÇ¼ÙÉèAºÍBÏà²î4
 
-     å†æ¥çœ‹Dæ˜¯ä»€ä¹ˆæ ·å­(B,Cæ˜¯åŸºç±»ï¼Œæ‰€ä»¥åœ¨å¼€å¤´ï¼ŒAæ˜¯virtualçš„ï¼Œæ‰€ä»¥æ”¾åœ¨åº•éƒ¨)ï¼š
+     ÔÙÀ´¿´DÊÇÊ²Ã´Ñù×Ó(B,CÊÇ»ùÀà£¬ËùÒÔÔÚ¿ªÍ·£¬AÊÇvirtualµÄ£¬ËùÒÔ·ÅÔÚµ×²¿)£º
 #+BEGIN_EXAMPLE
      +------+
      | B    |
@@ -1739,10 +1739,10 @@ Disassembly of section .text:
      +------+
 #+END_EXAMPLE
 
-     è¿™é‡ŒAå’ŒBå°±ç›¸å·®12äº†
+     ÕâÀïAºÍB¾ÍÏà²î12ÁË
 
-     æ‰€ä»¥å½“compilerçœ‹åˆ°éœ€è¦æŠŠä¸€ä¸ªA*è½¬åˆ°B*çš„æ—¶å€™ï¼Œå¥¹å¹¶ä¸çŸ¥é“è¿™ä¸ªoffsetæ˜¯4è¿˜æ˜¯12ï¼Œè¿™ä¸ª
-     å–å†³äºä½ ä¼ è¿‡æ¥çš„å¯¹è±¡æ˜¯Bè¿˜æ˜¯Dã€‚è¿™å°±éœ€è¦ä¸€äº›é¢å¤–çš„runtimeä¿¡æ¯æ¥åšè¿™ä»¶äº‹ã€‚
+     ËùÒÔµ±compiler¿´µ½ĞèÒª°ÑÒ»¸öA*×ªµ½B*µÄÊ±ºò£¬Ëı²¢²»ÖªµÀÕâ¸öoffsetÊÇ4»¹ÊÇ12£¬Õâ¸ö
+     È¡¾öÓÚÄã´«¹ıÀ´µÄ¶ÔÏóÊÇB»¹ÊÇD¡£Õâ¾ÍĞèÒªÒ»Ğ©¶îÍâµÄruntimeĞÅÏ¢À´×öÕâ¼şÊÂ¡£
 
-     btw. reinterpret_cast<A*>(B*)æ˜¯å…è®¸çš„,å®ƒå‡è®¾æ˜¯ç¬¬ä¸€ç§æƒ…å†µ
+     btw. reinterpret_cast<A*>(B*)ÊÇÔÊĞíµÄ,Ëü¼ÙÉèÊÇµÚÒ»ÖÖÇé¿ö
 

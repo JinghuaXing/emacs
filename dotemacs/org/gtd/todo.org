@@ -1,0 +1,63 @@
+#+TITLE:
+#+AUTHOR: sunwayforever@gmail.com
+* TODO Android eng-mode vs. user-mode
+* DONE write git tips                                                
+CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
+  
+* DONE android SparseIntArray                                        
+CLOSED: [2012-04-27 周五 00:14]
+* DONE AsyncQueryHandler && loader                                   
+CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
+* TODO 文学编程 与 org-babel                                         
+http://www.jstatsoft.org/v46/i03/paper
+* TODO android root原理
+* TODO android widget [0/3]                                          
+  - [ ] SlidingDrawer
+  - [ ] AutoCompleteTextView
+
+* TODO android view [0/2]                                            
+- [ ] ViewPager
+- [ ] VelocityTracker
+* DONE sticky broadcast                                              
+CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
+* DONE android killed-app detection                                  
+CLOSED: [2012-07-09 Mon 09:33]
+maybe using Watchdog? Nop! STICKY service should be one of the solutions
+* TODO sqlite java architecture                                   
+SCHEDULED: <2012-09-21 Fri>
+  - database
+  - statement
+  - program
+  - cursor
+* TODO android resource arch                                      
+SCHEDULED: <2012-09-19 Wed>
+
+* TODO android theme                                                 
+* DONE static synchronized vs. synchronized(Test.class) 是否是一回事? 
+CLOSED: [2012-09-14 Fri 13:13] SCHEDULED: <2012-09-13 Thu>
+according to JLS, YES
+* DONE unciode, java utf-16, surrogate pair                          
+CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
+* TODO ICU                                                           
+SCHEDULED: <2012-09-20 Thu>
+* TODO java language specification                                   
+DEADLINE: <2012-10-21 Sun> SCHEDULED: <2012-09-21 Fri>
+* TODO how to deltect GC reason                                      
+* TODO 类似于 sparse array 的双数组结构+二分查找可以完全代替 tree-map 么 
+* TODO scala actor pattern                                           
+
+* DONE import/export any account                                    
+CLOSED: [2012-07-11 Wed 17:15]
+  
+* CANCELLED set default photo in contact provider                   
+CLOSED: [2012-07-05 Thu 13:31]
+  
+* CANCELLED what if contact importing failed due to radio-off       
+CLOSED: [2012-07-05 Thu 13:32]
+* DONE gerrit                                                       
+CLOSED: [2012-09-18 Tue 16:02] SCHEDULED: <2012-09-14 Fri>
+CLOCK: [2012-09-18 Tue 14:54]--[2012-09-18 Tue 16:01] =>  1:07
+CLOCK: [2012-09-18 Tue 13:18]--[2012-09-18 Tue 13:32] =>  0:14
+CLOCK: [2012-09-18 Tue 11:36]--[2012-09-18 Tue 12:12] =>  0:36
+CLOCK: [2012-09-18 Tue 10:30]--[2012-09-18 Tue 11:07] =>  0:37
+* TODO SICP

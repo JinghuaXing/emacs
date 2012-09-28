@@ -1,0 +1,680 @@
+#+TITLE: Android Resource
+#+AUTHOR: sunwayforever@gmail.com
+
+* Android Resource
+** LoadedApk
+ContextImpl 中有一个重要的成员叫 mPackageInfo, 是一个 LoadedApk 对象, 从名字就可
+以看出来, 这个对象是代表着一个 `已加载` 的 APK, 而一个 APK 主要包含三部分信息:
+
+1. AndroidManifest, 这部分在 LoadedApk 中叫做 ApplicationInfo
+2. Assets 和 Resources, 这部分被称为 mResDir
+3. classes.dex,  这部分通过 LoadedApk 的 mClassLoader 让外部可以访问. 实际上,
+   ContextImpl.getClassLoader 返回的就是 LoadedApk.getClassLoader 即 mClassLoader
+
+#+CAPTION: LoadedApk
+#+BEGIN_SRC ditaa :file 1.png
+
+
+        +------------+                          +--------------+
+        |  Context   +------------+------------>+  Resources   |
+        +-----+------+            |             +-------+------+
+              |                   |                     |
+              v                   |                     v
+      +-------+------+            |             +-----+--------+     +----------------------+
+      |  LoadedApk   |            +------------>| AssetManager |-----+ resource related {d} |
+      +------+-------+                          +------+-------+     | cGRE                 |
+             |                                         ^             +----------------------+
+             |                                         |
+       +-----+--------+-------------+     +------------+-------------+
+       |              |             |     |                          |
+       v              |             v     |                          |           b
+ +-----+-----------+  |     +-------+-----+-----+       +------------+----------+
+ |  Manifest       |  |     | Assets/Resources  |       |   default assets      |
+ |(ApplicationInfo)|  |     |     (mResDir)     |       |  (framework-res.apk)  |
+ +-----------------+  |     +-------------------+       +-----------+-----------+
+                      |                                             |
+       +--------------+                                             |
+       |                                                            |
+       v                                                            |
+ +-----+---------+      +-------------------+      +----------------+------------------+
+ | classes.dex   |------+  code related {d} |      |    overlay for default assets     |
+ |(mClassLoader) |      |  cGRE             |      | (vendor/overlay/framework-res.apk |
+ +---------------+      +-------------------+      +-----------------------------------+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:1.png]]
+
+** Context.getResources
+#+BEGIN_SRC java
+  ContextImpl.getResources
+    return mResources
+
+  ContextImpl.init
+    mResources = mPackageInfo.getResources(mainThread);
+      // LoadedApk
+      mResources = mainThread.getTopLevelResources(mResDir, this);
+        // ActivityThread
+        AssetManager assets = new AssetManager();
+          // AssetManager.java
+          init(); // init is a native method, which will attach the C++
+                  // AssetManager to the java object, and addDefaultAssets: framework-res.apk
+            am->addDefaultAssets();
+              addAssetPath("framework/framework-res.apk", NULL);
+                mAssetPaths.add(ap);
+                // add overlay for defautl assets
+                if ap=="framework/framework-res.apk":
+                  overlay="/vendor/overlay/framework-res.apk";
+                  mAssetPaths.add(overlay);
+
+            env->SetIntField(clazz, gAssetManagerOffsets.mObject, (jint)am);
+
+        assets.addAssetPath(resDir)
+          // AssetManager.java
+          AssetManager* am = assetManagerForJavaObject(env, clazz);
+          am.addAssetPath();
+        return new Resources(assets,...);
+#+END_SRC
+
+Note that: `Resources` is built on top of `Assets`, that is, `Resources` is a
+sort of `Assets`
+
+** Resource.getText
+#+BEGIN_SRC java
+  Resource.getText
+    mAssets.getResourceText(resID);
+      int block = loadResourceValue(resID,...);
+      // AssetManager jni
+        ResTable& res(am->getResources());
+        // am->getResources 会扫描所有的 asset path, 并添加到 ResTable 中
+        // 基本过程就是从 asset path 中解析出 resources.arsc 文件, 然后调用 ResTable.add 方法
+          am->getResTable();
+            N = mAssetPaths.size();
+            for i in 1..N:
+              Asset ass=get_asset_from_zip_or_directory
+              res.add(ass,..,idmap);
+              // ResTable
+                parsePackage(asset,...)
+                  id=pkg.id; // 每个 res apk 中都有一个 id 属性, 一般应用的 id 为 7f, overlay 为 0, android 为 1, extended 为 2
+                  idx = mPackageMap[id]; // 第一次 parse pkg.id 为 id 的 res apk 时, idx 必为0
+                  if idx==0:
+                    idx = mPackageGroups.size()+1;
+                    tmpName=pkg.name
+                    group = new PackageGroup(this, String16(tmpName), id);
+                    mPackageGroups.add(group);
+                    mPackageMap[id] = (uint8_t)idx;
+                  else:
+                    group = mPackageGroups.itemAt(idx-1);
+                  group->packages.add(package);
+                  // more: parse types
+                // parsePackage ends here
+              // ResTable.add ends here. after all asset package is added to ResTable, ResTable has generate a Tree-like structure.
+        // === jni loadResourceValue
+        int block = res.getResource(resID,&value,...);
+          // ResTable
+          p = getResourcePackageIndex(resID);
+            // Res_GETPACKAGE(resID) 是一个宏, 返回 res 最高8位
+            // 所以 mPackageMap 是一个 256 长度的数组, 一般情况下, 似乎只有 1 和 7f 是有值的, 因为
+            // 一般的 app 只会使用 default assets (resID 均为 01xxxxxx) 和 本 package 的 asset (resID 均为 7fxxxxxx)
+            return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
+
+          // Look through all resource packages, starting with the MOST
+          // RECENTLY ADDED.
+          PackageGroup*  grp = mPackageGroups[p];
+          size_t N = grp->packages.size();
+          for i in N .. 0:
+          // implies `starting with the MOST RECENTLY ADDED`
+            if pacakge IS overlay: // pacakge.resourceIdMap!=null
+              overlayResId=idmapLookup(package.resourceIdMap,id,..);
+              T=Res_GETTYPE(overlayResID);
+              E=Res_GETENTRY(overlayResID);
+            FIND_BEST_RESOURCE in package
+            if bestItem.isMoreSpecificThan(thisConfig):
+              bestItem = thisConfig;
+              bestPackage = package;
+          // for ends here
+          return bestPackage->header->index;
+        copyValue(env, outValue, &res, value, ref, block, typeSpecFlags, &config);
+      // loadResourceValue ends here
+      return mStringBlocks[block].get(tmpValue.data);
+    // getResourceTexte ends here
+#+END_SRC
+*** To summaries
+- ResTable 是核心的数据结构, 它有两个任务:
+  1. 解析 AssetManager 通过 addAssetPath 添加的所有 asset, 并形成一个由
+     PackageGroup -> Package -> Type -> Entity ( & Config) 组成的树形结构
+  2. 通过在树形结构里查找, 获得和 resID 最匹配的资源
+** Overlay
+Overlay 是 ics 对 AssetManager 的一个扩展, 使得 app 其可以使用
+`framework-res.apk 和 app 自身的 resource` 之外的 resource. 但是, 我们通过
+~AssetManager.addAssetPath()~ 不是已经使 app 使用任意其他 resource package 了么?
+
+Yes, 但有一个问题:
+
+Q: 如何保证`任意其他`的 resource package 与 base package 使用的 resID 是一致的?
+即: 在 base package 和 resource package 中, R.string.foo 对应的 resID 必须是一样
+的.
+
+A: 由于 resID 是 aapt 根据 res/ 中总体的 resource 情况动态分配的, 所以如何想保证
+base package 和 resource package 生成的 resID 是一致的, 必须保证两个package 的
+resource 的情况是一样的, 即 res 目录下除了各个 resource 的值可以不同之外, 其它必
+须是一致的, 包括定义的 resource 及 它们在资源文件中的位置等.
+
+
+Q: 如果我只是想在 resource package 中重新定义几个资源而不是所有资源...怎么办?
+
+A: Overlay 就是为了解决这个问题, 换句话说, overlay 不是为了解决 app 使用其它
+resource package 的问题, 而是为了解决 app 如何使用一个 resID 与 base package 不
+一致的 resource package 的问题, 通过 overlay, resource package 的维护变得简单很
+多.
+
+*** 生成 Overlay package
+Overlay package 与普通的 package 只有一点不同:
+
+Overlay package 的所有 resID 都为0x00xxxxxx, 即: package id 为 0. 当用户调用
+addAssetPath 时, 系统会根据这个值判断它为 overlay package, 然后才会为它生成 idmap
+
+*** idmap
+
+*** Overlay 的处理过程
+Overlay package 被使用之前, 需要确保 idmap 已经生成并且不是 stale 的, 一般情况下,
+PackageManager 会去处理这件事, 但也不排除 AssetManager 在 addAssetPath 时也会处
+理, 例如 AssetManager 在加载 framework-res.apk 时对 framework-res overlay 的处
+理:
+
+**** 加载
+#+BEGIN_SRC java
+if (strncmp(path.string(), "/system/framework/", 18) == 0):
+  overlayPath="/vendor/overlay/system/framework-res.apk";
+  asset_path oap;
+  oap.path = overlayPath;
+  oap.idmap = idmapPathForPackagePath(overlayPath); // 查找 /data/resource-cache 中对应的 idmap 是否存在
+  if (isIdmapStaleLocked(ap.path, oap.path, oap.idmap)): // 不存在 idmap 或 idmap 是旧的 (crc 不符)
+    createIdmapFileLocked(ap.path, oap.path, oap.idmap);
+  mAssetPaths.add(oap);
+#+END_SRC
+
+overlay package 被加入到 mAssetPaths 后, AssetManager 在生成 ResTable 是就会根
+据 oap.idmap 知道这是一个 overlay package 了.
+**** 解析
+#+BEGIN_SRC java
+  // ResTable.add
+  ResTable::add(const void* data, size_t size, void* cookie, Asset* asset, bool copyData, const Asset* idmap)
+    if idmap!=null:
+      header->resourceIDMap = idmap; // ResTable 中 package 的 header 保存着该 overlay package 的 idmap
+    ...
+    if (idmap != NULL):
+      idmap_id=getIdmapPackageId(header->resourceIDMap,..); // idmap_id 是 idmap 中保存的 base package id
+      parsePackage((ResTable_package*)chunk, header, idmap_id);
+        pkg_id = idmap_id != 0 ? idmap_id : dtohl(pkg->id);
+        // GOT IT! 虽然 Overlay package 中保存的 pkg id 是 0, 但 ResTable 在解析 overlay package 时会把它加到它对应的 base package 的 package group 中!
+
+#+END_SRC
+**** 查询
+因为 Overlay package 的 pkg id 在 ResTable::parsePackage 时被重写为 base
+package 的 pkg id, 所以查找 base package 的 resID 时取得的 package group 也会包
+含该 overlay package, 在查找 resID 时, overlay package 与 base package 唯一不同
+的一点是:
+#+BEGIN_SRC java
+  for pacakge in pacakge_group:
+    if (package->header->resourceIDMap):
+      uint32_t overlayResID = 0x0;
+      status_t retval = idmapLookup(package->header->resourceIDMap,
+                                    package->header->resourceIDMapSize,
+                                    resID, &overlayResID);
+      if (retval == NO_ERROR && overlayResID != 0x0) {
+          // for this loop iteration, this is the type and entry we really want
+          LOGV("resource map 0x%08x -> 0x%08x\n", resID, overlayResID);
+          T = Res_GETTYPE(overlayResID);
+          E = Res_GETENTRY(overlayResID);
+    ...
+#+END_SRC
+** misc
+*** aapt
+Android Asset Packaging Tool
+**** basic usage
+#+BEGIN_QUOTE
+aapt 不仅可以操作 resource,  实际上, 它可以操作 apk 中除了代码以外其它部分, 如
+Manifest, Asset, Resource
+#+END_QUOTE
+
+- aapt package -S res/ -M AndroidManifest.xml -I android.jar -J ./
+
+  在当前目录下根据 res/ 生成 R.java
+
+- aapt package -S res/ -A ./asset -M AndroidManifest.xml -I android.jar -F
+  ./1.apk
+
+  生成 apk (不包含 classes.dex)
+
+- aapt dump resources xxx.apk
+
+  显示 ResTable
+
+**** internal
+*** framework-res.apk
+**** android 和 com.android.internal
+framework-res.apk 中包含 framework/base/core/res 下所有的 resources, 但生成的 R
+文件有两个, 一个是 android.R, 一个是 com.android.internal.R, 区分的依据是
+framework/base/core/res/res/values/public.xml, 这个文件大致为:
+
+#+BEGIN_EXAMPLE
+<resources>
+  <private-symbols package="com.android.internal" />
+
+<!-- ===============================================================
+     Resources for version 1 of the platform.
+     =============================================================== -->
+  <eat-comment />
+  <public type="attr" name="theme" id="0x01010000" />
+  <public type="attr" name="label" id="0x01010001" />
+  <public type="attr" name="icon" id="0x01010002" />
+  ...
+<!-- ===============================================================
+     Resources added in version 2 of the platform.
+     =============================================================== -->
+  <public type="attr" name="marqueeRepeatLimit" id="0x0101021d" />
+  ...
+#+END_EXAMPLE
+
+即, framework-res.apk 包含了 public 和 private 的 resources:
+
+- public resouce
+
+public.xml 中包含了各个版本的 SDK 中定义的 resource , 这些 resource 的 id 不是通
+过 aapt 生成的, 而且事先在 public.xml 中指定的, 并且这些 id 被置于 android.R 中
+并被包含在 SDK 的 android.jar 中
+
+- private resouce
+
+其它未在public.xml 中指定的 resource 的 ID 被置于 com.android.internal.R 中, 这
+个类在 SDK 中不存在, 只存在 framework.jar 中并被标为 ~@hide~
+*** get application resources?
+1. use PackageContext
+
+   Context.createPackageContext
+2. use PackageManager
+
+   PackageManager.getResourceForApplication
+   PackageManager.getText
+   ...
+
+两种做法在底层的工作原理都是一样的:
+
+依赖于 ~Resources r = mContext.mMainThread.getTopLevelResources~
+*** official Android README about `resource and overlay`
+This official document resides in `framework/base/libs/utils/README`
+
+
+#+BEGIN_EXAMPLE
+Android Utility Function Library
+================================
+
+
+If you need a feature that is native to Linux but not present on other
+platforms, construct a platform-dependent implementation that shares
+the Linux interface.  That way the actual device runs as "light" as
+possible.
+
+If that isn't feasible, create a system-independent interface and hide
+the details.
+
+The ultimate goal is *not* to create a super-duper platform abstraction
+layer.  The goal is to provide an optimized solution for Linux with
+reasonable implementations for other platforms.
+
+
+
+Resource overlay
+================
+
+
+Introduction
+------------
+
+Overlay packages are special .apk files which provide no code but
+additional resource values (and possibly new configurations) for
+resources in other packages. When an application requests resources,
+the system will return values from either the application's original
+package or any associated overlay package. Any redirection is completely
+transparent to the calling application.
+
+Resource values have the following precedence table, listed in
+descending precedence.
+
+ * overlay package, matching config (eg res/values-en-land)
+
+ * original package, matching config
+
+ * overlay package, no config (eg res/values)
+
+ * original package, no config
+
+During compilation, overlay packages are differentiated from regular
+packages by passing the -o flag to aapt.
+
+
+Background
+----------
+
+This section provides generic background material on resources in
+Android.
+
+
+How resources are bundled in .apk files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Android .apk files are .zip files, usually housing .dex code,
+certificates and resources, though packages containing resources but
+no code are possible. Resources can be divided into the following
+categories; a `configuration' indicates a set of phone language, display
+density, network operator, etc.
+
+ * assets: uncompressed, raw files packaged as part of an .apk and
+           explicitly referenced by filename. These files are
+           independent of configuration.
+
+ * res/drawable: bitmap or xml graphics. Each file may have different
+                 values depending on configuration.
+
+ * res/values: integers, strings, etc. Each resource may have different
+               values depending on configuration.
+
+Resource meta information and information proper is stored in a binary
+format in a named file resources.arsc, bundled as part of the .apk.
+
+Resource IDs and lookup
+~~~~~~~~~~~~~~~~~~~~~~~
+During compilation, the aapt tool gathers application resources and
+generates a resources.arsc file. Each resource name is assigned an
+integer ID 0xppttiii (translated to a symbolic name via R.java), where
+
+ * pp: corresponds to the package namespace (details below).
+
+ * tt: corresponds to the resource type (string, int, etc). Every
+       resource of the same type within the same package has the same
+       tt value, but depending on available types, the actual numerical
+       value may be different between packages.
+
+ * iiii: sequential number, assigned in the order resources are found.
+
+Resource values are specified paired with a set of configuration
+constraints (the default being the empty set), eg res/values-sv-port
+which imposes restrictions on language (Swedish) and display orientation
+(portrait). During lookup, every constraint set is matched against the
+current configuration, and the value corresponding to the best matching
+constraint set is returned (ResourceTypes.{h,cpp}).
+
+Parsing of resources.arsc is handled by ResourceTypes.cpp; this utility
+is governed by AssetManager.cpp, which tracks loaded resources per
+process.
+
+Assets are looked up by path and filename in AssetManager.cpp. The path
+to resources in res/drawable are located by ResourceTypes.cpp and then
+handled like assets by AssetManager.cpp. Other resources are handled
+solely by ResourceTypes.cpp.
+
+Package ID as namespace
+~~~~~~~~~~~~~~~~~~~~~~~
+The pp part of a resource ID defines a namespace. Android currently
+defines two namespaces:
+
+ * 0x01: system resources (pre-installed in framework-res.apk)
+
+ * 0x7f: application resources (bundled in the application .apk)
+
+ResourceTypes.cpp supports package IDs between 0x01 and 0x7f
+(inclusive); values outside this range are invalid.
+
+Each running (Dalvik) process is assigned a unique instance of
+AssetManager, which in turn keeps a forest structure of loaded
+resource.arsc files. Normally, this forest is structured as follows,
+where mPackageMap is the internal vector employed in ResourceTypes.cpp.
+
+mPackageMap[0x00] -> system package
+mPackageMap[0x01] -> NULL
+mPackageMap[0x02] -> NULL
+...
+mPackageMap[0x7f - 2] -> NULL
+mPackageMap[0x7f - 1] -> application package
+
+
+
+The resource overlay extension
+------------------------------
+
+The resource overlay mechanism aims to (partly) shadow and extend
+existing resources with new values for defined and new configurations.
+Technically, this is achieved by adding resource-only packages (called
+overlay packages) to existing resource namespaces, like so:
+
+mPackageMap[0x00] -> system package -> system overlay package
+mPackageMap[0x01] -> NULL
+mPackageMap[0x02] -> NULL
+...
+mPackageMap[0x7f - 2] -> NULL
+mPackageMap[0x7f - 1] -> application package -> overlay 1 -> overlay 2
+
+The use of overlay resources is completely transparent to
+applications; no additional resource identifiers are introduced, only
+configuration/value pairs. Any number of overlay packages may be loaded
+at a time; overlay packages are agnostic to what they target -- both
+system and application resources are fair game.
+
+The package targeted by an overlay package is called the target or
+original package.
+
+Resource overlay operates on symbolic resources names. Hence, to
+override the string/str1 resources in a package, the overlay package
+would include a resource also named string/str1. The end user does not
+have to worry about the numeric resources IDs assigned by aapt, as this
+is resolved automatically by the system.
+
+As of this writing, the use of resource overlay has not been fully
+explored. Until it has, only OEMs are trusted to use resource overlay.
+For this reason, overlay packages must reside in /system/overlay.
+
+
+<<Resource ID mapping>>
+~~~~~~~~~~~~~~~~~~~
+Resource identifiers must be coherent within the same namespace (ie
+PackageGroup in ResourceTypes.cpp). Calling applications will refer to
+resources using the IDs defined in the original package, but there is no
+guarantee aapt has assigned the same ID to the corresponding resource in
+an overlay package. To translate between the two, a resource ID mapping
+{original ID -> overlay ID} is created during package installation
+(PackageManagerService.java) and used during resource lookup. The
+mapping is stored in /data/resource-cache, with a @idmap file name
+suffix.
+
+The idmap file format is documented in a separate section, below.
+
+
+Package management
+~~~~~~~~~~~~~~~~~~
+Packages are managed by the PackageManagerService. Addition and removal
+of packages are monitored via the inotify framework, exposed via
+android.os.FileObserver.
+
+During initialization of a Dalvik process, ActivityThread.java requests
+the process' AssetManager (by proxy, via AssetManager.java and JNI)
+to load a list of packages. This list includes overlay packages, if
+present.
+
+When a target package or a corresponding overlay package is installed,
+the target package's process is stopped and a new idmap is generated.
+This is similar to how applications are stopped when their packages are
+upgraded.
+
+
+Creating overlay packages
+-------------------------
+
+Overlay packages should contain no code, define (some) resources with
+the same type and name as in the original package, and be compiled with
+the -o flag passed to aapt.
+
+The aapt -o flag instructs aapt to create an overlay package.
+Technically, this means the package will be assigned package id 0x00.
+
+There are no restrictions on overlay packages names, though the naming
+convention <original.package.name>.overlay.<name> is recommended.
+
+
+Example overlay package
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To overlay the resource bool/b in package com.foo.bar, to be applied
+when the display is in landscape mode, create a new package with
+no source code and a single .xml file under res/values-land, with
+an entry for bool/b. Compile with aapt -o and place the results in
+/system/overlay by adding the following to Android.mk:
+
+LOCAL_AAPT_FLAGS := -o com.foo.bar
+LOCAL_MODULE_PATH := $(TARGET_OUT)/overlay
+
+
+The ID map (idmap) file format
+------------------------------
+
+The idmap format is designed for lookup performance. However, leading
+and trailing undefined overlay values are discarded to reduce the memory
+footprint.
+
+
+idmap grammar
+~~~~~~~~~~~~~
+All atoms (names in square brackets) are uint32_t integers. The
+idmap-magic constant spells "idmp" in ASCII. Offsets are given relative
+to the data_header, not to the beginning of the file.
+
+map          := header data
+header       := idmap-magic <crc32-original-pkg> <crc32-overlay-pkg>
+idmap-magic  := <0x706d6469>
+data         := data_header type_block+
+data_header  := <m> header_block{m}
+header_block := <0> | <type_block_offset>
+type_block   := <n> <id_offset> entry{n}
+entry        := <resource_id_in_target_package>
+
+
+idmap example
+~~~~~~~~~~~~~
+Given a pair of target and overlay packages with CRC sums 0x216a8fe2
+and 0x6b9beaec, each defining the following resources
+
+Name          Target package  Overlay package
+string/str0   0x7f010000      -
+string/str1   0x7f010001      0x7f010000
+string/str2   0x7f010002      -
+string/str3   0x7f010003      0x7f010001
+string/str4   0x7f010004      -
+bool/bool0    0x7f020000      -
+integer/int0  0x7f030000      0x7f020000
+integer/int1  0x7f030001      -
+
+the corresponding resource map is
+
+0x706d6469 0x216a8fe2 0x6b9beaec 0x00000003 \
+0x00000004 0x00000000 0x00000009 0x00000003 \
+0x00000001 0x7f010000 0x00000000 0x7f010001 \
+0x00000001 0x00000000 0x7f020000
+
+or, formatted differently
+
+0x706d6469  # magic: all idmap files begin with this constant
+0x216a8fe2  # CRC32 of the resources.arsc file in the original package
+0x6b9beaec  # CRC32 of the resources.arsc file in the overlay package
+0x00000003  # header; three types (string, bool, integer) in the target package
+0x00000004  #   header_block for type 0 (string) is located at offset 4
+0x00000000  #   no bool type exists in overlay package -> no header_block
+0x00000009  #   header_block for type 2 (integer) is located at offset 9
+0x00000003  # header_block for string; overlay IDs span 3 elements
+0x00000001  #   the first string in target package is entry 1 == offset
+0x7f010000  #   target 0x7f01001 -> overlay 0x7f010000
+0x00000000  #   str2 not defined in overlay package
+0x7f010001  #   target 0x7f010003 -> overlay 0x7f010001
+0x00000001  # header_block for integer; overlay IDs span 1 element
+0x00000000  #   offset == 0
+0x7f020000  #   target 0x7f030000 -> overlay 0x7f020000
+
+#+END_EXAMPLE
+
+*** resources.arsc
+resources.arsc 与 ResourceType.cpp 中的 ResTable 类有些对应关系: 一个 ResTable 包含多个
+已经载入的 resources.arsc, 并通过 package 加以区分.
+
+#+BEGIN_SRC ditaa :file 2.png
+
+                                           +-------------+
+                                           |   ResTable  |
+                                           +------+------+
+                                                  |
+                                                  +--------------------+
+                                                  |                    |
+                                          +-------+------+     +-------+----------+
+                                          | PackageGroup |     | PackageGroup ... |
+                                          +-------+------+     +------------------+
+                                                  |
+                                                  |
+                         +------------------------+
+                         |                        |
+                         |                        |
+                 +-------+--------+        +------+------+
+                 |   Package:...  |        |   Package:x |
+                 +----------------+        +------+------+
+                                                  |
+                                    +-------------+--------+--------------------+
+                                    |                      |                    |
+                                    |                      |                    |
+                              +-----+---------+       +----+-----------+    +---+--------+
+                              |  Type String  |       |  Type Layout   |    | Type ...   |
+                              +-----+---------+       +----------------+    +------------+
+                                    |
+                                    |
+                      +-------------+
+                      |
+                      |
+               +------+-------+
+               | Entry+Config |
+               |  => value    |
+               +--------------+
+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:2.png]]
+
+使用 ~aapt dump resources xxx.{apk,jar}~ 可以很直观的看到 ResTable 的树形结构:
+
+#+BEGIN_EXAMPLE
+  Package Groups (1)
+  Package Group 0 id=127 packageCount=1 name=com.sunway.test
+    Package 0 id=127 name=com.sunway.test typeCount=5
+      type 0 configCount=0 entryCount=0
+      type 1 configCount=3 entryCount=1
+        spec resource 0x7f020000 com.sunway.test:drawable/ic_launcher: flags=0x00000100
+        config 0 density=120 sdk=4
+          resource 0x7f020000 com.sunway.test:drawable/ic_launcher: t=0x03 d=0x00000000 (s=0x0008 r=0x00)
+        config 1 density=160 sdk=4
+          resource 0x7f020000 com.sunway.test:drawable/ic_launcher: t=0x03 d=0x00000001 (s=0x0008 r=0x00)
+        config 2 density=240 sdk=4
+          resource 0x7f020000 com.sunway.test:drawable/ic_launcher: t=0x03 d=0x00000002 (s=0x0008 r=0x00)
+      type 2 configCount=1 entryCount=2
+        spec resource 0x7f030000 com.sunway.test:layout/main: flags=0x00000000
+        spec resource 0x7f030001 com.sunway.test:layout/system_update_activity: flags=0x00000000
+        config 0
+          resource 0x7f030000 com.sunway.test:layout/main: t=0x03 d=0x00000003 (s=0x0008 r=0x00)
+          resource 0x7f030001 com.sunway.test:layout/system_update_activity: t=0x03 d=0x00000004 (s=0x0008 r=0x00)
+      type 3 configCount=2 entryCount=2
+        spec resource 0x7f040000 com.sunway.test:string/app_name: flags=0x00000004
+        spec resource 0x7f040001 com.sunway.test:string/test: flags=0x00000004
+        config 0
+          resource 0x7f040000 com.sunway.test:string/app_name: t=0x03 d=0x00000005 (s=0x0008 r=0x00)
+          resource 0x7f040001 com.sunway.test:string/test: t=0x03 d=0x00000007 (s=0x0008 r=0x00)
+        config 1 lang=zh cnt=CN
+          resource 0x7f040000 com.sunway.test:string/app_name: t=0x03 d=0x00000006 (s=0x0008 r=0x00)
+          resource 0x7f040001 com.sunway.test:string/test: t=0x03 d=0x00000008 (s=0x0008 r=0x00)
+#+END_EXAMPLE
+

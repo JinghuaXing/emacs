@@ -4,7 +4,7 @@
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
-(setq org-log-done 'time)
+(setq org-log-done 'note)
 (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
 
 (defalias 'agenda  'org-agenda)
@@ -16,19 +16,20 @@
 
 (setq org-agenda-files (quote ("~/.elisp/dotemacs/org/" "~/.elisp/dotemacs/org/gtd") ))
 
-(setq org-remember-templates
-      '(("Task" ?t "* TODO %?\n  \n  SCHEDULED: %t" "~/.elisp/dotemacs/org/gtd/task.org" "Tasks")
-	("Coding" ?c "* TODO %?        :coding:\n  \n  " "~/.elisp/dotemacs/org/gtd/coding.org" "Coding")
-	("Borrow" ?b "* TODO %?        :life:\n  \n  " "~/.elisp/dotemacs/org/gtd/borrow.org" "Borrow")
-	("Reading" ?r "* TODO %?       :reading:\n  \n  " "~/.elisp/dotemacs/org/gtd/reading.org" "Reading")
-	("Enjoy" ?e "* TODO %?\n  \n  " "~/.elisp/dotemacs/org/gtd/enjoy.org" "Enjoy")
-	("Project" ?p "* TODO %?        :project:\n  \n  " "~/.elisp/dotemacs/org/gtd/project.org" "Project")
-	("Diary" ?d "* DONE %?           :diary:\n  \n  %t" "~/.elisp/dotemacs/org/gtd/diary.org" "Diary")
-        ))
-
 (setq org-todo-keywords
-      '((sequence "TODO(t)" "STARTED(s)" "WATING(w)"  "|" "DONE(d)" "CANCELLED(c)" "DEFERRED(f)" )
-	))
+      (quote ((sequence "TODO(t)" "|" "DONE(d!/!)")
+              (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)"))))
+
+(setq org-todo-keyword-faces
+      (quote (("TODO" :foreground "red" :weight bold)
+              ("DONE" :foreground "forest green" :weight bold)
+              ("WAITING" :foreground "orange" :weight bold)
+              ("CANCELLED" :foreground "forest green" :weight bold)
+              )))
+
+;; (setq org-todo-keywords
+;;       '((sequence "TODO(t)" "WATING(w)"  "|" "DONE(d)" "CANCELLED(c)")
+;; 	))
 (setq org-use-fast-todo-selection t)
 (setq org-refile-use-outline-path t)
 (setq org-refile-targets
@@ -108,3 +109,19 @@
 
 (add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
 (add-to-list 'org-src-lang-modes (quote ("dot" . dot)))
+
+
+;; I use C-M-r to start capture mode
+(global-set-key (kbd "C-c k") 'org-capture)
+(global-set-key (kbd "C-c a") 'agenda)
+
+;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
+(setq org-capture-templates
+      (quote (("t" "todo" entry (file "~/.elisp/dotemacs/org/gtd/todo.org")
+               "* TODO %?\n%U\n\n" :clock-in t :clock-resume t)
+              ("n" "note" entry (file "~/.elisp/dotemacs/org/gtd/note.org")
+               "* %? \n%U\n\n" :clock-in t :clock-resume t)
+              ("h" "habit" entry (file "~/.elisp/dotemacs/org/gtd/habit.org")
+               "* TODO %?\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
+
+(setq org-agenda-start-with-log-mode t)

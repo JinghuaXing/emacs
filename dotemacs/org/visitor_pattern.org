@@ -247,21 +247,3 @@ programs to regular Java bytecode.
 因为`Event@Event1`不是合法的Java语法,所以MultiJava需要使用`mjc`工具对源码进来转换,
 转换的过程实际就是解析这种`Event@Event1`, 然后使用Visitor Pattern生成相应的Element和
 Visitor
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
