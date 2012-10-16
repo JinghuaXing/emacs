@@ -61,3 +61,22 @@ CLOCK: [2012-09-18 Tue 13:18]--[2012-09-18 Tue 13:32] =>  0:14
 CLOCK: [2012-09-18 Tue 11:36]--[2012-09-18 Tue 12:12] =>  0:36
 CLOCK: [2012-09-18 Tue 10:30]--[2012-09-18 Tue 11:07] =>  0:37
 * TODO SICP
+* TODO try magit-push-remote-mode
+CLOCK: [2012-09-28 周五 22:21]--[2012-09-28 周五 22:22] =>  0:01
+[2012-09-28 周五 22:21]
+* DONE modify adapter in background while notifyDataSetChanged?
+CLOSED: [2012-10-16 Tue 14:54]
+- State "DONE"       from "TODO"       [2012-10-16 Tue 14:54]
+CLOCK: [2012-10-16 Tue 12:16]--[2012-10-16 Tue 12:17] =>  0:01
+[2012-10-16 Tue 12:16]
+
+since:
+ 
+1. notifyDataSetChanged is ensured to be invoked in UI thread
+2. notifyDataSetChanged need to get data from adapter
+3. adapter is not protected by any lock
+
+thus adapter should NEVER be modified directly in background
+thread. e.g. Android Loader assured that Loader.onLoadFinished is invoked in UI
+thread, which will typically alter adapter data.
+

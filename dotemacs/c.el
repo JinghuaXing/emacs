@@ -1,4 +1,3 @@
-;;;something about C program
 (require 'dtrt-indent)
 (defun my-c-common-hook()
   (interactive)
@@ -18,7 +17,11 @@
   (imenu-add-menubar-index)
   (which-function-mode 1)
   ;; (add-to-list 'which-func-modes 'java-mode)
-  ;;  (hs-minor-mode t)
+  (hs-minor-mode t)
+  (hs-hide-initial-comment-block)
+  (local-set-key (kbd "C-c o o") 'hs-toggle-hiding)
+  (local-set-key (kbd "C-c o s") 'hs-show-all)
+  (local-set-key (kbd "C-c o h") 'hs-hide-level)
   (define-key c-subword-mode-map (kbd "<C-left>") nil)
   (define-key c-subword-mode-map (kbd "<C-right>") nil)
   (define-key c-subword-mode-map (kbd "<M-left>") nil)
@@ -31,7 +34,10 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
-
+  (setq skeleton-pair t)
+  (local-set-key (kbd "(") 'skeleton-pair-insert-maybe)
+  (local-set-key (kbd "[") 'skeleton-pair-insert-maybe)
+  (local-set-key (kbd "{") 'skeleton-pair-insert-maybe)
   ;; override hs key definition
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
@@ -225,3 +231,28 @@
                       (setq imenu-generic-expression java-imenu-regexp))))
 
 
+(define-fringe-bitmap 'hs-marker [0 24 24 126 126 24 24 0])
+
+(defface hs-fringe-face
+  '((t (:foreground "#888" :box (:line-width 2 :color "gray75" :style released-button))))
+  "Face used to highlight the fringe on folded regions"
+  :group 'hideshow)
+
+(custom-set-faces
+ '(hs-fringe-face ((t (:foreground "yellow"))) t)
+ )
+
+(defun display-code-line-counts (ov)
+  (when (eq 'code (overlay-get ov 'hs))
+    (let* ((marker-string "*fringe-dummy*")
+           (marker-length (length marker-string))
+           (display-string (format " ...(%d)" (count-lines (overlay-start ov) (overlay-end ov))))
+           )
+      (overlay-put ov 'help-echo "Hiddent text. C-c,= to show")
+      (put-text-property 0 marker-length 'display
+                         (list 'left-fringe 'hs-marker 'hs-fringe-face) marker-string)
+      (overlay-put ov 'before-string marker-string)
+      (put-text-property 0 (length display-string) 'face 'hs-face display-string)
+      (overlay-put ov 'display display-string)
+      )))
+(setq hs-set-up-overlay 'display-code-line-counts)

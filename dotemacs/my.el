@@ -65,7 +65,6 @@
                (other-window 1))
       (find-tag default))))
 
-
 (defun wy-go-to-char (n char)
   "Move forward to Nth occurence of CHAR.
 Typing `wy-go-to-char-key' again will move forwad to the next Nth
@@ -104,9 +103,9 @@ occurence of CHAR."
 (add-hook 'diary-mode-hook
 	  '(lambda ()
 	     (local-set-key (kbd "C-x C-s") '(lambda()
-					       (interactive) 
-					       (save-buffer) 
-					       (kill-buffer-and-window) 
+					       (interactive)
+					       (save-buffer)
+					       (kill-buffer-and-window)
 					       (exit-calendar)
 					       )
 			    )
@@ -114,14 +113,14 @@ occurence of CHAR."
 	  )
 (add-hook 'calendar-mode-hook
 	  '(lambda ()
-	     (local-set-key (kbd "q") '(lambda() 
-					 (interactive) 
-					 (setq foo (get-buffer ".diary")) 
+	     (local-set-key (kbd "q") '(lambda()
+					 (interactive)
+					 (setq foo (get-buffer ".diary"))
 					 (if foo
-					     (progn 
+					     (progn
 					       (set-buffer foo)
-					       (save-buffer) 
-					       (kill-buffer foo) 
+					       (save-buffer)
+					       (kill-buffer foo)
 					       )
 					   )
 					 (exit-calendar)
@@ -130,14 +129,14 @@ occurence of CHAR."
 					   )
 					 )
 			    )
-	     (local-set-key (kbd "<f12>") '(lambda() 
-					     (interactive) 
-					     (setq foo (get-buffer ".diary")) 
+	     (local-set-key (kbd "<f12>") '(lambda()
+					     (interactive)
+					     (setq foo (get-buffer ".diary"))
 					     (if foo
-						 (progn 
+						 (progn
 						   (set-buffer foo)
-						   (save-buffer) 
-						   (kill-buffer foo) 
+						   (save-buffer)
+						   (kill-buffer foo)
 						   )
 					       )
 					     (exit-calendar)
@@ -146,89 +145,9 @@ occurence of CHAR."
 					       )
 					     )
 			    )
-	     
+
 	     )
 	  )
-
-
-(add-hook 'find-file-not-found-hooks 'my-template)
-(defun my-template()
-  (interactive)
-  (setq ext (file-name-extension (buffer-file-name)))
-  (cond ((or
-	  (or (string= ext "c")
-	      (string= ext "cpp")
-	      )
-	  (string= ext "cc")
-	  )
-	 (progn
-;;; 	   (insert-file "~/.elisp/my-template/template.c")
-;;; 	   (end-of-buffer)
-	   ;;	   (doxymacs-insert-file-comment)
-	   (end-of-buffer)
-	   (insert "\n")
-	   )
-	 )
-	((string= ext "bmer") (progn
-				(insert-file "~/.elisp/my-template/beamer_template.tex")
-				)
-	 )
-	((string= ext "tex") (progn
-			       (insert-file "~/.elisp/my-template/template.tex")
-			       )
-	 )
-	((string= ext "xml") (progn
-			       (insert-file "~/.elisp/my-template/template.xml")
-			       )
-	 )
-	((string= ext "py") (progn
-			      (insert "#!/usr/bin/env python\n")
-			      )
-	 )
-	((string= ext "sh") (progn
-			      (insert "#!/bin/sh\n")
-			      )
-	 )
-	((string= ext "pl") (progn
-			      (insert "#!/usr/bin/env perl\n")
-			      )
-	 )
-	((string= ext "rb") (progn
-			      (insert "#!/usr/bin/env ruby\n")
-			      )
-	 )
-	((string= ext "ac") (progn
-			      (insert-file "~/.elisp/my-template/configure.ac")
-			      )
-	 )
-	((string= ext "am") (progn
-			      (insert-file "~/.elisp/my-template/Makefile.am")
-			      )
-	 )
-	((string= ext "org") (progn
-			      (insert-file "~/.elisp/my-template/template.org")
-			      )
-	 )
-	((or (string= ext "h")
-	     (string= ext "hpp")
-	     )
-	 (progn
-	   (doxymacs-insert-file-comment)
-	   (goto-char (point-max))
-	   (setq str (upcase (file-name-nondirectory (buffer-file-name))))
-	   (setq DEF (replace-regexp-in-string "\\." "_" str))
-	   (insert "#ifndef _" DEF "\n")
-	   (insert "#define _" DEF " 1\n\n\n")
-	   
-	   (insert "#endif\n")
-	   (if (y-or-n-p "cpp?")
-	       (insert "\n// Local Variables:\n// mode:C++\n// End:\n")
-	     )
-	   (previous-line 7)
-	   )
-	 )
-	)
-  )
 
 (defvar find-file-root-prefix (if (featurep 'xemacs) "/[sudo/root@localhost]" "/sudo:root@localhost:" )
   "*The filename prefix used to open a file with `find-file-root'.")
@@ -267,7 +186,6 @@ occurence of CHAR."
       (run-hooks 'find-file-root-hook))))
 ;; (global-set-key [(control x) (control r)] 'find-file-root)
 
-
 (setq my-shebang-patterns
       (list "^#!/usr/.*/perl\\(\\( \\)\\|\\( .+ \\)\\)-w *.*"
 	    "^#!/usr/.*/sh"
@@ -305,35 +223,35 @@ occurence of CHAR."
      ;; looks better.
      (message (concat "Wrote " (buffer-file-name))))))
 
-(defun move-line (n) 
-  "Move the current line up or down by N lines." 
-  (interactive "p") 
-  (let ((col (current-column)) 
-	start 
-	end) 
-    (beginning-of-line) 
-    (setq start (point)) 
-    (end-of-line) 
-    (forward-char) 
-    (setq end (point)) 
-    (let ((line-text (delete-and-extract-region start end))) 
-      (forward-line n) 
-      (insert line-text) 
-      ;; restore point to original column in moved line 
-      (forward-line -1) 
+(defun move-line (n)
+  "Move the current line up or down by N lines."
+  (interactive "p")
+  (let ((col (current-column))
+	start
+	end)
+    (beginning-of-line)
+    (setq start (point))
+    (end-of-line)
+    (forward-char)
+    (setq end (point))
+    (let ((line-text (delete-and-extract-region start end)))
+      (forward-line n)
+      (insert line-text)
+      ;; restore point to original column in moved line
+      (forward-line -1)
       (forward-char col))))
 
 (defun move-line-down ()
   (interactive)
-  (let ((col (current-column))) 
-    (forward-line 1) 
-    (transpose-lines 1) 
+  (let ((col (current-column)))
+    (forward-line 1)
+    (transpose-lines 1)
     (previous-line 1)
     (forward-char col)
     ))
 (defun move-line-up ()
   (interactive)
-  (let ((col (current-column))) 
+  (let ((col (current-column)))
     (transpose-lines 1)
     (previous-line 2)
     (forward-char col)
@@ -364,7 +282,6 @@ occurence of CHAR."
 		  (delete-char 1)
 		  )
 		)
-
 
 (defun sacha/increase-font-size ()
   (interactive)
@@ -447,8 +364,6 @@ occurence of CHAR."
 (global-unset-key (kbd "C-o"))
 ;; Behave like vi's O command
 
-
-
 (defun beginning-of-string(&optional arg)
   "  "
   (re-search-backward "[ \t(]" (line-beginning-position) 3 1)
@@ -514,7 +429,6 @@ occurence of CHAR."
     (copy-region-as-kill beg end))
   )
 
-
 (defun uniquify-all-lines-region (start end)
   "Find duplicate lines in region START to END keeping first occurrence."
   (interactive "*r")
@@ -550,7 +464,6 @@ occurence of CHAR."
   (isearch-yank-internal (lambda () (forward-sexp 1) (point))))
 (define-key isearch-mode-map    "\C-w" 'isearch-yank-sexp)
 
-
 ;; show Unicode table
 ;; inspired by http://www.chrislott.org/geek/emacs/dotemacs.html
 (defun unicode-table ()
@@ -562,7 +475,7 @@ occurence of CHAR."
 
   ;; Generate list of all unicode code points
   ;; See http://en.wikipedia.org/wiki/Unicode_plane#Overview
-  (setq code-points (append (number-sequence  ?\x0000  ?\xffff) 
+  (setq code-points (append (number-sequence  ?\x0000  ?\xffff)
 			    (number-sequence ?\x10000 ?\x1ffff)
 			    (number-sequence ?\x20000 ?\x2ffff)
 			    (number-sequence ?\xe0000 ?\xeffff)))
@@ -573,10 +486,21 @@ occurence of CHAR."
     (let ((description (get-char-code-property code-point
 					       'name)))
       ;; Insert code-point, character and description
-      (insert (format "%4d 0x%02X %c %s\n" 
-		      code-point 
-		      code-point 
-		      code-point 
+      (insert (format "%4d 0x%02X %c %s\n"
+		      code-point
+		      code-point
+		      code-point
 		      description))))
   ;; Jump to beginning of buffer
   (beginning-of-buffer))
+
+(defun clean-buffer ()
+  (interactive)
+   (save-excursion
+     (goto-char (point-min))
+     ;; 判断多个空行
+     (while (re-search-forward "^[ \t]*\n[ \t]*$" nil t)
+       (delete-blank-lines)
+       (forward-line))
+     (delete-trailing-whitespace)
+     ))

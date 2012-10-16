@@ -5,7 +5,7 @@
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
 (setq org-log-done 'note)
-(global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
+;; (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
 
 (defalias 'agenda  'org-agenda)
 (require 'remember)
@@ -118,9 +118,9 @@
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
       (quote (("t" "todo" entry (file "~/.elisp/dotemacs/org/gtd/todo.org")
-               "* TODO %?\n%U\n\n" :clock-in t :clock-resume t)
+               "* TODO %?\n%U\n\n")
               ("n" "note" entry (file "~/.elisp/dotemacs/org/gtd/note.org")
-               "* %? \n%U\n\n" :clock-in t :clock-resume t)
+               "* %? \n%U\n\n")
               ("h" "habit" entry (file "~/.elisp/dotemacs/org/gtd/habit.org")
                "* TODO %?\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
 

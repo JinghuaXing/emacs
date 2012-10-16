@@ -2,7 +2,16 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("Dropbox"
+(("home"
+ (filename . "Sunrise Checkpoint: ~/ | ~/")
+ (sr-directories "~/" "~/")
+ (handler . sr-checkpoint-handler))
+("Configuration.java"
+ (filename . "~/source/vlx_4.0.3_3.0/frameworks/base/core/java/android/content/res/Configuration.java")
+ (front-context-string . "	Log.e (\"sunway\"")
+ (rear-context-string . "SOURCE)) != 0;\n\n")
+ (position . 30799))
+("Dropbox"
  (filename . "~/Dropbox/")
  (front-context-string)
  (rear-context-string . "012-09-24 18:54 ")
@@ -14,14 +23,14 @@
  (position . 143366))
 ("org-capture-last-stored"
  (filename . "~/.elisp/dotemacs/org/gtd/todo.org")
- (front-context-string . "* TODO test\nCLOC")
- (rear-context-string . ":37\n* TODO SICP\n")
- (position . 2803))
+ (front-context-string . "* TODO modify ad")
+ (rear-context-string . "09-28 周五 22:21]\n")
+ (position . 2920))
 ("org-refile-last-stored"
- (filename . "~/.elisp/dotemacs/org/android.org")
- (front-context-string . "** TODO Util [0/")
- (rear-context-string . "012-09-03 Mon>\n\n")
- (position . 163123))
+ (filename . "~/.elisp/dotemacs/org/joke.org")
+ (front-context-string . "** 昨晚店面被撬了，一店衣服没")
+ (rear-context-string . "后再不听朋友的买levi's了\n")
+ (position . 12002))
 ("org-remember-last-stored"
  (filename . "~/.elisp/dotemacs/org/gtd/reading.org")
  (front-context-string . "** TODO SICP    ")

@@ -2,12 +2,12 @@
 ;;dired
 (require 'dired-x)
 (require 'wdired)
-(require 'dired-details+)
+;;(require 'dired-details+)
 (require 'dired-tar)
 (defvar sunway/dired-buffer nil)
 ;;(require 'dired-single)
-(setq dired-details-initially-hide t)
-(setq dired-details-hidden-string nil)
+;;(setq dired-details-initially-hide t)
+;;(setq dired-details-hidden-string nil)
 (setq dired-listing-switches "-lak")
 (setq dired-dwim-target t)
 
@@ -44,7 +44,7 @@
 
 (setq dired-guess-shell-alist-user
       `(
-	("\\(\\.gif$\\)\\|\\(\\.png$\\)\\|\\(\\.bmp$\\)\\|\\(\\.jpg$\\)\\|\\(\\.tif$\\)" "gthumb")	
+	("\\(\\.gif$\\)\\|\\(\\.png$\\)\\|\\(\\.bmp$\\)\\|\\(\\.jpg$\\)\\|\\(\\.tif$\\)" "gthumb")
 	("\\(\\.avi$\\)\\|\\(\\.mkv$\\)\\|\\(\\.mpg$\\)\\|\\(\\.mpe?g$\\)\\|\\(\\.flv$\\)\\|\\(\\.wmv$\\)\\|\\(\\.mov$\\)\\|\\(\\.divx$\\)" " mplayer")
 	("\\(\\.rm$\\)\\|\\(\\.rmvb$\\)\\|\\(\\.ra$\\)" " mplayer")
 	("\\.hd$" " mplayer -vo x11")
@@ -99,7 +99,7 @@
 ;; 					     (interactive)
 ;; 					     (setq sunway/dired-buffer (delete (current-buffer) sunway/dired-buffer))
 ;; 					     (kill-buffer (current-buffer))
-;; 					     )) 
+;; 					     ))
 (define-key dired-mode-map (kbd "f") (lambda(wildcard)
 				       (interactive "MWildcard: ")
 				       (find-dired "./" (concat "-iname " "\"*" wildcard "*\"" ))
@@ -110,7 +110,6 @@
 				       (find-grep-dired "./" reg)
 				       )
   )
-
 
 (global-set-key (kbd "C-x f") 'find-dired)
 (global-set-key (kbd "C-x F") 'find-grep-dired)
@@ -146,40 +145,10 @@
     (previous-line 1)
     )
   )
-(global-set-key (kbd "C-x C-j") 'dired-jump)
 ;;(global-unset-key (kbd "C-x C-j"))
 ;;(define-key dired-mode-map (kbd "RET") nil)
 ;;(define-key dired-mode-map (kbd "i") nil)
-(define-key dired-mode-map (kbd "o")
-  (lambda ()
-    (interactive)
-    (let ((dirname (dired-get-marked-files)))
-      (mapc (lambda (f)
-	      (if (file-directory-p f)
-		  (progn
-		    ;; 		    (set-mark (point))
-		    ;; 		    (push-mark)
-		    ;; 		    (dired-insert-subdir f)
-		    (find-file f)
-		    )
-		(progn
-		  (cond
-		   ((string-match ".*pdf$" f) (dired-do-shell-command " evince" nil (list f)))
-		   ((string-match ".*\\(avi\\|mkv\\|wmv\\|rmvb\\|mpg\\)$" f) (dired-do-shell-command " mplayer" nil (list f)))
-		   ((string-match ".*\\(html\\|htm\\|mht\\)$" f) (dired-do-shell-command " firefox" nil (list f)))
-		   ((string-match ".*\\(chm\\)$" f) (dired-do-shell-command " chmsee" nil (list f)))
-		   ((string-match ".*\\(gif\\)$" f) (dired-do-shell-command " gthumb" nil (list f)))
-		   ((string-match ".*\\(doc\\|xls\\|ppt\\|vsd\\)$" f) (dired-do-shell-command "soffice" nil (list f)))
-		   (t (find-file f))
-		   )
-		  )
-		)
-	      )
-	    dirname
-	    )
-      )
-    )
-  )
+
 (defun sunway/dired-sort ()
   "Dired sort hook to list directories first."
   (interactive)
@@ -211,7 +180,7 @@
 (defvar sunway/oldreg-to-keep "")
 (defvar sunway/oldreg-to-omit "")
 (defvar sunway/mode-indicator "")
-(defcustom sunway/reg-seprator "/" 
+(defcustom sunway/reg-seprator "/"
   "seprator for sunway/reg"
   )
 (make-variable-buffer-local 'sunway/oldreg-to-omit)
@@ -247,14 +216,14 @@
     )
   (let ((sp (split-string reg sunway/reg-seprator))
 	)
-    (if p 
+    (if p
 	(mapc (lambda (str)
 		(cond ((equal str "dir")
 		       (dired-mark-directories nil)
 		       (dired-do-kill-lines)
 		       )
 		      ((equal str "file")
-		       (dired-mark-directories nil)		     
+		       (dired-mark-directories nil)
 		       (dired-toggle-marks)
 		       (dired-do-kill-lines)
 		       )
@@ -272,7 +241,7 @@
 		     (dired-do-kill-lines)
 		     )
 		    ((equal str "file")
-		     (dired-mark-directories nil)		     
+		     (dired-mark-directories nil)
 		     (dired-do-kill-lines)
 		     )
 		    (t

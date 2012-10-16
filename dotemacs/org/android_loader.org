@@ -224,4 +224,4 @@ LoaderManager.initloader/restartloader
   1. onLoadFinished is assured by the AsyncTaskLoader that `it runs in the UI thread`
   2. Loader client should make sure that initLoader/restartLoader/destroyLoader
      runs in the UI thread, to avoid the condition that `loader is destroyed
-     while it is delivering data to client`
+     while it is delivering data to client

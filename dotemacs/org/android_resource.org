@@ -678,3 +678,6 @@ resources.arsc 与 ResourceType.cpp 中的 ResTable 类有些对应关系: 一�
           resource 0x7f040001 com.sunway.test:string/test: t=0x03 d=0x00000008 (s=0x0008 r=0x00)
 #+END_EXAMPLE
 
+
+*** System asset
+*** Resource drawable cache 

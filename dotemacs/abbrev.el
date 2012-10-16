@@ -55,8 +55,8 @@
     ("main" "" skeleton-java-mode-main-func 1)
     ))
 (define-skeleton skeleton-c-mode-fori
-  "fori" "Boundary? "
-  >"for (int i=0; i<"str"; ++i) {" \n \n
+  "fori" nil
+  >"for (int i=0; i<N; ++i) {" \n _ \n
   -4 "} "
  )
 
