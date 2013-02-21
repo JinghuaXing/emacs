@@ -1048,11 +1048,11 @@ See `xmsi-mode'."
 
 (defvar xmsi-keymap nil "Keymap for xmsi-math-symbols-input mode.")
 
-(progn
-  (setq xmsi-keymap (make-sparse-keymap))
+;; (progn
+;;   (setq xmsi-keymap (make-sparse-keymap))
 
-  (define-key xmsi-keymap (kbd "S-SPC") 'xmsi-change-to-symbol)
-  )
+;;   (define-key xmsi-keymap (kbd "S-SPC") 'xmsi-change-to-symbol)
+;;   )
 
 (defun xmsi-change-to-symbol (&optional print-message-when-error)
   "Change the string under cursor into a Unicode character.

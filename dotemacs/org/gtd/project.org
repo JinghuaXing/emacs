@@ -1,13 +1,15 @@
-* Project
-#+CATEGORY: Project
-** DONE import/export any account                                  :project:
-CLOSED: [2012-07-11 Wed 17:15]
-  
-** CANCELLED set default photo in contact provider                 :project:
-CLOSED: [2012-07-05 Thu 13:31]
-  
-** CANCELLED what if contact importing failed due to radio-off     :project:
-CLOSED: [2012-07-05 Thu 13:32]
-** TODO gerrit                                                      :project:
-SCHEDULED: <2012-09-14 Fri>
+* DONE 安装 theme 后第一次重启后无效?                               :project:
+CLOSED: [2012-11-19 Mon 13:43]
+- State "DONE"       from "TODO"       [2012-11-19 Mon 13:43]
+:PROPERTIES:
+:ID:       21b8466d-3326-4dc1-b181-68da16b47a91
+:END:
+[2012-11-17 Sat 12:50]
+* CANCELLED 使 theme 支持 idmap 反向查找, 以支持 layout 等的替换    :project:
+CLOSED: [2012-12-05 三 13:19]
+- State "CANCELLED"  from "TODO"       [2012-12-05 三 13:19]
+:PROPERTIES:
+:ID:       5df3b2c1-665b-427d-bb9d-638ccdef113e
+:END:
+[2012-11-17 Sat 12:54]
 

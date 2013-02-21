@@ -1,0 +1,392 @@
+* SQLite
+** Android API
+*** DatabaseConnectionPool
+*** SQLiteDatabase & SQLiteDatabase (c)
+*** SQLiteStatement (c)
+*** SQLiteProgram & SQLiteQuery & SQLiteQueryBuilder
+*** Cursor & CursorWindow
+**** SQLiteCursorDriver
+**** CursorFactory
+**** Cursor
+***** Cursor Class Hierarchy
+
+                                    -+----------+
+                                     | Cursor/I |
+                                    -+----+-----+
+                                          |
+                                          |
+                               -+---------+-----------+
+                                | CrossProcessCursor/I|
+                               -+----+----+-----------+
+                                          |
+                                          |
+                                -+-----+--+---------+
+                                 | AbstractCursor/A |
+                                -+--------+---------+
+                                          |
+                      -+------------------+---------------+----------------------+
+                       |                                  |                      |
+          -+-----------+--------------+          -+-------+------+       -+------+------+
+           | AbstractWindowedCursor/A |           | MatrixCursor |        | MergeCursor |
+          -+-----------+--------------+          -+--------------+       -+-------------+
+                       |
+                      -+----------------------------+
+                       |                            |
+              -+-------+------+      -+-------------+-------------+
+               | SqliteCursor |       | BulkCursorToCursorAdaptor |
+              -+--------------+      -+---------------------------+
+****** Cursor across process
+
+When Cursor in the remote process need to be returned to local process, the
+remote Cursor will be wrapped into a binder object named
+`CursorToBulkCursorAdaptor`, which is not a cursor, but implements methods like
+`onMove`, `getWindow`, etc.
+
+When the local process received the `CursorToBulkCursorAdaptor` binder, it
+again will be wrapped into a local cursor object named
+`BulkCursorToCursorAdaptor`, which is a `AbstractWindowedCursor`
+
+
+               -+------------------------+
+                | AbstractWindowedCursor |
+               -+----------+-------------+
+                           |
+                           |
+             -+------------+--------------+
+              | BulkCursorToCursorAdaptor |
+             -+------------+--------------+
+                           |
+                           |
+                  -+-------+------+        local process
+   --------------- |  BulkCursor  | -------------------
+                  -+-------+------+        remote process
+                           |
+                           |
+             -+------------+--------------+
+              | CursorToBulkCursorAdaptor |
+             -+------------+--------------+
+                           |
+                           |
+                    -+----------+
+                     |  Cursor  |
+                    -+----------+
+
+***** Code Snippet
+****** moveToFirst
+#+BEGIN_SRC text
+  AbstractCursor.moveToFirst
+    AbstractCursor.moveToPosition(0)
+      ret=SqliteCursor.onMove(origPos,0)
+        if mWindow==null || newPosition < mWindow.getStartPosition()
+           || newPosition >= mWindow.getStartPosition()+ mWindow.getNumRows():
+           SqliteCursor.fillWindow(newPosition)
+             mWindow.setStartPosition(newPosition)
+             getQuery().fillWindow(newPosition)
+               SQLiteQuery.nativeFillWindow(nHandle, nStatement, window.mWindowPtr,
+                          startPos, mOffsetIndex);
+                 // Bind the offset parameter, telling the program which row to start with
+                 sqlite3_bind_int(statement, offsetParam, startPos);
+                 while (!windowFull):
+                   sqlite3_step(statement);
+                   window->allocRow();
+                   for (int i = 0; i < numColumns; i++):
+                     int type = sqlite3_column_type(statement, i);
+                     if (type == SQLITE_TEXT):
+                       const char* text = reinterpret_cast<const char*>(sqlite3_column_text(statement, i));
+                       window->putString(addedRows, i, text, sizeIncludingNull);
+                     elif: // other type
+                   // end for
+                 // end while
+                 sqlite3_reset(statement);      
+      if ret:
+        mPos=newPos;
+#+END_SRC
+****** getString
+#+BEGIN_SRC text
+  Cursor.getString(pos)
+    AbstractWindowedCursor.getString(pos)
+      mWindow.getString(pos)
+        nativeGetString(pos)
+#+END_SRC
+***** SQLiteCursor
+- SQLiteCursorDriver
+  used to create the SqliteCursor
+- SQLiteQuery
+  used to invoke `nativefillWindow`
+***** To summarize
+1. Cursor by itself is not `CrossProcess`, but with the help of `BulkCursor`
+   ,`BulkCursorToCursorAdaptor` and `CursorToBulkCursorAdaptor`, Cursor can be
+   `CrossProcess`
+2. The most important methods of the `Cursor` object:
+   1) fillWindow
+
+      `nativefillWindow` will execute the real query, and fill the result set to
+      the `CursorWindow`.  ps. `getCount` will invoke `fillWindow` implicitly.
+
+   2) onMove
+
+      `fillWindow` is during `onMove`, e.g. `moveToFirst`, `moveToNext`, ...
+      
+**** CursorWindow
+`CursorWindow` is parcelable, it represents a `window` of sqlite query data.
+
+The underlying data of a Java CursorWindow object is managed by CursorWindow
+c++ object, in both of the server side and the client side.
+***** init
+#+BEGIN_SRC text
+  onMove
+    fillWindow
+      clearOrCreateWindow
+        mWindow = new CursorWindow(name);
+          // sCursorWindowSize specifies the window size in kb, e.g. 2048 Kb
+          mWindowPtr = CursorWindow.nativeCreate(name, sCursorWindowSize);
+#+END_SRC
+
+***** how CursorWindow is passed across process
+
+Because `CursorWindow` is only a parcelable (not a binder), so the remote
+`CursorWindow` need to be fetched by the local process again and again,
+e.g. during local `onMove`
+
+#+BEGIN_SRC text
+  BulkCursorToCursorAdaptor.onMove
+    if (mWindow == null
+        || newPosition < mWindow.getStartPosition()
+        || newPosition >= mWindow.getStartPosition() + mWindow.getNumRows()):
+      setWindow(mBulkCursor.getWindow(newPosition));
+        // remote process
+        CursorToBulkCursorAdaptor.getWindow(newPosition)
+          mCursor.moveToPosition(startPos)
+          return mCursor.getWindow()
+#+END_SRC
+
+** C API
+** sqlite
+*** sqlite3_analyzer
+*** sqlite command
+**** .output
+**** .mode 
+list|column|insert|line|tabs|tcl|csv
+**** .dump
+**** .read
+**** .tables
+**** .separator
+**** .schema
+
+**** .headers [on|off]
+**** explain query plan
+[[http://www.sqlite.org/queryplanner.html][queryplanner]]
+#+BEGIN_SRC sql
+explain query plan select * from foo;
+#+END_SRC
+*** sqlite SQL
+**** create table
+***** storage class
+- integer
+- real
+- text
+- blob
+***** constrains
+****** column-level constrains
+- not null
+- unique
+- primary key
+- foreign key
+- check
+#+BEGIN_SRC sql
+  create temp table foo(
+  x integer,
+  y integer check (y>x),
+  z integer check (z>abs(y)),
+  );
+#+END_SRC
+see also `trigger`
+- collate
+- default
+- autoincrement
+****** table-level constrains
+- primary key
+#+BEGIN_SRC sql
+  CREATE TABLE xxx (
+  data1 text,
+  data2 text,
+  primary key (data1, data2)
+  );
+#+END_SRC
+- unique
+#+BEGIN_SRC sql
+  CREATE TABLE xxx (
+  _id integer primary key,
+  data1 text,
+  data2 text,
+  unique (data1, data2)
+  );
+#+END_SRC
+- check
+**** trigger
+#+BEGIN_SRC sql
+  create [temp|temporary] trigger name 
+  [before|after|instead of] [insert|delete|update|update of columns] on table 
+  [for each row] [when expr]
+  begin
+  action
+  end;
+#+END_SRC
+- using trigger to update view
+#+BEGIN_SRC sql
+  create trigger on_update_foods_view 
+  instead of update on foods_view 
+  for each row 
+  begin 
+     update foods set name=new.fname where id=new.fid; 
+     update food_types set name=new.tname where id=new.tid; 
+  end; 
+#+END_SRC
+**** transaction
+- begin
+- commit
+- rollback
+- savepoint
+**** confict resolution
+- replace
+- ignore
+- fail
+- abort
+- rollback
+
+confict resolution can be specified in
+- table or view defination
+#+BEGIN_SRC sql
+create temp table cast(name text unique on conflict rollback); 
+#+END_SRC
+- in `insert`, `update`
+#+BEGIN_SRC sql
+insert or replace into table values (xxx);
+#+END_SRC
+- trigger
+**** join
+- inner join 
+join
+- left outer join
+left out join
+- right outer join
+not supported
+- full outer join
+not supported
+- cross
+select from tbl1, tbl2
+**** index
+- unique index
+- covering index
+**** view
+- using trigger to update view
+**** insert
+**** update
+**** select
+***** group by
+***** order by
+***** having
+***** limit
+***** aggregation
+- avg
+- sum
+- max
+- min
+- count
+***** sub-query
+- for `select`
+- for `from`
+- for `order by`
+***** compound query
+****** union [all]
+a | b
+****** intercept
+a & b
+****** except
+a - b
+***** conditional result
+used to transform column values
+#+BEGIN_SRC sql
+  case value
+    when x then value_x
+    when y then value_y
+    when z then value_z
+    else default_value
+  end
+#+END_SRC
+#+BEGIN_SRC sql
+  select name,(select
+                case
+                when count(*) > 4 then 'Very High'
+                when count(*) = 4 then 'High'
+                when count(*) in (2,3) then 'Moderate'
+                else 'Low'
+                end
+                from foods_episodes
+                where food_id=f.id) as frequency
+  from foods f
+  where frequency like '%High'
+  
+#+END_SRC
+**** functions
+***** LAST_INSERT_ROWID()
+***** ifnull(x,y)
+如果 x 为 null, 返回 y
+***** substr
+***** quote
+***** length
+***** lower
+***** upper
+***** abs
+***** max
+***** min
+***** random
+***** round
+***** date
+**** fts
+*** sqlite internal
+**** concurrent & lock
+***** lock
+- shared
+- reserved
+  shared 想升级为 reserved, 必须保证当前没有任何 reserved 及 exclusive lock
+- exclusive
+  - pending
+    reserved 升级为 exclusive 时会先暂时的升级为 pending, pending lock 会禁止任
+    何新的 lock 的获取, 包括 shared, 否则可以会因为不停的有新的 shared lock 进入
+    而导致 reserved 永远无法升级为 exclusive.
+
+  reserved要想升级为 exclusive, 必须保证当前没有任何其他的 lock, 包含 shared
+***** dead lock example
+| A connection                             | B connection                              |
+|------------------------------------------+-------------------------------------------|
+| BEGIN;                                   |                                           |
+|                                          | BEGIN;                                    |
+|                                          | # acquiring `reserved` lock ok            |
+|                                          | INSERT INTO foo values("bar")             |
+| # acquiring `shared` lock ok             |                                           |
+| SELECT * from foo                        |                                           |
+|                                          | # acquiring `exclusive` lock failed[fn:1] |
+|                                          | COMMIT;                                   |
+|                                          | SQL error: database is locked             |
+| # acquiring `reserved` lock failed[fn:2] |                                           |
+| INSERT INTO foo values ("bar")           |                                           |
+| SQL error: database is locked            |                                           |
+
+***** transaction
+- begin [deferred]
+- begin immediate
+- begin exclusive
+
+*** sqlite limitation
+- right and full outer join
+- complete ALTER TABLE support
+- completing TRIGGER support
+- writing to VIEWs
+- GRAND and REVOKE
+* Footnotes
+
+[fn:1] because A is holding a `shared` lock
+
+[fn:2] because B is holding a `reserved` lock
+

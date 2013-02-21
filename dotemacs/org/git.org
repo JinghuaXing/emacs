@@ -10,6 +10,8 @@
 将 working tree的内容复制到 staging area
 - git add .
 - git add foo.java
+*** archive
+git archive HEAD --format=tar.gz > archive.tar.gz
 *** bisect
 binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交引入的
 *** blame
@@ -229,6 +231,26 @@ D---E---F---G master
 
 一般情况下不要把一个远程分支 rebase 到其他分支, 或者更一般的情况: 不要把一个与别
 人共享的分支 rebase 到其他分支.
+**** rebase onto
+#+BEGIN_SRC example
+                         H---I---J topicB
+                               /
+                      E---F---G  topicA
+                     /
+        A---B---C---D  master
+
+then the command (current branch is on topicB)
+
+    git rebase --onto master topicA 
+
+would result in:
+
+                     H'--I'--J'  topicB
+                    /
+                    | E---F---G  topicA
+                    |/
+        A---B---C---D  master
+#+END_SRC
 *** reflog
 reflog 是对付 detached head, 错误的 reset 等情况的神器.
 
@@ -237,6 +259,7 @@ git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存
 的 HEAD, 我们可以通过 reflog 中的这条记录轻松的恢复到 reset 之前的状态.
 
 注意: reflog 只会保存在本地. 
+**** git log -g
 *** reset
 与 checkout 类似, reset 有两种格式: 加 path 与不加 path
 1. 不加 path
@@ -334,6 +357,18 @@ tag 分为两种: light weight tag 和 annotated tag
 *** update-index
 *** update-ref
 *** write-tree
+** refspec
+
+*** fetch
++refs/heads/*:refs/remotes/<REMOTE>/*
+
+其中, `src` 是远程仓库 ref 的路径, `dst` 是本地的路径;
+
+因为 fetch 是将远程仓库的 ref 更新到本地的 refs/remotes/<REMOTE> 下
+*** push
++refs/heads/*:refs/heads/*
+
+其中, `src` 是本地 ref 的路径, `dst` 是远程仓库的路径
 * Best practice
 * Files
 ** config
@@ -349,8 +384,8 @@ tag 分为两种: light weight tag 和 annotated tag
 ** StGit
 ** WIP
 * Misc
-- use GIT_CURL_VERBOSE env to debug curl problem
-
+** use GIT_CURL_VERBOSE env to debug curl problem
+** config
 [color]
 	ui = auto
 [user]
@@ -388,7 +423,6 @@ tag 分为两种: light weight tag 和 annotated tag
 [core]
       # ignore file mode change
 	filemode = false 
-
 
 * Gerrit
 [[http://review.coreboot.org/Documentation/index.html][Gerrit Code Review for Git]]

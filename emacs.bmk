@@ -2,73 +2,54 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("home"
- (filename . "Sunrise Checkpoint: ~/ | ~/")
- (sr-directories "~/" "~/")
- (handler . sr-checkpoint-handler))
-("Configuration.java"
- (filename . "~/source/vlx_4.0.3_3.0/frameworks/base/core/java/android/content/res/Configuration.java")
- (front-context-string . "	Log.e (\"sunway\"")
- (rear-context-string . "SOURCE)) != 0;\n\n")
- (position . 30799))
+(("source"
+ (filename . "~/source/")
+ (front-context-string . "cts_dalviktests_")
+ (rear-context-string . " 4 Feb 17 10:02 ")
+ (position . 118))
+("org"
+ (filename . "~/.elisp/dotemacs/org/")
+ (front-context-string . "auto\n  drwxrwxr-")
+ (rear-context-string . " 4 Nov 24 12:00 ")
+ (position . 132))
+("elisp"
+ (filename . "~/.elisp/")
+ (front-context-string . "auctex-11.86\n  d")
+ (rear-context-string . " 4 Nov 24 12:10 ")
+ (position . 122))
+("build_server"
+ (filename . "/ssh:weisun@build_server:/home/weisun/")
+ (front-context-string)
+ (rear-context-string . " 4 Jan 29 13:15 ")
+ (position . 104))
+("ftp/thunder"
+ (filename . "/ftp:thundersoft@10.0.6.4:/")
+ (front-context-string . "8810\n  drw-rw-rw")
+ (rear-context-string . " 0 Dec 18 11:42 ")
+ (position . 275))
+("ftp/fae"
+ (filename . "/ftp:FAElogs@10.0.6.4:/MocorDroid_fae/2013/")
+ (front-context-string . "  drw-rw-rw-   1")
+ (rear-context-string . "_DM_BASE_W12.46\n")
+ (position . 124))
+("ftp/pdtest"
+ (filename . "/ftp:pdtest@10.0.6.4:/PDLogs/MocorDroid/2013/")
+ (front-context-string . "10.1.2.2.3\n  drw")
+ (rear-context-string . " 0 Aug 30 15:45 ")
+ (position . 225))
+("org-refile-last-stored"
+ (filename . "~/.elisp/dotemacs/org/android.org")
+ (front-context-string . "*** DONE `withYi")
+ (rear-context-string . "enInputStream()\n")
+ (position . 104850))
+(".emacs"
+ (filename . "~/.emacs")
+ (front-context-string . "\n\n(add-hook 'sr-")
+ (rear-context-string . "-map \"\\M-f\" nil)")
+ (position . 16608))
 ("Dropbox"
  (filename . "~/Dropbox/")
  (front-context-string)
  (rear-context-string . "012-09-24 18:54 ")
  (position . 301))
-("7f"
- (filename . "~/source/vlx4.0.3_3.0/frameworks/base/tools/aapt/ResourceTable.cpp")
- (front-context-string . ");\n        } els")
- (rear-context-string . "age(package, 127")
- (position . 143366))
-("org-capture-last-stored"
- (filename . "~/.elisp/dotemacs/org/gtd/todo.org")
- (front-context-string . "* TODO modify ad")
- (rear-context-string . "09-28 周五 22:21]\n")
- (position . 2920))
-("org-refile-last-stored"
- (filename . "~/.elisp/dotemacs/org/joke.org")
- (front-context-string . "** 昨晚店面被撬了，一店衣服没")
- (rear-context-string . "后再不听朋友的买levi's了\n")
- (position . 12002))
-("org-remember-last-stored"
- (filename . "~/.elisp/dotemacs/org/gtd/reading.org")
- (front-context-string . "** TODO SICP    ")
- (rear-context-string . "      :reading:\n")
- (position . 124))
-("framework_4.0.3_3.0"
- (filename . "~/source/vlx_4.0.3_3.0/frameworks/base/")
- (front-context-string . "api\n  drwxr-xr-x")
- (rear-context-string . "012-08-27 10:40 ")
- (position . 154))
-("ContactsProvider_4.0.3_3.0"
- (filename . "~/source/vlx_4.0.3_3.0/packages/providers/ContactsProvider/")
- (front-context-string . "res\n  drwxr-xr-x")
- (rear-context-string . "012-05-16 12:09 ")
- (position . 173))
-("Contacts_4.0.3_3.0"
- (filename . "~/source/vlx_4.0.3_3.0/packages/apps/Contacts/")
- (front-context-string . "res\n  drwxr-xr-x")
- (rear-context-string . "012-05-22 12:31 ")
- (position . 160))
-("vlx_2.3.5"
- (filename . "~/source/vlx_2.3.5/")
- (front-context-string . "3rdparty\n  drwxr")
- (rear-context-string . "012-03-20 20:16 ")
- (position . 133))
-("vlx_4.0.3_3.0"
- (filename . "~/source/vlx_4.0.3_3.0/")
- (front-context-string . "abi\n  drwxr-xr-x")
- (rear-context-string . "012-05-16 12:05 ")
- (position . 139))
-("org"
- (filename . "~/.elisp/dotemacs/org/")
- (front-context-string . "visitor_pattern.")
- (rear-context-string . "012-09-18 16:11 ")
- (position . 2611))
-(".elisp"
- (filename . "~/.elisp/")
- (front-context-string . "clipper.el\n  -rw")
- (rear-context-string . "012-08-01 22:41 ")
- (position . 1797))
 )

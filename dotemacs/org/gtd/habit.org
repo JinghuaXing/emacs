@@ -1,30 +1,37 @@
 #+TITLE:
 #+AUTHOR: sunwayforever@gmail.com
 * TODO 建行信用卡还款日
-DEADLINE:  <2012-11-03 周六 +1m -10d>
+DEADLINE:  <2013-03-03 Sun +1m -10d>
+- State "DONE"       from "TODO"       [2013-01-29 Tue 19:37]
+- State "DONE"       from "TODO"       [2012-12-30 周日 20:19]
+- State "DONE"       from "TODO"       [2012-12-05 三 13:19]
+- State "DONE"       from "TODO"       [2012-11-06 Tue 23:02]
 - State "DONE"       from "TODO"       [2012-10-06 周六 17:04]
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2012-10-06 周六 17:04]
+:LAST_REPEAT: [2013-01-29 Tue 19:37]
 :END:
-* TODO 招行信用卡还款日
-DEADLINE: <2012-10-23 周二 +1m -6d>
+* TODO 招行信用卡还款日                                               :habit:
+DEADLINE: <2013-02-23 Sat +1m -6d>
+- State "DONE"       from "TODO"       [2013-01-29 Tue 19:37]
+- State "DONE"       from "TODO"       [2012-12-21 Fri 10:44]
+- State "DONE"       from "TODO"       [2012-12-05 三 13:19]
+- State "DONE"       from "TODO"       [2012-10-25 Thu 11:15]
 
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2012-09-23 周日 21:44]
+:LAST_REPEAT: [2013-01-29 Tue 19:37]
+:ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
-* TODO On Lisp
-- State "DONE"       from "TODO"       [2012-09-27 Thu 19:18]
-- State "DONE"       from "TODO"       [2012-09-25 Tue 19:16]
-- State "DONE"       from "TODO"       [2012-09-23 周日 22:49]
-[2012-09-23 周日 21:48]
+* TODO 建行房贷还款日                                                 :habit:
+DEADLINE:  <2013-03-14 Thu +1m -10d>
+- State "DONE"       from "TODO"       [2013-02-04 Mon 16:00]
+- State "DONE"       from "TODO"       [2013-01-11 Fri 14:04]
 
-SCHEDULED: <2012-09-29 Sat  .+2d/3d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2012-09-27 Thu 19:18]
+:LAST_REPEAT: [2013-02-04 Mon 16:00]
 :END:

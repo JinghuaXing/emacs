@@ -1,7 +1,7 @@
 * Emacs
 ** align
 ** auto-highlight-symbol-mode
-** c-macro-expand 
+** c-macro-expand
 C-c C-e
 ** check-parens
 ** Completion
@@ -12,14 +12,14 @@ C-c C-e
    C-x C-o
 ** delete-trailing-whitespace
 ** dired
-   - A ¶ÔmµÄÎÄ¼ş½øĞĞ²éÕÒ£¬°´M-,ÕÒÏÂÒ»¸ö,¿ÉÒÔÓÃÀ´´úÌæ find-grep-dired
-   - Q ¶ÔmµÄÎÄ¼şÖ´ĞĞC-M-%,°´M-,Ìæ»»ÏÂÒ»¸ö
+   - A å¯¹mçš„æ–‡ä»¶è¿›è¡ŒæŸ¥æ‰¾ï¼ŒæŒ‰M-,æ‰¾ä¸‹ä¸€ä¸ª,å¯ä»¥ç”¨æ¥ä»£æ›¿ find-grep-dired
+   - Q å¯¹mçš„æ–‡ä»¶æ‰§è¡ŒC-M-%,æŒ‰M-,æ›¿æ¢ä¸‹ä¸€ä¸ª
    - find-grep-dired
    - grep-find
 ** ediff
    - ediff-suspend && eregistry
 ** eim
-   ¿ÉÒÔÔÚEMACSÖĞÊ¹ÓÃµÄÊäÈë·¨
+   å¯ä»¥åœ¨EMACSä¸­ä½¿ç”¨çš„è¾“å…¥æ³•
 ** eshell
 ** file-cache
 ** fill
@@ -30,14 +30,14 @@ C-c C-e
    - fill-paragraph
    - auto-fill-mode
    - refill-mode
-** find-fileÊ±µÄÄ¬ÈÏÆğÊ¼Â·¾¶£¿
+** find-fileæ—¶çš„é»˜è®¤èµ·å§‹è·¯å¾„ï¼Ÿ
    M-x cd
 ** flush-lines keep-lines
 ** flyspell-mode
-** foo_bar ÈçºÎ×÷ÎªÁ½¸öword?
-   Ä¬ÈÏÇé¿öÏÂ"_"±»¿´×÷ÊÇwordµÄÒ»²¿·Ö,ÓÃ modify-syntax-entry¿ÉÒÔ¸æËßemacs°ÑÄ³Ğ©×Ö
-   ·û×öÎªword·Ö¸ô·û,×öÎª×¢ÊÍµÄ¿ªÊ¼,×öÎª parenthesisµÄ¿ªÊ¼µÈ.
-   (modify-syntax-entry ?_ "_") ¸æËßemacs°Ñ _ ×öÎª symbol constituent ¾Í¿ÉÒÔÁË
+** foo_bar å¦‚ä½•ä½œä¸ºä¸¤ä¸ªword?
+   é»˜è®¤æƒ…å†µä¸‹"_"è¢«çœ‹ä½œæ˜¯wordçš„ä¸€éƒ¨åˆ†,ç”¨ modify-syntax-entryå¯ä»¥å‘Šè¯‰emacsæŠŠæŸäº›å­—
+   ç¬¦åšä¸ºwordåˆ†éš”ç¬¦,åšä¸ºæ³¨é‡Šçš„å¼€å§‹,åšä¸º parenthesisçš„å¼€å§‹ç­‰.
+   (modify-syntax-entry ?_ "_") å‘Šè¯‰emacsæŠŠ _ åšä¸º symbol constituent å°±å¯ä»¥äº†
 ** highlight-changes-mode
 ** highlight-regexp
 ** how to replace \n
@@ -53,9 +53,9 @@ C-c C-e
 *** org-babel
 - org-edit-src-code C-c '
 ** re-builder
-** rectangle²Ù×÷
+** rectangleæ“ä½œ
    C-x r t,C-x r k,C-x r o
-   C-x r x,C-x r i ¼ôÌù°å
+   C-x r x,C-x r i å‰ªè´´æ¿
 ** reverse-region,sort-lines,sort-columns
 ** save-some-buffers
 C-x s
@@ -68,20 +68,20 @@ C-x s
   - unix2dos
    C-x RET f dos
 ** untabify
-** ÈçºÎ°Ñ2,3,4Ìæ»»³É3,4,5..
+** å¦‚ä½•æŠŠ2,3,4æ›¿æ¢æˆ3,4,5..
    Q:
-   ±ÈÈç
+   æ¯”å¦‚
    xxx 1 xx
    xxx 2 xxx
-   Ìæ»»³É
+   æ›¿æ¢æˆ
    xxx 2 xx
    xxx 3 xx
-    
+
    A:
    C-M-% [0-9]+ RET \,(+ \#& 1) RET
-    
+
    ps:C-h f query-replace-regexp
-    
+
    In interactive calls, the replacement text can contain `\,'
    followed by a Lisp expression.  Each
    replacement evaluates that expression to compute the replacement
@@ -91,11 +91,10 @@ C-x s
    `string-to-number', and `\#' itself for the number of replacements
    done so far (starting with zero).
 
-** ¼Ä´æÆ÷²Ù×÷
-   C-x r SPC,C-x r j ±£´æÎ»ÖÃ£¬Ìø»Ø
-   C-x r m,C-x r b ±£´æbookmark,´ò¿ªbookmark
-   C-x r w,C-x r j ±£´æwindowÅäÖÃ£¬»Ö¸´windowÅäÖÃ
-** ²åÈëĞĞºÅ
+** å¯„å­˜å™¨æ“ä½œ
+   C-x r SPC,C-x r j ä¿å­˜ä½ç½®ï¼Œè·³å›
+   C-x r m,C-x r b ä¿å­˜bookmark,æ‰“å¼€bookmark
+   C-x r w,C-x r j ä¿å­˜windowé…ç½®ï¼Œæ¢å¤windowé…ç½®
+** æ’å…¥è¡Œå·
    C-u M-|
    cat -n
-

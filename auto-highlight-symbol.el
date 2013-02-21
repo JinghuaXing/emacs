@@ -528,6 +528,7 @@ This variable can be set in three different types.
           (define-key map (kbd "C-x C-'"     ) 'ahs-change-range        )
           (define-key map (kbd "C-x C-a"     ) 'ahs-edit-mode           )
           (define-key map (kbd "M-w"    ) 'ahs-copy-hl)
+          (define-key map (kbd "M-o"    ) 'ahs-moccur-hl)
           map)))
 
 (defmacro ahs-onekey-edit (keys plugin-name &optional keep keymap)
@@ -925,11 +926,30 @@ You can do these operations at One Key!
         (setq ahs-end (nth 2 hl))
         ))))
 
+(defun ahs-moccur-hl ()
+  "Invoke `moccur' from isearch within `current-buffer'."
+  (interactive)
+  (let ((region-string (buffer-substring-no-properties ahs-begin ahs-end)))
+    (moccur-setup)
+    (moccur-search
+     region-string
+     t
+     (list (current-buffer)))))
+
+
 (defun ahs-copy-hl ()
   (interactive)
   (if (region-active-p)
       (call-interactively 'kill-ring-save)
     (copy-region-as-kill ahs-begin ahs-end)
+    )
+  )
+
+(defun ahs-kill-hl ()
+  (interactive)
+  (if (region-active-p)
+      (call-interactively 'kill-ring-save)
+    (kill-region ahs-begin ahs-end)
       )
   )
 

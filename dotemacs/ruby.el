@@ -3,11 +3,11 @@
 (add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode)) 
 (autoload 'run-ruby "inf-ruby" "Run an inferior Ruby process")  
 (autoload 'inf-ruby-keys "inf-ruby" "Set local key defs for inf-ruby in ruby-mode")  
-(require 'ruby-electric)
+;; (require 'ruby-electric)
 (add-hook 'ruby-mode-hook  
     '(lambda ()  
         (inf-ruby-keys)
-	(ruby-electric-mode t)
+	;; (ruby-electric-mode t)
 	(auto-highlight-symbol-mode t)
 	))
 (add-hook 'ruby-mode-hook 'turn-on-font-lock)  

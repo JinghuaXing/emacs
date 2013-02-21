@@ -8,6 +8,9 @@
 ;; (global-set-key [(control c)(j)]        'bc-goto-current)   ;; C-c j for jump to current bookmark
 ;; (global-set-key [(control x)(meta j)]   'bc-list)           ;; C-x M-j for the bookmark menu list
 
+;; (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
+(global-set-key (kbd "s-j") 'my-bookmark-jump)
+
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "M-g") 'goto-line)
@@ -23,7 +26,7 @@
 
 (global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-l") 'recenter)
-(global-set-key [(?\M-/)] 'hippie-expand)
+;; (global-set-key [(?\M-/)] 'hippie-expand)
 (global-set-key (kbd "C-M-/") 'hippie-expand)
 ;; (global-set-key (kbd "C-x C-d") 'dired)
 (global-set-key (kbd "C-x C-k") 'ido-kill-buffer)
@@ -64,16 +67,30 @@
 (defalias 'mt 'magit-status)
 (global-set-key (kbd "<s-return>") 'magit-status)
 (defalias 'occur 'moccur)
-;; (global-set-key (kbd "C-x C-x") '(lambda ()
-;; 				   (interactive)
-;; 				   (cond
-;; 				    ((get-buffer "*Tracker*") (switch-to-buffer "*Tracker*")) 
-;; 				    ((get-buffer "*gid*") (switch-to-buffer "*gid*")) 
-;; 				    ((get-buffer "*Find*") (switch-to-buffer "*Find*"))
-;; 				    ((get-buffer "*Moccur*") (switch-to-buffer "*Moccur*"))
-;; 				    (t nil)
-;; 				    )
-;; 				   )
-;; )
+(global-set-key (kbd "C-x C-x") '(lambda ()
+				   (interactive)
+				   (cond
+				    ((get-buffer "*ack*") (switch-to-buffer "*ack*"))
+				    ((get-buffer "*Tracker*") (switch-to-buffer "*Tracker*")) 
+				    ((get-buffer "*gid*") (switch-to-buffer "*gid*")) 
+				    ((get-buffer "*Find*") (switch-to-buffer "*Find*"))
+				    ((get-buffer "*Moccur*") (switch-to-buffer "*Moccur*"))
+				    (t nil)
+				    )
+				   )
+)
 
 ;; (global-set-key (kbd "C-x C-g") 'gid)
+(global-set-key (kbd "C-'") 'other-window)
+
+(global-set-key (kbd "C-x F") (lambda ()
+				(interactive)
+				(call-interactively 'ack)
+				)
+		)
+(global-set-key (kbd "M-,") (lambda ()
+			      (interactive)
+			      (call-interactively 'ack)
+			      )
+		)
+

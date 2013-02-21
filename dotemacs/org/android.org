@@ -1747,115 +1747,6 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
     - thread.attach() will establish reverse connection (AMS --> ActivityThread) with AMS, (set IApplicationThread IBinder to AMS.app.thread),
       so that AMS can use the IApplicationThread to interact with ActivityThread, e.g. scheduleResumeaCtivity, scheduleLaunchActivity.
       AMS use [[@AppDeathRecipient]] to reset app.thread to null, which means the process has gone.
-*** DONE Android Process Crash, Die and Restart
-    SCHEDULED: <2011-07-18 Mon> CLOSED: [2011-07-18 Mon 14:39]
-    - State "DONE"       from "DOING"      [2011-07-18 Mon 14:39]
-      see also [[persistent application]]
-      see also [[STICKY service]]
-      see also [[Java Process Creation]]
-      see also [[binder's death]]
-      Note: we can also restart process manually by: AM.restartPackage()
-**** APP crash: process crashed because of UncaughtException
-  1. setDefaultUncaughtExceptionHandler during process creation
-#+BEGIN_EXAMPLE
-     1	    Thread.setDefaultUncaughtExceptionHandler @ RuntimeInit.java
-     2	      UncaughtHandler implements Thread.UncaughtExceptionHandler
-     3	        public void uncaughtException(Thread t, Throwable e):
-     4		  ActivityManagerNative.getDefault().handleApplicationCrash(mApplicationObject, new ApplicationErrorReport.CrashInfo(e));
-     5		  Process.killProcess(Process.myPid());
-     6	          System.exit(10);
-#+END_EXAMPLE
-  2.  when there are ANY uncaught exception in ANY thread, AMS.handleApplicationCrash will be invoked, and then process will be killed
-#+BEGIN_EXAMPLE
-     1	      AMS.handleApplicationCrash()
-     2	        crashApplication(r, crashInfo);
-     3	          makeAppCrashingLocked()
-     4	            handleAppCrashLocked(app);
-     5	              // NOTE: when handling app crashing, the process is still alive, so there is still a chance for AMS to stop activity/service(s)..
-     6	              // if crashing too much, stopActivity, and in SOME cases, bringDownService
-     7	              if (crashTime != null && now < crashTime+MIN_CRASH_INTERVAL):
-     8	                killServicesLocked(app, false);
-     9	                // `killServiceLocked`, the name is quite misleading, maybe it should be named to `killOrRestartService`xs
-    10	                foreach (activity of app):
-    11	                  finishActivityLock();
-    12	              // although crashTime interval is long enough, but if the crashed app owns the top running activity...also finish the activities
-    13	              ...
-    14	              foreach (service of app):
-    15	                service.crashCount++;
-    16	      // NOTE: any way, after handleApplicationCrash, the process will definitely be killed. But before it is killed, AMS can destroy the activity/service
-    17	      // explicitly, and what's more important, restart service in some cases;
-#+END_EXAMPLE
-  3. Process.killProcess
-     After handleApplicationCrash(), the process will be killed
-
-     When process exit, all fd(s) will be closed; when the fd of /dev/binder is closed, binder_release() in binder.c will be called;
-     binder_release will trigger the binder_death notification of the IApplicationThread binder node;
-     For each Java process, AMS hold their IApplicationThread, in app.thread. Thus, when the process exit, AMS.AppDeathRecipient (which implements
-     IBinder.DeathRecipient) will be notified.
-
-     AppDeathRecipient mainly does some cleaning up of activity/service, but if the app is persistent, it will always be restarted
-#+BEGIN_EXAMPLE
-     AppDeathRecipient.binderDie()
-       ...
-       cleanUpApplicationRecordLocked()
-         if (app.persistent):
-           startProcessLocked(app, "restart", app.processName);
-#+END_EXAMPLE
-
-  4. AMS.killServiceLocked
-#+BEGIN_EXAMPLE
-     if (service.crashCount >= 2):
-       bringDownServiceLocked(sr, true);
-     else:
-       scheduleServiceRestartLocked(sr, true);
-       // after 5s, service will be restarted
-       // sr.stopIfKill is true if the service is started as STICKY
-       if (sr.stopIfKilled):
-         if (!hasClients):
-           // Whoops, no reason to restart! since no one bind the service
-           bringDownServiceLocked(sr, true);
-#+END_EXAMPLE
- To summaries: After an uncaught exception occurs in any thread, the process
-   will crash through the registered Thread.UncaughtExceptionHandler. The
-   handler will firstly finish activities, and if the service has crashed >=2
-   times, the service will be bringDown (service.onDestroy will be called) If
-   the service is crashing for the 1st time, doesn't bring it down
-   (service.onDestroy will not be called, although the service will be killed
-   due to the process will be killed later), and schedule the restart of the
-   service after the process is killed later.
-   
-**** APP die: process crashed because of KILL
-when process is killed, AMS mainly rely on DeathRecipient to clean it up or
-restart it.
-
-#+BEGIN_EXAMPLE
-DeathRecipient:
-  appDiedLocked(mApp, mPid, mAppThread);
-    handleAppDiedLocked()
-      cleanUpApplicationRecordLocked(app, restarting, allowRestart, -1);
-        killServicesLocked(app, allowRestart);
-          if (sr.crashCount >= 2 && (sr.serviceInfo.applicationInfo.flags
-                  &ApplicationInfo.FLAG_PERSISTENT) == 0) {
-              bringDownServiceLocked(sr, true);
-          } else if (!allowRestart) {
-              bringDownServiceLocked(sr, true);
-          } else {
-              boolean canceled = scheduleServiceRestartLocked(sr, true);
-              if (sr.stopIfKilled) {
-                // NOTE: stopIfKilled means not STICKY
-                bringDownServiceLocked(sr, true);
-              }
-          }
-        if (app.persistent) {
-          startProcessLocked(app, "restart", app.processName);
-        }
-
-#+END_EXAMPLE
-To summarize:
-
-Died app will be restarted if:
-- has STICKY service
-- is persistent ** Alarm
 ** Android coredump
 ** Android IMF
 
@@ -2081,6 +1972,60 @@ see also [[Context.getApplicationContext()]]
 
 ** ContentProvider , ContentResover & SQLite
 *** ContentProvider.openFile() & ContentProvider.openInputStream()
+*** DONE `withYieldAllowed` how to work?                             :todo:
+CLOSED: [2013-01-14 Mon 15:57]
+- State "DONE"       from "TODO"       [2013-01-14 Mon 15:57]
+[2013-01-14 Mon 11:57]
+[[http://stackoverflow.com/questions/9599809/does-yieldifcontendedsafely-lose-the-benefits-of-a-transaction][Does yieldIfContendedSafely() lose the benefits of a transaction?]]
+
+From stackoverflow:
+
+Q:
+
+I have a long-running operation which I perform in a background thread. As it is
+important for the operation to either complete successfully or not at all, I am
+wrapping the entire operation in a transaction.
+
+Aspects of the UI need read-only access to the database during this time. To
+avoid blocking the UI, I am experimenting with inserting calls to
+db.yieldIfContendedSafely() in the main loop of the background operation.
+
+This does what I want in that the UI is no longer blocked, but it's not
+completely clear to me if this is risking a loss of data integrity.
+
+The javadoc for yieldIfContendedSafely() says:
+
+    Temporarily end the transaction to let other threads run.  The transaction
+    is assumed to be successful so far. Do not call setTransactionSuccessful
+    before calling this. When this returns a new transaction will have been
+    created but not marked as successful. This assumes that there are no nested
+    transactions (beginTransaction has only been called once) and will throw an
+    exception if that is not the case.
+
+Does this mean that my long-running operation is actually being committed to the
+database in separate chunks, or is the overall transaction maintaining enough
+state to commit the whole lot in one go at the end, thus preserving
+data-integrity?
+
+A:
+
+    Does this mean that my long-running operation is actually being committed to
+    the database in separate chunks
+
+Yes. Within yieldIfContendedSafely(), Android calls setTransactionSuccessful(),
+endTransaction(), and begins a new transaction -- committing your statements in
+the process. There is no mechanism to rollback the "real" transaction after it
+ends.
+
+This behavior only occurs if there is another thread waiting on the database,
+otherwise yieldIfContendedSafely() does nothing.
+
+I checked this with the following scenario. I started two threads: one inserted
+data into a table using a transaction, another read data out of the same
+table. The transaction didn't call setTransactionSuccessful() so normally
+everything is rolled back at the end, leaving the table empty. I added a call to
+yieldIfContendedSafely(), and afterwards the table was not empty and had data
+from the transaction.
 ** DONE [#A] Context
    SCHEDULED: <2011-06-02 Thu> CLOSED: [2011-06-13 Mon 16:57]
    - State "DONE"       [2011-06-13 Mon 16:57]

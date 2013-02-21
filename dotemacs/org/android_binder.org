@@ -11,13 +11,13 @@
   - Java Binder
   - C++ Binder
   - Binder driver
-*** Binder driver
+** Binder driver
     Binder driver 中有四个最重要的数据结构:
     - binder_proc
     - binder_node
     - binder_ref
     - binder_thread
-**** binder_proc
+*** binder_proc
      binder_proc是binder driver中处于最顶层的数据结构, 它代表了一个与binder
      driver打交道的进程, 任意一个和binder打交道的进程, 不管是server还是client,
      在kernel都有且只有一个binder_proc结构与之对应.
@@ -42,7 +42,7 @@
        这两个结构体是两根红黑树, 树结点的value都是binder_ref, 但对于refs_by_desc树,
        结点的key是binder_ref.desc, 对于refs_by_node, key是binder_node
 
-***** binder_proc结构体的初始化
+**** binder_proc结构体的初始化
       binder_proc代表一个与binder打交道的进程, 不论binder server或是binder
       client, 都有且仅有一个binder_proc与之对应.
 #+BEGIN_HTML
@@ -60,7 +60,7 @@
       filp->private_data是进程私有数据, 每当进程通过系统调用进入kernel时, driver
       代码总是可以通过task_struct->filp->private_data轻松找到该进程对应的
       binder_proc
-***** binder_proc的清除
+**** binder_proc的清除
       当进程终止时, binder_proc会被driver清除.
 
       binder_proc的清除:
@@ -97,7 +97,7 @@
 	kfree(proc)
 </pre>
 #+END_HTML
-**** binder_node
+*** binder_node
      从用户的角度看,binder_node代表一个service, 它与c++ binder的BBinder对
      象有一一对应关系.
 
@@ -129,7 +129,7 @@
       -+-----+	  proc	  |	   |	proc   -+-------+
 	    -+------------+    	  -+------------+
 #+END_EXAMPLE
-**** binder_ref
+*** binder_ref
      从用户的角度看, binder_ref代表一个client, 它与c++ binder的BpBinder一一对应.
 
      binder_ref的主要成员有:
@@ -175,14 +175,14 @@
 					 |		  +----------------+      |       	  +----------------+
 					 +----------------------------------------+
 #+END_EXAMPLE
-**** 应用场景举例
+*** 应用场景举例
      The essential concept behind binder is that: proxy & stub can be
      transformed between processes, e.g. stub in the server, when transferred to
      the client , becomes a proxy, and vice-versa.
 
      As to the binder driver, it refers to the transformation between
      binder_node & binder_ref
-***** scenario I
+**** scenario I
       Server initiate one BBinder, and deliver it to the client using Intent.
       - Driver know nothing about BBinder until IPCThreadState.transact() is called.
       - IPCThreadState.transact() call ioctl(BINDER_WRITE_READ) to init a transaction
@@ -198,28 +198,28 @@
         binder_ref->node is set to the binder_node.
       - when client get the BpBinder, BpBinder->handler is set to binder_ref->desc, so that
 	BpBinder->transact() knows the corresponding binder_ref
-***** scenario II
+**** scenario II
       after the client get the BpBinder, it calls BpBinder->transact()
       - get BpBinder->handle
       - driver search the corresponding binder_ref in the host binder_proc according to `handle` and binder_proc->refs_by_desc
       - the transaction will fail if no binder_ref is found, or else get binder_node from binder_ref->node, and additionally,
 	get target binder_proc through binder_node->proc
       - for now, target binder_proc and binder_node have been found, call (BBinder *)(binder_node->cookie)->transact() in binder_proc
-**** binder_thread
+*** binder_thread
      Driver can't execute user-mode BBinder in kernel-mode, How does the driver execute BBinder in server process?
 
      - The Binder server has several `while(1) {}` thread blocked on IOCTL, waiting for client transaction.
      - when the driver need to execute BBinder, it will first put data (BBinder address, function argument) to a place server can reach, then
        wake up the one of the server thread.
      - those server thread are so-called `Binder Thread #1/#2...`
-***** Binder Thread initiate
+**** Binder Thread initiate
       - IPCThreadState.startThreadPool() can start a binder thread.
       - ProcessState.joinThreadPool() can turn the calling thread to a binder thread.
       - java process have a born binder thread, because onZygoteInit() will call IPCThreadState.startThreadPool() to init a binder thread.
       - native c++ service must call IPCThreadState.startThreadPool() or ProcessState.joinThreadPool() explicitly.
       - if a process has no binder thread, although driver can find the binder_proc and BBinder, but since there is no binder thread,
 	driver simply can't wake up any thread to perform the transaction.
-***** Calling stack
+**** Calling stack
       Client:
 #+BEGIN_EXAMPLE lang=c
       BpBinder::transact()
@@ -250,7 +250,7 @@
                  .....
                  wake up client
 #+END_EXAMPLE
-**** binder_buffer
+*** binder_buffer
      - binder_buffer is used during ONE binder transaction to save request(in the target_proc's)  and reply data (in the host_proc's)
        and this buffer is mmap to user-mode directly. so that user-mode BBinder can access binder_buffer directly.
      - every binder_proc has it's own buffer, size limited to 1M-8k, driver will allocate one binder_buffer from the buffer for every transaction.
@@ -291,7 +291,7 @@
 #+END_EXAMPLE
       client data are mmap to server's binder_buffer.
 #+BEGIN_EXAMPLE
-       		       User mode   +-----------------+                                 +-----------------+
+ 		       User mode   +-----------------+                                 +-----------------+
 		       	     	   |   process A     |			   	       |   process B     |
 			     	   +-----------------+	    copy_from_user()	       +-----------------+
 			     	   |   Parcel data   +------------------------+	       |       	         |
@@ -302,21 +302,21 @@
 		       Kernel mode	 +------------------------------------+----------------------+-------------+
 					 |				      V		  	     |		   |
 					 |     +----------------+          +--+-------------+	     |		   |
-  				       	 |     | binder_proc B 	|   +----->+ binder_buffer  +--------+		   |
-       	       	       	       	       	 |     +----------------+   |  	   +----------------+	mmap to B process  |
+				       	 |     | binder_proc B 	|   +----->+ binder_buffer  +--------+		   |
+ 	       	       	       	       	 |     +----------------+   |  	   +----------------+	mmap to B process  |
 					 |     |  allocated_buf	+---+  	   |  parcel data   |			   |
 					 |     |     	       	|      	   |  from A   	    |			   |
 					 |     |       	       	|      	   +----------------+			   |
 					 |     +----------------+						   |
 					 +-------------------------------------------------------------------------+
 #+END_EXAMPLE
-***** binder_buffer de-allocation
+**** binder_buffer de-allocation
       binder_buffer is de-allocated only when user called Parcel::freeData()
       firstly, drv will remove the binder_buffer from
       curr_proc->allocated_buffers.  then, if the buffered's next or prev buffer
       is also free, they will be merged to one larger binder_buffer, and then
       added to the curr_proc->free_buffers.
-****** Parcle.freeData()
+***** Parcle.freeData()
        free Parcel object ASAP!
        Client should free reply parcel ASAP!
        Server should free data parcel ASAP!
@@ -332,7 +332,7 @@
        the reply parcel).  The callback will ioctl to the driver the free the
        parcel.
 
-**** binder_transaction_data
+*** binder_transaction_data
      :PROPERTIES:
      :CUSTOM_ID: @binder_transaction_data
      :END:
@@ -362,7 +362,7 @@
 
 
 #+END_EXAMPLE
-***** overall calling sequence
+**** overall calling sequence
       |-------------------------------------+-------------------------------------------+--------------------------------------|
       | client                              | driver                                    | server                               |
       |-------------------------------------+-------------------------------------------+--------------------------------------|
@@ -395,7 +395,7 @@
       | onTransact() <-                     |                                           |                                      |
       |-------------------------------------+-------------------------------------------+--------------------------------------|
 
-**** binder_transaction & binder_work
+*** binder_transaction & binder_work
      - binder_thread_write() & binder_thread_read() communicate with binder_work & binder_transaction.
      - binder_work are entry added to thread->todo / proc->todo, when server/client are waken up during binder_thread_read(), kernel code will
      - check thread->todo to get a binder_work to do, and extract binder_transaction from binder_work by container_of (binder_work) macro.
@@ -447,13 +447,13 @@ seq graph:
 |-----------------------+--------------------------------------------------------+--------------------------------------------------+--------------|
 #+END_EXAMPLE
 
-**** DONE [#C] binder reference count
+*** DONE [#C] binder reference count
      CLOSED: [2011-03-18 Fri 17:57]
      - State "DONE"       [2011-03-18 Fri 17:57]
     Binder reference 分为两个方法:
     　- C++ 层面的RefBase
     　- driver 层面 binder_ref 的引用计数
-***** When Java Binder is finalized
+**** When Java Binder is finalized
 #+BEGIN_HTML
 <pre lang="c++" line="1">
       Binder.finalize() @ Binder.java
@@ -465,7 +465,7 @@ seq graph:
 	        {} // nop for BBinder
 </pre>
 #+END_HTML
-***** When Java BinderProxy is finalized
+**** When Java BinderProxy is finalized
 #+BEGIN_HTML
 <pre lang="c++" line="1">
       BinderProxy.finalize() @ Binder.java
@@ -490,7 +490,7 @@ seq graph:
      - binder_dec_ref() will also be called during binder_free_buffer() and the buffer contains BINDER_TYPE_HANDLE.
      - binder_node will be deleted when:
        binder_proc died or there is no binder_ref of the binder_node
-**** DONE [#A] binder's death ( linkToDeath )
+*** DONE [#A] binder's death ( linkToDeath )
      SCHEDULED: <2011-03-01 Tue> CLOSED: [2011-02-28 Mon 13:13]
      - State "DONE"       [2011-02-28 Mon 13:13]
 
@@ -535,13 +535,13 @@ seq graph:
 #+END_EXAMPLE
      - If there is no binder_thread running in proxy process, maybe DeathRecipient will never be notified automatically.
 
-**** DONE binder & exception
+*** DONE binder & exception
      CLOSED: [2011-03-10 Thu 13:50]
      - State "DONE"       [2011-03-10 Thu 13:50]
      - State "DONE"       [2011-02-22 Tue 19:08]
-***** remote exceptions
+**** remote exceptions
       `remote exceptions` stands for `exceptions occurred during stub.onTransact()`
-****** proxy side
+***** proxy side
       - binder.stub.proxy
 #+BEGIN_EXAMPLE
   	public int foo() throws android.os.RemoteException {
@@ -577,7 +577,7 @@ seq graph:
                  throw new IllegalStateException(msg);
          }
 #+END_EXAMPLE
-****** stub side
+***** stub side
       - Binder.execTransact()
 #+BEGIN_EXAMPLE lang=c
         try {
@@ -622,7 +622,7 @@ seq graph:
 	    return true;
 	}
 #+END_EXAMPLE
-***** local exceptions
+**** local exceptions
       `local exceptions` stands for `exceptions occurred other than stub.onTransact(), e.g. binder error`
 #+BEGIN_EXAMPLE
       try {
@@ -643,7 +643,7 @@ seq graph:
 	_result = _reply.readInt();
       }
 #+END_EXAMPLE
-***** To summarize
+**** To summarize
       - binder.stub.proxy need to invoke Parcel.readException() to manually detect whether exceptions occurred in the stub side.
       - only 5 RuntimeException occurred in stub.onTransact can be eventually caught by stub and send to proxy (RemoteException is caught by execTransact,
 	but not wrote to reply...weired~)
@@ -683,9 +683,9 @@ seq graph:
 
 #+END_EXAMPLE
 
-**** [#B] binder wait & todo
-*** C++
-**** BpInterface
+*** [#B] binder wait & todo
+** C++
+*** BpInterface
 12/9/2010
 BpInterface:IInterface
 BpInterface resides in the proxy part, but it't nothing but an encapsulation of the remote IBinder (actually BpBinder)
@@ -693,21 +693,21 @@ BpInterface resides in the proxy part, but it't nothing but an encapsulation of 
 it's most import method is BpInterface.asInterface(IBinder)
 , it will implement those IXX.xx functions and dispatch them to BpBinder.transact().
 
-**** IInterface
-**** BnInterface
+*** IInterface
+*** BnInterface
 12/9/2010
 BnInterface:BBinder,IInterface
 so, BnInterface resides in the stub part, and mainly act as two parts:
 1) it extends IInterface, so it will implement IXX.xx functions
 2) it extends BBinder, so it will implement onTransact(), it will be called by BBinder.transact(), and will dispatch transact code to it's own IXX.xx functions.
 
-**** BBinder
+*** BBinder
 12/9/2010
 BBinder corresponds to BpBinder, it is the real stub part.
 
 when IPCThreadState discovers an IPC, it will call BBinder.transact(), which will call deprived class's (which is usually BnInterface) onTransact()
 
-**** BpBinder
+*** BpBinder
 12/9/2010
 when BnInterface, as the stub part,is returned to client as IBinder through Parcel.writeStrongBinder and Parcel.readStrongBinder, the proxy part actually will get a BpBinder as IBinder (since both BpBinder and BBinder extends IBinder).
 
@@ -716,8 +716,8 @@ To make it clear, BpInterface use BpBinder, and BnInterface extends BBinder
 BpBinder's most import method is transact(), which will call IPCThreadState.transact() to interact will binder driver.
 
 BpBinder's member variable `handle` could be used by the driver to distinguish it from other BpBinder and found the corresponding strub process.
-**** Binder Thread
-**** ProcessState
+*** Binder Thread
+*** ProcessState
 12/9/2010
 both the proxy and stub process has one and only one ProcessState.
 1) proxy part:
@@ -727,11 +727,11 @@ IPCThreadState need to use ProcessState to interact with binder driver
 
 2) stub part:
 
-***** StartThreadPool
-**** IPCThreadState
-***** JoinThreadPool
-*** Java/AIDL
-**** IXx.stub
+**** StartThreadPool
+*** IPCThreadState
+**** JoinThreadPool
+** Java/AIDL
+*** IXx.stub
      stub is essentially a binder, but it do additional two things:
      1. Imlements some stubs side IXx funtions.
      2. Auto dispatching to those functions according to unmarshalling result.
@@ -743,7 +743,7 @@ IPCThreadState need to use ProcessState to interact with binder driver
         e.g.  IXx.foo.  stub.onTransact will call IXx.foo according to the
         unmarshalling result.
 
-**** IXx.stub.proxy
+*** IXx.stub.proxy
      proxy only implements IXx, and it will take an IBinder as ctor param.  It should be taken as a helper utility for the ibinder.
      So:
      1. It implements IXx, so it will implements IXx proxy side functions,
@@ -752,10 +752,10 @@ IPCThreadState need to use ProcessState to interact with binder driver
      2. It take an IBinder as ctor param(the 'remote' var), so it can use the
         IBinder to do proxy works. e.g. Call ibinder->transact.
      IXx.asInterface(ibinder) actually call IXx.stub.proxy(ibinder) to convert the ibinder as an proxy interface.
-*** Java Binder vs. C++ binder
+** Java Binder vs. C++ binder
     java binder is just an encapsulation of c++ binder
     Binder,BinderProxy vs. JavaBBinder, BpBinder
-**** binder proxy in java
+*** binder proxy in java
 #+BEGIN_EXAMPLE
      IBinder.transact()   // binder proxy in java is BinderProxy
        BinderProxy.transact() // native
@@ -765,7 +765,7 @@ IPCThreadState need to use ProcessState to interact with binder driver
 	       ...
 	     signalExceptionForError(env, obj, err);
 #+END_EXAMPLE
-**** binder stub in java
+*** binder stub in java
      - initialization
 #+BEGIN_EXAMPLE
        Binder() // ctor
@@ -795,8 +795,8 @@ IPCThreadState need to use ProcessState to interact with binder driver
 	 report_exception(env, excep,...)
 #+END_EXAMPLE
 
-*** misc
-**** Parcelable VS. Serializable
+** misc
+*** Parcelable VS. Serializable
      Parcelable:
      fast and lightweight.  But there are some limitations:
      1. all the Container class is NOT parcelable but serializable, so u can't call
@@ -817,9 +817,9 @@ IPCThreadState need to use ProcessState to interact with binder driver
 
      serializable is java's game. It's powerful but quite SLOOOOW.
      u can serialize any complex class, just DECLARE it implements 'Serializable'.  Also u can optionally provid
-**** IBinder as token
-**** ParcelFileDescriptor
-**** DONE Binder.getCallingPid() & Binder.getCallingUid()
+*** IBinder as token
+*** ParcelFileDescriptor
+*** DONE Binder.getCallingPid() & Binder.getCallingUid()
      CLOSED: [2011-02-22 Tue 17:23]
      - State "DONE"       [2011-02-22 Tue 17:23]
      see [[@Android Permission]]
@@ -845,14 +845,14 @@ IPCThreadState need to use ProcessState to interact with binder driver
 
     mCallingPid is initialized to getPid() by IPCThreadState, so that Binder.getCallPid() may return thread's own pid if not executing an incoming
     binder transaction.
-**** DONE Binder.clearCallingIdentity() & Binder.restoreCallingIdentity()
+*** DONE Binder.clearCallingIdentity() & Binder.restoreCallingIdentity()
      CLOSED: [2011-02-25 Fri 14:02]
      - State "DONE"       [2011-02-25 Fri 14:02]
        during one binder transaction, if the binder-stub want to temporary use it's own pid/uid (instead of proxy's pid/uid) for permission-check, it
        should invoke clearCallingIdentity to temporary save proxy's pid/uid to one `long int`, then set getCallingPid to stub's own pid.
        After the permission-check, it could invoke restoreCallingIdentity(long) to restore getCallingPid to proxy's pid.
-**** AsyncTask
-**** Messenger
+*** AsyncTask
+*** Messenger
      :PROPERTIES:
      :CUSTOM_ID: @Messenger
      :END:

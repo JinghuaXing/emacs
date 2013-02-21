@@ -1,7 +1,7 @@
 ;;; w3m.el --- an Emacs interface to w3m -*- coding: iso-2022-7bit; -*-
 
 ;; Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-;; 2010, 2011 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
+;; 2010 TSUCHIYA Masatoshi <tsuchiya@namazu.org>
 
 ;; Authors: TSUCHIYA Masatoshi <tsuchiya@namazu.org>,
 ;;          Shun-ichi GOTO     <gotoh@taiyo.co.jp>,
@@ -209,7 +209,7 @@
 
 (defconst emacs-w3m-version
   (eval-when-compile
-    (let ((rev "$Revision: 1.1515 $"))
+    (let ((rev "$Revision: 1.1506 $"))
       (and (string-match "\\.\\([0-9]+\\) \\$\\'" rev)
 	   (setq rev (- (string-to-number (match-string 1 rev)) 1136))
 	   (format "1.4.%d" (+ rev 50)))))
@@ -1351,8 +1351,8 @@ nil means don't recenter, let the display follow point in the
   ;; radio items in the same order as in the docstring, and `integer' first
   ;; because it's the default
   :type '(radio (integer :format "%{%t%}: %v\n" :value 1 :size 1)
-		(const :format "%t\n" t)
-		(const :format "%t\n" nil)))
+                (const :format "%t\n" t)
+                (const :format "%t\n" nil)))
 
 (defcustom w3m-use-form t
   "*Non-nil means make it possible to use form extensions. (EXPERIMENTAL)"
@@ -3553,7 +3553,7 @@ The database is kept in `w3m-entity-table'."
   "Fontify anchor tags in the buffer which contains halfdump."
   (let ((help (w3m-make-help-echo w3m-balloon-help))
 	(balloon (w3m-make-balloon-help w3m-balloon-help))
-	prenames start end bhhref)
+	prenames start end)
     (goto-char (point-min))
     (setq w3m-max-anchor-sequence 0)	;; reset max-hseq
     (while (re-search-forward "<_id[ \t\r\f\n]+" nil t)
@@ -3572,7 +3572,7 @@ The database is kept in `w3m-entity-table'."
     (while (re-search-forward "<a[ \t\r\f\n]+" nil t)
       (setq start (match-beginning 0))
       (setq prenames (get-text-property start 'w3m-name-anchor2))
-      (w3m-parse-attributes (href name id charset title
+      (w3m-parse-attributes (href name id charset
 				  (rel :case-ignore) (hseq :integer))
 	(unless name
 	  (setq name id))
@@ -3605,17 +3605,11 @@ The database is kept in `w3m-entity-table'."
 	    (setq hseq (or (and (null hseq) 0) (abs hseq)))
 	    (setq w3m-max-anchor-sequence (max hseq w3m-max-anchor-sequence))
 	    (w3m-add-face-property start end (if (w3m-arrived-p href)
-						 'w3m-arrived-anchor
-					       'w3m-anchor))
-	    (if title
-		(setq bhhref (concat (w3m-decode-anchor-string title)
-				    "\n"
-				    (w3m-url-readable-string href)))
-	      (setq bhhref (w3m-url-readable-string href)))
+						     'w3m-arrived-anchor
+						   'w3m-anchor))
 	    (w3m-add-text-properties start end
 				     (list 'w3m-href-anchor href
-					   'w3m-balloon-help bhhref
-					   'w3m-anchor-title title
+					   'w3m-balloon-help href
 					   'mouse-face 'highlight
 					   'w3m-anchor-sequence hseq
 					   'help-echo help
@@ -4105,7 +4099,7 @@ variable is non-nil (default=t)."
 						 (unless (interactive-p)
 						   safe-regexp))
 	    (setq w3m-display-inline-images (not status))
-	    (when status
+	    (when status 
 	      (w3m-process-stop (current-buffer))
 	      (w3m-idle-images-show-unqueue (current-buffer)))
 	    (force-mode-line-update)))
@@ -5987,28 +5981,6 @@ be displayed especially in shimbun articles."
 	      (delete-region start (point))
 	      (throw 'found nil))))))))
 
-(defun w3m-fix-illegal-blocks ()
-  "Replace <div>...</div> within <a>...</a> with <span>...<br></span>.
-<div> is a block element that should not appear within inline elements
-like <a>, however some web sites, e.g., news.google.com.tw, do so and
-w3m regards it as an incomplete <a> tag that is not closed."
-  (let ((case-fold-search t))
-    (goto-char (point-min))
-    (while (re-search-forward "<a[\t\n ]" nil t)
-      (save-restriction
-	(narrow-to-region (match-beginning 0)
-			  (or (w3m-end-of-tag "a") (point-max)))
-	(goto-char (point-min))
-	(while (re-search-forward "<div[\t\n >]" nil t)
-	  (when (w3m-end-of-tag "div")
-	    (replace-match (concat "<span" (substring (buffer-substring
-						       (match-beginning 0)
-						       (match-end 1)) 4)
-				   "<br></span>")
-			   t t)
-	    (goto-char (match-beginning 0))))
-	(goto-char (point-max))))))
-
 (defun w3m-rendering-extract-title ()
   "Extract the title from the halfdump and put it into the current buffer."
   (goto-char (point-min))
@@ -6051,28 +6023,6 @@ w3m regards it as an incomplete <a> tag that is not closed."
 (defun w3m-rendering-half-dump (charset)
   ;; `charset' is used by `w3m-w3m-expand-arguments' to generate
   ;; arguments for w3mmee and w3m-m17n from `w3m-halfdump-command-arguments'.
-
-  ;; Add name anchors that w3m can handle.  Cf. [emacs-w3m:11153]
-  ;; This section replaces
-  ;; <TAG ... id="FOO_BAR" ...>FOO BAR</TAG>
-  ;; with
-  ;; <a name="FOO_BAR"><TAG ... id="FOO_BAR" ...>FOO BAR</TAG></a>
-  ;; in the current buffer.
-  (goto-char (point-min))
-  (let (start tag name)
-    (while (re-search-forward "<\\([^\t\n\r >]+\\)\
-\[\t\n\r ]+\\(?:[^\t\n\r >]+[\t\n\r ]+\\)*id=\\(\"[^\"]+\"\\)"
-			      nil t)
-      (setq start (match-beginning 0)
-	    tag (match-string 1)
-	    name (match-string 2))
-      (when (looking-at (concat "[^>]*>[^<]+</" tag ">"))
-	(save-restriction
-	  (narrow-to-region (goto-char start) (match-end 0))
-	  (insert "<a name=" name ">")
-	  (goto-char (point-max))
-	  (insert "</a>")))))
-
   (w3m-set-display-ins-del)
   (let* ((coding-system-for-read w3m-output-coding-system)
 	 (coding-system-for-write (if (eq 'binary w3m-input-coding-system)
@@ -6121,7 +6071,6 @@ w3m regards it as an incomplete <a> tag that is not closed."
   (w3m-check-refresh-attribute)
   (unless (eq w3m-type 'w3m-m17n)
     (w3m-remove-meta-charset-tags))
-  (w3m-fix-illegal-blocks)
   (w3m-rendering-half-dump charset)
   (w3m-message "Rendering...done")
   (w3m-rendering-extract-title))
@@ -7131,8 +7080,6 @@ of the url currently displayed.  The browser is defined in
       (kill-new w3m-current-url)
       (w3m-message "%s" (w3m-url-readable-string w3m-current-url)))))
 
-(defvar message-truncate-lines)
-
 (defun w3m-print-this-url (&optional interactive-p)
   "Display the url under point in the echo area and put it into `kill-ring'."
   (interactive (list t))
@@ -7142,30 +7089,16 @@ of the url currently displayed.  The browser is defined in
 	       (or (w3m-anchor (point)) (w3m-image (point)))))
 	(alt (if interactive-p
 		 (w3m-image-alt)
-	       (w3m-image-alt (point))))
-	(title (if interactive-p
-		   (w3m-anchor-title)
-		 (w3m-anchor-title (point)))))
+	       (w3m-image-alt (point)))))
     (when (or url interactive-p)
       (and url interactive-p (kill-new url))
-      (setq url (or (w3m-url-readable-string url)
-		    (and (w3m-action) "There is a form")
-		    "There is no url under point"))
-      (w3m-message "%s" (cond
-			 ((> (length alt) 0)
-			  (concat alt ": " url))
-			 ((> (length title) 0)
-			  ;; XEmacs doesn't have `message-truncate-lines'
-			  ;; and always truncates messages, so one line in
-			  ;; that case.
-			  (if (or (not (boundp 'message-truncate-lines))
-				  message-truncate-lines
-				  (< (+ (length url) (length title) 5)
-				     (frame-width)))
-			      (concat title " (" url ")") ;; one line if fits
-			    (concat title "\n" url)))     ;; two lines if big
-			 (t
-			  url))))))
+      (w3m-message "%s%s"
+		   (if (zerop (length alt))
+		       ""
+		     (concat alt ": "))
+		   (or (w3m-url-readable-string url)
+		       (and (w3m-action) "There is a form")
+		       "There is no url under point")))))
 
 (defun w3m-print-this-image-url (&optional interactive-p)
   "Display image url under point in echo area and put it into `kill-ring'."
@@ -8759,10 +8692,10 @@ window's hscroll."
 (defun w3m-recenter ()
   "Recenter according to `w3m-view-recenter'."
   (when (and w3m-view-recenter
-	     (eq (window-buffer) (current-buffer)))
+             (eq (window-buffer) (current-buffer)))
     (recenter (if (eq t w3m-view-recenter)
-		  '(4)  ;; per "C-u C-l" to recenter in middle
-		w3m-view-recenter)))) ;; otherwise an integer
+                  '(4)  ;; per "C-u C-l" to recenter in middle
+                w3m-view-recenter)))) ;; otherwise an integer
 
 (defun w3m-beginning-of-line (&optional arg)
   "Make the beginning of the line visible and move the point to there."
@@ -8830,7 +8763,6 @@ It makes the ends of upper and lower three lines visible.  If
 (defun w3m-goto-mailto-url (url &optional post-data)
   (let ((before (nreverse (buffer-list)))
 	comp info buffers buffer function)
-    (setq url (w3m-decode-entities-string url))
     (save-window-excursion
       (if (and (symbolp w3m-mailto-url-function)
 	       (fboundp w3m-mailto-url-function))
@@ -9938,18 +9870,12 @@ non-ASCII characters."
 	    "\nDocument Type:  " (or (w3m-content-type url) "")
 	    "\nLast Modified:  "
 	    (let ((time (w3m-last-modified url)))
-	      (if time (current-time-string time) "")))
-
-    (let (anchor anchor-title)
-      (with-current-buffer w3m-current-buffer
-	(when (equal url w3m-current-url)
-	  (setq anchor (w3m-anchor))
-	  (setq anchor-title (w3m-anchor-title))))
-      (if anchor
-	  (insert "\nCurrent Anchor: " anchor))
-      (if anchor-title
-	  (insert "\nAnchor Title:   " anchor-title)))
-
+	      (if time (current-time-string time) ""))
+	    (let ((anchor (with-current-buffer w3m-current-buffer
+			    (and (equal url w3m-current-url) (w3m-anchor)))))
+	      (if anchor
+		  (concat "\nCurrent Anchor: " anchor)
+		"")))
     (let ((ct (w3m-arrived-content-type url))
 	  (charset (w3m-arrived-content-charset url))
 	  (separator (w3m-make-separator))
@@ -9964,7 +9890,7 @@ non-ASCII characters."
 				  (or (unless no-cache
 					(w3m-cache-request-header url))
 				      (w3m-process-with-wait-handler
-				       (w3m-w3m-dump-head url handler)))
+					(w3m-w3m-dump-head url handler)))
 				(w3m-process-timeout nil))))
 	(insert "\n\n" separator "\n\nHeader Information\n\n" header)
 	(goto-char (point-min))

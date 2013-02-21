@@ -87,18 +87,22 @@ occurence of CHAR."
      (bookmark-maybe-load-default-file)
      (list (ido-completing-read "Jump to bookmark: "
 				(mapcar 'car bookmark-alist)))))
+  (if (or (eq major-mode 'sr-mode) (eq major-mode 'sr-virtual-mode)) 
+      (sr-quit)
+      )
   (bookmark-jump bookmark))
 
-(defun my-tag (tag)
+(defun my-bookmark-set (bookmark)
   (interactive
    (progn
-     (setq tags-list (etags-tags-completion-table))
-     (list (ido-completing-read "tags: "
-				(mapcar 'car tags-list)))))
-  (find-tag tag)
-  )
+     (require 'bookmark)
+     (bookmark-maybe-load-default-file)
+     (list (ido-completing-read "Set bookmark: "
+				(mapcar 'car bookmark-alist)))))
+  (bookmark-set bookmark))
 
 (global-set-key (kbd "C-x r b") 'my-bookmark-jump)
+(global-set-key (kbd "C-x r m") 'my-bookmark-set)
 
 (add-hook 'diary-mode-hook
 	  '(lambda ()
@@ -256,7 +260,8 @@ occurence of CHAR."
     (previous-line 2)
     (forward-char col)
     ))
-
+(global-set-key (kbd "<M-up>") 'move-line-up)
+(global-set-key (kbd "<M-down>") 'move-line-down)
 (defun reverse-sentence-region (&optional separator)
   (interactive "P")
   (let ((beg (point))
@@ -360,8 +365,8 @@ occurence of CHAR."
   (open-line arg)
   (next-line 1)
   (indent-according-to-mode))
-;;(global-set-key (kbd "M-o") 'open-next-line)
-(global-unset-key (kbd "C-o"))
+(global-set-key (kbd "<M-return>") 'open-next-line)
+;;(global-unset-key (kbd "C-o"))
 ;; Behave like vi's O command
 
 (defun beginning-of-string(&optional arg)
@@ -504,3 +509,58 @@ occurence of CHAR."
        (forward-line))
      (delete-trailing-whitespace)
      ))
+
+
+(defun nautilus ()
+  "Open ROX-Filer window for named file"
+  (interactive)
+  (call-process "nautilus" nil 0 nil (expand-file-name default-directory) "--no-desktop")
+  )
+
+(defun aj-toggle-fold ()
+  "Toggle fold all lines larger than indentation on current line"
+  (interactive)
+  (let ((col 1))
+    (save-excursion
+      (back-to-indentation)
+      (setq col (+ 1 (current-column)))
+      (set-selective-display
+       (if selective-display nil (or col 1))))))
+(global-set-key [(M I)] 'aj-toggle-fold)
+
+(defun beagrep ()
+  (interactive)
+  (let ((symbol (thing-at-point 'symbol)))
+    (setq command (read-from-minibuffer
+		   (format "Run beagrep as: ")
+		   (concat "beagrep -e " symbol) nil nil nil))
+    (if (get-buffer "*beagrep*")
+	(kill-buffer "*beagrep*")
+	)
+    (with-current-buffer (compilation-start command nil)
+      (rename-buffer "*beagrep*")
+      )
+    )
+  (switch-to-buffer-other-window "*beagrep*")
+  (delete-other-windows)
+  )
+
+(global-set-key [(M /)] (lambda ()
+			  (interactive)
+			  (beagrep)
+			  )
+		)
+
+(dolist (command '(yank yank-pop))
+  (eval `(defadvice ,command (after indent-region activate)
+	   (and (not current-prefix-arg)
+		(member major-mode '(emacs-lisp-mode lisp-mode java-mode nxml-mode
+						     clojure-mode    scheme-mode
+						     haskell-mode    ruby-mode
+						     rspec-mode      python-mode
+						     c-mode          c++-mode
+						     objc-mode       latex-mode
+						     plain-tex-mode))
+		(let ((mark-even-if-inactive transient-mark-mode))
+		  (indent-region (region-beginning) (region-end) nil))))))
+

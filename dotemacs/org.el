@@ -5,7 +5,6 @@
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
 (setq org-log-done 'note)
-;; (global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org")))
 
 (defalias 'agenda  'org-agenda)
 (require 'remember)
@@ -14,7 +13,7 @@
 
 (setq org-directory "~/.elisp/dotemacs/org/")
 
-(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/" "~/.elisp/dotemacs/org/gtd") ))
+(setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd") ))
 
 (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "|" "DONE(d!/!)")
@@ -34,6 +33,7 @@
 (setq org-refile-use-outline-path t)
 (setq org-refile-targets
       '((org-agenda-files . (:maxlevel . 2))
+	("~/.elisp/dotemacs/org/android.org" :maxlevel . 3)
 	))
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
@@ -87,6 +87,9 @@
 
 (require 'org-crypt)
 (org-crypt-use-before-save-magic)
+(add-hook
+   'org-mode-hook
+   (lambda () (org-decrypt-entries)))
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 (setq org-crypt-key nil)
 (setq auto-save-default nil)
@@ -118,10 +121,22 @@
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
       (quote (("t" "todo" entry (file "~/.elisp/dotemacs/org/gtd/todo.org")
-               "* TODO %?\n%U\n\n")
-              ("n" "note" entry (file "~/.elisp/dotemacs/org/gtd/note.org")
+               "* TODO %?  :todo:\n%U\n\n")
+	      ("p" "project" entry (file "~/.elisp/dotemacs/org/gtd/project.org")
+               "* TODO %? :project:\n%U\n\n")
+              ("j" "joke" entry (file "~/.elisp/dotemacs/org/joke.org")
+               "* %? \n%U\n\n")
+	      ("n" "note" entry (file "~/.elisp/dotemacs/org/note.org")
                "* %? \n%U\n\n")
               ("h" "habit" entry (file "~/.elisp/dotemacs/org/gtd/habit.org")
-               "* TODO %?\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
+               "* TODO %? :habit:\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
 
 (setq org-agenda-start-with-log-mode t)
+
+
+;; Set to the location of your Org files on your local system
+(setq org-directory "~/.elisp/dotemacs/org")
+;; Set to the name of the file where new notes will be stored
+(setq org-mobile-inbox-for-pull "~/.elisp/dotemacs/org/flagged.org")
+;; Set to <your Dropbox root directory>/MobileOrg.
+(setq org-mobile-directory "~/Dropbox/MobileOrg")

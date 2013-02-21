@@ -145,7 +145,8 @@ name of the directory into which the tar file was unpacked."
 	     (let ((shell-file-name dired-tar-shell-file-name))
 	       (start-process-shell-command "*Tar*" buf command))))
 	(set-process-sentinel process 'compilation-sentinel))
-      (display-buffer buf))))
+      (display-buffer buf)
+      )))
 
 (defun dired-tar-get-buffer ()
   "Choose a buffer to run a tar process in.

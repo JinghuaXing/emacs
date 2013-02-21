@@ -34,9 +34,6 @@
   (when name
     (make-directory (concat my-desktop-session-dir name) t)
     (desktop-save (concat my-desktop-session-dir name) t)
-    (if wg-list
-	(wg-update-all-workgroups-and-save)
-	)
     ))
 
 (defun my-desktop-save-and-clear ()
@@ -57,11 +54,6 @@
     ;; indicator
     (setq my-desktop-mode-indicator (my-desktop-get-current-name))
     (force-mode-line-update)
-    (wg-reset)
-    (setq wg-file (concat my-desktop-session-dir name "/wg"))
-    (if (file-exists-p wg-file)
-	(wg-load wg-file)
-	)
     ))
 
 (defun session-remove ()
@@ -86,6 +78,16 @@
     (message new_name)
     )
   )
+
+(defun save-session (&optional name)
+  "Change desktops by name."
+  (interactive)
+  (let ((name (my-desktop-get-current-name)))
+    (when name
+      (my-desktop-save name)
+      (message "session saved")
+      )
+    ))
 
 (defun switch-session (&optional name)
   "Change desktops by name."
@@ -161,11 +163,9 @@
 	  )
       (setq last-session "tmp")
       )
+    ;; test
+    (setq last-session "tmp")
     (desktop-read (concat my-desktop-session-dir last-session))
-    (setq wg-file (concat my-desktop-session-dir last-session "/wg"))
-    (if (file-exists-p wg-file) 
-	(wg-load wg-file)
-      )
     (kill-buffer buf)
     (setq my-desktop-mode-indicator last-session)
     (force-mode-line-update)
@@ -180,7 +180,6 @@
 (add-to-list 'desktop-globals-to-save 'register-alist)
 (add-to-list 'desktop-globals-to-save 'file-cache-alist) 
 (add-to-list 'desktop-globals-to-save 'compile-command)
-
 (add-to-list 'desktop-locals-to-save 'default-directory)
 
 (defvar my-desktop-mode-indicator "")
@@ -189,7 +188,7 @@
  'after-init-hook
  (lambda ()
    (when my-desktop-mode
-     (reload-last-session)      
+     (reload-last-session)
      )))
 
 
@@ -204,11 +203,13 @@
 ;;	(global-set-key (kbd "s-l") 'switch-session)
 	(setq default-mode-line-format (insert-after default-mode-line-format 6 '(:eval (concat "[" my-desktop-mode-indicator "] "))))
 	;; (add-to-list 'default-mode-line-format '(:eval (concat "[" my-desktop-mode-indicator "]")))
+	(setq save-timer (run-with-timer 3600 3600 'save-session))
 	)
 ;;; OFF
     (remove-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
 ;;    (global-unset-key (kbd "s-l"))
     (setq default-mode-line-format (remove '(:eval (concat "[" my-desktop-mode-indicator "] ")) default-mode-line-format))
+    (cancel-timer save-timer)
     ))
 
 (defun insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)

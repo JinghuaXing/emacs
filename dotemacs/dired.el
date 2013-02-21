@@ -2,12 +2,12 @@
 ;;dired
 (require 'dired-x)
 (require 'wdired)
-;;(require 'dired-details+)
+(require 'dired-details+)
 (require 'dired-tar)
 (defvar sunway/dired-buffer nil)
 ;;(require 'dired-single)
-;;(setq dired-details-initially-hide t)
-;;(setq dired-details-hidden-string nil)
+(setq dired-details-initially-hide t)
+(setq dired-details-hidden-string nil)
 (setq dired-listing-switches "-lak")
 (setq dired-dwim-target t)
 
@@ -16,16 +16,17 @@
 (add-hook 'dired-mode-hook
 	  (lambda ()
 	    (dired-omit-mode 1)
+	    (hl-line-mode t)
+	    (local-unset-key (kbd "C-o"))
 	    (add-to-list 'sunway/dired-buffer (current-buffer))
 	    ))
 (autoload 'wdired-change-to-wdired-mode "wdired")
-;; 进入退出不同 dir 时，不生成新的 dired buffer
+
 ;;(define-key dired-mode-map (kbd "RET") 'joc-dired-single-buffer)
 ;; (define-key dired-mode-map (kbd "<C-return>") 'dired-advertised-find-file)
 ;;(define-key dired-mode-map (kbd "C-x C-j") '(lambda () (interactive) (joc-dired-single-buffer "..")))
 ;;(define-key dired-mode-map (kbd "^") '(lambda () (interactive) (joc-dired-single-buffer "..")))
 
-;; 对文件夹操作时, 使支持递归
 (setq dired-recursive-copies 'always
       dired-recursive-deletes 'top)
 (defun my-start-process-shell-command (cmd)
@@ -42,24 +43,24 @@
   ;; Return nil for sake of nconc in dired-bunch-files.
   nil)
 
-(setq dired-guess-shell-alist-user
-      `(
-	("\\(\\.gif$\\)\\|\\(\\.png$\\)\\|\\(\\.bmp$\\)\\|\\(\\.jpg$\\)\\|\\(\\.tif$\\)" "gthumb")
-	("\\(\\.avi$\\)\\|\\(\\.mkv$\\)\\|\\(\\.mpg$\\)\\|\\(\\.mpe?g$\\)\\|\\(\\.flv$\\)\\|\\(\\.wmv$\\)\\|\\(\\.mov$\\)\\|\\(\\.divx$\\)" " mplayer")
-	("\\(\\.rm$\\)\\|\\(\\.rmvb$\\)\\|\\(\\.ra$\\)" " mplayer")
-	("\\.hd$" " mplayer -vo x11")
-	("\\.tar\\.bz2$" "tar jxvf")
-	("\\chm$" "chmsee")
-	("\\.torrent$" "ed2kopera")
-	("\\(\\.xls$\\)\\|\\(\\.doc$\\)\\|\\(\\.ppt$\\)" "soffice")
-	("\\.tar\\.gz$"  "tar zxvf")
-	("\\.tar$"   "tar xvf")
-	("\\(\\.rar$\\)\\|\\(\\.r[0-9]+$\\)" "unrar x")
-	("\\.htm[l]?$\\|.mht$" " firefox")
-	("\\.pdf$" " evince")
-	("\\.dvi$" " xdvi")
-	)
-      )
+;; (setq dired-guess-shell-alist-user
+;;       `(
+;; 	("\\(\\.gif$\\)\\|\\(\\.png$\\)\\|\\(\\.bmp$\\)\\|\\(\\.jpg$\\)\\|\\(\\.tif$\\)" "gthumb")
+;; 	("\\(\\.avi$\\)\\|\\(\\.mkv$\\)\\|\\(\\.mpg$\\)\\|\\(\\.mpe?g$\\)\\|\\(\\.flv$\\)\\|\\(\\.wmv$\\)\\|\\(\\.mov$\\)\\|\\(\\.divx$\\)" " mplayer")
+;; 	("\\(\\.rm$\\)\\|\\(\\.rmvb$\\)\\|\\(\\.ra$\\)" " mplayer")
+;; 	("\\.hd$" " mplayer -vo x11")
+;; 	("\\.tar\\.bz2$" "tar jxvf")
+;; 	("\\chm$" "chmsee")
+;; 	("\\.torrent$" "ed2kopera")
+;; 	("\\(\\.xls$\\)\\|\\(\\.doc$\\)\\|\\(\\.ppt$\\)" "soffice")
+;; 	("\\.tar\\.gz$"  "tar zxvf")
+;; 	("\\.tar$"   "tar xvf")
+;; 	("\\(\\.rar$\\)\\|\\(\\.r[0-9]+$\\)" "unrar x")
+;; 	("\\.htm[l]?$\\|.mht$" " firefox")
+;; 	("\\.pdf$" " evince")
+;; 	("\\.dvi$" " xdvi")
+;; 	)
+;;       )
 
 (setq dired-omit-extensions '("CVS" "RCS" ".o" "~" ".bin" ".lbin" ".fasl" ".ufsl" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".fmt" ".tfm" ".class" ".fas" ".lib" ".x86f" ".sparcf" ".lo" ".la" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".idx" ".lof" ".lot" ".glo" ".blg" ".bbl" ".cp" ".cps" ".fn" ".fns" ".ky" ".kys" ".pg" ".pgs" ".tp" ".tps" ".vr" ".vrs"))
 
@@ -100,19 +101,35 @@
 ;; 					     (setq sunway/dired-buffer (delete (current-buffer) sunway/dired-buffer))
 ;; 					     (kill-buffer (current-buffer))
 ;; 					     ))
-(define-key dired-mode-map (kbd "f") (lambda(wildcard)
+
+(define-key dired-mode-map (kbd "f") (lambda (wildcard)
 				       (interactive "MWildcard: ")
 				       (find-dired "./" (concat "-iname " "\"*" wildcard "*\"" ))
-				       )
-  )
-(define-key dired-mode-map (kbd "F") (lambda(reg)
-				       (interactive "MReg: ")
-				       (find-grep-dired "./" reg)
+				       ))
+
+;; (define-key dired-mode-map (kbd "F") (lambda (reg)
+;; 				       (interactive "MReg: ")
+;; 				       (kill-new reg)
+;; 				       (find-grep-dired "./" reg)
+;; 				       )
+;;   )
+(define-key dired-mode-map (kbd "F") (lambda ()
+				       (interactive)
+				       (call-interactively 'ack)
 				       )
   )
 
-(global-set-key (kbd "C-x f") 'find-dired)
-(global-set-key (kbd "C-x F") 'find-grep-dired)
+(global-set-key (kbd "C-x f") '(lambda (dir wildcard)
+				 (interactive "DFind (directory): \nsFind-grep (grep regexp): ")
+				 (find-dired dir (concat "-iname " "\"*" wildcard "*\"" ))
+				 )
+		)
+;; (global-set-key (kbd "C-x F") (lambda (dir reg)
+;; 				(interactive "DFind (directory): \nsFind-grep (grep regexp): ")
+;; 				(kill-new reg)
+;; 				(find-grep-dired dir reg)
+;; 				)
+;; 		)
 
 ;;(define-key dired-mode-map (kbd "h") 'dired-hide-subdir)
 ;;(define-key dired-mode-map (kbd "H") 'dired-hide-all)
@@ -281,3 +298,16 @@
 ;;     (restore-buffer-modified-p modflag))))
 
 (setq dired-garbage-files-regexp "\\.\\(?:aux\\|out\\|bak\\|dvi\\|log\\|orig\\|rej\\|toc\\|class\\)\\'")
+
+(defun dired-get-size ()
+  (interactive)
+  (let ((files (dired-get-marked-files)))
+    (with-temp-buffer
+      (apply 'call-process "/usr/bin/du" nil t nil "-sch" files)
+      (message "Size of all marked files: %s"
+               (progn 
+                 (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
+		 (match-string 1))))))
+
+(define-key dired-mode-map (kbd "?") 'dired-get-size)
+

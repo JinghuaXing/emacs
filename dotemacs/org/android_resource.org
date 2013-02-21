@@ -2,6 +2,38 @@
 #+AUTHOR: sunwayforever@gmail.com
 
 * Android Resource
+** android resource 分类
+android/res 目录下定义了各种各样的 resource,  但写法与用法却有所区别,  从直接上
+看, 可以分为两类:
+1. 静态的资源 (值是不变的)
+
+同时定义了 resID, type, value 的 resource, 例如:
+
+   - colors.xml 中定义的各种颜色
+   - strings.xml 中定义的各个字符串
+   - drawable 目录下定义的各个图片
+   - styles.xml 和 themes.xml 中定义的各个 style
+   - config.xml 中定义的各个配置信息
+   - layout.xml
+   - menu.xml
+   - ids.xml
+
+id 是一类特殊的 resource, 它们没有值, 只是利用了它们的 resID 的唯一性. 如果
+把 resID 看做它们的值的话, 它们也属于静态的资源.
+
+2.  动态的资源 (值是变化的)
+
+只定义了 resID 和 type, 没有定义值. 这种 resource 定义了一种 可配置的 "属性
+".  例如 attrs.xml 中通过 declare-styleable 定义的 style 的各个 attribute. 
+
+某些 resource 可以指定这些属性, 例如
+   - layout
+   - menu
+   - style
+     
+layout 可以通过 AttributeSet, TypedArray, obtainStyledAttributes 访问其
+attribute resource
+     
 ** LoadedApk
 ContextImpl 中有一个重要的成员叫 mPackageInfo, 是一个 LoadedApk 对象, 从名字就可
 以看出来, 这个对象是代表着一个 `已加载` 的 APK, 而一个 APK 主要包含三部分信息:
@@ -46,7 +78,36 @@ ContextImpl 中有一个重要的成员叫 mPackageInfo, 是一个 LoadedApk 对
 #+RESULTS:
 [[file:1.png]]
 
-** Context.getResources
+** Compile Resource
+*** 编译后的 apk 的资源文件布局
+原 res 目录下的所有资源文件在通过 aapt 处理后有两种情况:
+
+1. values 下的所有文件, 包括 strings.xml, ids.xml, colors.xml ... 都会被直接保存
+   到 resources.arsc 中, 因为这些资源只会对应一下简单的值, 而不需要对应一个 xml
+   文件.
+2. res 中除 values 的其他资源文件会在 resources.arsc 中生成一些 resID 与 xml 路
+   径的对应信息, 用于 getResources 时的查找. 并且这些资源文件会被转换为 axml 格
+   式后打包到 apk 中. 
+
+*** AXML 
+axml 指通过 aapt 转换后的一种格式, 类似于 WBXML. 另外, axml 生成过程中也会做一些
+资源引用的预处理, 例如下面是被 AXMLPrinter2 dump 出来的 axml 的内容:
+
+#+BEGIN_SRC xml
+  <TextView
+      android:id="@7F050000"
+      android:layout_width="-1"
+      android:layout_height="-2"
+      android:text="@android:0104000A"
+      >
+  </TextView>
+#+END_SRC
+
+可见, "wrap_content" 被替换为 -1, 而 android:id, android:text 等 resType 为
+REFERENCE 的项其内容被提前解析为对应的 resID
+
+** Get Resource
+*** Context.getResources
 #+BEGIN_SRC java
   ContextImpl.getResources
     return mResources
@@ -80,7 +141,7 @@ ContextImpl 中有一个重要的成员叫 mPackageInfo, 是一个 LoadedApk 对
 Note that: `Resources` is built on top of `Assets`, that is, `Resources` is a
 sort of `Assets`
 
-** Resource.getText
+*** Resource.getText
 #+BEGIN_SRC java
   Resource.getText
     mAssets.getResourceText(resID);
@@ -140,11 +201,163 @@ sort of `Assets`
       return mStringBlocks[block].get(tmpValue.data);
     // getResourceTexte ends here
 #+END_SRC
-*** To summaries
+**** To summaries
 - ResTable 是核心的数据结构, 它有两个任务:
   1. 解析 AssetManager 通过 addAssetPath 添加的所有 asset, 并形成一个由
      PackageGroup -> Package -> Type -> Entity ( & Config) 组成的树形结构
   2. 通过在树形结构里查找, 获得和 resID 最匹配的资源
+*** LayoutInflater
+#+BEGIN_SRC java
+  LayoutInflater.inflate(id,rootView)
+    // rootView: the view that the inflated view will be attached to, can be null
+    XmlResourceParser parser = getContext().getResources().getLayout(resource);
+      // Resources.java
+      loadXmlResourceParser(id,"layout");
+        getValue(id, value, true);
+          mAssets.getResourceValue(id, 0, outValue, resolveRefs);
+          // AssetManager.java
+            int block = loadResourceValue(ident, (short) density, outValue, resolveRefs);
+            // similar with AssetManager.getResourceText
+            if (outValue.type != TypedValue.TYPE_STRING):
+              return true;
+            outValue.string = mStringBlocks[block].get(outValue.data);
+        // getValue ends here
+        // now value.string contains the layout's xml path
+        return loadXmlResourceParser(value.string, id, value.assetCookie,type);
+          // find the cached XmlBlock according to `ID`
+          final int num = mCachedXmlBlockIds.length;
+            for (int i=0; i<num; i++):
+              if (mCachedXmlBlockIds[i] == id):
+                return mCachedXmlBlocks[i].newParser();
+          // cache miss
+          XmlBlock block = mAssets.openXmlBlockAsset(assetCookie, file);
+            // native. assetCookie means which package is opened for this XmlBlock
+            openXmlAssetNative(cookie, fileName);
+          // fill cache
+          mCachedXmlBlockIds[pos] = id;
+          mCachedXmlBlocks[pos] = block;
+          return block.newParser();
+      // loadXmlResourceParser ends here
+    // now parse the layout xml and inflate the view
+    inflate(parser, root, attachToRoot);
+      AttributeSet attrs = Xml.asAttributeSet(parser);
+      // now attrs contains all the `attr` of the layout, e.g. id, android:layout_height,
+      // android:layout_weight, android:text, android:src, or use-defined attr in
+      // attr.xml
+      String name = parser.getName();
+      // get the root tag, e.g. <include> <merge> or <view> ... etc.
+      if (TAG_MERGE.equals(name)):
+        // if this is a merge, a root view must be supplied
+        if (root==null):
+          throw new InflateException("<merge /> can be used only with a valid "
+            + "ViewGroup root and attachToRoot=true");
+        rInflate(parser, root, attrs, false);
+      else:
+        if (TAG_1995.equals(name)):
+          // TAG_1995?
+          temp = new BlinkLayout(mContext, attrs);
+        else:
+          temp = createViewFromTag(root, name, attrs);
+            // <view class="xx.xx.xx"
+            if (name.equals("view")):
+              name = attrs.getAttributeValue(null, "class");
+            // else, <xx.xx.xx.xx
+            // LayoutInflater.setFactory() can set the mFactory, thought which
+            // user can intercept the LayoutInflater, typically, the mFactory is
+            // left unset.
+            view = mFactory.onCreateView(name, mContext, attrs);
+            // mFactory doesn't work
+            if (view == null):
+              if (-1 == name.indexOf('.')): // creating <ListView ..? get it from framework
+                // name contains no `.`? means we are using the system widget, e.g.
+                // <ListView, <Button ...
+                view = onCreateView(parent, name, attrs);
+                  // PhoneLayoutInflater
+                  onCreateView(parent, name, attrs)
+                    for (String prefix : sClassPrefixList)::
+                      // sClassPrefixList? it's values is defined in
+                      // PhoneLayoutInflater as: {"android.widget.",
+                      // "android.webkit."}
+                      View view = createView(name, prefix, attrs);
+                      if view!=null:
+                        return view
+              else: // creating <com.xx.xx.view? leave prefix to null
+                view = createView(name, null, attrs);
+                  // * Low-level function for instantiating a view by name. This
+                  // * attempts toinstantiate a view class of the given <var>name</var>
+                  // found in this LayoutInflater's ClassLoader.
+                  clazz = mContext.getClassLoader().loadClass(
+                            prefix != null ? (prefix + name) : name).asSubclass(View.class);
+                  // view class is inited by  mContext.getClassLoader(), and, because we can obtain a LayoutInflater
+                  // through LayoutInflater.from(Context), or through Context.getSystemService(),  we can
+                  // inflate view from other package
+
+                  // LayoutInflater.Filler ....
+                  if (mFilter != null && clazz != null):
+                      if (mFilter.onLoadClass(clazz)):
+                        failNotAllowed(name, prefix, attrs);
+                  // view's ctor will be invoked with two args: context, AttrbuteSet
+                  constructor = clazz.getConstructor(new Class[] {
+                          Context.class, AttributeSet.class});
+                  constructor.newInstance(new Objectp[mContext, attr]);
+                    // view ctor
+                    TypedArray a = context.obtainStyledAttributes(
+                        attrs,
+                        com.android.internal.R.styleable.View,defStyle, 0);
+                    foreach attr in a:
+                      case : com.android.internal.R.styleable.View_background:
+                        background=a.getDrawable(attr);
+                      case : com.android.internal.R.styleable.View_padding:
+                        padding=a.getDimensionPixelSize(attr,-1);
+                      case : com.android.internal.R.styleable.View_id:
+                        mId=a.getResourceId(attr,NO_ID;
+                      ...                                   
+            return view;
+          // createViewFromTag ends here
+      // now that view is created, generate layout_params
+      // layout_params is collected from attrs
+      params = root.generateLayoutParams(attrs);
+      temp.setLayoutParams(params);
+      // recursively inflate all its children
+      rInflate(parser, temp, attrs, true);
+        // rInflate is very similar with inflate, except for that:
+        // 1. parser, attrs is already there, no need to find and  re-parse the
+        // layout xml
+        // 2. it recursively descend down the xml hierarchy to inflate all the children
+        // 3. the last parameter `true` indicates that it will invoke parent.onFinishInflate
+      root.addView(temp, params);
+      // if MERGE ends here
+    // inflate ends here
+          
+#+END_SRC
+**** To summaries
+1. get XmlResourceParser from Resource (maybe cached)
+2. get AttrbuteSet, obtainStyledAttributes, generateLayoutParams
+3. get the view name and kick off the ClassLoader
+   - <ListView>
+   - <xx.xx.xx>
+   - <View class=xx.xx.xx>
+4. rInflate: recursively inflate all the children
+5. LayoutInflater.Filter & LayoutInflater.Factory
+6. onFinishInflate
+
+*** MenuInflater
+*** Preference Inflater
+*** Stub Inflater
+*** misc
+**** get application resources?
+1. use PackageContext
+
+   Context.createPackageContext
+2. use PackageManager
+
+   PackageManager.getResourceForApplication
+   PackageManager.getText
+   ...
+
+两种做法在底层的工作原理都是一样的:
+
+依赖于 ~Resources r = mContext.mMainThread.getTopLevelResources~
 ** Overlay
 Overlay 是 ics 对 AssetManager 的一个扩展, 使得 app 其可以使用
 `framework-res.apk 和 app 自身的 resource` 之外的 resource. 但是, 我们通过
@@ -176,7 +389,6 @@ Overlay package 的所有 resID 都为0x00xxxxxx, 即: package id 为 0. 当用�
 addAssetPath 时, 系统会根据这个值判断它为 overlay package, 然后才会为它生成 idmap
 
 *** idmap
-
 *** Overlay 的处理过程
 Overlay package 被使用之前, 需要确保 idmap 已经生成并且不是 stale 的, 一般情况下,
 PackageManager 会去处理这件事, 但也不排除 AssetManager 在 addAssetPath 时也会处
@@ -230,7 +442,264 @@ package 的 pkg id, 所以查找 base package 的 resID 时取得的 package gro
           E = Res_GETENTRY(overlayResID);
     ...
 #+END_SRC
+*** Overlay 机制的缺陷
+Overlay 机制主要是通过 idmap 完成 `original ID->overlay ID` 的映射而起作用的, 但
+是, 如果资源查找过程中涉及到 reference 时, idmap 提供的这种单向的 map 无法起作用,
+例如, 以 LayoutInflater 为例: 
+
+假设通过 idmap 找到了这个 overlay package 中定义的 layout:
+
+#+BEGIN_SRC xml
+  <LinearLayout
+      android:id="@+id/orig_id"
+      android:style="@R.style.orig_style">
+    </LinearLayout>
+#+END_SRC
+
+由于 xml 中的引用在 aapt 编译阶段就会被翻译为对应的 resID, 则这个 xml 实际上为:
+
+#+BEGIN_SRC xml
+  <LinearLayout
+      android:id="@00yyyyyy"
+      android:style="@00xxxxxx">
+    </LinearLayout>
+#+END_SRC
+
+其中 @00xxxxxx 是 overlay package 中定义的 orig_style, AssetManager 在尝试获取这
+个 resID 的值是直接失败, 因为这种 id 在 AssetManager 看来不是一个合法的 resID
+...
+
+更严重的问题是, orig package 中定义的 view id 和 overlay 中定义的 view id 不同,
+会导致 findViewById 失败.
+
+** Various resouce
+*** attrs.xml, styles.xml, themes.xml
+**** R.attr
+attrs.xml 中定义一个资源的例子:
+#+BEGIN_SRC xml
+  <attr name="colorForeground" format="color" />
+  <attr name="textAppearance" format="reference" />
+  <declare-styleable name="AlertDialog">
+    <attr name="listItemLayout" format="reference" />
+    <attr name="progressLayout" format="reference" />
+  </declare-styleable>
+#+END_SRC
+
+Q: 这个例子中定义的 `attr` (通过 R.attr 访问) 与 strings.xml 或 config.xml 中定义的
+R.string 有何不同?
+
+A: attr 统统没有定义值, 那访问 R.attr.textAppearance 时它对应的值是多少?  取决
+了 attr 使用的 `Context`
+
+attrs.xml 中 ~declare-styleable~ 其实就是定义了一个该 `attr` 能出现的
+`Context`,  例如 framework-res 中定义的 `Context` 有:
+
+- *Theme*
+- ViewGroup_Layout
+- Window
+- AlertDialog
+- View
+- ....
+
+**** R.style
+所谓 Style, 不过是一群 ~attr->value~ 的集合, 这与高级语言的结构体很类似: Style
+也是一种的 `value`
+
+#+BEGIN_SRC xml
+  <style name="Widget.TextView.ListSeparator">
+      <item name="android:background">@android:drawable/dark_header_dither</item>
+      <item name="android:layout_width">match_parent</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:textStyle">bold</item>
+      <item name="android:textColor">?textColorSecondary</item>
+      <item name="android:textSize">14sp</item>
+      <item name="android:gravity">center_vertical</item>
+      <item name="android:paddingLeft">8dip</item>
+  </style>
+
+Style 的名字也暗示了这个 style 可以做为什么的 style, 例如, Widget.TextView.ListSeparator 表示它可以做为 ListView 的 style, 
+提供一种可做为 List Seperator 的 TextView 样式. 但 Style 名字只是一个暗示, 并不是一个强制的要求, 用户可以将 ActionBar 的 style 设为
+Widget.TextView.ListSeparator, 但因为 ActionBar 本身有可能在 obtainStyledAttributes 时从该 style 中根据获取不取它想要的属性, 所以可能
+导致这种 style 没有效果.
+
+#+END_SRC
+***** R.theme
+#+BEGIN_SRC xml
+  <style name="Theme.Holo.Light.Dialog">
+    <item name="android:windowFrame">@null</item>
+    <item name="android:windowTitleStyle">@android:style/DialogWindowTitle.Holo.Light</item>
+    <item name="android:windowBackground">@android:drawable/dialog_full_holo_light</item>
+    <item name="android:windowIsFloating">true</item>
+    <item name="android:windowContentOverlay">@null</item>
+    <item name="android:windowAnimationStyle">@android:style/Animation.Holo.Dialog</item>
+    <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
+    <item name="android:windowActionBar">false</item>
+    <item name="android:windowActionModeOverlay">true</item>
+    <item name="android:windowCloseOnTouchOutside">@bool/config_closeDialogWhenTouchOutside</item>
+  
+    <item name="android:colorBackgroundCacheHint">@null</item>
+  
+    <item name="android:buttonBarStyle">@android:style/Holo.Light.ButtonBar.AlertDialog</item>
+    <item name="borderlessButtonStyle">@android:style/Widget.Holo.Light.Button.Borderless.Small</item>
+  
+    <item name="textAppearance">@android:style/TextAppearance.Holo.Light</item>
+    <item name="textAppearanceInverse">@android:style/TextAppearance.Holo.Light.Inverse</item>
+  
+    <item name="listPreferredItemPaddingLeft">16dip</item>
+    <item name="listPreferredItemPaddingRight">16dip</item>
+  </style>
+#+END_SRC
+
+themes.xml 是 styles.xml 的特例, 它有两点需要注意:
+1. 解析 TYPE_ATTRIBUTE 资源 (具体包括 解析 xml 中 ? 或 obtainStyledAttributes 中 defStyle)
+2. 根据解析结果提供默认 style
+
+#+BEGIN_CENTER
+ListView, ImageView, TextView, ActionBar 等会在代码中或 xml 中会通过 TYPE_ATTRIBUTE 类型的
+资源引用一个默认的 style, 只有 theme 可以处理这种类型的资源的解析, 通过这种解析,
+theme 就可以给它们提供一个默认 style,
+#+END_CENTER
+
+**** 访问 attr
+#+BEGIN_SRC xml
+  <ImageView
+      android:style="@style/my_style"
+      android:src="@drawable/test">
+  </ImageView>
+  
+  <style name="my_style"
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content">
+  </style>
+#+END_SRC
+
+因为 style 只是 ~attr->value~ 的集合, 我们可以将 xml 展开为:
+
+#+BEGIN_SRC xml
+  <ImageView
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:src="@drawable/test">
+  </ImageView>
+#+END_SRC
+
+那么在该 ImageView 的 context 下, R.attr.src 的值为 ~@drawable/test~, 而
+R.attr.layout_width 的值为 ~wrap_content~.
+
+在代码中, 获取 attr 的值是通过:
+
+~TypedArray obtainStyledAttributes(AttributeSet set,int[] attrs, int
+defStyleAttr, int defStyleRes)~
+
+其中:
+
+- set 
+
+作用类似于 `Context`, 因为它包含有该 xml tag 下所有的属性的key-value 对.
+
+- defStyleAttr
+
+这个属性相当于将 xml 修改为:
+
+#+BEGIN_SRC xml
+  <ImageView
+      android:style="?R.attr.defStyleAttr"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:src="@drawable/test">
+  </ImageView>
+#+END_SRC
+
+- defStyleRes
+
+这个属性相当于将 xml 修改为:
+
+#+BEGIN_SRC xml
+  <ImageView
+      android:style="@R.style.defStyleAttr"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:src="@drawable/test">
+  </ImageView>
+#+END_SRC
+**** ? vs. @
+**** How to define a STYLE
+**** To summaries:
+attr 是最特殊的一类 resouce:
+- 它的值有上下文的区别,
+
+  这个特性决定了它可以用来定义各种 xml tag 的 `属性`
+- theme 可以通过 TYPE_ATTRIBUTE 类型的资源提供默认 style
+*** config.xml
+*** ids.xml
+** Theme
+*** Theme 三板斧:
+- Theme.applyStyle
+- Theme.obtainStyledAttributes
+- Theme.resolveAttribute
+*** Example
+MyView 想要获得当前默认 theme 下 attribute 为 R.attr.test_style 的 style 中
+   定义的 test_attr 值.
+   
+#+BEGIN_SRC xml
+  <resources>
+    <style name="TestTheme" parent="android:Theme.Holo">
+      <item name="test_style">@style/TestStyle</item>
+    </style>
+    <style name="TestStyle" parent="android:Theme.Holo">
+      <item name="test_attr">9</item>
+    </style>
+  </resources>
+#+END_SRC
+
+或
+
+#+BEGIN_SRC xml
+  <resources>
+    <style name="TestTheme" parent="android:Theme.Holo">
+        <item name="test_style">?attr/test_style_int</item>
+        <item name="test_style_int">@style/TestStyle</item>
+    </style>
+    <style name="TestStyle" parent="android:Theme.Holo">
+      <item name="test_attr">9</item>
+    </style>
+  </resources>
+#+END_SRC
+
+1. 方法一
+   #+BEGIN_SRC java
+     TypedValue outValue;
+     getTheme().resolveAttribute(R.attr.test_style, outValue, true);
+     int resId=outValue.resouce_id;
+     getTheme().applyStyle(resId, true)
+     getTheme().resolveAttribute(R.attr.test_attr, outValue2, true);
+     int width=outValue2.getDimension();
+   #+END_SRC
+   
+2. 方法二
+   #+BEGIN_SRC java
+     TypedValue outValue;
+     getTheme().resolveAttribute(R.attr.test_style, outValue, true);
+     int resId=outValue.resouce_id;
+     TypedArray array=getTheme().obtainStyledAttributes(null, new int[] {R.attr.test_attr}, 0, resId);
+     array.getDimension(0, default);
+   #+END_SRC
+
+3. 方法三
+   #+BEGIN_SRC java
+     array=getTheme().obtainStyledAttributes(null, new int[] {R.attr.test_attr}, R.attr.test_style, 0);
+     array.getDimension(0, default);
+   #+END_SRC
+
+`style-attr-style` 可以构成一种层次化的结构, 通过方法一总是可以遍历这种层次结构, 但
+是当层次为 $2$ 时, 用方法三更方便一些.
+
+另外, 如方法一中所示, 在处理这种层次结构时, getTheme().applyStyle() 实际上采用了
+一种偷懒的做法: 通过 applyStyle(style), 层次结构被变为一种平面结构, 而平面结构必
+然会导致相同的 attr 的重叠, 所以 applyStyle() 的第二个 boolean 参数决定了相同的
+attr 的覆盖关系.
 ** misc
+*** aapt & AXMLPrinter2
 *** aapt
 Android Asset Packaging Tool
 **** basic usage
@@ -678,6 +1147,5 @@ resources.arsc 与 ResourceType.cpp 中的 ResTable 类有些对应关系: 一�
           resource 0x7f040001 com.sunway.test:string/test: t=0x03 d=0x00000008 (s=0x0008 r=0x00)
 #+END_EXAMPLE
 
-
-*** System asset
-*** Resource drawable cache 
+*** System asset & Zygote.preloadResources
+*** Resource drawable cache

@@ -1,6 +1,10 @@
+#+LAST_MOBILE_CHANGE: 2012-11-17 22:17:46
 #+TITLE:
 #+AUTHOR: sunwayforever@gmail.com
-* TODO Android eng-mode vs. user-mode
+* TODO Android eng-mode vs. user-mode                                  :todo:
+:PROPERTIES:
+:ID:       e929f022-e18c-4dbf-aa92-7701bbd40931
+:END:
 * DONE write git tips                                                
 CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
   
@@ -8,14 +12,26 @@ CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
 CLOSED: [2012-04-27 周五 00:14]
 * DONE AsyncQueryHandler && loader                                   
 CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
-* TODO 文学编程 与 org-babel                                         
+* TODO 文学编程 与 org-babel                                           :todo:
+:PROPERTIES:
+:ID:       89f342d8-f1a3-47d3-9c55-8f97f58f492c
+:END:
 http://www.jstatsoft.org/v46/i03/paper
-* TODO android root原理
-* TODO android widget [0/3]                                          
+* TODO android root原理                                                :todo:
+:PROPERTIES:
+:ID:       3776a786-df5d-45a6-a9f4-78c93455a627
+:END:
+* TODO android widget [0/3]                                            :todo:
+:PROPERTIES:
+:ID:       549cda35-3cd6-4cfe-9967-b60c96fccc9e
+:END:
   - [ ] SlidingDrawer
   - [ ] AutoCompleteTextView
 
-* TODO android view [0/2]                                            
+* TODO android view [0/2]                                              :todo:
+:PROPERTIES:
+:ID:       25f03573-1ac6-4ece-a8fd-458b4b317007
+:END:
 - [ ] ViewPager
 - [ ] VelocityTracker
 * DONE sticky broadcast                                              
@@ -23,28 +39,47 @@ CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
 * DONE android killed-app detection                                  
 CLOSED: [2012-07-09 Mon 09:33]
 maybe using Watchdog? Nop! STICKY service should be one of the solutions
-* TODO sqlite java architecture                                   
-SCHEDULED: <2012-09-21 Fri>
+* DONE [#A] provider, sqlite, cursor                                   :todo:
+CLOSED: [2013-02-20 Wed 20:07] SCHEDULED: <2013-01-30 Wed>
+- State "DONE"       from "TODO"       [2013-02-20 Wed 20:07]
+:PROPERTIES:
+:ID:       73ffc552-9bf4-4647-bf75-2f75dc1619ef
+:END:
   - database
   - statement
   - program
   - cursor
-* TODO android resource arch                                      
-SCHEDULED: <2012-09-19 Wed>
+* DONE android resource arch                                      
+CLOSED: [2012-10-26 Fri 15:40] SCHEDULED: <2012-09-19 Wed>
+- State "DONE"       from "TODO"       [2012-10-26 Fri 15:40]
 
-* TODO android theme                                                 
 * DONE static synchronized vs. synchronized(Test.class) 是否是一回事? 
 CLOSED: [2012-09-14 Fri 13:13] SCHEDULED: <2012-09-13 Thu>
 according to JLS, YES
 * DONE unciode, java utf-16, surrogate pair                          
 CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
-* TODO ICU                                                           
-SCHEDULED: <2012-09-20 Thu>
-* TODO java language specification                                   
-DEADLINE: <2012-10-21 Sun> SCHEDULED: <2012-09-21 Fri>
-* TODO how to deltect GC reason                                      
-* TODO 类似于 sparse array 的双数组结构+二分查找可以完全代替 tree-map 么 
-* TODO scala actor pattern                                           
+* TODO ICU                                                             :todo:
+:PROPERTIES:
+:ID:       0846ab2b-8e66-41ef-b89a-d66f917a5f9e
+:END:
+* TODO java language specification                                     :todo:
+:PROPERTIES:
+:ID:       72c81ccd-7185-441b-ab83-bb3b17496590
+:END:
+* TODO how to deltect GC reason                                        :todo:
+:PROPERTIES:
+:ID:       1588189a-9e3a-420a-90c9-49e2079575a3
+:END:
+* TODO 类似于 sparse array 的双数组结构+二分查找可以完全代替 tree-map 么 :todo:
+:PROPERTIES:
+:ID:       947244fa-a093-49c1-a50d-49d32bc20712
+:END:
+* TODO scala actor pattern                                             :todo:
+- State "TODO"       from "WAITING"    [2013-01-29 Tue 21:53]
+- State "WAITING"    from "TODO"       [2012-11-17 周六 22:12]
+:PROPERTIES:
+:ID:       d4730067-ec50-4cfc-b00b-b88c82c665ba
+:END:
 
 * DONE import/export any account                                    
 CLOSED: [2012-07-11 Wed 17:15]
@@ -60,10 +95,10 @@ CLOCK: [2012-09-18 Tue 14:54]--[2012-09-18 Tue 16:01] =>  1:07
 CLOCK: [2012-09-18 Tue 13:18]--[2012-09-18 Tue 13:32] =>  0:14
 CLOCK: [2012-09-18 Tue 11:36]--[2012-09-18 Tue 12:12] =>  0:36
 CLOCK: [2012-09-18 Tue 10:30]--[2012-09-18 Tue 11:07] =>  0:37
-* TODO SICP
-* TODO try magit-push-remote-mode
-CLOCK: [2012-09-28 周五 22:21]--[2012-09-28 周五 22:22] =>  0:01
-[2012-09-28 周五 22:21]
+* TODO SICP                                                            :todo:
+:PROPERTIES:
+:ID:       e149f5ab-bdde-4ff3-bfe3-561bf601ede4
+:END:
 * DONE modify adapter in background while notifyDataSetChanged?
 CLOSED: [2012-10-16 Tue 14:54]
 - State "DONE"       from "TODO"       [2012-10-16 Tue 14:54]
@@ -79,4 +114,95 @@ since:
 thus adapter should NEVER be modified directly in background
 thread. e.g. Android Loader assured that Loader.onLoadFinished is invoked in UI
 thread, which will typically alter adapter data.
-
+* DONE android resource: +id/xxx vs. id/xxx ?
+CLOSED: [2012-10-23 Tue 19:15]
+- State "DONE"       from "TODO"       [2012-10-23 Tue 19:15]
+[2012-10-17 Wed 19:07]
+* TODO write note about android ActionBar                              :todo:
+:PROPERTIES:
+:ID:       d7416216-0060-40d2-b7be-7fc31b429430
+:END:
+[2012-10-18 Thu 14:58]
+* TODO 9-patch PNG                                                     :todo:
+:PROPERTIES:
+:ID:       b7d7beef-c310-484d-b7c9-8e509ee3359d
+:END:
+[2012-10-23 Tue 10:35]
+* DONE various Drawable
+CLOSED: [2012-10-23 Tue 19:15]
+- State "DONE"       from "TODO"       [2012-10-23 Tue 19:15]
+[2012-10-23 Tue 11:32]
+* TODO how does ImageView scale it's drawable? how is the background scaled? :todo:
+:PROPERTIES:
+:ID:       383b8a6d-7a5a-4156-9dcf-9b68780c9313
+:END:
+* TODO ImageView                                                       :todo:
+:PROPERTIES:
+:ID:       265a902d-d7e3-4b5f-be6f-c7d7856ca354
+:END:
+[2012-10-23 Tue 20:15]
+* DONE attr, style, theme, defStyle, ? , @
+CLOSED: [2012-10-26 Fri 15:40]
+- State "DONE"       from "TODO"       [2012-10-26 Fri 15:40]
+[2012-10-25 Thu 19:02]
+* TODO ListView overscroll 效果                                        :todo:
+:PROPERTIES:
+:ID:       a19e20b1-6262-44c9-a22a-9724019ed034
+:END:
+[2012-10-30 Tue 17:00]
+* TODO WindowManagerService                                            :todo:
+:PROPERTIES:
+:ID:       c0e6a3fa-a77d-4426-99e4-a3b8d057b94a
+:END:
+[2012-11-14 Wed 11:32]
+* TODO Android GDI                                                     :todo:
+:PROPERTIES:
+:ID:       d6e4c39c-bc79-49b6-b6af-1db49ef924ff
+:END:
+http://blog.csdn.net/column/details/androidcore.html
+[2012-11-16 Fri 20:41]
+* TODO 使用 WindowManager 自由控制 window                              :todo:
+:PROPERTIES:
+:ID:       38575163-c8f9-4729-b87d-f0fd67239e27
+:END:
+- wm.addView
+- dialog
+- popup window
+[2012-11-20 Tue 20:19]
+* DONE how is `sp` scaled in TextView                                  :todo:
+CLOSED: [2012-12-05 三 13:19]
+- State "DONE"       from "TODO"       [2012-12-05 三 13:19]
+[2012-12-04 二 13:26]
+* TODO zram swap                                                       :todo:
+:PROPERTIES:
+:ID:       60f6e8ba-34c1-4bb1-8d26-ef890b47bb0a
+:END:
+[2012-12-15 Sat 17:35]
+* TODO power management                                                :todo:
+:PROPERTIES:
+:ID:       c314af44-4db6-4378-b6e6-42ca5d6670cd
+:END:
+[2012-12-15 Sat 17:36]
+* TODO oom killer                                                      :todo:
+:PROPERTIES:
+:ID:       e7f22e72-6ca9-4c45-8387-74d45d7adaba
+:END:
+[2012-12-20 Thu 10:02]
+* TODO write a program to consume arbitrary cpu and memory             :todo:
+[2012-12-21 Fri 10:43]
+* TODO what is Target Fragment for?                                    :todo:
+[2013-01-14 Mon 18:30]
+* TODO `DependencyFinder` for java class dependency analysis           :todo:
+[2013-01-15 Tue 21:22]
+* DONE saveInstanceState and restoreInstanceState                      :todo:
+CLOSED: [2013-01-22 Tue 10:06]
+- State "DONE"       from "TODO"       [2013-01-22 Tue 10:06]
+if the view hierarchy contains views of the SAME mId,
+saveInstanceState/restoreInstanceState will FAIL, because the parcelable data
+is put in a SparseArray which taken mId as the KEY ... so views, especially ViewGroup must take
+care of it: the PARENT_SAVE_DISABLED_MASK
+[2013-01-21 Mon 15:38]
+* TODO sqlite 权威指南                                                 :todo:
+[2013-02-05 Tue 19:41]
+* TODO android.net                                                     :todo:
+[2013-02-20 Wed 20:06]

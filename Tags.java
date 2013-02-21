@@ -5,7 +5,6 @@
 // the Free Software Foundation; either version 2, or (at your option)
 // any later version.
 
-
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -39,7 +38,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.jar.*;
 import java.util.zip.*;
-
 
 /** Make a tags table from the class files in a classpath.
  * The classpath is obtained from the property <code>java.class.path</code>
@@ -87,15 +85,12 @@ public class Tags {
         logInfo.println(info);
     }
 
-
     /** If this is not null it's used as a filter for acceptable classes.
      * Only packages that <code>matches(packageFilter)</code> will be tagged.
      */
     protected String packageFilter;
     File  randomTmpPath = new File(System.getProperty("java.io.tmpdir")+File.separatorChar+UUID.randomUUID().toString()+File.separatorChar);
     ClassLoader cl = new CL(randomTmpPath);
-
-
     //copy $CLASSPATH/**.class to randomTmpPath
     //unzip $CLASSPATH/**.jar to randomTmpPath
     //CLASSLOADER CL will load class from this directory.
@@ -138,7 +133,6 @@ public class Tags {
             }
             tagAll();
             write();
-
         }
         clear();
     }
@@ -543,7 +537,6 @@ public class Tags {
 
     }
 
-
     public static void main (String[] argv) throws Exception {
         System.out.println(
                            "*****************************************************************\n"+
@@ -642,7 +635,6 @@ class ClassItem implements Comparable <ClassItem> {
     public String toString(){
         return this.name+"`"+this.pkgItem.lineNum+"`"+this.memStartLineNum+"`"+this.memEndLineNum;
     }
-
 
 }
 class MemberItem implements Comparable<MemberItem>{
@@ -878,7 +870,6 @@ class IOUtils{
         }
     }
     public static void copy(InputStream in, OutputStream out) {
-
         byte[] buf = new byte[1024];
         int count = -1;
         try {
@@ -889,9 +880,7 @@ class IOUtils{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
     public static void close(InputStream in) {
         if (in != null) {
             try {
@@ -900,7 +889,6 @@ class IOUtils{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
     }
     public  static void close(OutputStream out) {

@@ -12,7 +12,9 @@
   (c-toggle-electric-state t)
   (setq c-basic-offset 4)
   (glasses-mode t)
-  (auto-highlight-symbol-mode t)
+  (if (< buffer-saved-size 1024000)
+      (auto-highlight-symbol-mode t)
+    )
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
@@ -26,7 +28,7 @@
   (define-key c-subword-mode-map (kbd "<C-right>") nil)
   (define-key c-subword-mode-map (kbd "<M-left>") nil)
   (define-key c-subword-mode-map (kbd "<M-right>") nil)
-  
+
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)
@@ -34,11 +36,7 @@
   (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'compile)
-  (setq skeleton-pair t)
-  (local-set-key (kbd "(") 'skeleton-pair-insert-maybe)
-  (local-set-key (kbd "[") 'skeleton-pair-insert-maybe)
-  (local-set-key (kbd "{") 'skeleton-pair-insert-maybe)
-  ;; override hs key definition
+
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
   	  (brace-list-close)
@@ -72,12 +70,12 @@
   (local-set-key (kbd "C-M-\\") (lambda ()
 				  (interactive)
 				  (save-excursion
-				    (if (not (region-active-p)) 
+				    (if (not (region-active-p))
 					(c-mark-function)
 				      )
 				    (call-interactively 'indent-region)
 				    )
-				  
+
 				  ))
   )
 
@@ -90,8 +88,6 @@
 (add-hook 'c++-mode-hook 'my-c-common-hook)
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 (add-hook 'c-mode-common-hook 'doxymacs-mode)
-
-
 
 (add-hook 'java-mode-hook 'my-c-common-hook)
 
@@ -108,24 +104,20 @@
 
 (setq imenu-sort-function 'imenu--sort-by-name)
 
-(setq compilation-finish-function 
-      (lambda (buf str) 
-        (save-excursion 
-          (with-current-buffer buf 
-            (goto-char (point-min)) 
+(setq compilation-finish-function
+      (lambda (buf str)
+        (save-excursion
+          (with-current-buffer buf
+            (goto-char (point-min))
             (if (re-search-forward "abnormally" nil t)
-                (tooltip-show "compilation errors, press C-x ` to visit") 
+                (tooltip-show "compilation errors, press C-x ` to visit")
               ;; (run-at-time 0.5 nil 'delete-windows-on buf)
               (tooltip-show "NO COMPILATION ERRORS!"))))))
 
-
 ;; (based on work by Arndt Gulbrandsen, Troll Tech)
 (defun jk/c-mode-common-hook ()
-  ;; base-style
-  ;;   (c-set-style "stroustrup")
-  ;; set auto cr mode
   (c-toggle-auto-hungry-state 1)
-  
+
   ;; qt keywords and stuff ...
   ;; set up indenting correctly for new qt kewords
   (setq c-protection-key (concat "\\<\\(public\\|public slot\\|protected"
@@ -150,15 +142,17 @@
 			    '(("\\<Q[A-Z][A-Za-z]*" . 'qt-keywords-face)))
     (font-lock-add-keywords 'c++-mode
 			    '(("\\<foreach" . 'font-lock-keyword-face)))
-    
+
     ))
 
 (add-hook 'c-mode-common-hook 'jk/c-mode-common-hook)
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 ;;(add-hook 'find-file-hook 'hs-hide-initial-comment-block)
 
-(require 'idomenu)
-(global-set-key (kbd "M-,") 'idomenu)
+;; (require 'idomenu)
+;; (global-set-key (kbd "M-,") 'idomenu)
+;; (global-set-key (kbd "M-,") 'imenu-tree)
+
 
 (setq xml-imenu-generic-expression
       '(("activity"  "<activity[^;]*?android:name=\"\\(.*\\)\"" 1 )
@@ -166,70 +160,59 @@
 	("service"  "<service[^;]*?android:name=\"\\(.*\\)\"" 1 )
         ))
 
-(add-hook 'nxml-mode-hook 
+(add-hook 'nxml-mode-hook
 	  (lambda ()
 	    (setq imenu-generic-expression xml-imenu-generic-expression)))
 
+;; (defvar java-function-regexp
+;;   (concat
+;;    "^[ \t]*"                                   ; leading white space
+;;    "\\(public\\|private\\|protected\\|"        ; some of these 8 keywords
+;;    "abstract\\|final\\|static\\|"
+;;    "synchronized\\|native"
+;;    "\\|[ \t\n\r]\\)*"                          ; or whitespace
+;;    "\\(<.*?>\\)?"                                     ; meta
+;;    "[ \t\n\r]+"                                ; whitespace
+;;    "[a-zA-Z0-9_$]+"                            ; return type
+;;    "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
+;;    "[ \t\n\r]+"                                ; whitespace
+;;    "\\([a-zA-Z0-9_$]+\\)"                      ; the name we want!
+;;    "[ \t\n\r]*"                                ; optional whitespace
+;;    "("                                         ; open the param list
+;;    "\\([ \t\n\r]*"                             ; optional whitespace
+;;    "\\<[a-zA-Z0-9_$]+\\>"                      ; typename
+;;    "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
+;;    "[ \t\n\r]+"                                ; whitespace
+;;    "\\<[a-zA-Z0-9_$]+\\>"                      ; variable name
+;;    "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
+;;    "[ \t\n\r]*,?\\)*"                          ; opt whitespace and comma
+;;    "[ \t\n\r]*"                                ; optional whitespace
+;;    ")"                                         ; end the param list
+;;    "[ \t\n\r]*"                                ; whitespace
+;; ;   "\\(throws\\([, \t\n\r]\\|[a-zA-Z0-9_$]\\)+\\)?{"
+;;    "\\(throws[^{;]+\\)?"                       ; optional exceptions
+;;    "[;{]"                                      ; ending ';' (interfaces) or '{'
+;;    )
+;;   "Matches method names in java code, select match 2")
 
+;; (defvar java-class-regexp
+;;   "^[ \t\n\r]*\\(final\\|abstract\\|public\\|[ \t\n\r]\\)*class[ \t\n\r]+\\([a-zA-Z0-9_$]+\\)[^;{]*{"
+;;   "Matches class names in java code, select match 2")
 
+;; (defvar java-interface-regexp
+;;   "^[ \t\n\r]*\\(abstract\\|public\\|[ \t\n\r]\\)*interface[ \t\n\r]+\\([a-zA-Z0-9_$]+\\)[^;]*;"
+;;   "Matches interface names in java code, select match 2")
 
-;; Complicated regexp to match method declarations in interfaces or classes
-;; A nasty test case is:
-;;    else if(foo instanceof bar) {
-;; To avoid matching this as a method named "if" must check that within
-;; a parameter list there are an even number of symbols, i.e., one type name
-;; paired with one variable name.  The trick there is to use the regexp
-;; patterns \< and \> to match beginning and end of words.
-(defvar java-function-regexp
-  (concat
-   "^[ \t]*"                                   ; leading white space
-   "\\(public\\|private\\|protected\\|"        ; some of these 8 keywords
-   "abstract\\|final\\|static\\|"
-   "synchronized\\|native"
-   "\\|[ \t\n\r]\\)*"                          ; or whitespace
-   "\\(<.*?>\\)?"                                     ; meta
-   "[ \t\n\r]+"                                ; whitespace
-   "[a-zA-Z0-9_$]+"                            ; return type
-   "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
-   "[ \t\n\r]+"                                ; whitespace
-   "\\([a-zA-Z0-9_$]+\\)"                      ; the name we want!
-   "[ \t\n\r]*"                                ; optional whitespace
-   "("                                         ; open the param list
-   "\\([ \t\n\r]*"                             ; optional whitespace
-   "\\<[a-zA-Z0-9_$]+\\>"                      ; typename
-   "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
-   "[ \t\n\r]+"                                ; whitespace
-   "\\<[a-zA-Z0-9_$]+\\>"                      ; variable name
-   "[ \t\n\r]*[[]?[]]?"                        ; (could be array)
-   "[ \t\n\r]*,?\\)*"                          ; opt whitespace and comma
-   "[ \t\n\r]*"                                ; optional whitespace
-   ")"                                         ; end the param list
-   "[ \t\n\r]*"                                ; whitespace
-;   "\\(throws\\([, \t\n\r]\\|[a-zA-Z0-9_$]\\)+\\)?{"
-   "\\(throws[^{;]+\\)?"                       ; optional exceptions
-   "[;{]"                                      ; ending ';' (interfaces) or '{'
-   )
-  "Matches method names in java code, select match 2")
-
-(defvar java-class-regexp
-  "^[ \t\n\r]*\\(final\\|abstract\\|public\\|[ \t\n\r]\\)*class[ \t\n\r]+\\([a-zA-Z0-9_$]+\\)[^;{]*{"
-  "Matches class names in java code, select match 2")
-
-(defvar java-interface-regexp
-  "^[ \t\n\r]*\\(abstract\\|public\\|[ \t\n\r]\\)*interface[ \t\n\r]+\\([a-zA-Z0-9_$]+\\)[^;]*;"
-  "Matches interface names in java code, select match 2")
-
-(defvar java-imenu-regexp
-  (list (list nil java-function-regexp 3)
-        (list nil java-class-regexp 2)
-        (list nil java-interface-regexp 2))
-  "Imenu expression for Java")
+;; (defvar java-imenu-regexp
+;;   (list (list nil java-function-regexp 3)
+;;         (list nil java-class-regexp 2)
+;;         (list nil java-interface-regexp 2))
+;;   "Imenu expression for Java")
 
 ;; install it
-(add-hook 'java-mode-hook
-          (function (lambda ()
-                      (setq imenu-generic-expression java-imenu-regexp))))
-
+;; (add-hook 'java-mode-hook
+;;           (function (lambda ()
+;;                       (setq imenu-generic-expression java-imenu-regexp))))
 
 (define-fringe-bitmap 'hs-marker [0 24 24 126 126 24 24 0])
 
@@ -256,3 +239,4 @@
       (overlay-put ov 'display display-string)
       )))
 (setq hs-set-up-overlay 'display-code-line-counts)
+
