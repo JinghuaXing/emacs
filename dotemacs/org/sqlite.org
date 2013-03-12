@@ -276,6 +276,8 @@ not supported
 - cross
 select from tbl1, tbl2
 **** index
+refers [[explain query plan]] to delete whether index is used for optimization
+- index
 - unique index
 - covering index
 **** view
@@ -384,6 +386,8 @@ used to transform column values
 - completing TRIGGER support
 - writing to VIEWs
 - GRAND and REVOKE
+*** references
+[[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 * Footnotes
 
 [fn:1] because A is holding a `shared` lock

@@ -1,0 +1,15 @@
+* Push Technology 
+** wap push
+** web push
+*** 基于 http 长连接
+**** comet
+*** HTTP5 WebSocket
+*** AJAX
+*** Flash XMLSocket
+** non-web push
+*** xmpp
+** 3rd party service
+*** Android C2DM
+*** JPush
+- user: sunway
+- pass: bixxxx

@@ -383,6 +383,7 @@ tag 分为两种: light weight tag 和 annotated tag
 ** TopGit
 ** StGit
 ** WIP
+** git-svn
 * Misc
 ** use GIT_CURL_VERBOSE env to debug curl problem
 ** config

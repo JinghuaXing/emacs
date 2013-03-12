@@ -180,6 +180,8 @@
 (add-to-list 'desktop-globals-to-save 'register-alist)
 (add-to-list 'desktop-globals-to-save 'file-cache-alist) 
 (add-to-list 'desktop-globals-to-save 'compile-command)
+(add-to-list 'desktop-globals-to-save 'tags-file-name)
+(add-to-list 'desktop-globals-to-save 'tags-table-list)
 (add-to-list 'desktop-locals-to-save 'default-directory)
 
 (defvar my-desktop-mode-indicator "")

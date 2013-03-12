@@ -70,10 +70,6 @@ CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
 :PROPERTIES:
 :ID:       1588189a-9e3a-420a-90c9-49e2079575a3
 :END:
-* TODO 类似于 sparse array 的双数组结构+二分查找可以完全代替 tree-map 么 :todo:
-:PROPERTIES:
-:ID:       947244fa-a093-49c1-a50d-49d32bc20712
-:END:
 * TODO scala actor pattern                                             :todo:
 - State "TODO"       from "WAITING"    [2013-01-29 Tue 21:53]
 - State "WAITING"    from "TODO"       [2012-11-17 周六 22:12]
@@ -145,11 +141,6 @@ CLOSED: [2012-10-23 Tue 19:15]
 CLOSED: [2012-10-26 Fri 15:40]
 - State "DONE"       from "TODO"       [2012-10-26 Fri 15:40]
 [2012-10-25 Thu 19:02]
-* TODO ListView overscroll 效果                                        :todo:
-:PROPERTIES:
-:ID:       a19e20b1-6262-44c9-a22a-9724019ed034
-:END:
-[2012-10-30 Tue 17:00]
 * TODO WindowManagerService                                            :todo:
 :PROPERTIES:
 :ID:       c0e6a3fa-a77d-4426-99e4-a3b8d057b94a
@@ -190,10 +181,6 @@ CLOSED: [2012-12-05 三 13:19]
 [2012-12-20 Thu 10:02]
 * TODO write a program to consume arbitrary cpu and memory             :todo:
 [2012-12-21 Fri 10:43]
-* TODO what is Target Fragment for?                                    :todo:
-[2013-01-14 Mon 18:30]
-* TODO `DependencyFinder` for java class dependency analysis           :todo:
-[2013-01-15 Tue 21:22]
 * DONE saveInstanceState and restoreInstanceState                      :todo:
 CLOSED: [2013-01-22 Tue 10:06]
 - State "DONE"       from "TODO"       [2013-01-22 Tue 10:06]
@@ -202,7 +189,11 @@ saveInstanceState/restoreInstanceState will FAIL, because the parcelable data
 is put in a SparseArray which taken mId as the KEY ... so views, especially ViewGroup must take
 care of it: the PARENT_SAVE_DISABLED_MASK
 [2013-01-21 Mon 15:38]
-* TODO sqlite 权威指南                                                 :todo:
+* DONE sqlite 权威指南                                                 :todo:
+CLOSED: [2013-02-25 Mon 15:25]
+- State "DONE"       from "TODO"       [2013-02-25 Mon 15:25]
 [2013-02-05 Tue 19:41]
-* TODO android.net                                                     :todo:
+* TODO android networking                                              :todo:
 [2013-02-20 Wed 20:06]
+* TODO keytool                                                         :todo:
+[2013-02-25 Mon 15:25]

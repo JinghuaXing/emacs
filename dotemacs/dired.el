@@ -95,6 +95,7 @@
 					 (goto-char (mark t))
 					 )
 				       ))
+(define-key dired-mode-map (kbd "C-c C-c") 'compile)
 
 ;; (define-key dired-mode-map (kbd "c") (lambda ()
 ;; 					     (interactive)
@@ -119,17 +120,6 @@
 				       )
   )
 
-(global-set-key (kbd "C-x f") '(lambda (dir wildcard)
-				 (interactive "DFind (directory): \nsFind-grep (grep regexp): ")
-				 (find-dired dir (concat "-iname " "\"*" wildcard "*\"" ))
-				 )
-		)
-;; (global-set-key (kbd "C-x F") (lambda (dir reg)
-;; 				(interactive "DFind (directory): \nsFind-grep (grep regexp): ")
-;; 				(kill-new reg)
-;; 				(find-grep-dired dir reg)
-;; 				)
-;; 		)
 
 ;;(define-key dired-mode-map (kbd "h") 'dired-hide-subdir)
 ;;(define-key dired-mode-map (kbd "H") 'dired-hide-all)

@@ -7,7 +7,7 @@
 ;; Maintainer: José Alfredo Romero L. <escherdragon@gmail.com>
 ;; Created: 24 Sep 2007
 ;; Version: 6
-;; RCS Version: $Rev: 441 $
+;; RCS Version: $Rev: 446 $
 ;; Keywords: files, dired, midnight commander, norton, orthodox
 ;; URL: http://www.emacswiki.org/emacs/sunrise-commander.el
 ;; Compatibility: GNU Emacs 22+
@@ -155,8 +155,8 @@
 ;; There is no help window like in MC, but if you really miss it, just get and
 ;; install the sunrise-x-buttons extension.
 
-;; A lot of this code was once adapted from Kevin's mc.el, but it has evolved
-;; considerably since then. Another part (the code for file copying and
+;; A lot of this code was once adapted from Kevin Burton's mc.el, but it has
+;; evolved considerably since then. Another part (the code for file copying and
 ;; renaming) derives originally from the Dired extensions written by Kurt
 ;; Nørmark for LAML (http://www.cs.aau.dk/~normark/scheme/distribution/laml/).
 
@@ -214,7 +214,9 @@
 
 (eval-and-compile
   (unless (fboundp 'cl-labels)
-    (defalias 'cl-labels 'labels)))
+    (defalias 'cl-labels 'labels))
+  (unless (fboundp 'cl-letf)
+    (defalias 'cl-letf 'letf)))
 
 (defgroup sunrise nil
   "The Sunrise Commander File Manager."
@@ -841,7 +843,7 @@ Helper macro for passive & synchronized navigation."
 
 (defmacro sr-silently (&rest body)
   "Inhibit calls to `message' in BODY."
-  `(letf (((symbol-function 'message) (lambda (_msg &rest _args) (ignore))))
+  `(cl-letf (((symbol-function 'message) (lambda (_msg &rest _args) (ignore))))
      ,@body))
 
 (eval-and-compile
@@ -1268,7 +1270,7 @@ viewer window."
                 (eq (window-frame sr-left-window) (selected-frame))))
       (sr-dired (or (buffer-file-name) (sr-choose-cd-target)))
     (sr-quit t)
-    (message "Hast thou a charm to stay the morning-star in his deep course?")))
+    (message "Hast thou a charm to stay the morning-star in his steep course?")))
 
 (defun sr-this (&optional type)
   "Return object of type TYPE corresponding to the active side of the manager.
@@ -2628,11 +2630,11 @@ and scale is used when the absolute value of 100% is bigger than
   "Update REPORTER (a Sunrise progress reporter) by adding SIZE to its state."
   (let ((scale (cadr reporter)))
     (setcar reporter (+ (truncate (/ size scale)) (car reporter)))
-    (progress-reporter-update (caddr reporter) (car reporter))))
+    (progress-reporter-update (car (cddr reporter)) (car reporter))))
 
 (defun sr-progress-reporter-done (reporter)
   "Print REPORTER's feedback message followed by \"done\" in echo area."
-  (progress-reporter-done (caddr reporter)))
+  (progress-reporter-done (car (cddr reporter))))
 
 ;;; ============================================================================
 ;;; File manipulation functions:
@@ -2680,6 +2682,16 @@ specifiers are: d (decimal), x (hex) or o (octal)."
   (dired-build-subdir-alist)
   (sr-revert-buffer))
 
+(defmacro sr-protect-terminate-wdired (&rest body)
+  "Compile the `cl-letf' forms used in `sr-terminate-wdired'.
+This macro allows interpreted code to work without requiring
+cl-macs at runtime."
+  `(cl-letf (((symbol-function 'yes-or-no-p) (lambda (prompt) (ignore)))
+          ((symbol-function 'revert-buffer)
+           (lambda (&optional ignore-auto noconfirm preserve-modes))
+           (ignore)))
+     ,@body))
+
 (defun sr-terminate-wdired (fun)
   "Restore the current pane's original mode after editing with WDired."
   (ad-add-advice
@@ -2694,11 +2706,7 @@ specifiers are: d (decimal), x (hex) or o (octal)."
               (saved-point (point)))
           (sr-save-aspect
            (setq major-mode 'wdired-mode)
-           (letf (((symbol-function 'yes-or-no-p) (lambda (prompt) (ignore)))
-                  ((symbol-function 'revert-buffer)
-                   (lambda (&optional ignore-auto noconfirm preserve-modes)
-                     (ignore))))
-             ad-do-it)
+           (sr-protect-terminate-wdired ad-do-it)
            (sr-readonly-pane was-virtual)
            (goto-char saved-point))
           (sr-unhighlight 'sr-editing-path-face)))))
@@ -2905,10 +2913,10 @@ IN-DIR/D => TO-DIR/D using CLONE-OP to clone the files."
       (make-directory (concat to-dir d)))
     (sr-clone-files file-paths-in-d (concat to-dir d) clone-op progress do-overwrite)))
 
-(defsubst sr-move-op (file target target-dir progress do-overwrite)
+(defsubst sr-move-op (file target-dir progress do-overwrite)
   "Helper function used by `sr-move-files' to rename files and directories."
   (condition-case nil
-      (dired-rename-file file target do-overwrite)
+      (dired-rename-file file target-dir do-overwrite)
     (error
      (sr-clone-directory file "" target-dir 'copy-file progress do-overwrite)
      (dired-delete-file file 'always))))
@@ -2922,12 +2930,7 @@ IN-DIR/D => TO-DIR/D using CLONE-OP to clone the files."
           (progn
             (setq f (replace-regexp-in-string "/?$" "/" f))
             (sr-progress-reporter-update progress 1)
-            (let* ((target (concat target-dir (sr-directory-name-proper f))))
-              (if (file-exists-p target)
-                  (when (or (eq do-overwrite 'ALWAYS)
-                            (setq do-overwrite (sr-ask-overwrite target)))
-                    (sr-move-op f target target-dir progress do-overwrite))
-                (sr-move-op f target target-dir progress do-overwrite))))
+            (sr-move-op f target-dir progress do-overwrite))
         (let* ((name (file-name-nondirectory f))
                (target-file (concat target-dir name)))
           ;; (message "Renaming: %s => %s" f target-file)
@@ -3549,6 +3552,7 @@ buffer in the passive pane."
     ("\M-e" . sr-end-of-buffer)
     ("\C-v" . scroll-up-command)
     ("\M-v" . (lambda () (interactive) (scroll-up-command '-)))
+    ("\C-g" . (lambda () (interactive) (save-excursion (isearch-abort))))
   ) "Keybindings installed in `isearch-mode' during a sticky search.")
 
 (defun sr-sticky-isearch-remap-commands (&optional restore)
@@ -4033,19 +4037,23 @@ file in the file system."
 (defun sr-desktop-save-buffer (desktop-dir)
   "Return the additional data for saving a Sunrise buffer to a desktop file."
   (unless (sr-pure-virtual-p)
-    (apply
-     'append
-     (delq nil
-           (list
-            (if (eq major-mode 'sr-virtual-mode)
-                (list 'dirs buffer-file-truename)
-              (cons 'dirs (dired-desktop-buffer-misc-data desktop-dir)))
-            (if (eq (current-buffer) sr-left-buffer) (cons 'left t))
-            (if (eq (current-buffer) sr-right-buffer) (cons 'right t))
-            (if (eq major-mode 'sr-virtual-mode) (cons 'virtual t))))
-     (mapcar (lambda (fun)
-               (funcall fun desktop-dir))
-             sr-desktop-save-handlers))))
+    (let* ((side (if (eq (current-buffer) sr-left-buffer) 'left 'right))
+           (sorting-order (get side 'sorting-order))
+           (sorting-reverse (get side 'sorting-reverse)))
+      (apply
+       'append
+       (delq nil
+             (list
+              (if (eq major-mode 'sr-virtual-mode)
+                  (list 'dirs buffer-file-truename)
+                (cons 'dirs (dired-desktop-buffer-misc-data desktop-dir)))
+              (cons side t)
+              (if sorting-order (cons 'sorting-order sorting-order))
+              (if sorting-reverse (cons 'sorting-reverse sorting-reverse))
+              (if (eq major-mode 'sr-virtual-mode) (cons 'virtual t))))
+       (mapcar (lambda (fun)
+                 (funcall fun desktop-dir))
+               sr-desktop-save-handlers)))))
 
 (defun sr-desktop-restore-buffer (desktop-buffer-file-name
                                   desktop-buffer-name
@@ -4070,7 +4078,8 @@ file in the file system."
       (mapc (lambda (side)
               (when (cdr (assq side desktop-buffer-misc))
                 (set (sr-symbol side 'buffer) buffer)
-                (set (sr-symbol side 'directory) default-directory)))
+                (set (sr-symbol side 'directory) default-directory)
+                (sr-desktop-sort buffer side desktop-buffer-misc)))
             '(left right))
       (mapc (lambda (fun)
               (funcall fun
@@ -4079,6 +4088,20 @@ file in the file system."
                        desktop-buffer-misc))
             sr-desktop-restore-handlers))
     buffer))
+
+(defun sr-desktop-sort (buffer side desktop-buffer-misc)
+  "Restore the sorting order in BUFFER to be displayed in SIDE.
+Use the data in DESKTOP-BUFFER-MISC to obtain all pertinent
+details."
+  (with-current-buffer buffer
+    (let ((sr-selected-window side)
+          (sorting-order (cdr (assoc 'sorting-order desktop-buffer-misc)))
+          (sorting-reverse (cdr (assoc 'sorting-reverse desktop-buffer-misc))))
+      (when sorting-order
+        (condition-case nil
+            (funcall (intern (format "sr-sort-by-%s" (downcase sorting-order))))
+          (error (ignore))))
+      (when sorting-reverse (sr-reverse-pane)))))
 
 (defun sr-reset-state ()
   "Reset some environment variables that control the Sunrise behavior.

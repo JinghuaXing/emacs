@@ -1,11 +1,13 @@
-personal_ws-1.1 en 37 
+personal_ws-1.1 en 45 
 WTF
 UI
 SQLiteDatabase
+IP
 setEnabled
 DecorView
 ThemeManager
 AssetManager
+Keystore
 dst
 PackageGroup
 sim
@@ -16,9 +18,12 @@ onTouchEvent
 DatabaseConnectionPool
 ImageView
 SQLiteProgram
+APPs
 setPressed
 SQLiteStatement
+APN
 Orz
+DeathRecipient
 TODO
 pre
 ListView
@@ -29,10 +34,13 @@ SQLiteQuery
 ProgressBar
 parcelable
 ClipDrawable
+DNS
 ViewGroup
+WIFI
 AlertDialog
 boolean
 uniq
 CursorWindow
+netd
 refspec
 onSaveInstanceState

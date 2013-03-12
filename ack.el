@@ -46,7 +46,7 @@
 
 (defcustom ack-command
   ;; Note: on GNU/Linux ack may be renamed to ack-grep
-  (concat (file-name-nondirectory (or (executable-find "ack-grep")
+  (concat (file-name-nondirectory (or (executable-find "ack")
                                       (executable-find "ack")
                                       "ack")) " ")
   "The default ack command for \\[ack].
@@ -347,9 +347,15 @@ With no \\[universal-argument], return `default-directory';
 With one \\[universal-argument], find the project root according to
 `ack-project-root-patterns';
 Otherwise, interactively choose a directory."
-  (cond
-   ((not arg) (ack-guess-project-root default-directory))
-   (t (read-directory-name "In directory: " nil nil t))))
+  ;; (cond
+  ;;  ((not arg) (ack-guess-project-root default-directory))
+  ;;  (t (read-directory-name "In directory: " nil nil t)))
+  (setq dir (ack-guess-project-root default-directory))
+  (if dir
+      dir
+    (read-directory-name "Ack in directory: " nil nil t)
+    )
+  )
 
 ;;;###autoload
 (defun ack (command-args &optional directory)
@@ -372,10 +378,10 @@ minibuffer:
                                            'shell-completion-vars
                                          'pcomplete-shell-setup)
 	     (read-from-minibuffer
-              (format "Run ack in `%s': "
+              (format "Ack in `%s': "
                       (file-name-nondirectory
                        (directory-file-name project-root)))
-              (concat ack-command "-i -a " symbol) ack-minibuffer-local-map nil 'ack-history))
+              symbol ack-minibuffer-local-map nil 'ack-history))
            project-root)
      )
    )
@@ -383,10 +389,11 @@ minibuffer:
                             (or directory default-directory))))
     ;; Change to the compilation buffer so that `ack-buffer-name-function' can
     ;; make use of `compilation-arguments'.
-    (with-current-buffer (compilation-start command-args 'ack-mode)
+    (with-current-buffer (compilation-start (concat "ack -i -a '" command-args "'")  'ack-mode)
       (when ack-buffer-name-function
         (rename-buffer (funcall ack-buffer-name-function "ack")))))
   (switch-to-buffer-other-window "*ack*")
+  (delete-other-windows)
   )
 
 (provide 'ack)

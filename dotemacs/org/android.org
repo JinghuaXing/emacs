@@ -1749,38 +1749,36 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
       AMS use [[@AppDeathRecipient]] to reset app.thread to null, which means the process has gone.
 ** Android coredump
 ** Android IMF
-
 ** DONE [#A] Android Testing
-   SCHEDULED: <2011-03-14 Mon>
-   - State "DONE"       [2011-03-13 Sun 18:01]
-   see [[@Instrumentation]]
-   there are 3 different testing in android
+SCHEDULED: <2011-03-14 Mon>
+- State "DONE"       [2011-03-13 Sun 18:01]
+  see [[@Instrumentation]]
+  there are 3 different testing in android
      - Testing using JUnit's Test{Runner,Suite,Case}
      - Testing using AndroidTest{Runner,Suite,Case}
      - Testing using InstrumentationTest{Runner,Suite,Case}
 *** JUnit TestRunner
-    there are classes such as `TestSuite` and `TestCase`, but there is no `TestRunner` in android.
-    if u want to kick off a JUnit testing, there are 2 alternative ways:
-       1. write some `TestCase` and run the application as `JUnit TestCase` in eclipse or using cmd like `java -cp jnit.jar com.sunway.test`,
-	  Note that: the testing will run in the PC side instead of android emulator or device.
-       2. in the android application code, create a TestSuite instance manually, and add some TestCase to it, then invoke TestSuite.runTest() manually.
-	  (similar with AndroidTestRunner)
+there are classes such as `TestSuite` and `TestCase`, but there is no `TestRunner` in android.
+if u want to kick off a JUnit testing, there are 2 alternative ways:
+ 1. write some `TestCase` and run the application as `JUnit TestCase` in eclipse or using cmd like `java -cp jnit.jar com.sunway.test`,
+    Note that: the testing will run in the PC side instead of android emulator or device.
+ 2. in the android application code, create a TestSuite instance manually, and add some TestCase to it, then invoke TestSuite.runTest() manually.
+    (similar with AndroidTestRunner)
 *** AndroidTestRunner
-    AndroidTestRunner, in contract with JUnit TestRunner, it maintain a Context instance (need to call AndroidTestRunner.setContext(context) to set it
-    manually, then any underlying AndroidTestCase can call `getContext()` to get the Context instance.
+AndroidTestRunner, in contract with JUnit TestRunner, it maintain a Context instance (need to call AndroidTestRunner.setContext(context) to set it
+manually, then any underlying AndroidTestCase can call `getContext()` to get the Context instance.
 
-    Q:how to kick off the testing?
-    A:manually...
+Q:how to kick off the testing?
+A:manually...
 
-    if u use AndroidTestRunner, u must setup the testing manually, e.g. new AndroidTestRunner, new TestSuite, add AndroidTestCase to suite, and invoke
-    runner.runTest() at last.
-
+if u use AndroidTestRunner, u must setup the testing manually, e.g. new AndroidTestRunner, new TestSuite, add AndroidTestCase to suite, and invoke
+runner.runTest() at last.
 *** InstrumentationTestRunner
-    InstrumentationTestRunner, in contract with AndroidTestRunner, it itself is a Instrumentation, and thus the Context is set automatically by
-    Instrumentation.init() when AMS calls bindApplication().
-    InstrumentationTestCase can call `getInstrumentation()` to get the Instrumentation instance.
+InstrumentationTestRunner, in contract with AndroidTestRunner, it itself is a Instrumentation, and thus the Context is set automatically by
+Instrumentation.init() when AMS calls bindApplication().
+InstrumentationTestCase can call `getInstrumentation()` to get the Instrumentation instance.
 
-    InstrumentationTestRunner extends *Instrumentation*, thus the testing can be kick-off by Instrumentation.onCreate(), in fact:
+InstrumentationTestRunner extends *Instrumentation*, thus the testing can be kick-off by Instrumentation.onCreate(), in fact:
 #+BEGIN_EXAMPLE
     InstrumentationTestRunner.onCreate()
       mTestRunner = getAndroidTestRunner();
@@ -1792,9 +1790,9 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
         onStart();
 	  mTestRunner.runTest();
 #+END_EXAMPLE
-    that is , InstrumentationTestRunner actually is not a TestRunner, what it does is two things:
-      1. reply on Instrumentation.onCreate() to kick of the testing
-      2. reply on inner AndroidTestRunner to run all the test.
+that is , InstrumentationTestRunner actually is not a TestRunner, what it does is two things:
+  1. reply on Instrumentation.onCreate() to kick of the testing
+  2. reply on inner AndroidTestRunner to run all the test.
 
 #+BEGIN_EXAMPLE
     AndroidTestRunner.runTest()						o
@@ -1806,12 +1804,12 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
 #+END_EXAMPLE
 *** class hierachy graph
 #+BEGIN_EXAMPLE
-       	       	       	       	       	       	       	      -+----------+
+     	            	       	       	       	      -+----------+
 	     						       | TestCase |
-                            				      -+-----+----+
+                        				      -+-----+----+
 	     						      	     |
-       	       	     for unit test	     -+----------------------+---------------------+
-       	       	    -+------------------------+--------------------+ 		       	   |
+     	     for unit test	     -+----------------------+---------------------+
+ 	       	    -+------------------------+--------------------+ 		       	   |
 	     	     |		      -+------+--------+	   |   	      -+-----------+-----------+
 	     	     |		       |AndroidTestCase|	   |	       |InstrumentationTestCase|
 	     	     |		      -+------+--------+       	   |   	      -+-----------+-----------+
@@ -1822,9 +1820,9 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
 	     	     |	  |ProviderTestCase|   |ServiceTestCase|   |  |ActivityTestCase|
 	     	     |	 -+----------------+  -+---------------+   | -+--------+-------+
 	     	     |			       	                   |           |
-       	       	     | 	       	       	       	      -+-----------+-----------+----------------------+    for functional test
+  	     | 	       	       	       	      -+-----------+-----------+----------------------+    for functional test
 	     	     |			       	       |  	   |	       -+---------------------+---------------+
-       	       	     | 	       	       	  -+-----------+---------+ |	       	| -+------------------+-------------+ |
+   	     | 	       	       	  -+-----------+---------+ |	       	| -+------------------+-------------+ |
 	     	     |		           |ActivityUnitTestCase | |	       	|  | ActivityInstrumentationTestCase| |
 	     	     |		       	  -+---------------------+ |	       	| -+--------------------------------+ |
 		    -+---------------------------------------------+   	       -+-------------------------------------+
@@ -2140,10 +2138,10 @@ from the transaction.
     OuterContext means ContextImple's `outer` context, e.g. activity or service
 ** Dalvik
 *** dalvik-cache
-    :PROPERTIES:
-    :CUSTOM_ID: @dalvik-cache
-    :END:
-    /data/dalvik-cache
+:PROPERTIES:
+:CUSTOM_ID: @dalvik-cache
+:END:
+/data/dalvik-cache
 ** dbus
 ** Debug related
 *** hprof & MAT
@@ -2480,15 +2478,15 @@ adb shell setprop log.tag.mytag verbose
 #+END_EXAMPLE
 
 **** DONE where is the /etc/password , /etc/shadow & /etc/group files of android?
-     CLOSED: [2011-03-01 Tue 11:21]
+CLOSED: [2011-03-01 Tue 11:21]
      - State "DONE"       [2011-03-01 Tue 11:21]
        system/core/include/private/android_filesystem_config.h
        /bionic/libc/bionic/stubs.c
-
+       
        progresses granted "EXTERNAL_STORAGE" permission can read/write sdcard, because these progresses will be put into `sdcard_rw` group (see [[@Android Permission]])
        but this doesn't mean that the file's owner is added into the `sdcard_rw` group beforehand, in fact, PM will maintain the group info, when
        forking the process from zygote, zygote will invoke setgroups to add the process to `sdcard_rw` group.
-
+       
        typically, when user A launch a linux program, the program uid/gid/groups will be set according to user A's uid/gid/groups, but progress can also call
        setuid/gid/groups manually (with enough privilege) to reset the uid/gid/groups (zygote adopts the later approach to restrict user progress's privilege)
 **** DONE secure container
@@ -2586,18 +2584,18 @@ adb shell setprop log.tag.mytag verbose
     - there are 2 ways to install package:
        1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
        2. use PackageInstaller or adb install (which will invoke PM.installPackage())
-
+          
     - `system` application & 3rd application
       `system` is a property of ApplicationInfo after installation.
       `system` application are applications not listed in `downloaded` category in Settings, while 3rd applications are applications listed in `downloaded`
       category.
-
+      
       PackageManager will decide whether a newly installed application is a `system` application:
       - if apk is pushed to /system/app & /system/framework, then it is `system` application
       - if apk is replacing an existing old system application, then it is.
       - ...
 **** adb push
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC java
      FileObserver.onEvent()
        isApk=isPackageFilename():
          name.endsWith(".apk");
@@ -2616,39 +2614,56 @@ adb shell setprop log.tag.mytag verbose
          sendPackageBroadcast(ACTION_PACKAGE_ADDED)
        if removedPackage!=null:
          sendPackageBroadcast(ACTION_PACKAGE_REMOVED)
-#+END_EXAMPLE
+#+END_SRC
 **** PM.installPackage
 ***** PackageInstaller
 ***** install location (src & dest)
 ****** src apk location
-	  - from DownloadManager through ContentProvider
-	  - from file though MediaContainerService
+ - from DownloadManager through ContentProvider
+ - from file though MediaContainerService
 ****** app install location
-       the apk's install location can be internal flash / sdcard.
-       1. The apk's manifest may declares it's `install location`, including:
-	  - auto
-	  - internalOnly
-	  - preferExternal
-       2. PackageHelper.recommendAppInstallLocation() make the ultimate decision:
-	  - if `install location` is not set in manifest, internal will always be selected
-	  - auto
-	    if apk's code size>1MB, location will be set to external, unless external storage is slow (<10% free space..
-	  - internalOnly
-	    internal will be selected
-	  - preferExternal
-	    always selected external unless storage is unavailable or inefficient.
-	  - system setting for default installation location is also considered
-
-       To summurize:
-       - manifest's `install location`
-       - system setting for `default install location`
-       - internal/external storage status
-
+the apk's install location can be internal flash / sdcard.
+1. The apk's manifest may declares it's `install location`, including:
+  - auto
+  - internalOnly
+  - preferExternal
+2. PackageHelper.recommendAppInstallLocation() make the ultimate decision:
+  - if `install location` is not set in manifest, internal will always be selected
+  - auto
+    if apk's code size>1MB, location will be set to external, unless external storage is slow (<10% free space..
+  - internalOnly
+    internal will be selected
+  - preferExternal
+    always selected external unless storage is unavailable or inefficient.
+  - system setting for default installation location is also considered
+To summurize:
+   - manifest's `install location`
+   - system setting for `default install location`
+   - internal/external storage status
+         
 ***** DONE MediaContainerService / DefaultContainerService
-      SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-02 Wed 16:42]
-      - State "DONE"       [2011-03-02 Wed 16:42]
-       	see [[@MountService]]
-       	see [[@secure_container]]
+SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-02 Wed 16:42]
+- State "DONE"       [2011-03-02 Wed 16:42]
+  see [[@MountService]]
+  see [[@secure_container]]
+MediaContainerService is mainly used by app with `system' uid to access sdcard,
+because `system' process can't access sdcard, because:
+
+#+BEGIN_SRC fundamental
+$ ls sdcard
+d---rwxr-x system sdcard_rw 2010-07-26 12:56 sdcard
+#+END_SRC
+
+#+BEGIN_QUOTE
+
+http://stackoverflow.com/questions/5617797/android-shared-user-id-and-reading-writing-a-file
+
+The system user can not access the SD card, because if the SD card gets
+unmounted it may need to kill any processes that have files open on it and we
+don't want system processes being killed like that. If you want to access the SD
+card, you need to not use the system shared user ID.
+
+#+END_QUOTE
 ***** calling stack
 *** Replace Package
 *** Uninstall package
@@ -2719,13 +2734,49 @@ adb shell setprop log.tag.mytag verbose
     - there is NO java api to set/get android property
     - only root can set android property
 **** internal
-     main() @ init.c  // in system/core/init
-      property_init()
-      property_set("ro.hardware", hardware);
-      property_set(...)
-      ...
+main() @ init.c  // in system/core/init
+property_init()
+property_set("ro.hardware", hardware);
+property_set(...)
+**** reference
+#+BEGIN_QUOTE
+Every property has a name and value. Both name and value are text strings. Property is heavily used in Android to record system setting or exchange information between processes. The property is globally visible in the whole system. Every process can get/set a property.
+On system initialization, Android will allocates a block of shared memory for storing the properties. This is done in “init” daemon whose source code is at: device/system/init. The “init” daemon will start a Property Service. The Property Service is running in the process of “init” daemon. Every client that wants to SET property needs to connect to the Property Service and send message to Property Service. Property Service will update/create the property in shared memory. Any client that wants to GET property can read the property from the shared memory directly. This promotes the read performance.
+The client application can invoke the API function exposed from libcutils to GET/SET a property. The source code of libcutils locates at: device/libs/cutils.
+The API function is:
+int property_get(const char *key, char *value, const char *default_value);
+int property_set(const char *key, const char *value);
+The libcutils is in turn calling the __system_property_xxx function in libc to get a property from the shared memory. The source code of libc is at: device/system/bionic.
+The Property Service is also in turn calling the __system_property_init function in libc to initiate the shared memory for properties. When starting the Property Service will load the default properties from below files:
+/default.prop
+/system/build.prop
+/system/default.prop
+/data/local.prop
+The properties are loaded in the above order. Later loaded properties will override the previous values. After those properties are loaded, the last loaded is the persistent properties which is persisted in /data/property.
+Special Properties
+If a property’s name begins with “ro.”, then this property is treated as a read-only property. Once set, the value of the property can’t be changed.
+If a property’s name begins with “persist.”, then when setting this property, the value will be written to /data/property, too.
+If a property’s name begins with “net.”, when when setting this property, the “net.change” property will be set automatically to contain the name of the last updated property. (It’s tricky. The netresolve module uses this property to track if there is any change on the net.* properties.)
+The property “ctrl.start” and “ctrl.stop” is used to start and stop a service. Every service must be defined in /init.rc. On system startup, the init daemon will parse the init.rc and start the Property Service. Once received a request to set the property of “ctrl.start”, the Property Service will use the property value as the service name to find the service and then start the service. The service starting result is then put to the property “init.svc.<service name>”. The client application can poll the value of that property to determine the result.
+Android toolbox
+The Android toolbox provides two applets: setprop and getprop to get and set properties. The usage is:
+getprop <property name>
+setprop <property name> <property value> 
+Java
+The java application can use the System.getProperty() and System.setProperty() function to Get and Set the property.
+Action
+By default the set property will only cause "init" daemon to write to shared memory, it won't execute any script or binary. But you can add your actions to correspond to property change in init.rc. For example, in the default init.rc, you can find.
+# adbd on at boot in emulator
+on property:ro.kernel.qemu=1
+start adbd
+on property:persist.service.adb.enable=1
+start adbd
+on property:persist.service.adb.enable=0
+stop adbd
+So if you set persist.service.adb.enable to 1, the "init" daemon knows it has actions to do, then it will start adbd service.
+#+END_QUOTE
 *** java property
-    System.getProperty() / System.setProperty()
+System.getProperty() / System.setProperty()
 ** system_server
 *** ServerThread
 ** Toast

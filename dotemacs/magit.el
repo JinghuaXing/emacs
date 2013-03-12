@@ -1,5 +1,6 @@
 (add-to-list 'load-path "~/.elisp/magit/")
 (require 'magit)
+(require 'magit-svn)
 (require 'magit-topgit)
 (require 'magit-wip)
 (require 'rebase-mode)
@@ -7,6 +8,7 @@
 (require 'magit-bisect)
 (require 'magit-push-remote)
 (add-hook 'magit-mode-hook 'turn-on-magit-push-remote)
+(add-hook 'magit-mode-hook 'turn-on-magit-svn)
 (add-hook 'magit-mode-hook
 	  'magit-topgit-mode)
 
@@ -21,7 +23,7 @@
   (let ((current-prefix-arg t))
     (magit-status default-directory)))
 
-(global-set-key [(f12)] 'magit-status)
+;;(global-set-key [(f12)] 'magit-status)
 
 (eval-after-load 'magit
   '(progn
@@ -40,4 +42,6 @@
          (jump-to-register :magit-fullscreen)))
 
      (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)))
+
+
 

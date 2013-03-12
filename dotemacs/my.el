@@ -530,13 +530,22 @@ occurence of CHAR."
 
 (defun beagrep ()
   (interactive)
-  (let ((symbol (thing-at-point 'symbol)))
-    (setq command (read-from-minibuffer
-		   (format "Run beagrep as: ")
-		   (concat "beagrep -e " symbol) nil nil nil))
+  (let ((symbol (thing-at-point 'symbol))
+	(for-file "")
+	)
+    (if last-prefix-arg
+	(setq for-file "-f ")
+	)
+    (setq query (read-from-minibuffer
+		 (format (concat "Beagrep " (if (eq for-file "") 
+						"contents: "
+					      "files: "
+					      )))
+		 symbol nil nil nil))
     (if (get-buffer "*beagrep*")
 	(kill-buffer "*beagrep*")
 	)
+    (setq command (concat "beagrep " for-file " -e '" query "'"))
     (with-current-buffer (compilation-start command nil)
       (rename-buffer "*beagrep*")
       )
@@ -564,3 +573,20 @@ occurence of CHAR."
 		(let ((mark-even-if-inactive transient-mark-mode))
 		  (indent-region (region-beginning) (region-end) nil))))))
 
+
+(defalias 'mbm 'menu-bar-mode)
+
+(defadvice pwd (after my-pwd activate)
+  ""
+  (if current-prefix-arg
+      (kill-new (buffer-file-name))
+      )
+  )
+
+(defun dos2unix ()
+  "Automate M-% C-q C-m RET RET"
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward (string ?\C-m)  nil t)
+      (replace-match "" nil t))))

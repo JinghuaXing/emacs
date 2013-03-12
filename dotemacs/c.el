@@ -111,8 +111,11 @@
             (goto-char (point-min))
             (if (re-search-forward "abnormally" nil t)
                 (tooltip-show "compilation errors, press C-x ` to visit")
-              ;; (run-at-time 0.5 nil 'delete-windows-on buf)
-              (tooltip-show "NO COMPILATION ERRORS!"))))))
+	      (progn
+		;; (run-at-time 0.5 nil 'delete-windows-on buf)
+		(tooltip-show "NO COMPILATION ERRORS!")
+		)
+              )))))
 
 ;; (based on work by Arndt Gulbrandsen, Troll Tech)
 (defun jk/c-mode-common-hook ()
@@ -240,3 +243,7 @@
       )))
 (setq hs-set-up-overlay 'display-code-line-counts)
 
+(add-hook 'c-mode-common-hook
+	  (function (lambda ()
+		      (add-hook 'local-write-file-hooks 
+				'check-parens))))

@@ -13,6 +13,8 @@
 (add-to-list 'load-path "~/.elisp/slime")
 (add-to-list 'load-path "~/.elisp/ruby")
 (add-to-list 'load-path "~/.elisp/traverselisp/")
+(add-to-list 'load-path "~/.elisp/smartparens/")
+
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
 (load custom-file)
@@ -324,13 +326,13 @@
 
 (add-hook 'lisp-mode-hook '(lambda () (flyspell-mode -1)))
 
-(require 'paredit)
-(add-hook 'paredit-mode (lambda ()
-			  (local-unset-key (kbd <M-down>))
-			  ))
-(add-hook 'lisp-mode-hook '(lambda() (paredit-mode t)))
-(add-hook 'scheme-mode-hook '(lambda() (paredit-mode t)))
-(add-hook 'emacs-lisp-mode-hook '(lambda() (paredit-mode t)))
+;; (require 'paredit)
+;; (add-hook 'paredit-mode (lambda ()
+;; 			  (local-unset-key (kbd <M-down>))
+;; 			  ))
+;; (add-hook 'lisp-mode-hook '(lambda() (paredit-mode t)))
+;; (add-hook 'scheme-mode-hook '(lambda() (paredit-mode t)))
+;; (add-hook 'emacs-lisp-mode-hook '(lambda() (paredit-mode t)))
 
 (require 'filecache)
 (defun file-cache-ido-find-file (file)
@@ -380,7 +382,7 @@ directory, select directory. Lastly the file is opened."
 (global-set-key (kbd "C-x C-t") 'tracker-dired)
 
 (require 'auto-highlight-symbol)
-;;(global-auto-highlight-symbol-mode t)
+(global-auto-highlight-symbol-mode t)
 (setq ahs-default-range (quote ahs-range-beginning-of-defun))
 (require 'popup-ruler)
 (defalias 'ruler 'popup-ruler)
@@ -393,7 +395,7 @@ directory, select directory. Lastly the file is opened."
       '("朗道英汉字典5.0"
         "朗道汉英字典5.0"
         ))
-(global-set-key (kbd "<f11>") 'sdcv-search-input+)
+(global-set-key (kbd "M-?") 'sdcv-search-input+)
 
 (require 'idutils)
 
@@ -477,9 +479,9 @@ regular expressions."
 (global-unset-key (kbd "<C-wheel-down>"))
 
 ;; (prefer-coding-system 'gb18030)
-(prefer-coding-system 'utf-8)
-(setq coding-system-for-read 'utf-8)
-(setq coding-system-for-write 'utf-8)
+(prefer-coding-system 'utf-8-unix)
+(setq coding-system-for-read 'utf-8-unix)
+(setq coding-system-for-write 'utf-8-unix)
 
 ;; (add-to-list 'load-path "~/.elisp/sunrise-commander/")
 ;; (require 'sunrise-commander)
@@ -519,6 +521,7 @@ regular expressions."
           ("\\.mov\\|\\.RM$\\|\\.RMVB$\\|\\.avi$\\|\\.AVI$\\|\\.flv$\\|\\.mp4\\|\\.mkv$\\|\\.rmvb$" "mplayer" (file) )
           ("\\.jpe?g$\\|\\.png$\\|\\.bmp\\|\\.gif$" "display" (file))
           ("\\.CHM$\\|\\.chm$" "chmsee"  (file) )
+	  ("\\.xlsx?$\\|\\.XLSX?$" "soffice"  (file) )
           )
         )
   )
@@ -532,8 +535,8 @@ regular expressions."
         )
   )
 
-(require 'autopair)
-(autopair-global-mode)
+;;(require 'autopair)
+;;(autopair-global-mode)
 ;; (setq autopair-blink t)
 
 (require 'quickrun)
@@ -615,3 +618,7 @@ regular expressions."
 
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
+
+(require 'smartparens-config)
+(smartparens-global-mode)
+;; (sp-use-smartparens-bindings)
