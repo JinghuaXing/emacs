@@ -378,3 +378,7 @@
     ("unciode" "unicode" nil 0)
     )
   )
+
+
+(add-hook 'text-mode-hook '(lambda () (abbrev-mode t)))
+(add-hook 'emacs-lisp-mode-hook '(lambda () (abbrev-mode t)))

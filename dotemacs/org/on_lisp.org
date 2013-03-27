@@ -1,8 +1,6 @@
-#+TITLE: On Lisp
-#+AUTHOR: sunwayforever@gmail.com
-
-* 函数
-** 定义函数
+* On Lisp
+** 函数
+*** 定义函数
 定义函数的过程,实际上就是生成一个函数对象, 然后把它赋给某一个 symbol, 但既然
 lisp 拥有独立的函数和变量两个 name-space, 那么上面提到的赋值有两类写法:
 
@@ -42,10 +40,10 @@ lisp 拥有独立的函数和变量两个 name-space, 那么上面提到的赋�
 另外, symbol-function 取值时也可以用 ~#~ 代替, 例如 ~(symbol-function 'x)
 <==> #'x~
 
-*** +-*/
+**** +-*/
 系统自定义的+-*/等函数都是 symbol-function 类型的 symbol, 所以:
 ~(+ x y) <==> (apply #'+ '(x y))~
-** 函数做为参数
+*** 函数做为参数
 1. 函数对象做为参数
 #+BEGIN_SRC lisp
   (mapcar (lambda (x) (+ 1 x)) '(1 2 3))
@@ -60,7 +58,7 @@ lisp 拥有独立的函数和变量两个 name-space, 那么上面提到的赋�
   (setf plus (lambda (x) (+ 1 x)))
   (mapcar plus '(1 2 3))
 #+END_SRC
-*** 其他一些例子
+**** 其他一些例子
 - sort
   #+BEGIN_SRC lisp
     (sort '(1 2 3) #'>)
@@ -68,5 +66,5 @@ lisp 拥有独立的函数和变量两个 name-space, 那么上面提到的赋�
   #+END_SRC
 从这些例子看来, symbol-function 类的 symbol 在函数做为参数时使用的更普遍的一些,
 因为通过 ~#'~ 我们能一眼看出这个 symbol 是"代表"一个函数?
-** 作用域
-*** 词法作用域 vs. 动态作用域
+*** 作用域
+**** 词法作用域 vs. 动态作用域

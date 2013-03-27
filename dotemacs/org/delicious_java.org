@@ -1,11 +1,4 @@
-#+POSTID: 177
-#+DATE: [2011-12-09 Fri 17:20]
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
-#+CATEGORY: Java
-#+TAGS: java
-#+DESCRIPTION:
-#+TITLE: Del.icio.us Java
-
+* Delicious Java
 - Java Collections Framework
 - [[http://book.douban.com/subject/6522893/][Book:深入理解Java虚拟机]]
 - [[http://java.sun.com/docs/books/jni/][Book:Java Native Interface: Programmer's Guide and Specification]]

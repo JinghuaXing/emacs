@@ -1,8 +1,9 @@
-* Convention
-* Model
-** ORM 
+* RoR
+** Convention
+** Model
+*** ORM 
 Object Relational Model
-** CRUD 
+*** CRUD 
 Create, Read, Update, Delete
-* View
-* Controller
+** View
+** Controller

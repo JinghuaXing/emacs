@@ -1,8 +1,13 @@
 * SQLite
 ** Android API
-*** DatabaseConnectionPool
 *** SQLiteDatabase & SQLiteDatabase (c)
+**** addCustomFunction
 *** SQLiteStatement (c)
+*** SQLiteSession
+*** SQLiteConnection & SQLiteConnectionPool
+**** Yield
+**** WAL (Write-ahead Logging)
+http://sqlite.org/wal.html
 *** SQLiteProgram & SQLiteQuery & SQLiteQueryBuilder
 *** Cursor & CursorWindow
 **** SQLiteCursorDriver
@@ -57,9 +62,9 @@ again will be wrapped into a local cursor object named
              -+------------+--------------+
                            |
                            |
-                  -+-------+------+        local process
+                  -+-------+------+        local process (e.g. app)
    --------------- |  BulkCursor  | -------------------
-                  -+-------+------+        remote process
+                  -+-------+------+        remote process (e.g. provider)
                            |
                            |
              -+------------+--------------+
@@ -175,7 +180,7 @@ list|column|insert|line|tabs|tcl|csv
 
 **** .headers [on|off]
 **** explain query plan
-[[http://www.sqlite.org/queryplanner.html][queryplanner]]
+see also [[http://www.sqlite.org/queryplanner.html][queryplanner]]
 #+BEGIN_SRC sql
 explain query plan select * from foo;
 #+END_SRC
@@ -393,4 +398,3 @@ used to transform column values
 [fn:1] because A is holding a `shared` lock
 
 [fn:2] because B is holding a `reserved` lock
-

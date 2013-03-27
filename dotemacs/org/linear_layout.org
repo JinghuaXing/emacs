@@ -1,5 +1,3 @@
-#+TITLE: LinearLayout
-#+AUTHOR: 孙伟
 * LinearLayout
 ** onMeasure
 LinearLayout 的 measure 过程用于确定整个 LinearLayout 及其 child view 的大小,

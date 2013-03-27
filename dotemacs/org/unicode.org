@@ -1,5 +1,3 @@
-#+TITLE: Unicode
-#+AUTHOR:sunwayforever@gmail.com
 * Unicode
 Representing text-format data in computers is a matter of:
 1. repertoires: defining a set of characters

@@ -1,10 +1,3 @@
-#+POSTID: 102
-#+DATE: [2011-09-17 六 11:43]
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
-#+CATEGORY: DesignPattern
-#+TAGS: design pattern, ASM, java
-#+DESCRIPTION:
-#+TITLE: Visitor Pattern
 * Single/Double/Multiple Dispatching
   Dispatching, 指的是调用一个函数时, 因为存在多个同名的函数,仅仅靠函数的名字无法
   确定究竟要调用哪个, 这时函数参数的个数和类型就需要被考虑; Dispatching就是指: 根

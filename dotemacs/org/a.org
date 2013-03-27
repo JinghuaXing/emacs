@@ -1,10 +1,10 @@
 * AV                                                                  :crypt:
------BEGIN PGP MESSAGE-----
-Version: GnuPG v1.4.7 (MingW32)
-
-jA0EAwMCneqM+uwTcF1gyajz/quDgOur2kiW0NWpPD3KbAQiNklSuyuI6eV0ARBN
-4NSQ3r2J4slwgeZHH3t4grWa8u2fROS7LET/5noJmSXbOgfcaEKdvgrAPTGZJiby
-orBZJ+UgqFVwLKhwr+lrTHOLnb1/lnihTKUazU2ao1iEOIpt68uKzyhhNrr75r6R
-UU2NhMSOOkB0mZB7zz416BTWtkfu5ufJUrliVdkn2iDvkFvZV7Ugfok=
-=GMVj
------END PGP MESSAGE-----
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.7 (MingW32)
+
+jA0EAwMCneqM+uwTcF1gyajz/quDgOur2kiW0NWpPD3KbAQiNklSuyuI6eV0ARBN
+4NSQ3r2J4slwgeZHH3t4grWa8u2fROS7LET/5noJmSXbOgfcaEKdvgrAPTGZJiby
+orBZJ+UgqFVwLKhwr+lrTHOLnb1/lnihTKUazU2ao1iEOIpt68uKzyhhNrr75r6R
+UU2NhMSOOkB0mZB7zz416BTWtkfu5ufJUrliVdkn2iDvkFvZV7Ugfok=
+=GMVj
+-----END PGP MESSAGE-----

@@ -1,5 +1,3 @@
-#+TITLE: Java Quiz
-#+AUTHOR: wei.sun
 * Java Quiz
 ** 编程题
 *** Singleton

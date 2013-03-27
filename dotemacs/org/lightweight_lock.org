@@ -1,11 +1,4 @@
-#+POSTID: 98
-#+DATE: [2011-09-14 三 23:28]
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
-#+CATEGORY: Java
-#+TAGS: java, android, concurrent, dalvik, jvm
-#+DESCRIPTION:
-#+TITLE: Java Lightweight Lock
-* DONE Java Lightweight Lock
+* Java Lightweight Lock
     CLOSED: [2011-03-16 Wed 10:08]
 
     Lightweight Lock 是java 1.6提供的一种锁优化机制, Dalvik 看起来也使用了这种机制. 

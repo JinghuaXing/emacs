@@ -1,10 +1,3 @@
-#+POSTID: 145
-#+DATE: [2011-10-28 Fri 21:50]
-#+OPTIONS: toc:nil num:nil todo:nil pri:nil tags:nil ^:nil TeX:nil
-#+CATEGORY: Android
-#+TAGS: android,ui
-#+DESCRIPTION:
-#+TITLE: Android onMeasure
 * onMeasure
   see [[@requestLayout]]
 

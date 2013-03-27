@@ -1,0 +1,14 @@
+# name: cursor
+# key: cursor
+# --
+try {
+    if (${1:cursor}!=null && $1.moveToFirst()) {
+       do {
+       $0
+       } while ($1.moveToNext());
+    }
+} finally {
+  if ($1!=null) {
+    $1.close();
+  }
+}

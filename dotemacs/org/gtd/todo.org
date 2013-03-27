@@ -197,3 +197,7 @@ CLOSED: [2013-02-25 Mon 15:25]
 [2013-02-20 Wed 20:06]
 * TODO keytool                                                         :todo:
 [2013-02-25 Mon 15:25]
+* TODO android BLCR                                                    :todo:
+[2013-03-20 Wed 15:31]
+* TODO adnroid.os.Debug                                                :todo:
+[2013-03-20 Wed 17:37]

@@ -1,23 +1,24 @@
-* Git basis
+* Git
+** Git basis
 - git 是一个基于 key-value 的文件系统
 - git 的 value 主要是四种对象: commit, tree, tag, object
 - git 的 key 是一个 40B 的 hash 值, 以及各种各样的与 hash 等价的 reference 名
 - git 会将同一个文件存在三个地方: snapshot, staging area (index), working tree
 
-* Command
-** Porcelain
-*** add
+** Command
+*** Porcelain
+**** add
 将 working tree的内容复制到 staging area
 - git add .
 - git add foo.java
-*** archive
+**** archive
 git archive HEAD --format=tar.gz > archive.tar.gz
-*** bisect
+**** bisect
 binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交引入的
-*** blame
+**** blame
 显示一个文件的每一行的最近一次修改, 包括 commit 及 author
 - git blame foo.java
-*** branch
+**** branch
 显示, 建立, 删除分支
 - ~git branch -d test_branch~
   删除本地的 test\_branch 分支, 如果该分支有新的 commit 没有 merge 到其
@@ -34,7 +35,7 @@ binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交
 - ~git branch --set-upstream test_branch remote/test_branch~
   设置 test\_branch 的 upstream 分支为 remote/test\_branch, 这样在 test\_branch 下
   push, pull, fetch 等不再需要指明 远程仓库及远程分支
-*** checkout
+**** checkout
 checkout 一个 snapshot 到 working tree
 - ~git checkout android_2.3.5~
 
@@ -65,7 +66,7 @@ git checkout 命令容易与 git reset 混淆, 为了便于区分, 一般情况�
 1. _git  checkout 操作的是 staging area 与 working tree_
 2. _git reset 操作的是 snapshot(或者叫 tree 对象) 与 staging area_
 
-*** cherry
+**** cherry
 find commit not merged upstream
 - ~git cherry~
 
@@ -73,7 +74,7 @@ find commit not merged upstream
 ~git log <remote/branch>...HEAD && git log HEAD...<remote/branch>~
 或者:
 ~git rev-list HEAD --not <remote/branch> && git rev-list <remote/branch> --not HEAD~
-*** cherry-pick
+**** cherry-pick
 刚某个分支上的某些 commit merge到另一个分支
 - git cherry-pick commit1 commit2 commit3
   
@@ -86,9 +87,9 @@ find commit not merged upstream
 所以, 不要认为 cherry-pick 可以简单的把一个 commit 搬到另一个分支, cherry-pick
 使用 merge 会在另一个分支上生成新的 commit, 而且可能冲突, 还可能因为 merge 的原
 因导致与原分支不同的结果, 最后一定要 double check 一下. 
-*** clean
+**** clean
 git clean -df
-*** commit
+**** commit
 git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 commit 对象的过
 程.
 - git commit
@@ -98,7 +99,7 @@ git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 c
   一旦 git commit, 一般情况下数据是很难丢失的, 除非你删除了 .git 目录 ... , 或者执行
   了一些特定的操作..
   
-*** diff
+**** diff
 显示文件更改
 - git diff 
   显示 working-directory 与 staging area 的不同
@@ -112,13 +113,13 @@ git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 c
   显示 commit1 与 commit2 的不同
 - git diff A...B
   与 git diff $(git-merge-base A B) B 相同, 即 显示 B相对于 A,B 的共同祖先的修改. 
-*** difftool
+**** difftool
 add these to .gitconfig:
 #+BEGIN_EXAMPLE
 [diff]
         tool = meld
 #+END_EXAMPLE
-*** fetch
+**** fetch
 获取远程仓库的更新, 并更新本地的远程分支
 
 每次 fetch 后,  refs/remotes/REMOTE/.. 下的各个远程分支所指向的 commit 会被更新, 
@@ -141,7 +142,7 @@ add these to .gitconfig:
 
   通过 git fetch 将远程仓库更新到本地远程分支后, 就可以对远程分支进行 rebase,
   merge 等操作了, 远程分支其实类似于一个"只读"的分支.
-*** log
+**** log
 - git log
 - git log --since
 - git log --author
@@ -151,7 +152,7 @@ add these to .gitconfig:
   git log $(git merge-base commit1 commit2) commit2
 
   这个命令用来比较远程分支与本地分支的不同时比较有用.
-*** merge
+**** merge
 - git merge commit
   将 commit 与 HEAD merge,  之后 HEAD 指向新生成的 commit
 
@@ -182,26 +183,26 @@ add these to .gitconfig:
 git merge 可以通过参数指定不同的 strategy, 例如 ours strategy 是指遇到冲突时总是
 丢弃对方的修改.
   
-*** mergetool
+**** mergetool
 add these to .gitconfig:
 #+BEGIN_EXAMPLE
 [merge]
         tool = meld
 #+END_EXAMPLE
-*** pull
+**** pull
 - git pull <REMOTE> <ref-spec>
 git pull === git fetch ; git merge
 
 推荐不要使用 git pull, 而用 git fetch; git merge 或 git rebase 代替, 因为这样可
 以有机会在 merge 远程代码时先看一下有什么变化. 
-*** push
+**** push
 - git push <REMOTE> <ref-spec>
   
   git push 必须保证本地分支与远程分支是 fast-forward 关系, 即 本地分支通过
   parent 上溯可以到达远程分支, 否则操作会失败. 如果通过指定 ref-spec 的 + 参数强
   制 non-fast-forward push, 可能会给远程仓库造成严重的后果. 
 
-*** rebase
+**** rebase
 
 设当前分支为 topic, 当前分支的状态为:
 
@@ -231,7 +232,7 @@ D---E---F---G master
 
 一般情况下不要把一个远程分支 rebase 到其他分支, 或者更一般的情况: 不要把一个与别
 人共享的分支 rebase 到其他分支.
-**** rebase onto
+***** rebase onto
 #+BEGIN_SRC example
                          H---I---J topicB
                                /
@@ -251,7 +252,7 @@ would result in:
                     |/
         A---B---C---D  master
 #+END_SRC
-*** reflog
+**** reflog
 reflog 是对付 detached head, 错误的 reset 等情况的神器.
 
 简单的说, reflog 就是 reference log, 它会记录 HEAD 指针的变化, 例如, 如果使用
@@ -259,8 +260,8 @@ git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存
 的 HEAD, 我们可以通过 reflog 中的这条记录轻松的恢复到 reset 之前的状态.
 
 注意: reflog 只会保存在本地. 
-**** git log -g
-*** reset
+***** git log -g
+**** reset
 与 checkout 类似, reset 有两种格式: 加 path 与不加 path
 1. 不加 path
    - git reset --soft commit
@@ -285,7 +286,7 @@ git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存
      如果我们想使用 snapshot 直接恢复 working tree 呢? 
      - 通过这两个命令配合
      - 或者使用 git checkout --patch tree-dish -- path :)
-*** revert
+**** revert
 如果发现某次 commit 有严重的 side effect 想取消那次 commit 的话:
 1. 若 commit 只是在本地分支, 还没有 push 到远程, 而且该 commit 是 HEAD, 那我们可
    以简单的通过 git reset --hard HEAD~ 丢弃这个 commit
@@ -298,7 +299,7 @@ git revert 大致的工作过程是:
    生成 当前 HEAD 与 commit 的逆向 diff
 2. git apply patch_file
    
-*** rm
+**** rm
 - 直接使用 rm 命令
   rm file1 后, working tree 没有了 file1, 但 staging area 还存在, 所以这时要恢复
   该文件的话需要:
@@ -311,10 +312,10 @@ git revert 大致的工作过程是:
   该命令同时删除 staging area 和 working tree 中的 file1, 要恢复的话:
   - ~git reset HEAD file1 && git checkout -- file1~
 
-*** show
+**** show
 git show 实际上算一个 plumbing command, 但一般用户可以使用它来查看某次 commit 的
 内容, 如 git show HEAD
-*** stash
+**** stash
 git stash 的作用相当于多个 staging area. 
 当我们正在某个 topic branch 中工作, 这时有个严重的 bug 需要立即切换到其他分支去
 fix, 如果这时我们直接 git checkout branch2 切换到 branch2, 则 git 会自动将当前分
@@ -330,63 +331,63 @@ fix, 如果这时我们直接 git checkout branch2 切换到 branch2, 则 git �
 - ~git stash list~
 - ~git stash apply <stash>~
 
-*** status
+**** status
 git status 显示的信息可能有:
 - your local branch is n commits ahead of the remote branch
   说明你该 push 了
 - your local branch is n commits fall behind the remote ..
   说明你该 rebase 了
-*** submodule
-*** tag
+**** submodule
+**** tag
 tag 分为两种: light weight tag 和 annotated tag
 - light weight tag 只是 refs/tags/中的一些引用
 - annotated tag 是真正的 git object, 会包含更多的信息, 如 message, signature ...
-** Plumbing
-*** cat-file
-*** commit-tree
-*** fsck
-*** gc
-*** hash-object
-*** ls-remote
-*** merge-base
-*** receive-pack
-*** rev-list
-*** rev-parse
-*** send-pack
-*** symbolic-ref
-*** update-index
-*** update-ref
-*** write-tree
-** refspec
+*** Plumbing
+**** cat-file
+**** commit-tree
+**** fsck
+**** gc
+**** hash-object
+**** ls-remote
+**** merge-base
+**** receive-pack
+**** rev-list
+**** rev-parse
+**** send-pack
+**** symbolic-ref
+**** update-index
+**** update-ref
+**** write-tree
+*** refspec
 
-*** fetch
+**** fetch
 +refs/heads/*:refs/remotes/<REMOTE>/*
 
 其中, `src` 是远程仓库 ref 的路径, `dst` 是本地的路径;
 
 因为 fetch 是将远程仓库的 ref 更新到本地的 refs/remotes/<REMOTE> 下
-*** push
+**** push
 +refs/heads/*:refs/heads/*
 
 其中, `src` 是本地 ref 的路径, `dst` 是远程仓库的路径
-* Best practice
-* Files
-** config
-** HEAD
-** index
-** objects
-** refs
-*** heads
-*** remotes
-*** tags
-* Extension
-** TopGit
-** StGit
-** WIP
-** git-svn
-* Misc
-** use GIT_CURL_VERBOSE env to debug curl problem
-** config
+** Best practice
+** Files
+*** config
+*** HEAD
+*** index
+*** objects
+*** refs
+**** heads
+**** remotes
+**** tags
+** Extension
+*** TopGit
+*** StGit
+*** WIP
+*** git-svn
+** Misc
+*** use GIT_CURL_VERBOSE env to debug curl problem
+*** config
 [color]
 	ui = auto
 [user]
@@ -425,9 +426,9 @@ tag 分为两种: light weight tag 和 annotated tag
       # ignore file mode change
 	filemode = false 
 
-* Gerrit
+** Gerrit
 [[http://review.coreboot.org/Documentation/index.html][Gerrit Code Review for Git]]
-** Hook
+*** Hook
 .git/hooks/commit-msg
 
 主要有两个功能:
@@ -442,7 +443,7 @@ tag 分为两种: light weight tag 和 annotated tag
   - 但 merge 不行, 因为它会生成新的 commit
   - commit --amend 生成的 commit 也是一样的, 因为在生成 change_id 时,  commit
     message 不会考虑在内
-** Uploading changes
+*** Uploading changes
 当用户向 gerrit push 时, 不能直接向 refs/heads/xxx_branch push, 而是需要向一个特
 定的 refs/for/xxx_branch push, 但 gerrit 在这个 refs 下并不创建任何 ref, 而是在
 refs/changes/{nn}/{task}/{patch_set} 下创建对应于该 commit 的 ref, 其中  task 是
@@ -455,12 +456,13 @@ patch-set, 前提是:
 1. 要 push 的 各个 commit 的 parent 必须是相同的[fn:1]
 2. 有相同的 change-id 或 通过 git push gerrit_url commit:refs/changes/{task_id}
    形式 push 的并指定了相同的 task_id
-*** gerrit receive-pack
+**** gerrit receive-pack
 gerrit 重写了一个 git-receive-pack, 提供了几个和 gerrit 相关的参数, 如
 --reviewer
 
-** Command line tools
-* Footnotes
+*** Command line tools
+** Repo
+** Footnotes
 
 [fn:1] 有待证实
 

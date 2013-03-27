@@ -130,6 +130,7 @@
  '(semantic-idle-summary-function (quote semantic-format-tag-summarize))
  '(senator-minor-mode-hook nil)
  '(show-paren-mode t)
+ '(show-paren-style (quote mixed))
  '(slime-auto-connect (quote always))
  '(sql-electric-stuff (quote semicolon))
  '(sql-product (quote sqlite))

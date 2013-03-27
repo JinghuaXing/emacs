@@ -1,5 +1,3 @@
-#+TITLE:Java interface vs. C++ multiple inheritance, the method invocation overhead
-#+AUTHOR:sunwayforever@gmail.com
 * Java interface vs. C++ multiple inheritance, the method invocation overhead
 ** C++ multiple inheritance                                         :ATTACH:
 :PROPERTIES:

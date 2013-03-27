@@ -1,0 +1,21 @@
+(autoload 'python-mode "python-mode" "Python Mode." t)
+(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+(add-to-list 'interpreter-mode-alist '("python" . python-mode))
+
+(defun py-outline-level ()
+  (let (buffer-invisibility-spec)
+    (save-excursion
+      (skip-chars-forward "\t ")
+      (current-column))))
+
+(defun my-python-mode-hook()
+  (interactive)
+  (c-subword-mode)
+  (setq c-subword-mode t)
+  (c-toggle-auto-state -1)
+  (c-toggle-hungry-state t)
+  (setq outline-regexp "[ \t]*\\(def\\|class\\) ")
+  (setq outline-level 'py-outline-level)
+  (outline-minor-mode t)
+  )
+(add-hook 'python-mode-hook 'my-python-mode-hook)

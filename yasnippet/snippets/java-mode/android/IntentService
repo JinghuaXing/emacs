@@ -1,0 +1,19 @@
+# name: IntentService
+# key: IntentService
+# --
+public class ${1:`(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`} extends IntentService {
+
+    @Override
+    public $1 (String name) {
+        super(name);
+    }
+
+    public $1 () {
+        super("${1:$(downcase text)}");
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent) {
+	$0
+    }
+}

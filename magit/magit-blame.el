@@ -32,7 +32,6 @@
 
 (eval-when-compile (require 'cl))
 (require 'magit)
-(require 'easymenu)
 
 (defface magit-blame-header
   '((t :inherit magit-header))
@@ -69,15 +68,6 @@
     (define-key map (kbd "p") 'magit-blame-previous-chunk)
     map)
   "Keymap for an annotated section.\\{magit-blame-map}")
-
-(easy-menu-define magit-blame-mode-menu magit-blame-map
-  "Magit blame menu"
-  '("Blame"
-    ["Locate Commit" magit-blame-locate-commit t]
-    ["Next" magit-blame-next-chunk t]
-    ["Previous" magit-blame-previous-chunk t]
-    "---"
-    ["Quit" magit-blame-mode t]))
 
 (defvar magit-blame-buffer-read-only)
 (make-variable-buffer-local 'magit-blame-buffer-read-only)

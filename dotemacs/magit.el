@@ -23,7 +23,7 @@
   (let ((current-prefix-arg t))
     (magit-status default-directory)))
 
-;;(global-set-key [(f12)] 'magit-status)
+;; (global-set-key [(f12)] 'magit-status)
 
 (eval-after-load 'magit
   '(progn

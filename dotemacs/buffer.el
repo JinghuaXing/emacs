@@ -9,6 +9,12 @@
 
 (require 'bs)
 (require 'ibuffer)
+
+(add-hook 'ibuffer-mode-hook
+	  (lambda()
+	    (local-set-key (kbd "~") 'ibuffer-mark-special-buffers)
+	    )
+	  )
 (global-set-key (kbd "C-x b") 'ido-switch-buffer)
 (setq ido-ignore-buffers (quote ("\\` \\|\\(^\\*\\)\\|\\(TAGS.*\\)\\|*ESH.*")))
 (global-set-key (kbd "C-x C-b") 'ibuffer)
@@ -50,3 +56,21 @@
   (ibuffer-update nil t))
 
 (define-key ibuffer-mode-map (kbd "/ r") 'ido-ibuffer-switch-to-saved-filters)
+
+(require 'ibuffer-vc)
+(add-hook 'ibuffer-hook
+	  (lambda ()
+	    (ibuffer-vc-set-filter-groups-by-vc-root)
+	    (unless (eq ibuffer-sorting-mode 'alphabetic)
+	      (ibuffer-do-sort-by-recency))))
+;; (setq ibuffer-formats
+;;       '((mark modified read-only vc-status-mini " "
+;; 	      (name 18 18 :left :elide)
+;; 	      " "
+;; 	      (size 9 -1 :right)
+;; 	      " "
+;; 	      (mode 16 16 :left :elide)
+;; 	      " "
+;; 	      (vc-status 16 16 :left)
+;; 	      " "
+;; 	      filename-and-process)))

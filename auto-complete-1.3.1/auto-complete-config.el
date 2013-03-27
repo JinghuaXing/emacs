@@ -29,6 +29,7 @@
   (require 'cl))
 
 (require 'auto-complete)
+
 
 
 ;;;; Additional sources
@@ -454,8 +455,7 @@
 ;;;; Default settings
 
 (defun ac-common-setup ()
-  (add-to-list 'ac-sources 'ac-source-filename)
-  )
+  (add-to-list 'ac-sources 'ac-source-filename))
 
 (defun ac-emacs-lisp-mode-setup ()
   (setq ac-sources (append '(ac-source-features ac-source-functions ac-source-yasnippet ac-source-variables ac-source-symbols) ac-sources)))
@@ -471,8 +471,7 @@
   (setq ac-sources (append '(ac-source-css-property) ac-sources)))
 
 (defun ac-config-default ()
-  ;; (setq-default ac-sources '(ac-source-abbrev ac-source-dictionary ac-source-words-in-same-mode-buffers))
-  (setq-default ac-sources '(ac-source-abbrev))
+  (setq-default ac-sources '(ac-source-abbrev ac-source-dictionary ac-source-words-in-same-mode-buffers))
   (add-hook 'emacs-lisp-mode-hook 'ac-emacs-lisp-mode-setup)
   (add-hook 'c-mode-common-hook 'ac-cc-mode-setup)
   (add-hook 'ruby-mode-hook 'ac-ruby-mode-setup)
