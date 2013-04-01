@@ -393,6 +393,216 @@ used to transform column values
 - GRAND and REVOKE
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
+** Other
+*** SQLite and Multiple Threads
+**** SQLite and Multiple Threads
+http://www.sqlite.org/threadsafe.html
+**** Can multiple applications or multiple instances of the same application access a single database file at the same time?
+http://www.sqlite.org/faq.html#q5
+
+Multiple processes can have the same database open at the same
+time. Multiple processes can be doing a SELECT at the same time. But
+only one process can be making changes to the database at any moment
+in time, however.
+
+SQLite uses reader/writer locks to control access to the
+database. (Under Win95/98/ME which lacks support for reader/writer
+locks, a probabilistic simulation is used instead.) But use caution:
+this locking mechanism might not work correctly if the database file
+is kept on an NFS filesystem. This is because fcntl() file locking is
+broken on many NFS implementations. You should avoid putting SQLite
+database files on NFS if multiple processes might try to access the
+file at the same time. On Windows, Microsoft's documentation says that
+locking may not work under FAT filesystems if you are not running the
+Share.exe daemon. People who have a lot of experience with Windows
+tell me that file locking of network files is very buggy and is not
+dependable. If what they say is true, sharing an SQLite database
+between two or more Windows machines might cause unexpected problems.
+
+We are aware of no other embedded SQL database engine that supports as
+much concurrency as SQLite. SQLite allows multiple processes to have
+the database file open at once, and for multiple processes to read the
+database at once. When any process wants to write, it must lock the
+entire database file for the duration of its update. But that normally
+only takes a few milliseconds. Other processes just wait on the writer
+to finish then continue about their business. Other embedded SQL
+database engines typically only allow a single process to connect to
+the database at once.
+
+However, client/server database engines (such as PostgreSQL, MySQL, or
+Oracle) usually support a higher level of concurrency and allow
+multiple processes to be writing to the same database at the same
+time. This is possible in a client/server database because there is
+always a single well-controlled server process available to coordinate
+access. If your application has a need for a lot of concurrency, then
+you should consider using a client/server database. But experience
+suggests that most applications need much less concurrency than their
+designers imagine.
+
+When SQLite tries to access a file that is locked by another process,
+the default behavior is to return SQLITE_BUSY. You can adjust this
+behavior from C code using the sqlite3_busy_handler() or
+sqlite3_busy_timeout() API functions.
+**** Is SQLite threadsafe?
+http://www.sqlite.org/faq.html#q6
+
+Threads are evil. Avoid them.
+
+SQLite is threadsafe. We make this concession since many users choose
+to ignore the advice given in the previous paragraph. But in order to
+be thread-safe, SQLite must be compiled with the SQLITE_THREADSAFE
+preprocessor macro set to 1. Both the Windows and Linux precompiled
+binaries in the distribution are compiled this way. If you are unsure
+if the SQLite library you are linking against is compiled to be
+threadsafe you can call the sqlite3_threadsafe() interface to find
+out.
+
+Prior to version 3.3.1, an sqlite3 structure could only be used in the
+same thread that called sqlite3_open() to create it. You could not
+open a database in one thread then pass the handle off to another
+thread for it to use. This was due to limitations (bugs?) in many
+common threading implementations such as on RedHat9. Specifically, an
+fcntl() lock created by one thread cannot be removed or modified by a
+different thread on the troublesome systems. And since SQLite uses
+fcntl() locks heavily for concurrency control, serious problems arose
+if you start moving database connections across threads.
+
+The restriction on moving database connections across threads was
+relaxed somewhat in version 3.3.1. With that and subsequent versions,
+it is safe to move a connection handle across threads as long as the
+connection is not holding any fcntl() locks. You can safely assume
+that no locks are being held if no transaction is pending and all
+statements have been finalized.
+
+Under Unix, you should not carry an open SQLite database across a
+fork() system call into the child process. Problems will result if you
+do.
+
+*** WAL
+*** FTS
+FTS (Full Text Search), 即全文检索,主要有以下几个方面:
+
+- stemming (词根)
+- tokenizer &  word segregation (分词)
+- inverted index (倒排索引)
+
+**** stemming
+http://en.wikipedia.org/wiki/Stemming
+
+A stemmer for English, for example, should identify the string "cats" (and
+possibly "catlike", "catty" etc.) as based on the root "cat".and "stemmer",
+"stemming", "stemmed" as based on "stem". 
+
+A stemming algorithm reduces the words "fishing", "fished", "fish", and "fisher"
+to the root word, "fish". On the other hand, "argue", "argued", "argues",
+"arguing", and "argus" reduce to the stem "argu"
+
+android contacts provider 就是使用的一种叫做 porter 的 stemmer 算法, 所以用 cat
+可以查找到名为 catty 的人也是正常的.
+**** tokenizer and word segregation (分词)
+全文检索是基于`关键字`匹配的检索, 与传统的 grep 等检索方法不同, 全文检索需要先建
+立索引文件, 建立索引文件的第一步就是将全文分解为一系列的关键字. 例如:
+
+"A stemmer for English, for example, should identify the string "cats" (and
+possibly "catlike", "catty" etc.) as based on the root "cat""
+
+这句话可能会被分解为以下的关键字:
+
+stem, english, example, identify, string, cat, possible, base, root
+
+tokenize 的过程主要分为三步:
+1. 分词, 对英文来说, 基本就是以空格来分词
+2. 抛弃一些 stop words, 如 a, for, should, and ,etc, as, on 等
+3. 对剩下的非 stop words 使用 stemming 算法, 例如 cats->cat, stemmer->stem
+
+***** 分词
+英文分词比较简单,就是以空格来分词, 对于中文或其他一些语言就麻烦的多, 以中文为例,
+主要有以下几种分词方法:
+
+1. N元分词
+   就是简单的每N个字算一个词, 
+   - 1元分词:
+   英/文/分/词/比/较/简/单
+
+   - 2元交叉为例:
+   英文/文分/分词/词比/比较/较简/简单
+
+2. 基于词典匹配的分词
+   - 正向最大匹配
+     "市场/中国/有/企业/才能/发展"
+   - 逆向最大匹配
+     "市场/中/国有/企业/才能/发展"
+   - 双向最大匹配
+3. 基于统计的分词
+
+
+从目前存在的项目看, 综合N元分词与基于词典匹配的分词是主流的方法, 以 Apache
+Lucene 为例: 它包含以下几种中文分词算法:
+http://blog.csdn.net/chaocy/article/details/5938741
+
+- StandardAnalyzer & ChineseAnalyzer (一元分词)
+
+2008/年/8/月/8/日/晚/举/世/瞩/目/的/北/京/第/二/十/九/届/奥/林/匹/克/运/动/会/开
+/幕/式/在/国/家/体/育/场/隆/重/举/行
+
+- CJKAnalyzer (交叉二元分词)
+
+2008/年/8/月/8/日晚/举世/世瞩/瞩目/目的/的北/北京/京第/第二/二十/十九/九届/届奥/
+奥林/林匹/匹克/克运/运动/动会/会开/开幕/幕式/式在/在国/国家/家体/体育/育场/场隆/
+隆重/重举/举行/
+
+- MIK_CAnalyzer  (最大匹配+二元交叉)
+
+2008年/8月/8日/晚/举世瞩目/目的/北京/第二十九届/奥林匹克运动会/开
+幕式/在国/国家/体育场/隆重举行/
+
+- etc
+  
+sqlite3 中因为支持 FTS, 所以也支持几种分词算法:
+- simple 
+  针对英文, 根据空格分词
+- porter
+  针对英文, 使用 port stemmer
+- icu
+  使用 icu 库进行简单分词, 没有看懂 fts_icu 的源码, 从分词结果看类似于一元分词
+  (待确定)
+
+**** inverted index (倒排索引)
+通过分词算法确定关键词后, FTS 会使用倒排索引建立索引, 例如全文有两句话:
+
+`今天天气怎么样.
+今天天气不错. `
+
+- 分词的结果
+
+  今天/天气/怎么样/今天/天气/不错
+
+- 倒排索引结果
+
+  今天->1,0;2,0
+  天气->1,2;2,2
+  怎么样->1,4
+  不错->2,4
+
+倒排索引的结果通常会以一种高效的利于查找的形式保存到索引文件中, 例如根据关键字排
+序, 或使用 B 树
+**** 查找过程
+根据索引文件格式的不同, 查找的过程有所区别, 以 B 树为例, 查找过程就是以查找字符
+串为KEY在B树中查找该关键字,查到的VALUE就是该关键字在文档中的行列位置.
+
+全文查找速度很快,但有一个明显的缺点: 检索的效果依赖于关键字的选择.
+
+例如, 
+- 使用 "tty" 无法检索到 " hello kitty "这句话
+- 使用 "天天" 可能无法检索到 "今天天气不错"
+
+**** FTS in sqlite3
+- create virtual table search_index using fts3(content TEXT, tokenize=porter);
+  tokenize 可以为 simple, porter, icu, 但默认情况下 icu tokenizer 功能没有被编译
+  到 sqlite3 中
+- select * from search_index where content match "token1 token2"
+- select * from search_index where content match "tok*"
+
 * Footnotes
 
 [fn:1] because A is holding a `shared` lock

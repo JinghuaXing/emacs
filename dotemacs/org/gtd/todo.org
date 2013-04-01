@@ -17,10 +17,6 @@ CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
 :ID:       89f342d8-f1a3-47d3-9c55-8f97f58f492c
 :END:
 http://www.jstatsoft.org/v46/i03/paper
-* TODO android root原理                                                :todo:
-:PROPERTIES:
-:ID:       3776a786-df5d-45a6-a9f4-78c93455a627
-:END:
 * TODO android widget [0/3]                                            :todo:
 :PROPERTIES:
 :ID:       549cda35-3cd6-4cfe-9967-b60c96fccc9e

@@ -1,8 +1,0 @@
-* Task
-#+CATEGORY:TASK
-* Tasks
-** DONE 公寓交房租
-CLOSED: [2012-04-11 周三 23:51]
-  
-  SCHEDULED: <2012-04-10 Tue>
-** TODO gfw 工作原理

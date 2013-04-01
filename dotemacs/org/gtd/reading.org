@@ -1,7 +1,0 @@
-#+TITLE:
-#+AUTHOR: sunwayforever@gmail.com
-* Reading
-** TODO 深入理解 jvm                                                :reading:
-** TODO SICP                                                       :reading:
-
-

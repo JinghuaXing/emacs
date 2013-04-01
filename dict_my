@@ -1,4 +1,4 @@
-personal_ws-1.1 en 48 
+personal_ws-1.1 en 50 
 WTF
 UI
 SQLiteDatabase
@@ -24,6 +24,7 @@ SQLiteStatement
 APN
 Orz
 DeathRecipient
+SuperUser
 TODO
 pre
 ListView
@@ -45,5 +46,6 @@ CursorWindow
 netd
 StatusBar
 SystemUI
+tookit
 refspec
 onSaveInstanceState

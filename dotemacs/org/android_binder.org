@@ -6,11 +6,11 @@
   - C++ Binder
   - Binder driver
 ** Binder driver
-    Binder driver 中有四个最重要的数据结构:
-    - binder_proc
-    - binder_node
-    - binder_ref
-    - binder_thread
+Binder driver 中有四个最重要的数据结构:
+- binder_proc
+- binder_node
+- binder_ref
+- binder_thread
 *** binder_proc
      binder_proc是binder driver中处于最顶层的数据结构, 它代表了一个与binder
      driver打交道的进程, 任意一个和binder打交道的进程, 不管是server还是client,
@@ -105,50 +105,51 @@
      - refs
        还记得前面提到的binder_proc被清除时如何处理linkToDeath的么?
 
-       
+
      binder_node与binder_proc的关系:
 #+BEGIN_EXAMPLE
-     		   -+---------------------++
-      -+----------->+  server binder_proc  + <----------+
-       |	   -+----------------------+	        |
-       |	    |	  rb_root nodes	   |		|
-       |	   -+----------------------+		|
-       |		    --/  \--			|
-       |	         --/	    \--			|
-       |	      --/	       \--		|
+     		 -+----------------------+
+      -+----------+>+  server binder_proc  +-<------------+
+       |            +-----------+----------+              |
+       |	           -+---------+------------+            |
+       |	            |	  rb_root nodes	   |		|
+       |	           -+----------------------+		|
+       |		         --/  \--			|
+       |	               --/	    \--			|
+       |	             --/	       \--		|
        |     	    -/		          \-		|
        |    -+------------+    	  -+------------+	|
-       |     |	 rb_node 1|    	   |  rb_node 2	|	|
+       |     | rb_node 1	|      	   |  rb_node 2	|	| 
        |    -+------------+    	  -+------------+	|
-      -+-----+	  proc	  |	   |	proc   -+-------+
-	    -+------------+    	  -+------------+
+      -+-----+	 proc	|	   |	proc   -+-------+
+            -+------------+    	  -+------------+
 #+END_EXAMPLE
 *** binder_ref
      从用户的角度看, binder_ref代表一个client, 它与c++ binder的BpBinder一一对应.
 
      binder_ref的主要成员有:
-     - binder_proc * proc        
+     - binder_proc * proc
        binder_ref所在的进程 (使用这个client的进程)
      - binder_node * node
        这个binder_ref所指向的binder_node (client对应的service)
-     - uint32_t desc  
-       
+     - uint32_t desc
+
      - rb_node_desc/rb_node_node
        与binder_proc的refs_by_desc/refs_by_node配合, 以便binder_proc可以根据
        desc/node很快的找到desc/node对应的binder_ref
 
      binder_ref与binder_node实际上指的一个东西,即所谓的"一体两面", binder_node是
-     从server的角度来看, 而binder_ref是从client的角度来看. 
+     从server的角度来看, 而binder_ref是从client的角度来看.
 
-     binder_ref代表一个client端的proxy, binder_node类似于server端的stub. 
+     binder_ref代表一个client端的proxy, binder_node类似于server端的stub.
 
      binder_node与binder_ref是`一对多`的关系, 一个进程的某一个binder_node可能有
      多个进程的多个binder_ref引用它, 即多个进程的client使用同一个进程的同一个service.
 
-     binder_proc, binder_node, binder_ref的关系: 
+     binder_proc, binder_node, binder_ref的关系:
 #+BEGIN_EXAMPLE
-      	       	       -+--------------------+          -+--------------------+                  +--------------------+
-       	     -+-------->+ server binder_proc | 	 	 |client1 binder_proc |			 |client2 binder_proc |
+                 -+--------------------+          -+--------------------+                  +--------------------+
+       -+-------->+ server binder_proc | 	 	 |client1 binder_proc |			 |client2 binder_proc |
 	      |	       -+--------------------+		-+--------------------+			 +--------------------+
 	      |	        |    rb_root nodes   |		 |   refs_by_desc     +---+		 |   refs_by_desc     +---+
 	      |	       -+---------+----------+		-+--------------------+	  |		 +--------------------+	  |
@@ -170,14 +171,14 @@
 					 +----------------------------------------+
 #+END_EXAMPLE
 *** 应用场景举例
-     The essential concept behind binder is that: proxy & stub can be
-     transformed between processes, e.g. stub in the server, when transferred to
-     the client , becomes a proxy, and vice-versa.
+The essential concept behind binder is that: proxy & stub can be
+transformed between processes, e.g. stub in the server, when transferred to
+the client , becomes a proxy, and vice-versa.
 
-     As to the binder driver, it refers to the transformation between
-     binder_node & binder_ref
+As to the binder driver, it refers to the transformation between
+binder_node & binder_ref
 **** scenario I
-      Server initiate one BBinder, and deliver it to the client using Intent.
+Server initiate one BBinder, and deliver it to the client using Intent.
       - Driver know nothing about BBinder until IPCThreadState.transact() is called.
       - IPCThreadState.transact() call ioctl(BINDER_WRITE_READ) to init a transaction
       - driver first search binder_proc->nodes to detect whether the binder_node
@@ -346,7 +347,7 @@
 	-+------------------------------------------------------------------------------------------+	 -+-----+
 	 | -+---------+----+--------------+--------+-----+-----+------+----------------			  v
 	 |  | type    |flag| binder/handle| cookie | ....|type | flag | ...				 -+-----+--+-------+--------------
-       	->--+(binder, |	   |   	       	  |    	   |   	 |     |      |	       	       	       	       	  | offset1|offset2| ...
+  ->--+(binder, |	   |   	       	  |    	   |   	 |     |      |	       	       	       	       	  | offset1|offset2| ...     	
 	    | handler,|	   |		  |	   |	 |     |      |					 -+---+----+---+---+--------------
 	    | fd..)   |	   |   	       	  |    	   |   	 |     |      |					      |	       |
 	    ^---------+----+--------------+--------+-----^-----+------+---------------			      |	       |
