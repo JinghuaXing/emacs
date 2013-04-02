@@ -2385,254 +2385,6 @@ adb shell setprop log.tag.mytag verbose
     Different activities with the same "" taskAffinity will not be placed in the same task when start activty with NEW_TASK, since their starting intent is
     different.
 
-** DONE [#A] PackageManager
-   SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-05-12 Thu 17:50]
-   - State "DONE"       [2011-05-12 Thu 17:50]
-*** Security
-**** DONE [#A] Android Permission
-     SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-01 Tue 18:33]
-     - State "DONE"       [2011-03-01 Tue 18:33]
-     :PROPERTIES:
-       :CUSTOM_ID: @Android Permission
-     :END:
-***** check permission during Binder transactions
-      see [[Binder.getCallingPid() & Binder.getCallingUid()][getCallingPid]]
-****** check `component permission` when access certain component: startService, sendBroadcast, startActivity
-       see [[startService][startService]], [[sendBroadcast][sendBroadcast]], [[startActivity][startActivity]]
-       note: sendBroadcast will make sure both the sender and the receiver has gained the requiredPermission imposed by the counterpart.
-****** check `application permission` when access application's any component
-#+BEGIN_EXAMPLE
-       <application ... android:permission="xxx">  </application>
-#+END_EXAMPLE
-***** check permission by private API calls
-      e.g. When accessing network, u need `INTERNET` permission, the network API will check permission.
-***** check permission by operating system (e.g. file permission..)
-      /system/etc/permissions/platform.xml reads:
-#+BEGIN_EXAMPLE
-      <permission name="android.permission.INTERNET" >
-          <group gid="inet" />
-      </permission>
-      ...
-#+END_EXAMPLE
-      The above tags are associating low-level group IDs with permission
-      names.  By specifying such a mapping, you are saying that any application
-      process granted the given permission will also be running with the given
-      group ID attached to its process, so it can perform any filesystem (read,
-      write, execute) operations allowed for that group.
-
-***** DONE [#B] PendingIntent / IntentSender
-      SCHEDULED: <2011-03-03 Thu> CLOSED: [2011-03-07 Mon 15:15]
-      - State "DONE"       [2011-03-07 Mon 15:15]
-      when A's PendingIntent is delivered to B, B calls PendingIntent.send() to send the underlying intent *on behalf of* A, A's permission is also
-      delegated to B
-
-***** PermissionController Service
-      PermissionController Service is a service added by ActivityManagerService though addService("permission"), it's only a encapsulation of
-      AMS.checkPermission() and further PMS.checkUidPermission()
-
-      android::checkCallingPermission() in native code use PermissionController service to check permission in native code:
-#+BEGIN_EXAMPLE
-      binder = defaultServiceManager()->checkService("permission");
-      pc = interface_cast<IPermissionController>(binder);
-      pc.checkPermission
-#+END_EXAMPLE
-
-**** DONE where is the /etc/password , /etc/shadow & /etc/group files of android?
-CLOSED: [2011-03-01 Tue 11:21]
-     - State "DONE"       [2011-03-01 Tue 11:21]
-       system/core/include/private/android_filesystem_config.h
-       /bionic/libc/bionic/stubs.c
-       
-       progresses granted "EXTERNAL_STORAGE" permission can read/write sdcard, because these progresses will be put into `sdcard_rw` group (see [[@Android Permission]])
-       but this doesn't mean that the file's owner is added into the `sdcard_rw` group beforehand, in fact, PM will maintain the group info, when
-       forking the process from zygote, zygote will invoke setgroups to add the process to `sdcard_rw` group.
-       
-       typically, when user A launch a linux program, the program uid/gid/groups will be set according to user A's uid/gid/groups, but progress can also call
-       setuid/gid/groups manually (with enough privilege) to reset the uid/gid/groups (zygote adopts the later approach to restrict user progress's privilege)
-**** DONE secure container
-     CLOSED: [2011-03-07 Mon 14:06]
-     - State "DONE"       [2011-03-07 Mon 14:06]
-     :PROPERTIES:
-	:CUSTOM_ID: @secure_container
-     :END:
-
-       see dm_crypt [[@ASEC]] vold MountService
-       when apk are installed to sdcard, for security reason, it must not be placed in the sdcard directly , instead, a security container is used to save
-       the encrypted apk (xxx.asec), we need to mount (use MountService) the security container to a cached directory (/mnt/asec) to get the
-       decrypted apk (pkg.apk)
-
-      related files:
-      - /data/misc/systemkeys/AppsOnSD.sks
-	the *AES* key to encrypt pkg.apk and decrypt xxx.asec, all the secure container share the same key.
-      - /mnt/asec/com.xx xx.xxxx/pkg.apk
-	;; from init.rc
-
-#+BEGIN_EXAMPLE
-	# Secure container public mount points.
-	mkdir /mnt/asec  0700 root system
-	mount tmpfs tmpfs /mnt/asec mode=0755,gid=1000
-#+END_EXAMPLE
-	that is, /mnt/asec/ is actually mounted from a tmpfs, it's content (com.xxx.xx/pkg.apk) actually is the run-time decryption of
-	/mnt/secure/asec/com.xxx.asec
-
-      - /mnt/secure/asec/com.xxx.xxx.asec
-	the secure container (encrypted apk), /mnt/asec/xxx/pkg.apk is extracted from this file in run-time
-
-	secure container is created, mounted, umounted by MountService, which relies on `asec` executable binary to perform
-	`mount,umount,create,delete..` of the secure containers:
-      - how to create a secure container of 1.apk
-	asec create cid
-	asec mount cid /mnt/asec/xxxix
-	cp 1.apk /mnt/asec/xxxx/pkg.apk
-	asec umount cid
-
-      To summarize:
-      secure container is analogous to the `encrypt file system`.
-
-      MORE DETAILS:
-#+BEGIN_EXAMPLE
-      $>mount
-1      tmpfs /mnt/asec tmpfs rw,relatime,mode=755,gid=1000 0 0
-2      /dev/block/vold/179:1 /mnt/sdcard vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-3      /dev/block/vold/179:1 /mnt/secure/asec vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-4      tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
-5      /dev/block/dm-0 /mnt/asec/com.sunway.testwebview-1 vfat ro,dirsync,nosuid,nodev,noexec,relatime,uid=1000,fmask=0222,dmask=0222,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-#+END_EXAMPLE
-      that is,
-      1. sdcard is mounted as two part:
-	 1. the entire sdcard is mounted to /mnt/sdcard (line 2)
-	 2. sdcard/.android_secure is *bind-mount* to /mnt/secure/asec (line 3)
-	    *note*: android mount the sdcard/.android_secure to tmpfs (line 4) to obscure the actual asec data on sdcard, so that normal operations
-	    on sdcard won't touch asec data at run-time.
-      2. /mnt/secure/asec/xxx.asec is mounted as loop device, e.g.:
-	mount /mnt/secure/asec/xxx.asec -o loop=/dev/loop0
-      3. cryptsetup key /dev/block/dm-0 /dev/loop0
-      4. mount /dev/block/dm-0 /mnt/asec/xxxx (line 5)
-
-      Step 3 is essential: android use `device-mapper crypto` as the `encrypt file system` behind secure container, which can mount a encrypted image file
-      to a mapped device (dm-0)
-**** SharedUserId
-**** PENDING Signature & Certificate
-     :PROPERTIES:
-     :ID:       c5ca7d63-57fd-407a-8275-3266f925d386
-     :END:
-     see also [[keytool & jarsigner]]
-     google: Android APK 签名比对
-
-     [[file:~/codebase/cb_study/build/tools/signapk/SignApk.java::for%20(String%20name%20:%20names)%20{][signApk.java]]
-     
-***** Android 证书文件位置
-- build/target/product/security/
-
-*** installd
-    installd is a system binary running as `root` and listening on `installd` socket.
-    see [[@dalvik-cache]]
-    - when installing and uninstalling package, PMS need to mkdir/rmdir /data/data/xxx, but those data dirs is not accessable by PMS (PMS running with
-      `system` uid, while data dirs is owned by package uids like `app_1`), so PMS need to use `installd` to access those data dir.
-    - after package is installed / deleted, PMS need invoke dex_opt / rm_dex to do the dirty work like optimize dex to dalvik-cache or remove dalvik-cache,
-      those works are also delegated to installd.
-
-*** forward_lock
-    adb install -l xxx.apk ( -l means `forward_lock` install )
-
-    when xxx.apk is `forward_lock` installed
-    - it's orig .apk is deleted
-    - it's res/, manifest.xml is put to /data/app/xxx.zip
-      (note that .dex is cached in dalvik-cache)
-*** Install Package
-    - there are 2 ways to install package:
-       1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
-       2. use PackageInstaller or adb install (which will invoke PM.installPackage())
-          
-    - `system` application & 3rd application
-      `system` is a property of ApplicationInfo after installation.
-      `system` application are applications not listed in `downloaded` category in Settings, while 3rd applications are applications listed in `downloaded`
-      category.
-      
-      PackageManager will decide whether a newly installed application is a `system` application:
-      - if apk is pushed to /system/app & /system/framework, then it is `system` application
-      - if apk is replacing an existing old system application, then it is.
-      - ...
-**** adb push
-#+BEGIN_SRC java
-     FileObserver.onEvent()
-       isApk=isPackageFilename():
-         name.endsWith(".apk");
-       if !isApk:return;
-       if ignoreCodePath(fullPathStr):   ;; if apk name is like "xxx-1.apk", it will be ignored!
-                                         ;; this is because PM.installPackage will also put installed package to /data/app, PM.installPackage use the
-					 ;; special naming rule to prevent FileObserver from installing the apk again.
-         return
-       if ADD_EVENTS:
-         scanPackageLI(mIsRom?PARSE_IS_SYSTEM:0) ;; if apk is in /system/app or /system/framework, mIsRom is true
-	                                         ;; package with PARSE_IS_SYSTEM flag will be marked as `system` application
-	 updatePermissionsLP()
-       if REMOVE_EVENTS:
-         removePackageLI()
-       if addedPackage!=null:
-         sendPackageBroadcast(ACTION_PACKAGE_ADDED)
-       if removedPackage!=null:
-         sendPackageBroadcast(ACTION_PACKAGE_REMOVED)
-#+END_SRC
-**** PM.installPackage
-***** PackageInstaller
-***** install location (src & dest)
-****** src apk location
- - from DownloadManager through ContentProvider
- - from file though MediaContainerService
-****** app install location
-the apk's install location can be internal flash / sdcard.
-1. The apk's manifest may declares it's `install location`, including:
-  - auto
-  - internalOnly
-  - preferExternal
-2. PackageHelper.recommendAppInstallLocation() make the ultimate decision:
-  - if `install location` is not set in manifest, internal will always be selected
-  - auto
-    if apk's code size>1MB, location will be set to external, unless external storage is slow (<10% free space..
-  - internalOnly
-    internal will be selected
-  - preferExternal
-    always selected external unless storage is unavailable or inefficient.
-  - system setting for default installation location is also considered
-To summurize:
-   - manifest's `install location`
-   - system setting for `default install location`
-   - internal/external storage status
-         
-***** DONE MediaContainerService / DefaultContainerService
-SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-02 Wed 16:42]
-- State "DONE"       [2011-03-02 Wed 16:42]
-  see [[@MountService]]
-  see [[@secure_container]]
-MediaContainerService is mainly used by app with `system' uid to access sdcard,
-because `system' process can't access sdcard, because:
-
-#+BEGIN_SRC fundamental
-$ ls sdcard
-d---rwxr-x system sdcard_rw 2010-07-26 12:56 sdcard
-#+END_SRC
-
-#+BEGIN_QUOTE
-
-http://stackoverflow.com/questions/5617797/android-shared-user-id-and-reading-writing-a-file
-
-The system user can not access the SD card, because if the SD card gets
-unmounted it may need to kill any processes that have files open on it and we
-don't want system processes being killed like that. If you want to access the SD
-card, you need to not use the system shared user ID.
-
-#+END_QUOTE
-***** calling stack
-*** Replace Package
-*** Uninstall package
-**** Intent.ACTION_PACKAGE_REMOVED
-*** resolveActivity
-    as shown in [[IntentFilter matching][IntentFilter matching]], startActivity will call PM.resolveIntent to resolve the intent, and get one best ResolveInfo;
-    PM.resolveActivity() will also call PM.resolveIntent() to resolve the intent, but there is ONE difference, PM.resolveActivity will not force the DEFAULT_ONLY
-    flag set when calling resolveIntent(). but startActivity will.
-
-*** android package vs. java package vs. android application
 ** DONE PendingIntent
    CLOSED: [2011-03-07 Mon 15:58]
    - State "DONE"       [2011-03-07 Mon 15:58]
@@ -2741,40 +2493,96 @@ property_set("ro.hardware", hardware);
 property_set(...)
 **** reference
 #+BEGIN_QUOTE
-Every property has a name and value. Both name and value are text strings. Property is heavily used in Android to record system setting or exchange information between processes. The property is globally visible in the whole system. Every process can get/set a property.
-On system initialization, Android will allocates a block of shared memory for storing the properties. This is done in “init” daemon whose source code is at: device/system/init. The “init” daemon will start a Property Service. The Property Service is running in the process of “init” daemon. Every client that wants to SET property needs to connect to the Property Service and send message to Property Service. Property Service will update/create the property in shared memory. Any client that wants to GET property can read the property from the shared memory directly. This promotes the read performance.
-The client application can invoke the API function exposed from libcutils to GET/SET a property. The source code of libcutils locates at: device/libs/cutils.
+Every property has a name and value. Both name and value are text
+strings. Property is heavily used in Android to record system setting
+or exchange information between processes. The property is globally
+visible in the whole system. Every process can get/set a property. On
+system initialization, Android will allocates a block of shared memory
+for storing the properties. This is done in “init” daemon whose source
+code is at: device/system/init. The “init” daemon will start a
+Property Service. The Property Service is running in the process of
+“init” daemon. Every client that wants to SET property needs to
+connect to the Property Service and send message to Property
+Service. Property Service will update/create the property in shared
+memory. Any client that wants to GET property can read the property
+from the shared memory directly. This promotes the read
+performance. The client application can invoke the API function
+exposed from libcutils to GET/SET a property. The source code of
+libcutils locates at: device/libs/cutils.
+
 The API function is:
 int property_get(const char *key, char *value, const char *default_value);
 int property_set(const char *key, const char *value);
-The libcutils is in turn calling the __system_property_xxx function in libc to get a property from the shared memory. The source code of libc is at: device/system/bionic.
-The Property Service is also in turn calling the __system_property_init function in libc to initiate the shared memory for properties. When starting the Property Service will load the default properties from below files:
+
+The libcutils is in turn calling the __system_property_xxx function in
+libc to get a property from the shared memory. The source code of libc
+is at: device/system/bionic. The Property Service is also in turn
+calling the __system_property_init function in libc to initiate the
+shared memory for properties. When starting the Property Service will
+load the default properties from below files:
+
 /default.prop
 /system/build.prop
 /system/default.prop
 /data/local.prop
-The properties are loaded in the above order. Later loaded properties will override the previous values. After those properties are loaded, the last loaded is the persistent properties which is persisted in /data/property.
-Special Properties
-If a property’s name begins with “ro.”, then this property is treated as a read-only property. Once set, the value of the property can’t be changed.
-If a property’s name begins with “persist.”, then when setting this property, the value will be written to /data/property, too.
-If a property’s name begins with “net.”, when when setting this property, the “net.change” property will be set automatically to contain the name of the last updated property. (It’s tricky. The netresolve module uses this property to track if there is any change on the net.* properties.)
-The property “ctrl.start” and “ctrl.stop” is used to start and stop a service. Every service must be defined in /init.rc. On system startup, the init daemon will parse the init.rc and start the Property Service. Once received a request to set the property of “ctrl.start”, the Property Service will use the property value as the service name to find the service and then start the service. The service starting result is then put to the property “init.svc.<service name>”. The client application can poll the value of that property to determine the result.
-Android toolbox
-The Android toolbox provides two applets: setprop and getprop to get and set properties. The usage is:
+
+The properties are loaded in the above order. Later loaded properties
+will override the previous values. After those properties are loaded,
+the last loaded is the persistent properties which is persisted in
+/data/property. Special Properties
+
+If a property’s name begins with “ro.”, then this property is treated
+as a read-only property. Once set, the value of the property can’t be
+changed.
+
+If a property’s name begins with “persist.”, then when setting this
+property, the value will be written to /data/property, too.
+
+If a property’s name begins with “net.”, when when setting this
+property, the “net.change” property will be set automatically to
+contain the name of the last updated property. (It’s tricky. The
+netresolve module uses this property to track if there is any change
+on the net.* properties.)
+
+The property “ctrl.start” and “ctrl.stop” is used to start and stop a
+service. Every service must be defined in /init.rc. On system startup,
+the init daemon will parse the init.rc and start the Property
+Service. Once received a request to set the property of “ctrl.start”,
+the Property Service will use the property value as the service name
+to find the service and then start the service. The service starting
+result is then put to the property “init.svc.<service name>”. The
+client application can poll the value of that property to determine
+the result. Android toolbox
+
+The Android toolbox provides two applets: setprop and getprop to get
+and set properties. The usage is:
+
 getprop <property name>
 setprop <property name> <property value> 
+
 Java
 The java application can use the System.getProperty() and System.setProperty() function to Get and Set the property.
+
 Action
-By default the set property will only cause "init" daemon to write to shared memory, it won't execute any script or binary. But you can add your actions to correspond to property change in init.rc. For example, in the default init.rc, you can find.
+
+By default the set property will only cause "init" daemon to write to
+shared memory, it won't execute any script or binary. But you can add
+your actions to correspond to property change in init.rc. For example,
+in the default init.rc, you can find.
+
 # adbd on at boot in emulator
 on property:ro.kernel.qemu=1
+
 start adbd
 on property:persist.service.adb.enable=1
+
 start adbd
 on property:persist.service.adb.enable=0
+
 stop adbd
-So if you set persist.service.adb.enable to 1, the "init" daemon knows it has actions to do, then it will start adbd service.
+
+So if you set persist.service.adb.enable to 1, the "init" daemon knows
+it has actions to do, then it will start adbd service.
 #+END_QUOTE
 *** java property
 System.getProperty() / System.setProperty()
