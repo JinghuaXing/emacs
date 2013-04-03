@@ -840,12 +840,10 @@ IPCThreadState need to use ProcessState to interact with binder driver
 
     mCallingPid is initialized to getPid() by IPCThreadState, so that Binder.getCallPid() may return thread's own pid if not executing an incoming
     binder transaction.
-*** DONE Binder.clearCallingIdentity() & Binder.restoreCallingIdentity()
-     CLOSED: [2011-02-25 Fri 14:02]
-     - State "DONE"       [2011-02-25 Fri 14:02]
-       during one binder transaction, if the binder-stub want to temporary use it's own pid/uid (instead of proxy's pid/uid) for permission-check, it
-       should invoke clearCallingIdentity to temporary save proxy's pid/uid to one `long int`, then set getCallingPid to stub's own pid.
-       After the permission-check, it could invoke restoreCallingIdentity(long) to restore getCallingPid to proxy's pid.
+*** Binder.clearCallingIdentity() & Binder.restoreCallingIdentity()
+during one binder transaction, if the binder-stub want to temporary use it's own pid/uid (instead of proxy's pid/uid) for permission-check, it
+should invoke clearCallingIdentity to temporary save proxy's pid/uid to one `long int`, then set getCallingPid to stub's own pid.
+After the permission-check, it could invoke restoreCallingIdentity(long) to restore getCallingPid to proxy's pid.
 *** AsyncTask
 *** Messenger
      :PROPERTIES:

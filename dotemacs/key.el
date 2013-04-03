@@ -123,3 +123,5 @@
 				)
 			      )
 		)
+
+(global-set-key (kbd "M-M") 'my-bookmark-jump)

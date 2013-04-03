@@ -1,148 +1,11 @@
 * PackageManager
-** Security
-*** DONE [#A] Android Permission
-     SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-01 Tue 18:33]
-     - State "DONE"       [2011-03-01 Tue 18:33]
-     :PROPERTIES:
-       :CUSTOM_ID: @Android Permission
-     :END:
-**** check permission during Binder transactions
-      see [[Binder.getCallingPid() & Binder.getCallingUid()][getCallingPid]]
-***** check `component permission` when access certain component: startService, sendBroadcast, startActivity
-       see [[startService][startService]], [[sendBroadcast][sendBroadcast]], [[startActivity][startActivity]]
-       note: sendBroadcast will make sure both the sender and the receiver has gained the requiredPermission imposed by the counterpart.
-***** check `application permission` when access application's any component
-#+BEGIN_EXAMPLE
-       <application ... android:permission="xxx">  </application>
-#+END_EXAMPLE
-**** check permission by private API calls
-      e.g. When accessing network, u need `INTERNET` permission, the network API will check permission.
-**** check permission by operating system (e.g. file permission..)
-      /system/etc/permissions/platform.xml reads:
-#+BEGIN_EXAMPLE
-      <permission name="android.permission.INTERNET" >
-          <group gid="inet" />
-      </permission>
-      ...
-#+END_EXAMPLE
-      The above tags are associating low-level group IDs with permission
-      names.  By specifying such a mapping, you are saying that any application
-      process granted the given permission will also be running with the given
-      group ID attached to its process, so it can perform any filesystem (read,
-      write, execute) operations allowed for that group.
-
-**** DONE [#B] PendingIntent / IntentSender
-      SCHEDULED: <2011-03-03 Thu> CLOSED: [2011-03-07 Mon 15:15]
-      - State "DONE"       [2011-03-07 Mon 15:15]
-      when A's PendingIntent is delivered to B, B calls PendingIntent.send() to send the underlying intent *on behalf of* A, A's permission is also
-      delegated to B
-
-**** PermissionController Service
-      PermissionController Service is a service added by ActivityManagerService though addService("permission"), it's only a encapsulation of
-      AMS.checkPermission() and further PMS.checkUidPermission()
-
-      android::checkCallingPermission() in native code use PermissionController service to check permission in native code:
-#+BEGIN_EXAMPLE
-      binder = defaultServiceManager()->checkService("permission");
-      pc = interface_cast<IPermissionController>(binder);
-      pc.checkPermission
-#+END_EXAMPLE
-
-*** DONE where is the /etc/password , /etc/shadow & /etc/group files of android?
-CLOSED: [2011-03-01 Tue 11:21]
-     - State "DONE"       [2011-03-01 Tue 11:21]
-       system/core/include/private/android_filesystem_config.h
-       /bionic/libc/bionic/stubs.c
-       
-       progresses granted "EXTERNAL_STORAGE" permission can read/write sdcard, because these progresses will be put into `sdcard_rw` group (see [[@Android Permission]])
-       but this doesn't mean that the file's owner is added into the `sdcard_rw` group beforehand, in fact, PM will maintain the group info, when
-       forking the process from zygote, zygote will invoke setgroups to add the process to `sdcard_rw` group.
-       
-       typically, when user A launch a linux program, the program uid/gid/groups will be set according to user A's uid/gid/groups, but progress can also call
-       setuid/gid/groups manually (with enough privilege) to reset the uid/gid/groups (zygote adopts the later approach to restrict user progress's privilege)
-*** DONE secure container
-     CLOSED: [2011-03-07 Mon 14:06]
-     - State "DONE"       [2011-03-07 Mon 14:06]
-     :PROPERTIES:
-	:CUSTOM_ID: @secure_container
-     :END:
-
-       see dm_crypt [[@ASEC]] vold MountService
-       when apk are installed to sdcard, for security reason, it must not be placed in the sdcard directly , instead, a security container is used to save
-       the encrypted apk (xxx.asec), we need to mount (use MountService) the security container to a cached directory (/mnt/asec) to get the
-       decrypted apk (pkg.apk)
-
-      related files:
-      - /data/misc/systemkeys/AppsOnSD.sks
-	the *AES* key to encrypt pkg.apk and decrypt xxx.asec, all the secure container share the same key.
-      - /mnt/asec/com.xx xx.xxxx/pkg.apk
-	;; from init.rc
-
-#+BEGIN_EXAMPLE
-	# Secure container public mount points.
-	mkdir /mnt/asec  0700 root system
-	mount tmpfs tmpfs /mnt/asec mode=0755,gid=1000
-#+END_EXAMPLE
-	that is, /mnt/asec/ is actually mounted from a tmpfs, it's content (com.xxx.xx/pkg.apk) actually is the run-time decryption of
-	/mnt/secure/asec/com.xxx.asec
-
-      - /mnt/secure/asec/com.xxx.xxx.asec
-	the secure container (encrypted apk), /mnt/asec/xxx/pkg.apk is extracted from this file in run-time
-
-	secure container is created, mounted, umounted by MountService, which relies on `asec` executable binary to perform
-	`mount,umount,create,delete..` of the secure containers:
-      - how to create a secure container of 1.apk
-	asec create cid
-	asec mount cid /mnt/asec/xxxix
-	cp 1.apk /mnt/asec/xxxx/pkg.apk
-	asec umount cid
-
-      To summarize:
-      secure container is analogous to the `encrypt file system`.
-
-      MORE DETAILS:
-#+BEGIN_EXAMPLE
-      $>mount
-1      tmpfs /mnt/asec tmpfs rw,relatime,mode=755,gid=1000 0 0
-2      /dev/block/vold/179:1 /mnt/sdcard vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-3      /dev/block/vold/179:1 /mnt/secure/asec vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-4      tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
-5      /dev/block/dm-0 /mnt/asec/com.sunway.testwebview-1 vfat ro,dirsync,nosuid,nodev,noexec,relatime,uid=1000,fmask=0222,dmask=0222,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-#+END_EXAMPLE
-      that is,
-      1. sdcard is mounted as two part:
-	 1. the entire sdcard is mounted to /mnt/sdcard (line 2)
-	 2. sdcard/.android_secure is *bind-mount* to /mnt/secure/asec (line 3)
-	    *note*: android mount the sdcard/.android_secure to tmpfs (line 4) to obscure the actual asec data on sdcard, so that normal operations
-	    on sdcard won't touch asec data at run-time.
-      2. /mnt/secure/asec/xxx.asec is mounted as loop device, e.g.:
-	mount /mnt/secure/asec/xxx.asec -o loop=/dev/loop0
-      3. cryptsetup key /dev/block/dm-0 /dev/loop0
-      4. mount /dev/block/dm-0 /mnt/asec/xxxx (line 5)
-
-      Step 3 is essential: android use `device-mapper crypto` as the `encrypt file system` behind secure container, which can mount a encrypted image file
-      to a mapped device (dm-0)
-*** SharedUserId
-*** PENDING Signature & Certificate
-     :PROPERTIES:
-     :ID:       c5ca7d63-57fd-407a-8275-3266f925d386
-     :END:
-     see also [[keytool & jarsigner]]
-     google: Android APK 签名比对
-
-     [[file:~/codebase/cb_study/build/tools/signapk/SignApk.java::for%20(String%20name%20:%20names)%20{][signApk.java]]
-     
-**** Android 证书文件位置
-- build/target/product/security/
-
 ** installd
-    installd is a system binary running as `root` and listening on `installd` socket.
-    see [[@dalvik-cache]]
-    - when installing and uninstalling package, PMS need to mkdir/rmdir /data/data/xxx, but those data dirs is not accessable by PMS (PMS running with
-      `system` uid, while data dirs is owned by package uids like `app_1`), so PMS need to use `installd` to access those data dir.
-    - after package is installed / deleted, PMS need invoke dex_opt / rm_dex to do the dirty work like optimize dex to dalvik-cache or remove dalvik-cache,
-      those works are also delegated to installd.
-
+installd is a system binary running as `root` and listening on `installd` socket.
+see [[@dalvik-cache]]
+- when installing and uninstalling package, PMS need to mkdir/rmdir /data/data/xxx, but those data dirs is not accessable by PMS (PMS running with
+  `system` uid, while data dirs is owned by package uids like `app_1`), so PMS need to use `installd` to access those data dir.
+- after package is installed / deleted, PMS need invoke dex_opt / rm_dex to do the dirty work like optimize dex to dalvik-cache or remove dalvik-cache,
+  those works are also delegated to installd.
 ** forward_lock
     adb install -l xxx.apk ( -l means `forward_lock` install )
 
@@ -150,20 +13,20 @@ CLOSED: [2011-03-01 Tue 11:21]
     - it's orig .apk is deleted
     - it's res/, manifest.xml is put to /data/app/xxx.zip
       (note that .dex is cached in dalvik-cache)
-** Install Package
-    - there are 2 ways to install package:
-       1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
-       2. use PackageInstaller or adb install (which will invoke PM.installPackage())
+** install Package
+- there are 2 ways to install package:
+   1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
+   2. use PackageInstaller or adb install (which will invoke PM.installPackage())
           
-    - `system` application & 3rd application
-      `system` is a property of ApplicationInfo after installation.
-      `system` application are applications not listed in `downloaded` category in Settings, while 3rd applications are applications listed in `downloaded`
-      category.
+- `system` application & 3rd application
+  `system` is a property of ApplicationInfo after installation.
+  `system` application are applications not listed in `downloaded` category in Settings, while 3rd applications are applications listed in `downloaded`
+  category.
       
-      PackageManager will decide whether a newly installed application is a `system` application:
-      - if apk is pushed to /system/app & /system/framework, then it is `system` application
-      - if apk is replacing an existing old system application, then it is.
-      - ...
+  PackageManager will decide whether a newly installed application is a `system` application:
+  - if apk is pushed to /system/app & /system/framework, then it is `system` application
+  - if apk is replacing an existing old system application, then it is.
+  - ...
 *** adb push
 #+BEGIN_SRC java
      FileObserver.onEvent()
@@ -211,7 +74,7 @@ To summurize:
    - system setting for `default install location`
    - internal/external storage status
          
-**** DONE MediaContainerService / DefaultContainerService
+**** MediaContainerService / DefaultContainerService
 SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-02 Wed 16:42]
 - State "DONE"       [2011-03-02 Wed 16:42]
   see [[@MountService]]
@@ -239,8 +102,118 @@ card, you need to not use the system shared user ID.
 ** Uninstall package
 *** Intent.ACTION_PACKAGE_REMOVED
 ** resolveActivity
-    as shown in [[IntentFilter matching][IntentFilter matching]], startActivity will call PM.resolveIntent to resolve the intent, and get one best ResolveInfo;
-    PM.resolveActivity() will also call PM.resolveIntent() to resolve the intent, but there is ONE difference, PM.resolveActivity will not force the DEFAULT_ONLY
-    flag set when calling resolveIntent(). but startActivity will.
+as shown in [[IntentFilter matching][IntentFilter matching]], startActivity will call
+PM.resolveIntent to resolve the intent, and get one best ResolveInfo;
+
+PM.resolveActivity() will also call PM.resolveIntent() to resolve the
+intent, but there is ONE difference, PM.resolveActivity will not force
+the DEFAULT_ONLY flag set when calling resolveIntent(). but
+startActivity will.
 
 ** android package vs. java package vs. android application
+** UID & GID
+see also [[Java Process Creation]], [[Zygote]], [[System Init]] to distinguish
+`process uid' against `file uid'
+
+UID (including sharedUserId) is maintained by pm.Settings
+
+*** pre-defined UID
+see system/core/include/private/android_filesystem_config.h
+
+#+BEGIN_SRC c
+  static const struct android_id_info android_ids[] = {
+      { "root",      AID_ROOT, },
+      { "system",    AID_SYSTEM, },
+      { "radio",     AID_RADIO, },
+      { "bluetooth", AID_BLUETOOTH, },
+      { "graphics",  AID_GRAPHICS, },
+      { "input",     AID_INPUT, },
+      { "audio",     AID_AUDIO, },
+      { "camera",    AID_CAMERA, },
+      { "log",       AID_LOG, },
+      { "mount",     AID_MOUNT, },
+      { "wifi",      AID_WIFI, },
+      { "dhcp",      AID_DHCP, },
+      { "adb",       AID_ADB, },
+      { "install",   AID_INSTALL, },
+      { "media",     AID_MEDIA, },
+      { "sdcard_r",  AID_SDCARD_R, },
+      { "sdcard_rw", AID_SDCARD_RW, },
+      { "media_rw",  AID_MEDIA_RW, },
+      // ...
+      { "vpn",       AID_VPN, },
+      { "keystore",  AID_KEYSTORE, },
+      { "usb",       AID_USB, },
+      { "mtp",       AID_MTP, },
+      { "gps",       AID_GPS, },
+      { "inet",      AID_INET, },
+      { "net_raw",   AID_NET_RAW, },
+      { "net_admin", AID_NET_ADMIN, },
+      { "net_bw_stats", AID_NET_BW_STATS, },
+      { "net_bw_acct", AID_NET_BW_ACCT, },
+      { "misc",      AID_MISC, },
+      { "nobody",    AID_NOBODY, },
+  };
+#+END_SRC
+
+*** app UID
+during scanPackageLI, but before mInstaller.install(), app UID is
+generate by the mSettings.
+#+BEGIN_SRC text
+  scanPackageLI
+    // Just create the setting, don't add it yet. For already existing packages
+    // the PkgSetting exists already and doesn't have to be created.
+    pkgSetting = mSettings.getPackageLPw(pkg, origPackage, realName, suid, destCodeFile,
+                      destResourceFile, pkg.applicationInfo.nativeLibraryDir,
+                      pkg.applicationInfo.flags, true, false);
+      p.appId = newUserIdLPw(p);
+        final int N = mUserIds.size();
+          for (int i = 0; i < N; i++) {
+              if (mUserIds.get(i) == null) {
+                  mUserIds.set(i, obj);
+                  return Process.FIRST_APPLICATION_UID + i;
+              }
+          }
+          // None left?
+          if (N > (Process.LAST_APPLICATION_UID-Process.FIRST_APPLICATION_UID)) {
+              return -1;
+          }
+          mUserIds.add(obj);
+          return Process.FIRST_APPLICATION_UID + N;
+    pkg.applicationInfo.uid = pkgSetting.appId;
+#+END_SRC
+*** sharedUserId
+**** sharedUserId pre-defined by the PMS
+#+BEGIN_SRC java
+PackageManagerService.<init>
+  mSettings.addSharedUserLPw("android.uid.system", Process.SYSTEM_UID, ApplicationInfo.FLAG_SYSTEM);
+  mSettings.addSharedUserLPw("android.uid.phone", RADIO_UID, ApplicationInfo.FLAG_SYSTEM);
+  mSettings.addSharedUserLPw("android.uid.log", LOG_UID, ApplicationInfo.FLAG_SYSTEM);
+  mSettings.addSharedUserLPw("android.uid.nfc", NFC_UID, ApplicationInfo.FLAG_SYSTEM);
+#+END_SRC
+
+That is, 
+- android.uid.system
+- android.uid.phone
+- android.uid.log
+- android.uid.nfc
+
+these 4 sharedUserId is defined statically in PMS, and they
+  corresponds to the static UID (SYSTEM_UID, RADIO_UID, ...)
+
+**** sharedUserId defined by app
+App can define `sharedUserId' freely, PMS will use `Setings' to
+maintain the dynamic `sharedUserId' -> `uid' mapping during `scanPackageLI'
+
+The most well-known app `sharedUserId' is `android.uid.shared', which
+is defined by `Contacts' and `ContactsProvider'
+
+
+
+
+** Multi-User support
+android 4.1 use UserManager to support multi-user, in-short, uid
+stored in pm.Setting is encoded as a mixer of multi-user-id and app_id,
+e.g. u0_a33, or u1_a33. 
+
+As against android pre 4.1, app_id is taken as uid.

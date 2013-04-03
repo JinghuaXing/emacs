@@ -494,7 +494,7 @@ google: “这可不是泛型”-Bruce Eckel眼中的Java泛型..
 **** AttachThread
 *** Monitor
 **** MonitorEnter/MonitorExit
-** Reflect
+** Reflection
 *** Class
 **** newInstance
 **** forName
@@ -509,7 +509,7 @@ google: “这可不是泛型”-Bruce Eckel眼中的Java泛型..
 *** Constructor
 **** newInstance
 *** Proxy
-    see also [[Dynamic Proxy]]
+see also [[Dynamic Proxy]]
 ** NIO
 *** Buffer
 **** ByteBuffer

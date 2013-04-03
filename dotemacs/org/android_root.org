@@ -4,4 +4,12 @@
 *** The malicious `su'
 ** Rooting tookit
 *** zerRush
+** After rooted, we can
+*** refrain notification
+*** refrain broadcast (include BOOT_COMPLETED)
+*** silently install package
+#+BEGIN_QUOTE
+$> am install
+#+END_QUOTE
+
 

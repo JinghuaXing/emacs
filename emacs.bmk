@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("source"
+(("snippet"
+ (filename . "~/.elisp/yasnippet/snippets/")
+ (front-context-string . "java-mode\n  drwx")
+ (rear-context-string . " 4 Mar 27 16:31 ")
+ (position . 701))
+("source"
  (filename . "~/source/")
  (front-context-string . "cts_dalviktests_")
  (rear-context-string . " 4 Feb 17 10:02 ")
@@ -12,7 +17,7 @@
  (front-context-string . "auto\n  drwxrwxr-")
  (rear-context-string . " 4 Nov 24 12:00 ")
  (position . 132))
-("elisp"
+("emacs.lisp"
  (filename . "~/.elisp/")
  (front-context-string . "auctex-11.86\n  d")
  (rear-context-string . " 4 Nov 24 12:10 ")

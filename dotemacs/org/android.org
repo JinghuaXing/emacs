@@ -104,7 +104,7 @@
 #+END_EXAMPLE
 
 ***** sendBroadcast
-      just as startService, priority are considered, and a list of all candidates are return to support OrderedBroadcast
+just as startService, priority are considered, and a list of all candidates are return to support OrderedBroadcast
 *** Activity                                                     :activity:
 **** AMS side
 ***** finishedActivityLocked
@@ -1606,10 +1606,8 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
 ***** priority
       broadcast receiver's intent filter's `priority` will be used to by the AMS to determine the order in which the broadcast is send to
 ***** SetResult..()
-**** DONE [#C] <<<protected-broadcast>>>
-     CLOSED: [2011-08-01 Mon 09:19]
-     - State "DONE"       from "TODO"       [2011-08-01 Mon 09:19]
-     PACKAGE_REMOVED/PACKAGE_ADDED/BOOT_COMPLETED are all protected-broadcasts, only the process with "system" uid can send the broadcast
+**** protected-broadcast
+PACKAGE_REMOVED/PACKAGE_ADDED/BOOT_COMPLETED are all protected-broadcasts, only the process with "system" uid can send the broadcast
 #+BEGIN_EXAMPLE
      broadcastIntentLocked()
        if (callingUid == Process.SYSTEM_UID || callingUid == Process.PHONE_UID || callingUid == Process.SHELL_UID || callingUid == 0) :
@@ -1618,10 +1616,13 @@ similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to 
          if (ActivityThread.getPackageManager().isProtectedBroadcast(intent.getAction())) :
 	   throw new SecurityException(msg);
 #+END_EXAMPLE
-     To summarize:
-     `protected-broadcasts` means `those broadcasts can only be sent by SYSTEM,PHONE,SHELL or root`
 
-**** DONE [#B] <<<SendBroadcast>>>
+To summarize: 
+
+`protected-broadcasts` means `those broadcasts can only
+be sent by SYSTEM,PHONE,SHELL or root`
+
+**** SendBroadcast
      CLOSED: [2011-02-15 Tue 19:37]
      - State "DONE"       [2011-02-15 Tue 19:37]
      12/28/10 8:11 pm
@@ -1895,10 +1896,7 @@ see also [[Android Process Crash and Restart]]
 4. persistent application will be launched during system boot, before the BOOT_COMPLETED is broadcasted
 ** AppWidget
 ** ASEC
-   :PROPERTIES:
-   :CUSTOM_ID: @ASEC
-   :END:
-   Android Security Executable Cache
+Android Security Executable Cache
 *** dm_crypt
 ** Ashmem
 ** DONE AsyncQueryHandler && loader                                 :coding:
@@ -2143,16 +2141,16 @@ adb shell setprop log.tag.mytag verbose
 ** HAL								    :ARCHIVE:
 ** important files
 *** device
-    1. data/system/packages.xml
-    2. /mnt/secure/asec
-    3. /mnt/asec
-    4. /system/etc/permissions/platform.xml
-    5. /system/etc/security/cacerts.bks
-    6. /data/dalvik-cache
-    7. /data/property
-    8. /system/build.prop
-    9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
-    10. /data/system/registered_services/android.content.SyncAdapter.xml
+1. data/system/packages.xml
+2. /mnt/secure/asec
+3. /mnt/asec
+4. /system/etc/permissions/platform.xml
+5. /system/etc/security/cacerts.bks
+6. /data/dalvik-cache
+7. /data/property
+8. /system/build.prop
+9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
+10. /data/system/registered_services/android.content.SyncAdapter.xml
 *** src
     1. framework/base/core/res
     2. framework/base/core/jni
@@ -2161,20 +2159,21 @@ adb shell setprop log.tag.mytag verbose
     5. build/target/product/security/
 ** init
 *** init.rc
-*** DONE System init
-    CLOSED: [2011-03-01 Tue 11:20]
-    - State "DONE"       [2011-03-01 Tue 11:20]
-    init will start some daemon, service_manager, media_service. Then call app_process to call zygoteInit.java to start zygote.
-    ZygoteInit.java, first will fork and start system_server, then listen on one local socket through runSelectLoopMode().
-    SystemServer.java's main() will firstly load 'android_server'.so and call
-    it's init1() to start binderThreadPool and call SystemServer's init2(),
-    which will init an ServerThread and start some java service like AMS, WMS.
+*** System init
+init will start some daemon, service_manager, media_service. Then call
+app_process to call zygoteInit.java to start zygote. ZygoteInit.java,
+first will fork and start system_server, then listen on one local
+socket through runSelectLoopMode(). SystemServer.java's main() will
+firstly load 'android_server'.so and call it's init1() to start
+binderThreadPool and call SystemServer's init2(), which will init an
+ServerThread and start some java service like AMS, WMS.
 
-    system_server is setuid to `system` uid.
+system_server is setuid to `system` uid.
 
-    Note:
-    zygote will keep running with `root` uid, so that zygote can setuid/gid/groups on newly forked progress, so that new java progress will run with
-    proper uid/gid/groups
+Note: 
+zygote will keep running with `root` uid, so that zygote can
+setuid/gid/groups on newly forked progress, so that new java progress
+will run with proper uid/gid/groups
 *** Zygote init
     app_process --> app_main.cpp: framework/base/cads/app_process
     ZygoteInit.java: framework/base/core/java/com/android/internal/os
@@ -4501,40 +4500,37 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 窗口的组织方式。在接下来的一篇文章中，我们就将继续分析WindowManagerService服务是如何组织系统中的窗口的。敬请关注！
 #+END_QUOTE
 ** Zygote
-*** DONE Java Process Creation
-    CLOSED: [2011-03-01 Tue 11:20]
-    - State "DONE"       [2011-03-01 Tue 11:20]
-#+BEGIN_EXAMPLE lang:c
-    AMS::startSpecificActivity()
-      Process::start(className,uid..)
-         Process::startViaZygote()
-            Pro::zygoteSendArgAndGetPid()
-               for zygote socket read pid
-#+END_EXAMPLE
-    zygote socket:
-#+BEGIN_EXAMPLE lang:c
-        runSelectLoopMode()
-          got request form socket
-             runOnce()
-	       forkAndSpecialize(int uid, int gid, int[] gids..)
-	         - uid: the UNIX uid that the new process should setuid() to after fork()ing and and before spawning any threads.
-                 - gid: the UNIX gid that the new process should setgid() to after fork()ing and and before spawning any threads.
-                 - gids: null-ok; a list of UNIX gids that the new process should setgroups() to after fork and before spawning any threads.
-		   because zygote runs with root uid, it can setuid/gid/groups freely
-                 // in child process
-                 handleChildProc()
-                   closeSocket();
-                   RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
-                     commonInit()
-                       Thread.setDefaultUncaughtExceptionHandler(new UncaughtHandler()); // NOTE: the UncaughtHandler does nothing but crash the app
-                     zygoteInitNative()
-                       gCurRuntime->onZygoteInit()
-                         proc->startThreadPool();
-                     invokeStaticMain();
-                in parent process
-                    return child pid
-#+END_EXAMPLE
-*** DONE Zygote init
-    CLOSED: [2011-06-30 Thu 16:42]
-    - State "DONE"       from ""           [2011-06-30 Thu 16:42]
-    see also [[System init]]
+*** Java Process Creation
+#+BEGIN_SRC text
+  AMS::startSpecificActivity()
+    Process::start(className,uid..)
+      Process::startViaZygote()
+        Pro::zygoteSendArgAndGetPid()
+          for zygote socket read pid
+#+END_SRC
+
+zygote socket:
+#+BEGIN_SRC text
+  runSelectLoopMode()
+    got request form socket
+       runOnce()
+         forkAndSpecialize(int uid, int gid, int[] gids..)
+           - uid: the UNIX uid that the new process should setuid() to after fork()ing and and before spawning any threads.
+           - gid: the UNIX gid that the new process should setgid() to after fork()ing and and before spawning any threads.
+           - gids: null-ok; a list of UNIX gids that the new process should setgroups() to after fork and before spawning any threads.
+             because zygote runs with root uid, it can setuid/gid/groups freely
+           // in child process
+           handleChildProc()
+             closeSocket();
+             RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
+               commonInit()
+                 Thread.setDefaultUncaughtExceptionHandler(new UncaughtHandler()); // NOTE: the UncaughtHandler does nothing but crash the app
+               zygoteInitNative()
+                 gCurRuntime->onZygoteInit()
+                   proc->startThreadPool();
+               invokeStaticMain();
+          in parent process
+              return child pid
+#+END_SRC
+*** Zygote init
+see also [[System init]]
