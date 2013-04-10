@@ -66,7 +66,7 @@
 	     t
 	     )
 (add-to-list 'org-export-latex-default-packages-alist
-	     "\\setCJKmainfont{SimSun}"
+	     "\\setCJKmainfont{WenQuanYi Zen Hei}"
 	     t
 	     )
 ;;(setq org-tag-alist '(("java" . ?v) ("android" . ?d) ("joke" . ?j)))

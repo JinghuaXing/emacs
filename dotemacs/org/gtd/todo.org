@@ -182,3 +182,7 @@ CLOSED: [2013-04-03 Wed 11:08]
 [2013-04-02 Tue 21:22]
 * TODO init.rc                                                         :todo:
 [2013-04-02 Tue 21:24]
+* TODO android ui patterns  :todo:
+[2013-04-10 Wed 11:52]
+* TODO proguard                                                        :todo:
+[2013-04-10 Wed 17:47]

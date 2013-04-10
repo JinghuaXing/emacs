@@ -49,7 +49,7 @@
      (actions
       ("!" "Command from root" magit-shell-command)
       (":" "Git command" magit-git-command)
-      ("g" "git gui" magit-run-git-gui)
+      ("x" "clean" magit-git-clean)
       ("k" "gitk" magit-run-gitk)))
 
     (fetching

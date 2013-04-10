@@ -4230,6 +4230,20 @@ If there is no default remote, ask for one."
 
 (defvar magit-git-command-history nil)
 
+(defun magit-git-clean ()
+  "Perform arbitrary Git COMMAND.
+
+Similar to `magit-shell-command', but involves slightly less
+typing and automatically refreshes the status buffer."
+  (interactive)
+  (let ((args (magit-parse-arguments "clean -f -d"))
+        (magit-process-popup-time 0))
+    (magit-with-refresh
+      (magit-run* (append (cons magit-git-executable
+                                magit-git-standard-options)
+                          args)
+                  nil nil nil t))))
+
 (defun magit-git-command (command)
   "Perform arbitrary Git COMMAND.
 
