@@ -66,7 +66,7 @@
 	     t
 	     )
 (add-to-list 'org-export-latex-default-packages-alist
-	     "\\setCJKmainfont{WenQuanYi Zen Hei}"
+	     "\\setCJKmainfont{WenQuanYi Zen Hei}\\setmainfont{Droid Serif}"
 	     t
 	     )
 ;;(setq org-tag-alist '(("java" . ?v) ("android" . ?d) ("joke" . ?j)))
