@@ -1,9 +1,6 @@
 * Linux App
 #+CATEGORY:Linux app
-** indent && astyle
 ** auditd							      :sysadmin:
-** htop
-   交互式 top
 ** basename与dirname							 :shell:
 ** bash
 *** get file name extension and get main file name
@@ -66,11 +63,25 @@
     - last
     - lastlog
     - fingure
+** network/web debugging
+*** charles web debugging proxy
+a proxy for web debugging, especially, support HTTPS
+*** fiddler (not linux capable)
+*** tinyproxy
+*** firebug for firefox
+*** wireshark
+*** tcpdump
+** network util
+*** netcat (nc)
+*** iperf
+*** proxy
+see also [[network/web debugging]]
+**** squid
 ** convmv
 ** dnotify
 ** expect
 ** gdb
-   http://sourceware.org/gdb/current/onlinedocs/gdb_toc.html
+http://sourceware.org/gdb/current/onlinedocs/gdb_toc.html
 *** gcc -g3
 *** j
 *** gcore
@@ -99,48 +110,60 @@
 *** p,x
 ** git
 *** magit
-    The best emacs git extension
-    http://philjackson.github.com/magit/magit.html
+The best emacs git extension
+http://philjackson.github.com/magit/magit.html
 *** topgit
-    git extension for patch queue management
+git extension for patch queue management
 *** ref
-    - Git Community Book
-    - Pro Git
+- Git Community Book
+- Pro Git
 ** grep
-*** grep/egrep 中如何匹配tab					       :grep:
+*** tracker
+*** beagle
+*** ack-grep
+*** beagrep
+*** grep
+**** grep/egrep 中如何匹配tab                                       :grep:
     - input tab with ^v^i(control-v control-i)
     - grep $'\t' file
-*** grep常用的选项						       :grep:
+**** grep常用的选项                                                 :grep:
     - C NUM 显示出匹配行附近的 NUM 行上下文。
     - n 显示行号。
     - H 显示文件名。这两个选项对于在一大堆文件里面搜索东 西非常有用。
     - o 只显示匹配的部分，这对于从一大堆东西中提取某些特殊信息非常有用。
     - i 忽略大小写
-    - v 反向匹配，即显示不匹配的行。
+      - v 反向匹配，即显示不匹配的行。
 ** hdparm							      :sysadmin:
 ** hostname /etc/hostname
+** htop
+interactive top
 ** iconv
+** indent && astyle
 ** inittab
    http://publib.boulder.ibm.com/infocenter/systems/index.jsp?topic=/com.ibm.aix.files/doc/aixfiles/inittab.htm
    - 使一个程序cmd运行,并且程序退出后自动重启
      mycmd:2:respawn:cmd && telinit q
-** ion
-*** 修改mod_query.warn()和mod_query.message()使warn和message过一段时间自动cancel
+** inotify
+** window manager
+*** ion3
+**** 修改mod_query.warn()和mod_query.message()使warn和message过一段时间自动cancel
     [[file:~/setup/ion-3-20080207/mod_query/mod_query.lua::function%20mod_query%20warn%20mplex%20str][mod_query.warn]]
-** ion3									  :util:
+*** i3
+*** fvwm
 ** lsof								      :sysadmin:
 ** mc									  :util:
 ** meld
 ** mutt
 *** mutt中用search命令(/,M-b,l..)时经常segment fault?
     ./configure --with-regex
-** nc
 ** rename								 :shell:
 ** screen								  :util:
 *** 改变encoding
-    C-o : encoding utf8
+C-o : encoding utf8
 *** 保存screen的输出
-    C-o [进入scroll模式，用C-p,C-n移动到要保存的区域的开始，按SPACE，然后移动到要保   存的区域的结束，按Y，区域被保存到paste buffer中,按C-o ]就可以调出paste buffer的   内容
+C-o [进入scroll模式，用C-p,C-n移动到要保存的区域的开始，按SPACE，然后移
+动到要保 存的区域的结束，按Y，区域被保存到paste buffer中,按C-o ]就可以
+调出paste buffer的 内容
 
 ** shc
    shc -- generic shell script compiler
@@ -150,16 +173,16 @@
 ** tilda								  :util:
 ** ulimit							      :sysadmin:
 ** watch
-   make any command has top-like output
+make any command has top-like output
+** xprop
 ** wmctrl								  :util:
 ** x remote display
-   默认情况下X server不会在tcp上监听,需要修改/etc/X11/xinit/xserverrc
-   将其中的 -nolisten tcp删掉
-
+默认情况下X server不会在tcp上监听,需要修改/etc/X11/xinit/xserverrc
+将其中的 -nolisten tcp删掉
 ** xmodmap								  :util:
    查询系统有哪些可用的keysym: /usr/share/X11/xkb/symbols
 ** xset
-** 画图
+** drawing
 *** ditaa
 *** rrdtool
 *** gimp
@@ -170,3 +193,6 @@
 **** import全屏截图
      import -window root -pause 2 1.jpg
 *** ubigraph
+** cyper
+*** openssl
+*** keytool

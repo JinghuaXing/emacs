@@ -186,3 +186,5 @@ CLOSED: [2013-04-03 Wed 11:08]
 [2013-04-10 Wed 11:52]
 * TODO proguard                                                        :todo:
 [2013-04-10 Wed 17:47]
+* TODO cypher                                                          :todo:
+[2013-04-11 Thu 19:16]

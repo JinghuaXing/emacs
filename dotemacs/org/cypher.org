@@ -1,0 +1,29 @@
+* Cypher
+** BASE64
+   使用64个 ascii (a-z, A-Z, 0-9,...) 进行编码, 每三个字节(24 bits)变换成四个 6 bits值, 每个6 bits 值对应一个 ascii , 结尾不足三个字节的编码后以 = 填充.
+   BASE64 可以将二进制数据编码为可见的 ASCII, 但因为它三个字节会编码为四个, 且标准规定每编码多少个字节后要强制插入一个换行, 导致会浪费30%多的空间.
+** symmetric encryption
+*** AES
+*** DES
+** asymmetric encryption
+*** RSA
+*** DSA
+** digest
+*** SHA1
+*** MD5
+** 数字签名
+** 数字证书
+** KeyTool
+** OpenSSL
+- Generate a new private key and certificate
+
+#+BEGIN_QUOTE
+openssl req -x509 -newkey rsa:1024 -keyout charles.key -out charles.crt -days 3650 -nodes
+#+END_QUOTE
+
+- Convert it to PKCS12 format:
+
+#+BEGIN_QUOTE
+openssl pkcs12 -export -out charles.pfx -inkey charles.key -in charles.crt
+#+END_QUOTE
+

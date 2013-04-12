@@ -535,21 +535,6 @@ main(int argc, char *argv[]) {
 **** chunked encoding
 * Regexp
 ** 贪婪 vs. 非贪婪
-* Cypher
-** BASE64
-   使用64个 ascii (a-z, A-Z, 0-9,...) 进行编码, 每三个字节(24 bits)变换成四个 6 bits值, 每个6 bits 值对应一个 ascii , 结尾不足三个字节的编码后以 = 填充.
-   BASE64 可以将二进制数据编码为可见的 ASCII, 但因为它三个字节会编码为四个, 且标准规定每编码多少个字节后要强制插入一个换行, 导致会浪费30%多的空间.
-** symmetric encryption
-*** AES
-*** DES
-** asymmetric encryption
-*** RSA
-*** DSA
-** digest
-*** SHA1
-*** MD5
-** 数字签名
-** 数字证书
 * Network
 #+CATEGORY:Network
 ** FTP两种工作模式：主动模式（Active FTP）和被动模式（Passive FTP）
