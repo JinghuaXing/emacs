@@ -7,6 +7,8 @@
           ("\\.jpe?g$\\|\\.png$\\|\\.bmp\\|\\.gif$" "display" (file))
           ("\\.CHM$\\|\\.chm$" "chmsee"  (file) )
 	  ("\\.xlsx?$\\|\\.XLSX?$" "soffice"  (file) )
+	  ("\\.doc?$\\|\\.DOC?$" "wps"  (file) )
+	  ("\\.ppt?$\\|\\.PPT?$" "wpp"  (file) )
           )
         )
   )

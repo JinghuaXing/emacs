@@ -2,11 +2,11 @@
     (progn
       (create-fontset-from-fontset-spec
        "-*-terminus-medium-r-normal--16-*-*-*-*-*-fontset-gbk,
-         chinese-gb2312:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
-         chinese-gbk:-misc-simsun-medium-r-normal--14-*-*-*-*-*-gbk-0,
-         chinese-cns11643-5:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-         chinese-cns11643-6:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0,
-         chinese-cns11643-7:-misc-simsun-medium-r-normal--16-*-*-*-*-*-gbk-0" t)
+         chinese-gb2312:-wenquanyi-wenquanyi bitmap song-medium-r-normal--0-0-75-75-p-0-iso10646-1,
+         chinese-gbk:-wenquanyi-wenquanyi bitmap song-medium-r-normal--0-0-75-75-p-0-iso10646-1,
+         chinese-cns11643-5:-wenquanyi-wenquanyi bitmap song-medium-r-normal--0-0-75-75-p-0-iso10646-1,
+         chinese-cns11643-6:-wenquanyi-wenquanyi bitmap song-medium-r-normal--0-0-75-75-p-0-iso10646-1,
+         chinese-cns11643-7:-wenquanyi-wenquanyi bitmap song-medium-r-normal--0-0-75-75-p-0-iso10646-1" t)
       (setq default-frame-alist
        	    '(
        	      (font . "fontset-gbk")
