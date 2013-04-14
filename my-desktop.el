@@ -93,8 +93,16 @@
   "Change desktops by name."
   (interactive)
   (let ((name (my-desktop-get-current-name)))
-    (when name
-      (my-desktop-save name))
+    (if (y-or-n-p "Save current session? ")
+	(when name
+	  (my-desktop-save name))
+	)
+    (call-interactively 'my-desktop-read)))
+
+(defun switch-session-no-save (&optional name)
+  "Change desktops by name."
+  (interactive)
+  (let ()
     (call-interactively 'my-desktop-read)))
 
 (defun my-desktop-name ()

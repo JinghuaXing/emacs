@@ -91,7 +91,7 @@
    'org-mode-hook
    (lambda () (org-decrypt-entries)))
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
-(setq org-crypt-key nil)
+(setq org-crypt-key "wei.sun")
 (setq auto-save-default nil)
 
 (org-babel-do-load-languages

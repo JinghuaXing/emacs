@@ -18,10 +18,10 @@
  (rear-context-string . " 4 Nov 24 12:00 ")
  (position . 132))
 ("emacs.lisp"
- (filename . "~/.elisp/")
- (front-context-string . "auctex-11.86\n  d")
- (rear-context-string . " 4 Nov 24 12:10 ")
- (position . 122))
+ (filename . "~/.elisp/dotemacs/")
+ (front-context-string . "org\n  -rw-rw-r--")
+ (rear-context-string . "96 Apr 13 13:42 ")
+ (position . 131))
 ("build_server"
  (filename . "/ssh:weisun@build_server:/home/weisun/")
  (front-context-string)

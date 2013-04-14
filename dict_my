@@ -1,4 +1,4 @@
-personal_ws-1.1 en 55 
+personal_ws-1.1 en 56 
 NonConfigurationInstances
 refactoring
 AlertDialog
@@ -31,6 +31,7 @@ StatusBar
 IP
 SQLiteStatement
 DNS
+KeyStore
 Keystore
 boolean
 onSaveInstanceState
