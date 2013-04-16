@@ -15,29 +15,104 @@ BASE64 可以将二进制数据编码为可见的 ASCII, 但因为它三个字�
 ** Conception
 *** Certificate
 *** Signature
-*** Java Key Store
+*** Key Store
 **** jks
+- jks
 **** bks
+- bks
+**** jceks
+- .jce
+**** pcks12
+- pfx / p12
+**** uber
+- ubr
 *** X509
-**** cer, der, pem
-*** PCKS12
-**** pfx
-*** PCKS10
-*** PCKS7
+X.509是常见通用的证书格式。所有的证书都符合为Public Key Infrastructure
+(PKI) 制定的 ITU-T X509 国际标准。
+
+另外, 对于 x509 格式, 定义了两种`编码'格式, 这两种格式对私钥和证书均可
+编码.
+**** pem 
+ascii
+**** der 
+binary
+*** PKCS
+PKCS 全称是 Public-Key Cryptography Standards ，是由 RSA 实验室与其它安
+全系统开发商为促进公钥密码的发展而制订的一系列标准，PKCS 目前共发布过
+15 个标准。
+
+PKCS 并不是数字证书的格式, 而是定义了对某些数字证书操作的封装格式, 其
+中不仅包含证书, 也可能包含私钥等其他信息, 例如证书请求, 证书链等.
+
+**** PKCS12
+Personal Information Exchange Syntax Standard
+- pfx / p12
+用于存放个人证书/私钥，他通常包含保护密码，2进制方式
+**** PKCS10
+Certification Request Standard
+- csr / p10
+证书请求
+**** PKCS7
+Cryptographic Message Syntax Standard
+- p7r
+A对证书请求的回复，只用于导入
+- p7b
+以树状展示证书链(certificate chain)，同时也支持单个证书，不含私钥
 ** Tools
 *** gnupg
 *** keytool
 man keytool
+**** 生成密钥对及自签名证书
+keytool -genkeypair -alias test -keystore test.jks -storetype jks
+**** 生成 csr
+keytool -certreq -alias test -keystore test.jks > test.csr
+**** 显示 keystore 内容
+keytool -list -keystore test.jks
+**** 导出证书
+keytool -export -alias test -keystore test.jks -rfc > test.crt
+keytool -export -alias test -keystore test.jks > test.pem
+**** 导入证书 / 导入证书请求回复
+keytool -import -alias test2 -file test.p7r -keystore test.jks
+**** 导入其他 keystore
+ keytool -importkeystore -srckeystore .keystore -destkeystore 1.jks
+**** 导出私钥 ?
+不支持, 可使用 pkeytool 或 portecle
+**** 导出 pfx ?
+不支持, 可使用 pkeytool 或 portecle
+*** pkeytool
 *** openssl
-- Generate a new private key and certificate
+man openssl
+man pkcs12
+man x509
+man pkey
+man req
+...
+
+- 生成私钥
+  openssl genrsa 1024 > test.key
+- 生成证书请求
+  openssl req -new -key test.key > test.csr
+- CA 根据证书请求生成证书请求回复
+  openssl req -x509 -days 365 -key ca.key -in test.csr > test.p7r
+- 生成自签名证书请求回复
+  openssl req -x509 -days 365 -key test.key -in test.csr > test.p7r  
+- 生成私钥及自签名证书
+  openssl req -x509 -newkey rsa:1024 -keyout charles.key -out charles.crt -days 3650 -nodes
+- 生成 pfx
+  openssl pkcs12 -export -out charles.pfx -inkey charles.key -in
+  charles.crt
 
 #+BEGIN_QUOTE
-openssl req -x509 -newkey rsa:1024 -keyout charles.key -out charles.crt -days 3650 -nodes
+-export
+ This option specifies that a PKCS#12 file will be created rather than parsed.
 #+END_QUOTE
 
-- Convert it to PKCS12 format:
-
-#+BEGIN_QUOTE
-openssl pkcs12 -export -out charles.pfx -inkey charles.key -in charles.crt
-#+END_QUOTE
-
+- 从 pfx 提取 privkey 与 pubkey
+  openssl pkcs12 -in test.pfx -out tmp.pem
+  openssl x509 -in tmp.pem -out test.pem -outform pem
+  openssl x509 -in tmp.pem -out test.key -outform pem
+- pem 与 der 证书转换
+  openssl x509 -in test.pem -inform pem -out test.der -outform der
+- 根据私钥生成公钥
+  openssl pkey -in test.key -out test.pem -outform pem -pubout
+*** portecle
