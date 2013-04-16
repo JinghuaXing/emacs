@@ -34,7 +34,6 @@
 ;; (global-set-key (kbd "<f11>") 'calendar)
 (global-set-key (kbd "M-m") 'ace-jump-mode)
 ;;(global-set-key (kbd "s-SPC") 'ace-jump-mode)
-;;(define-key global-map (kbd "C-x C-x") 'toggle-eshell)
 
 (global-set-key (kbd "M-z") 'wy-go-to-char)
 ;;(global-set-key (kbd "C-SPC") 'toggle-input-method)
@@ -83,9 +82,14 @@
 
 (global-set-key (kbd "C-x C-x") '(lambda ()
 				   (interactive)
-				   (setq search_candidates (grep-live-buffer '("*beagrep*" "*ack*" "*Find*" "*Moccur*")))
-				   (setq select_name (ido-completing-read "Switch to query: " search_candidates))
-				   (switch-to-buffer select_name)
+				   (setq search_candidates (grep-live-buffer '("*beagrep*" "*ack*" "*Find*" "*Moccur*" "*etags-select*")))
+				   (when search_candidates
+				     (if (not (cdr search_candidates))
+					 (setq select_name (car search_candidates))
+				       (setq select_name (ido-completing-read "Switch to query: " search_candidates))
+				       )
+				     (switch-to-buffer select_name)
+				     )
 				   )
 		)
 

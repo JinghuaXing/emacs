@@ -274,7 +274,10 @@ to do."
            (setq etags-select-opened-window (selected-window))
            (select-window (split-window-vertically))
            (switch-to-buffer etags-select-buffer-name)
-           (etags-select-mode tagname)))))
+           (etags-select-mode tagname)
+	   (toggle-read-only)
+	   (delete-other-windows)
+	   ))))
 
 (defun etags-select-goto-tag (&optional arg other-window)
   "Goto the file/line of the tag under the cursor.
@@ -301,11 +304,11 @@ Use the C-u prefix to prevent the etags-select window from closing."
       (while (re-search-backward (concat "^.*?\\]\\s-+" text-to-search-for) filename-point t)
         (setq search-count (1+ search-count)))
       (goto-char tag-point)
-      (unless arg
-        (kill-buffer etags-select-buffer-name)
-        (when etags-select-opened-window
-          (delete-window (selected-window))
-          (select-window etags-select-opened-window)))
+      ;; (unless arg
+      ;;   (kill-buffer etags-select-buffer-name)
+      ;;   (when etags-select-opened-window
+      ;;     (delete-window (selected-window))
+      ;;     (select-window etags-select-opened-window)))
       (switch-to-buffer etags-select-source-buffer)
       (if etags-select-use-xemacs-etags-p
           (push-tag-mark)
@@ -368,8 +371,10 @@ Use the C-u prefix to prevent the etags-select window from closing."
 (defun etags-select-quit ()
   "Quit etags-select buffer."
   (interactive)
-  (kill-buffer nil)
-  (delete-window))
+  ;; (kill-buffer nil)
+  (bury-buffer)
+  ;; (delete-window)
+  )
 
 (defun etags-select-by-tag-number (first-digit)
   (let ((tag-num (read-from-minibuffer "Tag number? " first-digit))

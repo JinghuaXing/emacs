@@ -63,22 +63,22 @@
     - last
     - lastlog
     - fingure
-** network/web debugging
-*** charles web debugging proxy
-a proxy for web debugging, especially, support HTTPS
-*** fiddler (not linux capable)
-*** tinyproxy
-*** firebug for firefox
-*** wireshark
-*** tcpdump
-** network util
-*** netcat (nc)
-*** iperf
-*** proxy
-see also [[network/web debugging]]
-**** squid
 ** convmv
+** cyper
+*** openssl
+*** keytool
 ** dnotify
+** drawing
+*** ditaa
+*** rrdtool
+*** gimp
+*** graphivz 静态图,适合图拓朴图,调用图等
+*** imagemagick
+**** display
+**** import
+**** import全屏截图
+     import -window root -pause 2 1.jpg
+*** ubigraph
 ** expect
 ** gdb
 http://sourceware.org/gdb/current/onlinedocs/gdb_toc.html
@@ -144,18 +144,26 @@ interactive top
    - 使一个程序cmd运行,并且程序退出后自动重启
      mycmd:2:respawn:cmd && telinit q
 ** inotify
-** window manager
-*** ion3
-**** 修改mod_query.warn()和mod_query.message()使warn和message过一段时间自动cancel
-    [[file:~/setup/ion-3-20080207/mod_query/mod_query.lua::function%20mod_query%20warn%20mplex%20str][mod_query.warn]]
-*** i3
-*** fvwm
 ** lsof								      :sysadmin:
 ** mc									  :util:
 ** meld
 ** mutt
 *** mutt中用search命令(/,M-b,l..)时经常segment fault?
     ./configure --with-regex
+** network util
+*** netcat (nc)
+*** iperf
+*** proxy
+see also [[network/web debugging]]
+**** squid
+** network/web debugging
+*** charles web debugging proxy
+a proxy for web debugging, especially, support HTTPS
+*** fiddler (not linux capable)
+*** tinyproxy
+*** firebug for firefox
+*** wireshark
+*** tcpdump
 ** rename								 :shell:
 ** screen								  :util:
 *** 改变encoding
@@ -170,29 +178,22 @@ C-o [进入scroll模式，用C-p,C-n移动到要保存的区域的开始，按SP
 ** ssh
 ** tac
 ** tex
+** tidy
 ** tilda								  :util:
 ** ulimit							      :sysadmin:
 ** watch
 make any command has top-like output
-** xprop
+** window manager
+*** ion3
+**** 修改mod_query.warn()和mod_query.message()使warn和message过一段时间自动cancel
+    [[file:~/setup/ion-3-20080207/mod_query/mod_query.lua::function%20mod_query%20warn%20mplex%20str][mod_query.warn]]
+*** i3
+*** fvwm
 ** wmctrl								  :util:
 ** x remote display
 默认情况下X server不会在tcp上监听,需要修改/etc/X11/xinit/xserverrc
 将其中的 -nolisten tcp删掉
 ** xmodmap								  :util:
    查询系统有哪些可用的keysym: /usr/share/X11/xkb/symbols
+** xprop
 ** xset
-** drawing
-*** ditaa
-*** rrdtool
-*** gimp
-*** graphivz 静态图,适合图拓朴图,调用图等
-*** imagemagick
-**** display
-**** import
-**** import全屏截图
-     import -window root -pause 2 1.jpg
-*** ubigraph
-** cyper
-*** openssl
-*** keytool

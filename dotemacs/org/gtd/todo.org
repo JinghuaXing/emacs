@@ -151,6 +151,9 @@ CLOSED: [2012-12-05 三 13:19]
 :END:
 [2012-12-20 Thu 10:02]
 * TODO write a program to consume arbitrary cpu and memory             :todo:
+:PROPERTIES:
+:ID:       feec2123-12fa-4f6d-b5ba-c88624298143
+:END:
 [2012-12-21 Fri 10:43]
 * DONE saveInstanceState and restoreInstanceState                      :todo:
 CLOSED: [2013-01-22 Tue 10:06]
@@ -165,26 +168,75 @@ CLOSED: [2013-02-25 Mon 15:25]
 - State "DONE"       from "TODO"       [2013-02-25 Mon 15:25]
 [2013-02-05 Tue 19:41]
 * TODO android networking                                              :todo:
+:PROPERTIES:
+:ID:       24fdef08-d1c4-4211-9cbc-3993a62694e0
+:END:
 [2013-02-20 Wed 20:06]
 * TODO keytool                                                         :todo:
+:PROPERTIES:
+:ID:       f576c81b-e600-4b06-bb0a-7e252dfd42ed
+:END:
 [2013-02-25 Mon 15:25]
 * TODO android BLCR                                                    :todo:
+:PROPERTIES:
+:ID:       35622024-a6b3-471e-ae27-e98e44a31d3b
+:END:
 [2013-03-20 Wed 15:31]
 * TODO adnroid.os.Debug                                                :todo:
+:PROPERTIES:
+:ID:       f9d79ead-1b97-44a2-8013-6e9c694e089d
+:END:
 [2013-03-20 Wed 17:37]
 * TODO Android Root Howto                                              :todo:
+:PROPERTIES:
+:ID:       28a99153-cfc8-4fc5-849b-9e2663191cfc
+:END:
 [2013-04-02 Tue 12:35]
 * TODO android pm grant permission                                     :todo:
+:PROPERTIES:
+:ID:       2d8d0a83-d9ec-469f-87e0-fa1d2d21b585
+:END:
 [2013-04-02 Tue 12:36]
 * DONE Runtime UID & GID                                               :todo:
 CLOSED: [2013-04-03 Wed 11:08]
 - State "DONE"       from "TODO"       [2013-04-03 Wed 11:08]
 [2013-04-02 Tue 21:22]
 * TODO init.rc                                                         :todo:
+:PROPERTIES:
+:ID:       6a0b7d95-a3d7-4fb2-9b13-926f925fbd97
+:END:
 [2013-04-02 Tue 21:24]
 * TODO android ui patterns  :todo:
+:PROPERTIES:
+:ID:       8c4e40f6-22e2-42c8-ade1-4a9d6b4ae3b1
+:END:
 [2013-04-10 Wed 11:52]
 * TODO proguard                                                        :todo:
+:PROPERTIES:
+:ID:       d521ec01-0670-43ea-9e72-9f3eafb9c1af
+:END:
 [2013-04-10 Wed 17:47]
 * TODO cypher                                                          :todo:
+:PROPERTIES:
+:ID:       3793198a-cba1-4cc3-b07f-1ee201e3aaba
+:END:
 [2013-04-11 Thu 19:16]
+* TODO vss,rss,pss,uss                                                 :todo:
+:PROPERTIES:
+:ID:       e4eebba4-e455-4318-9a2f-feebf86a5525
+:END:
+[2013-04-17 Wed 21:35]
+* TODO 透明代理,反向代理                                               :todo:
+:PROPERTIES:
+:ID:       9d22c209-2353-4b7c-a345-887bf602e8d0
+:END:
+[2013-04-18 Thu 17:15]
+* TODO android bitmap                                                  :todo:
+:PROPERTIES:
+:ID:       674906fa-dd51-4596-8a2a-6367e76786bd
+:END:
+[2013-04-19 Fri 10:36]
+* TODO android memory                                                  :todo:
+[2013-04-19 Fri 13:56]
+* TODO ptmalloc                                                        :todo:
+[2013-04-19 Fri 16:52]

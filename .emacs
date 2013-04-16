@@ -212,7 +212,7 @@
 (setq-default save-place t)
 (transient-mark-mode t)
 
-(require 'switch-window)
+;; (require 'switch-window)
 
 (setq backup-inhibited t)
 
@@ -276,7 +276,6 @@
 (global-set-key (kbd "C-S-p")  'scroll-down-1)
 
 (require 'hl-line)
-(require 'imenu-tree)
 
 (require 'ack)
 (add-hook 'ack-mode-hook (lambda ()

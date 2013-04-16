@@ -85,7 +85,7 @@
  '(ido-use-filename-at-point nil)
  '(ispell-personal-dictionary "/home/sunway/.elisp/dict_my")
  '(ispell-query-replace-choices t)
- '(large-file-warning-threshold 6000000)
+ '(large-file-warning-threshold 60000000)
  '(magit-completing-read-function (quote magit-ido-completing-read))
  '(magit-set-upstream-on-push t)
  '(mail-host-address nil)

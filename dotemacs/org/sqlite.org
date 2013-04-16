@@ -3,6 +3,22 @@
 *** SQLiteDatabase & SQLiteDatabase (c)
 **** addCustomFunction
 *** SQLiteStatement (c)
+Note that `SQLiteStatement' has nothing to do with the native
+`prepared statement', it nothing but a `helper class' to store:
+- sql string
+- bind args
+- db connection (session)
+
+In fact, there is ONE class named `PreparedStatement', defined in the
+`SQLiteConnection', which corresponds to the `native prepared
+statement', and also there is `PreparedStatementCache' in
+SQLiteConnection to avoid redundant statement preparations. So, cache
+`SQLiteStatement' manually may make no sense? so I really doubt that
+`android providers should use DatabaseUtils.InsertHelper to cache
+SQLiteStatement', as mentioned in:
+
+[[http://www.outofwhatbox.com/blog/2010/12/android-using-databaseutils-inserthelper-for-faster-insertions-into-sqlite-database/#comment-2685][android-using-databaseutils-inserthelper-for-faster-insertions-into-sqlite-database/]]
+
 *** SQLiteSession
 *** SQLiteConnection & SQLiteConnectionPool
 **** Yield

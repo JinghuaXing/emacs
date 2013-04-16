@@ -104,18 +104,18 @@
 
 (setq imenu-sort-function 'imenu--sort-by-name)
 
-(setq compilation-finish-function
-      (lambda (buf str)
-        (save-excursion
-          (with-current-buffer buf
-            (goto-char (point-min))
-            (if (re-search-forward "abnormally" nil t)
-                (tooltip-show "compilation errors, press C-x ` to visit")
-	      (progn
-		;; (run-at-time 0.5 nil 'delete-windows-on buf)
-		(tooltip-show "NO COMPILATION ERRORS!")
-		)
-              )))))
+;; (setq compilation-finish-function
+;;       (lambda (buf str)
+;;         (save-excursion
+;;           (with-current-buffer buf
+;;             (goto-char (point-min))
+;;             (if (re-search-forward "abnormally" nil t)
+;;                 (tooltip-show "compilation errors, press C-x ` to visit")
+;; 	      (progn
+;; 		;; (run-at-time 0.5 nil 'delete-windows-on buf)
+;; 		(tooltip-show "NO COMPILATION ERRORS!")
+;; 		)
+;;               )))))
 
 ;; (based on work by Arndt Gulbrandsen, Troll Tech)
 (defun jk/c-mode-common-hook ()
