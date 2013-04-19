@@ -8,49 +8,49 @@
      - when resolve activity, ResolveActivity will reorder candidates in alphabet order....so nothing
      - when resolve service, only candidate with the highest priority are selected
      - when resolve broadcast, candidate priority are considered for OrderedBroadcast
-*** DONE [#A] IntentFilter matching
+*** IntentFilter matching
      CLOSED: [2011-01-19 Wed 16:07]
      - State "DONE"       [2011-01-19 Wed 16:07]
      how startActivity(or startService, sendBrocast) use Intent.{category,action,data} to find the correct intent receiver?
      AMS use [[PackageManager][PackageManager]] to resolve intent to get intent's component
 **** startActivity
-#+BEGIN_EXAMPLE lang:c
-      AMS:startActivity()
-          AMS:startActivityMayWait()
-	      PM:resolveIntent()
-	          PM:queryIntentActivities()
-		      // explicit intent
-		      if (intent.getCommponent())
-		          return the component
-		      // implicit intent
-		      if (intent.getPackage()==null)
-		          PM:mActivities.queryIntent()
-			      foreach activity:
-			       	buildResolveList()
-			           foreach IntentFilter:
-                                     filter.match()
-                                     make sure filter has DEFAULT category
-		      else
-		          PM:mActivities.queryIntentForPackage()
-                            foreach activity:
-			       	buildResolveList()
-			           foreach IntentFilter:
-                                     filter.match()
-                                     make sure filter has DEFAULT category
-		  PM:chooseBestActivity()
-		      // candidates here are sorted by [[IntentFilter.priority][IntentFilter.priority]]
-                      if (candidates.size() == 1)
-		          return it;
-		      if we have saved a preference for a preferred activity
-		          return findPreferredActivity()
-		      else
-                          return ResolverActivity // although candidates are sorted by IntentFilter.priority, ResolverActivity will
-			                          // reorder them in alphabet order...weired~~
-	      Intent.setComponent()
-	      AMS:startActivityLocked()
-	        checkComponentPermission();
-	      ...
-#+END_EXAMPLE
+#+BEGIN_SRC text
+  AMS:startActivity()
+      AMS:startActivityMayWait()
+          PM:resolveIntent()
+              PM:queryIntentActivities()
+                  // explicit intent
+                  if (intent.getCommponent())
+                      return the component
+                  // implicit intent
+                  if (intent.getPackage()==null)
+                      PM:mActivities.queryIntent()
+                          foreach activity:
+                            buildResolveList()
+                               foreach IntentFilter:
+                                 filter.match()
+                                 make sure filter has DEFAULT category
+                  else
+                      PM:mActivities.queryIntentForPackage()
+                        foreach activity:
+                            buildResolveList()
+                               foreach IntentFilter:
+                                 filter.match()
+                                 make sure filter has DEFAULT category
+              PM:chooseBestActivity()
+                  // candidates here are sorted by [[IntentFilter.priority][IntentFilter.priority]]
+                  if (candidates.size() == 1)
+                      return it;
+                  if we have saved a preference for a preferred activity
+                      return findPreferredActivity()
+                  else
+                      return ResolverActivity // although candidates are sorted by IntentFilter.priority, ResolverActivity will
+                                              // reorder them in alphabet order...weired~~
+          Intent.setComponent()
+          AMS:startActivityLocked()
+            checkComponentPermission();
+          ...
+#+END_SRC
       - PM:resolveIntent
        	when PackagetManager need to detect whether there are activities in a certain package matching the Intent, it will resolve the inent as:
        	1) PM calls queryIntentForPackage, which will take a List of activities in the package as param

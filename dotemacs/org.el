@@ -1,6 +1,6 @@
 (require 'org-install)
 (require 'org-agenda)
-(require 'org-export-generic)
+;; (require 'org-export-generic)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (setq org-hide-leading-stars t)
 (setq org-agenda-include-diary nil)
@@ -26,9 +26,6 @@
               ("CANCELLED" :foreground "forest green" :weight bold)
               )))
 
-;; (setq org-todo-keywords
-;;       '((sequence "TODO(t)" "WATING(w)"  "|" "DONE(d)" "CANCELLED(c)")
-;; 	))
 (setq org-use-fast-todo-selection t)
 (setq org-refile-use-outline-path t)
 (setq org-refile-targets
@@ -56,16 +53,16 @@
 (setq org-plantuml-jar-path "~/.elisp/plantuml.jar")
 (setq org-src-fontify-natively t)
 
-(setq org-latex-to-pdf-process 
+(setq org-latex-pdf-process 
       '("xelatex -interaction nonstopmode %f"
 	"xelatex -interaction nonstopmode %f"))
 
 
-(add-to-list 'org-export-latex-default-packages-alist
+(add-to-list 'org-latex-default-packages-alist
 	     '("" "xeCJK" nil)
 	     t
 	     )
-(add-to-list 'org-export-latex-default-packages-alist
+(add-to-list 'org-latex-default-packages-alist
 	     "\\setCJKmainfont{WenQuanYi Zen Hei}\\setmainfont{Droid Serif}"
 	     t
 	     )

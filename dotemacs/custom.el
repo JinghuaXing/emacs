@@ -48,6 +48,7 @@
  '(cscope-display-times nil)
  '(cua-enable-cua-keys nil)
  '(custom-safe-themes (quote ("e9680c4d70f1d81afadd35647e818913da5ad34917f2c663d12e737cdecd2a77" default)))
+ '(deft-auto-save-interval 60.0)
  '(desktop-lazy-idle-delay 2)
  '(desktop-load-locked-desktop t)
  '(dired-backup-overwrite t)

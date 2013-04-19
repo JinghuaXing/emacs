@@ -1118,8 +1118,8 @@ Turning on `deft-mode' runs the hook `deft-mode-hook'.
   (setq major-mode 'deft-mode)
   (deft-set-mode-name)
   (deft-buffer-setup)
-  (when (> deft-auto-save-interval 0)
-    (run-with-idle-timer deft-auto-save-interval t 'deft-auto-save))
+  ;; (when (> deft-auto-save-interval 0)
+  ;;   (run-with-idle-timer deft-auto-save-interval t 'deft-auto-save))
   (run-mode-hooks 'deft-mode-hook))
 
 (put 'deft-mode 'mode-class 'special)

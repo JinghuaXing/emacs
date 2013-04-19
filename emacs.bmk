@@ -12,12 +12,12 @@
  (front-context-string . "cts_dalviktests_")
  (rear-context-string . " 4 Feb 17 10:02 ")
  (position . 118))
-("org"
+("note"
  (filename . "~/.elisp/dotemacs/org/")
  (front-context-string . "auto\n  drwxrwxr-")
  (rear-context-string . " 4 Nov 24 12:00 ")
  (position . 132))
-("emacs.lisp"
+("emacs"
  (filename . "~/.elisp/dotemacs/")
  (front-context-string . "org\n  -rw-rw-r--")
  (rear-context-string . "96 Apr 13 13:42 ")
@@ -47,11 +47,6 @@
  (front-context-string . "*** DONE `withYi")
  (rear-context-string . "enInputStream()\n")
  (position . 104850))
-(".emacs"
- (filename . "~/.emacs")
- (front-context-string . "\n\n(add-hook 'sr-")
- (rear-context-string . "-map \"\\M-f\" nil)")
- (position . 16608))
 ("Dropbox"
  (filename . "~/Dropbox/")
  (front-context-string)
