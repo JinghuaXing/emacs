@@ -186,7 +186,7 @@ the \"Gen RGB\" column in solarized-definitions.el to improve them further."
              (escape-glyph-face ((t (,@fg-red))))
              (fringe ((t (,@fg-base01 ,@bg-base02))))
              (linum ((t (,@fg-base01 ,@bg-base02))))
-             (header-line ((t (,@fg-base0 ,@bg-base02 ,@fmt-revbb)))) ; Pmenu
+             (header-line ((t (,@fg-base02 ,@bg-base02 ,@fmt-revbb)))) ; Pmenu
              (highlight ((t (,@bg-base02))))
              (hl-line ((t (:underline ,opt-under ,@bg-base02)))) ; CursorLine
              (isearch ((t (,@fmt-stnd ,@fg-orange ,@bg-back)))) ; IncSearch

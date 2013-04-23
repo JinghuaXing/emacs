@@ -388,6 +388,7 @@ tag 分为两种: light weight tag 和 annotated tag
 ** Misc
 *** use GIT_CURL_VERBOSE env to debug curl problem
 *** config
+#+BEGIN_EXAMPLE
 [color]
 	ui = auto
 [user]
@@ -425,14 +426,14 @@ tag 分为两种: light weight tag 和 annotated tag
 [core]
       # ignore file mode change
 	filemode = false 
-
+#+END_EXAMPLE
 ** Gerrit
 [[http://review.coreboot.org/Documentation/index.html][Gerrit Code Review for Git]]
 *** Hook
 .git/hooks/commit-msg
 
 主要有两个功能:
-- verify_commit
+- verify\_commit
 - add_changeid
   若 commit-msg 包含 Change-ID, 则使用这个 Change-ID, 否则,生成新的 change-id,
   并附加到 commit message 中.
@@ -462,6 +463,12 @@ gerrit 重写了一个 git-receive-pack, 提供了几个和 gerrit 相关的参�
 
 *** Command line tools
 ** Repo
+*** init
+*** sync
+*** for-all
+*** upload
+*** start
+*** abandon
 ** Footnotes
 
 [fn:1] 有待证实

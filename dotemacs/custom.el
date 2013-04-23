@@ -1,8 +1,8 @@
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(LaTeX-command "xelatex")
  '(TeX-command-list (quote (("TeX" "%(PDF)%(tex) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil (plain-tex-mode texinfo-mode ams-tex-mode) :help "Run plain TeX") ("LaTeX" "xelatex%(mode) %t" TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX") ("Makeinfo" "makeinfo %t" TeX-run-compile nil (texinfo-mode) :help "Run Makeinfo with Info output") ("Makeinfo HTML" "makeinfo --html %t" TeX-run-compile nil (texinfo-mode) :help "Run Makeinfo with HTML output") ("AmSTeX" "%(PDF)amstex %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil (ams-tex-mode) :help "Run AMSTeX") ("ConTeXt" "texexec --once --texutil %(execopts)%t" TeX-run-TeX nil (context-mode) :help "Run ConTeXt once") ("ConTeXt Full" "texexec %(execopts)%t" TeX-run-TeX nil (context-mode) :help "Run ConTeXt until completion") ("BibTeX" "bibtex %s" TeX-run-BibTeX nil t :help "Run BibTeX") ("View" "%V" TeX-run-discard-or-function t t :help "Run Viewer") ("Print" "%p" TeX-run-command t t :help "Print the file") ("Queue" "%q" TeX-run-background nil t :help "View the printer queue" :visible TeX-queue-command) ("File" "%(o?)dvips %d -o %f " TeX-run-command t t :help "Generate PostScript file") ("Index" "makeindex %s" TeX-run-command nil t :help "Create index file") ("Check" "lacheck %s" TeX-run-compile nil (latex-mode) :help "Check LaTeX file for correctness") ("Spell" "(TeX-ispell-document \"\")" TeX-run-function nil t :help "Spell-check the document") ("Clean" "TeX-clean" TeX-run-function nil t :help "Delete generated intermediate files") ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files") ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
  '(TeX-file-extensions (quote ("tex" "sty" "cls" "ltx" "texi" "texinfo" "dtx" "bmer")))
@@ -23,7 +23,7 @@
  '(bm-priority 2)
  '(bm-recenter t)
  '(bookmark-default-file "~/.elisp/emacs.bmk")
- '(browse-url-browser-function (quote browse-url-generic))
+ '(browse-url-browser-function (quote browse-url-w3))
  '(browse-url-generic-args (quote ("-newpage")))
  '(browse-url-generic-program "google-chrome")
  '(bs-configurations (quote (("all" nil nil nil nil nil) ("files" nil nil nil bs-visits-non-file bs-sort-buffer-interns-are-last))))
@@ -61,6 +61,8 @@
  '(display-time-string-forms (quote ((if (and (not display-time-format) display-time-day-and-date) (format-time-string "%A %m/%d " now) "") (propertize (format-time-string (or display-time-format (if display-time-24hr-format "%H:%M" "%-I:%M%p")) now) (quote help-echo) (format-time-string "%a %b %e, %Y" now)) load (if mail (concat " " (propertize display-time-mail-string (quote display) (\` (when (and display-time-use-mail-icon (display-graphic-p)) (\,@ display-time-mail-icon) (\,@ (if (and display-time-mail-face (memq (plist-get (cdr display-time-mail-icon) :type) (quote (pbm xbm)))) (let ((bg (face-attribute display-time-mail-face :background))) (if (stringp bg) (list :background bg))))))) (quote face) display-time-mail-face (quote help-echo) "You have new mail; mouse-2: Read mail" (quote mouse-face) (quote mode-line-highlight) (quote local-map) (make-mode-line-mouse-map (quote mouse-2) read-mail-command))) ""))))
  '(ecb-compile-window-height nil)
  '(ecb-ignore-display-buffer-function (quote compile-window))
+ '(ecb-layout-name "my-methods")
+ '(ecb-layout-window-sizes (quote (("left9" (ecb-methods-buffer-name 0.35714285714285715 . 0.9772727272727273)))))
  '(ecb-maximize-ecb-window-after-selection t)
  '(ecb-options-version "2.40")
  '(ecb-primary-secondary-mouse-buttons (quote mouse-1--mouse-2))
@@ -74,6 +76,7 @@
  '(file-cache-filter-regexps (quote ("~$" "\\.o$" "\\.exe$" "\\.a$" "\\.elc$" ",v$" "\\.output$" "\\.$" "#$" "\\.class$" "\\.git")))
  '(find-grep-options "-q  -I -i")
  '(gdb-enable-debug t)
+ '(global-semantic-stickyfunc-mode t)
  '(helm-for-files-preferred-list (quote (helm-c-source-recentf helm-c-source-file-cache helm-c-source-files-in-current-dir)))
  '(ibuffer-formats (quote ((mark modified read-only " " (name 60 60 :left :elide) " " (size 9 -1 :right) " " (mode 16 16 :left :elide) " " filename-and-process) (mark " " (name 16 -1) " " filename))))
  '(ibuffer-saved-filter-groups nil)
@@ -167,10 +170,10 @@
  '(xgtags-show-paths (quote expanded)))
 
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#0b0f23" :foreground "#f8f8f2" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 105 :width normal :foundry "unknown" :family "DejaVu Sans Mono"))))
  '(bm-face ((((class color) (background dark)) (:background "SkyBlue1" :foreground "Black"))))
  '(diff-added ((((background dark)) (:foreground "#FFFF9B9BFFFF")) (t (:foreground "DarkGreen"))))
@@ -189,6 +192,7 @@
  '(font-latex-sectioning-4-face ((t (:inherit font-latex-sectioning-5-face :foreground "cyan" :height 1.1))))
  '(font-latex-verbatim-face ((((class color) (background dark)) (:foreground "burlywood" :family "monospace"))))
  '(hs-fringe-face ((t (:foreground "yellow"))))
+ '(magit-header ((t (:inherit highlight))))
  '(sr-active-path-face ((t nil)))
  '(sr-directory-face ((t (:foreground "DarkOrange"))))
  '(sr-editing-path-face ((t (:foreground "yellow" :weight bold :height 120))))

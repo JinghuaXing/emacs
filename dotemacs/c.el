@@ -1,8 +1,10 @@
 (require 'dtrt-indent)
+(require 'cedet)
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
 ;;  (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
+  (semantic-mode t)
   (c-set-style "k&r")
   (c-subword-mode t)
   (dtrt-indent-mode t)
@@ -18,7 +20,7 @@
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
-  ;; (add-to-list 'which-func-modes 'java-mode)
+  (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)
   (hs-hide-initial-comment-block)
   (local-set-key (kbd "C-c o o") 'hs-toggle-hiding)
@@ -28,7 +30,17 @@
   (define-key c-subword-mode-map (kbd "<C-right>") nil)
   (define-key c-subword-mode-map (kbd "<M-left>") nil)
   (define-key c-subword-mode-map (kbd "<M-right>") nil)
-
+  (setq ecb-activated-p nil)
+  (local-set-key (kbd "<s-return>") '(lambda()
+				 (interactive)
+				 (if ecb-activated-p
+				     (ecb-toggle-ecb-windows)
+				   (progn
+				     (setq ecb-activated-p t)
+				     (ecb-activate)
+				     )
+				   )
+				 ))
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)
@@ -247,3 +259,9 @@
 	  (function (lambda ()
 		      (add-hook 'local-write-file-hooks 
 				'check-parens))))
+(add-hook 'ecb-show-ecb-windows-after-hook '(lambda()
+					      (interactive)
+					      (ecb-goto-window-methods)
+					      ))
+
+

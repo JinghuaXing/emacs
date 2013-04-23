@@ -1,6 +1,6 @@
 (add-to-list 'load-path "~/.elisp/color-theme-6.6.0/")
 (add-to-list 'load-path "~/.elisp/themes/")
-;; allow for color prompt in shell
+
 (ansi-color-for-comint-mode-on)
 ;; (set-face-foreground 'font-lock-comment-face "#95917E")
 ;; (set-face-foreground 'font-lock-comment-face "gold")

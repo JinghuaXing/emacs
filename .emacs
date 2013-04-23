@@ -246,9 +246,9 @@
 (global-set-key (kbd "<f5>") 'quickrun)
 ;; (setq url-proxy-services '(("no_proxy" . "work\\.com")
 ;;                            ("http" . "127.0.0.1:5865")))
-;; (setq w3m-command-arguments
-;;       (nconc w3m-command-arguments
-;; 	     '("-o" "http_proxy=http://127.0.0.1:5866")))
+(setq w3m-command-arguments
+      (nconc w3m-command-arguments
+	     '("-o" "http_proxy=http://build_server:3128")))
 
 (autoload 'markdown-mode "markdown-mode.el"
   "Major mode for editing Markdown files" t)
@@ -306,3 +306,7 @@
 (setq deft-extension "org")
 (setq deft-text-mode 'org-mode)
 (global-set-key (kbd "<f12>") 'deft)
+
+(require 'imenu-tree)
+
+(setq stack-trace-on-error nil)

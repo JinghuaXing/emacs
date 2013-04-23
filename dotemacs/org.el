@@ -8,7 +8,7 @@
 
 (defalias 'agenda  'org-agenda)
 (require 'remember)
-(org-remember-insinuate)
+;; (org-remember-insinuate)
 (defalias 'todo 'org-remember)
 
 (setq org-directory "~/.elisp/dotemacs/org/")

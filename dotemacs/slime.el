@@ -13,6 +13,10 @@
       (call-interactively 'slime-indent-and-complete-symbol)))
 (eval-after-load "lisp-mode"
   '(progn
+     (define-key lisp-mode-map (kbd "<f1> a") 'slime-apropos)
+     (define-key lisp-mode-map (kbd "C-h a") 'slime-apropos)
+     (define-key lisp-mode-map (kbd "<f1> f") 'slime-describe-symbol)
+     (define-key lisp-mode-map (kbd "C-h f") 'slime-describe-symbol)
      (define-key lisp-mode-map (kbd "TAB") 'lisp-indent-or-complete)))
 
 (add-hook 'lisp-mode-hook '(lambda () (flyspell-mode -1)))
