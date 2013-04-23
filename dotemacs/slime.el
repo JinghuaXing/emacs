@@ -15,11 +15,17 @@
   '(progn
      (define-key lisp-mode-map (kbd "<f1> a") 'slime-apropos)
      (define-key lisp-mode-map (kbd "C-h a") 'slime-apropos)
+     (define-key lisp-mode-map (kbd "C-h C-a") 'slime-apropos)
      (define-key lisp-mode-map (kbd "<f1> f") 'slime-describe-symbol)
      (define-key lisp-mode-map (kbd "C-h f") 'slime-describe-symbol)
+     (define-key lisp-mode-map (kbd "C-h C-f") 'slime-describe-symbol)
+     (define-key lisp-mode-map (kbd "C-h C-h") 'slime-documentation-lookup)
+     (define-key lisp-mode-map (kbd "C-h h") 'slime-documentation-lookup)
      (define-key lisp-mode-map (kbd "TAB") 'lisp-indent-or-complete)))
 
 (add-hook 'lisp-mode-hook '(lambda () (flyspell-mode -1)))
 (require 'hippie-expand-slime)
 (add-hook 'slime-mode-hook 'set-up-slime-hippie-expand)
 (add-hook 'slime-repl-mode-hook 'set-up-slime-hippie-expand)
+
+(setq common-lisp-hyperspec-root (expand-file-name "~/Dropbox/ebook/lisp/HyperSpec/"))

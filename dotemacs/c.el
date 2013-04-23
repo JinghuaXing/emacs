@@ -1,5 +1,4 @@
 (require 'dtrt-indent)
-(require 'cedet)
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
@@ -30,17 +29,7 @@
   (define-key c-subword-mode-map (kbd "<C-right>") nil)
   (define-key c-subword-mode-map (kbd "<M-left>") nil)
   (define-key c-subword-mode-map (kbd "<M-right>") nil)
-  (setq ecb-activated-p nil)
-  (local-set-key (kbd "<s-return>") '(lambda()
-				 (interactive)
-				 (if ecb-activated-p
-				     (ecb-toggle-ecb-windows)
-				   (progn
-				     (setq ecb-activated-p t)
-				     (ecb-activate)
-				     )
-				   )
-				 ))
+
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)
@@ -259,9 +248,6 @@
 	  (function (lambda ()
 		      (add-hook 'local-write-file-hooks 
 				'check-parens))))
-(add-hook 'ecb-show-ecb-windows-after-hook '(lambda()
-					      (interactive)
-					      (ecb-goto-window-methods)
-					      ))
+
 
 
