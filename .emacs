@@ -307,9 +307,7 @@
 (setq deft-text-mode 'org-mode)
 (global-set-key (kbd "<f12>") 'deft)
 
-(setq stack-trace-on-error nil)
-
-(global-set-key (kbd "C-x k") 'kill-this-buffer)
+;; (global-set-key (kbd "C-x k") 'kill-this-buffer)
 (setq ring-bell-function 'ignore)
 (setq visible-bell nil)
 (setq-default cursor-type 'bar)

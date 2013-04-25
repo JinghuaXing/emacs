@@ -40,6 +40,7 @@
 (setq org-deadline-warning-days 3)
 ;; (define-key org-mode-map (kbd "C-c a") 'org-toggle-archive-tag)
 (define-key org-mode-map (kbd "C-c t") 'org-todo)
+(define-key org-mode-map (kbd "C-c C-x C-a") 'org-toggle-archive-tag)
 ;; (define-key org-mode-map (kbd "C-c C-n") 'outline-forward-same-level)
 ;; (define-key org-mode-map (kbd "C-c C-p") 'outline-backward-same-level)
 
@@ -114,6 +115,7 @@
 ;; I use C-M-r to start capture mode
 (global-set-key (kbd "C-c k") 'org-capture)
 (global-set-key (kbd "C-c a") 'agenda)
+(global-set-key (kbd "C-c l") 'org-store-link)
 
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates

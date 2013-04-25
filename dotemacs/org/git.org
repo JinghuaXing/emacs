@@ -17,7 +17,7 @@ git archive HEAD --format=tar.gz > archive.tar.gz
 binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交引入的
 **** blame
 显示一个文件的每一行的最近一次修改, 包括 commit 及 author
-- git blame foo.java
+- git blame foo.java      
 **** branch
 显示, 建立, 删除分支
 - ~git branch -d test_branch~

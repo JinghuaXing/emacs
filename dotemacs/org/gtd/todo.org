@@ -242,3 +242,5 @@ CLOSED: [2013-04-03 Wed 11:08]
 [2013-04-19 Fri 16:52]
 * TODO usbmount                                                        :todo:
 [2013-04-20 Sat 21:55]
+* TODO RenderScript & opengl                                           :todo:
+[2013-04-25 Thu 12:43]
