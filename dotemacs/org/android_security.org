@@ -181,6 +181,7 @@ when A's PendingIntent is delivered to B, B calls PendingIntent.send()
 to send the underlying intent *on behalf of* A, A's permission is also
 delegated to B
 
+**** uri permission
 ** Traditional linux security config
 Traditionally, linux using  some config files to enforce security:
 

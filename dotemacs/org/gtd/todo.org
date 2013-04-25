@@ -244,3 +244,5 @@ CLOSED: [2013-04-03 Wed 11:08]
 [2013-04-20 Sat 21:55]
 * TODO RenderScript & opengl                                           :todo:
 [2013-04-25 Thu 12:43]
+* TODO uri permission                                                  :todo:
+[2013-04-25 Thu 18:54]

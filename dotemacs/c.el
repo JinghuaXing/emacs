@@ -3,7 +3,6 @@
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
 ;;  (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
-  (semantic-mode t)
   (c-set-style "k&r")
   (c-subword-mode t)
   (dtrt-indent-mode t)

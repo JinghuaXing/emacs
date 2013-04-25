@@ -54,19 +54,21 @@
 (setq org-plantuml-jar-path "~/.elisp/plantuml.jar")
 (setq org-src-fontify-natively t)
 
-(setq org-latex-pdf-process 
+(setq org-latex-to-pdf-process 
       '("xelatex -interaction nonstopmode %f"
 	"xelatex -interaction nonstopmode %f"))
 
 
-(add-to-list 'org-latex-default-packages-alist
+(add-to-list 'org-export-latex-default-packages-alist
 	     '("" "xeCJK" nil)
 	     t
 	     )
-(add-to-list 'org-latex-default-packages-alist
-	     "\\setCJKmainfont{WenQuanYi Zen Hei}\\setmainfont{Droid Serif}"
+(add-to-list 'org-export-latex-default-packages-alist
+	     "\\setCJKmainfont{WenQuanYi Zen Hei}
+\\setmainfont{Droid Serif}"
 	     t
 	     )
+
 ;;(setq org-tag-alist '(("java" . ?v) ("android" . ?d) ("joke" . ?j)))
 (setq org-completion-use-ido t)
 
