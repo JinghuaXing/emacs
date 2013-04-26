@@ -49,6 +49,7 @@
      (actions
       ("!" "Command from root" magit-shell-command)
       (":" "Git command" magit-git-command)
+      ("c" "cherry-pick" magit-git-cherry-pick)
       ("x" "clean" magit-git-clean)
       ("k" "gitk" magit-run-gitk)))
 

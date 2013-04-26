@@ -590,3 +590,8 @@ occurence of CHAR."
     (goto-char (point-min))
     (while (search-forward (string ?\C-m)  nil t)
       (replace-match "" nil t))))
+
+(defun unix2dos ()
+  (interactive)
+  (goto-char (point-min))
+  (while (search-forward "\n" nil t) (replace-match "\r\n")))

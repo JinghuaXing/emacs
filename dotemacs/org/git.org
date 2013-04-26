@@ -469,6 +469,8 @@ gerrit 重写了一个 git-receive-pack, 提供了几个和 gerrit 相关的参�
 *** upload
 *** start
 *** abandon
+** Refs
+- [[http://nvie.com/posts/a-successful-git-branching-model/][A Successful Git Branching Model]]
 ** Footnotes
 
 [fn:1] 有待证实
