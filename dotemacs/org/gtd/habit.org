@@ -15,7 +15,8 @@ DEADLINE:  <2013-05-03 Fri +1m -10d>
 :LAST_REPEAT: [2013-04-01 Mon 09:12]
 :END:
 * TODO 招行信用卡还款日                                               :habit:
-DEADLINE: <2013-04-23 Tue +1m -6d>
+DEADLINE: <2013-05-23 Thu +1m -6d>
+- State "DONE"       from "TODO"       [2013-04-26 Fri 19:45]
 - State "DONE"       from "TODO"       [2013-03-25 Mon 12:25]
 - State "DONE"       from "TODO"       [2013-02-25 Mon 14:33]
 - State "DONE"       from "TODO"       [2013-01-29 Tue 19:37]
@@ -26,7 +27,7 @@ DEADLINE: <2013-04-23 Tue +1m -6d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-03-25 Mon 12:25]
+:LAST_REPEAT: [2013-04-26 Fri 19:45]
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                                 :habit:

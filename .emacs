@@ -56,7 +56,9 @@
 (global-font-lock-mode t)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
-(server-start)
+(unless (server-running-p)
+  (server-start)
+  )
 
 (setq confirm-kill-emacs 'y-or-n-p)
 (setq bookmark-save-flag 1)
@@ -70,7 +72,7 @@
 (setq major-mode 'text-mode)
 (show-paren-mode t)
 ;; (setq show-paren-style 'mixed)
-(setq frame-title-format "%b - Emacs")
+(setq frame-title-format '(:eval (concat "%b [" my-desktop-mode-indicator "] -- Emacs")))
 (setq user-mail-address "sunwayforever@gmail.com")
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -177,7 +179,7 @@
 
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 
-(require 'uniquify)
+;; (require 'uniquify)
 
 (add-hook 'text-mode-hook 'flyspell-mode)
 
