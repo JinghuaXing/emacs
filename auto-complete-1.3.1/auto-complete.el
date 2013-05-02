@@ -339,7 +339,7 @@ If there is no common part, this will be nil.")
 (defvar ac-candidates-cache nil
   "Candidates cache for individual sources.")
 
-(defvar ac-fuzzy-enable nil
+(defvar ac-fuzzy-enable t
   "Non-nil means fuzzy matching is enabled.")
 
 (defvar ac-dwim-enable nil

@@ -42,6 +42,7 @@
 (load-file "~/.elisp/dotemacs/tex.el")
 (load-file "~/.elisp/dotemacs/ido.el")
 (load-file "~/.elisp/dotemacs/file_cache.el")
+(load-file "~/.elisp/dotemacs/ac.el")
 
 ;; (autoload
 ;;   'ace-jump-mode
@@ -320,5 +321,4 @@
      (define-key calc-mode-map (kbd "C-/") 'calc-undo)
      )
   )
-
 
