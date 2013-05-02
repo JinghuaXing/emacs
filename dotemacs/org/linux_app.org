@@ -156,6 +156,7 @@ interactive top
 *** proxy
 see also [[network/web debugging]]
 **** squid
+**** tsocket
 ** network/web debugging
 *** charles web debugging proxy
 a proxy for web debugging, especially, support HTTPS
@@ -176,6 +177,7 @@ C-o [进入scroll模式，用C-p,C-n移动到要保存的区域的开始，按SP
 ** shc
    shc -- generic shell script compiler
 ** ssh
+
 ** tac
 ** tex
 ** tidy

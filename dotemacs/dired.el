@@ -43,24 +43,24 @@
   ;; Return nil for sake of nconc in dired-bunch-files.
   nil)
 
-;; (setq dired-guess-shell-alist-user
-;;       `(
-;; 	("\\(\\.gif$\\)\\|\\(\\.png$\\)\\|\\(\\.bmp$\\)\\|\\(\\.jpg$\\)\\|\\(\\.tif$\\)" "gthumb")
-;; 	("\\(\\.avi$\\)\\|\\(\\.mkv$\\)\\|\\(\\.mpg$\\)\\|\\(\\.mpe?g$\\)\\|\\(\\.flv$\\)\\|\\(\\.wmv$\\)\\|\\(\\.mov$\\)\\|\\(\\.divx$\\)" " mplayer")
-;; 	("\\(\\.rm$\\)\\|\\(\\.rmvb$\\)\\|\\(\\.ra$\\)" " mplayer")
-;; 	("\\.hd$" " mplayer -vo x11")
-;; 	("\\.tar\\.bz2$" "tar jxvf")
-;; 	("\\chm$" "chmsee")
-;; 	("\\.torrent$" "ed2kopera")
-;; 	("\\(\\.xls$\\)\\|\\(\\.doc$\\)\\|\\(\\.ppt$\\)" "soffice")
-;; 	("\\.tar\\.gz$"  "tar zxvf")
-;; 	("\\.tar$"   "tar xvf")
-;; 	("\\(\\.rar$\\)\\|\\(\\.r[0-9]+$\\)" "unrar x")
-;; 	("\\.htm[l]?$\\|.mht$" " firefox")
-;; 	("\\.pdf$" " evince")
-;; 	("\\.dvi$" " xdvi")
-;; 	)
-;;       )
+(setq dired-guess-shell-alist-user
+      `(
+	("\\(\\.gif$\\)\\|\\(\\.png$\\)\\|\\(\\.bmp$\\)\\|\\(\\.jpg$\\)\\|\\(\\.tif$\\)" "gthumb")
+	("\\(\\.avi$\\)\\|\\(\\.mkv$\\)\\|\\(\\.mpg$\\)\\|\\(\\.mpe?g$\\)\\|\\(\\.flv$\\)\\|\\(\\.wmv$\\)\\|\\(\\.mov$\\)\\|\\(\\.divx$\\)" " mplayer")
+	("\\(\\.rm$\\)\\|\\(\\.rmvb$\\)\\|\\(\\.ra$\\)" " mplayer")
+	("\\.hd$" " mplayer -vo x11")
+	("\\.tar\\.bz2$" "tar jxvf")
+	("\\chm$" "chmsee")
+	("\\.torrent$" "ed2kopera")
+	("\\(\\.xls$\\)\\|\\(\\.doc$\\)\\|\\(\\.ppt$\\)" "soffice")
+	("\\.tar\\.gz$"  "tar zxvf")
+	("\\.tar$"   "tar xvf")
+	("\\(\\.rar$\\)\\|\\(\\.r[0-9]+$\\)" "unrar x")
+	("\\.htm[l]?$\\|.mht$" " firefox")
+	("\\.pdf$" " evince")
+	("\\.dvi$" " xdvi")
+	)
+      )
 
 (setq dired-omit-extensions '("CVS" "RCS" ".o" "~" ".bin" ".lbin" ".fasl" ".ufsl" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".fmt" ".tfm" ".class" ".fas" ".lib" ".x86f" ".sparcf" ".lo" ".la" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".idx" ".lof" ".lot" ".glo" ".blg" ".bbl" ".cp" ".cps" ".fn" ".fns" ".ky" ".kys" ".pg" ".pgs" ".tp" ".tps" ".vr" ".vrs"))
 

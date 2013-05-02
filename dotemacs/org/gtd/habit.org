@@ -1,7 +1,8 @@
 #+TITLE:
 #+AUTHOR: sunwayforever@gmail.com
 * TODO 建行信用卡还款日
-DEADLINE:  <2013-05-03 Fri +1m -10d>
+DEADLINE:  <2013-06-03 Mon +1m -10d>
+- State "DONE"       from "TODO"       [2013-04-28 Sun 16:54]
 - State "DONE"       from "TODO"       [2013-04-01 Mon 09:12]
 - State "DONE"       from "TODO"       [2013-02-28 Thu 19:07]
 - State "DONE"       from "TODO"       [2013-01-29 Tue 19:37]
@@ -12,7 +13,7 @@ DEADLINE:  <2013-05-03 Fri +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-04-01 Mon 09:12]
+:LAST_REPEAT: [2013-04-28 Sun 16:54]
 :END:
 * TODO 招行信用卡还款日                                               :habit:
 DEADLINE: <2013-05-23 Thu +1m -6d>

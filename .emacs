@@ -313,3 +313,12 @@
 (setq ring-bell-function 'ignore)
 (setq visible-bell nil)
 (setq-default cursor-type 'bar)
+
+(eval-after-load "calc"
+  '(progn
+     (require 'calc)
+     (define-key calc-mode-map (kbd "C-/") 'calc-undo)
+     )
+  )
+
+

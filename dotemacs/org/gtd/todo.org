@@ -145,7 +145,7 @@ CLOSED: [2012-12-05 三 13:19]
 :ID:       c314af44-4db6-4378-b6e6-42ca5d6670cd
 :END:
 [2012-12-15 Sat 17:36]
-* TODO oom killer                                                      :todo:
+* TODO oom killer and low memory killer                                :todo:
 :PROPERTIES:
 :ID:       e7f22e72-6ca9-4c45-8387-74d45d7adaba
 :END:
@@ -172,7 +172,7 @@ CLOSED: [2013-02-25 Mon 15:25]
 :ID:       24fdef08-d1c4-4211-9cbc-3993a62694e0
 :END:
 [2013-02-20 Wed 20:06]
-* TODO keytool                                                         :todo:
+* TODO keytool and openssl                                             :todo:
 :PROPERTIES:
 :ID:       f576c81b-e600-4b06-bb0a-7e252dfd42ed
 :END:
@@ -240,7 +240,9 @@ CLOSED: [2013-04-03 Wed 11:08]
 [2013-04-19 Fri 13:56]
 * TODO ptmalloc                                                        :todo:
 [2013-04-19 Fri 16:52]
-* TODO usbmount                                                        :todo:
+* DONE usbmount                                                        :todo:
+CLOSED: [2013-04-28 Sun 16:54]
+- State "DONE"       from "TODO"       [2013-04-28 Sun 16:54]
 [2013-04-20 Sat 21:55]
 * TODO RenderScript & opengl                                           :todo:
 [2013-04-25 Thu 12:43]
@@ -248,3 +250,5 @@ CLOSED: [2013-04-03 Wed 11:08]
 [2013-04-25 Thu 18:54]
 * TODO git branch model                                                :todo:
 [2013-04-26 Fri 19:46]
+* TODO socks 代理原理                                                  :todo:
+[2013-05-02 Thu 16:39]
