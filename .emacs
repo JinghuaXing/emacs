@@ -249,9 +249,6 @@
 (global-set-key (kbd "<f5>") 'quickrun)
 ;; (setq url-proxy-services '(("no_proxy" . "work\\.com")
 ;;                            ("http" . "127.0.0.1:5865")))
-(setq w3m-command-arguments
-      (nconc w3m-command-arguments
-	     '("-o" "http_proxy=http://build_server:3128")))
 
 (autoload 'markdown-mode "markdown-mode.el"
   "Major mode for editing Markdown files" t)
@@ -322,3 +319,4 @@
      )
   )
 
+(autoload 'douban-music "douban-music-mode" nil t)

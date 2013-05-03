@@ -14,5 +14,8 @@
       (setq w3m-home-page "http://www.gogole.com")
       (setq browse-url-browser-function 'w3m-browse-url)
       (setq w3m-view-this-url-new-session-in-background t)
+      (setq w3m-command-arguments
+	    (nconc w3m-command-arguments
+		   '("-o" "http_proxy=http://build_server:3128")))
       )
   )
