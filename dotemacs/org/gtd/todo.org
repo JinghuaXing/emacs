@@ -252,3 +252,7 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-04-26 Fri 19:46]
 * TODO socks 代理原理                                                  :todo:
 [2013-05-02 Thu 16:39]
+* TODO how loader is notified                                          :todo:
+[2013-05-03 Fri 11:48]
+* TODO tail recursion 尾递归                                           :todo:
+[2013-05-03 Fri 16:32]
