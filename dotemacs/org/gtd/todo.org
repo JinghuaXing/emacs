@@ -256,3 +256,5 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-05-03 Fri 11:48]
 * TODO tail recursion 尾递归                                           :todo:
 [2013-05-03 Fri 16:32]
+* TODO git merge 算法                                                  :todo:
+[2013-05-06 Mon 14:20]

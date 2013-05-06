@@ -937,50 +937,48 @@ CLOSED: [2012-09-14 Fri 10:37]
 #+END_EXAMPLE
 **** cacheColorHint
 **** FastScroller
-**** DONE Android BUG: NotifyDatasetChanged() when scrolling
-      CLOSED: [2011-06-13 Mon 17:16]
-      - State "DONE"       [2011-06-13 Mon 17:16]
-      - BUG表现: 在 getView() 中调用 NotifyDatasetChanged(), 当滑动 ListView 时, onItemClick 无法响应
-      - 原因:
-	1. NotifyDatasetChanged: see also  [[NotifyDatasetChanged]]
-	   其中最重要的三点:
-	   1. NotifyDatasetChanged 会在开始时将 mDataChanged 置位, 然后调用 AbsListView.requestLayout
-	   2. AbsListView.requestLayout 在 *mBlockLayoutRequests* 时什么也不做! ( 重要 )
-	   3. ListView layoutChildren 完成后会将 mDataChanged 复位
-	2. AbsListView TouchEvent dispatch
-	   当 mDataChanged 置位时, touch up 事件不会被处理, 因为 mDataChanged 置位, 表示 数据已改变, 而该 ListView 还没有被重新 layout, 这
-	   时应该阻止 itemClick 事件, 因为用户点击时看到的数据很可能并不是真正的数据
-	3. ListView scroll
-	   上面提到的一重要的数据是 mBlockLayoutRequests, 这个值表示 ListView 当前禁止 requestLayout.
-	   当发生 scroll 事件时, ListView 调用 trackMotionScroll(incrementalDeltaY, incrementalDeltaY); 处理滚动,
-	   该函数大致是:
-#+BEGIN_EXAMPLE
-     1		   trackMotionScroll()
-     2		     mRecycler.addScrapView(start,count); // cache 滑动出去的 view
-     3		       mRecyclerListener.onMovedToScrapHeap(scrap);
-     4	             detachViewsFromParent(start, count); // detach 滑动出去的 view from ViewGroup
-     5		     mBlockLayoutRequests = true;
-     6		       fillGap() --> makeAndAddView() --> obtainView() --> getView() 获得新的 view 以填充滑动时产生的 gap
-     7		     mBlockLayoutRequests = false;
-     8	             invokeOnItemScrollListener();
-     9	             awakenScrollBars();
-#+END_EXAMPLE
-           最重要的一点是: 在 scroll 时, mBlockLayoutRequests 会被置位,以禁止 scroll 时 requestLayout
+**** Android BUG: NotifyDatasetChanged() when scrolling
+- BUG表现: 在 getView() 中调用 NotifyDatasetChanged(), 当滑动 ListView 时, onItemClick 无法响应
+- 原因:
+  1. NotifyDatasetChanged: see also  [[NotifyDatasetChanged]]
+     其中最重要的三点:
+       1. NotifyDatasetChanged 会在开始时将 mDataChanged 置位, 然后调用 AbsListView.requestLayout
+       2. AbsListView.requestLayout 在 *mBlockLayoutRequests* 时什么也不做! ( 重要 )
+       3. ListView layoutChildren 完成后会将 mDataChanged 复位
+  2. AbsListView TouchEvent dispatch
+     当 mDataChanged 置位时, touch up 事件不会被处理, 因为 mDataChanged 置位, 表示 数据已改变, 而该 ListView 还没有被重新 layout, 这
+     时应该阻止 itemClick 事件, 因为用户点击时看到的数据很可能并不是真正的数据
+  3. ListView scroll
+     上面提到的一重要的数据是 mBlockLayoutRequests, 这个值表示 ListView 当前禁止 requestLayout.
+     当发生 scroll 事件时, ListView 调用 trackMotionScroll(incrementalDeltaY, incrementalDeltaY); 处理滚动,
+     该函数大致是:
+#+BEGIN_SRC java
+  trackMotionScroll()
+    mRecycler.addScrapView(start,count); // cache 滑动出去的 view
+      mRecyclerListener.onMovedToScrapHeap(scrap);
+    detachViewsFromParent(start, count); // detach 滑动出去的 view from ViewGroup
+    mBlockLayoutRequests = true;
+      fillGap() --> makeAndAddView() --> obtainView() --> getView() 获得新的 view 以填充滑动时产生的 gap
+    mBlockLayoutRequests = false;
+    invokeOnItemScrollListener();
+    awakenScrollBars();
+#+END_SRC
+最重要的一点是: 在 scroll 时, mBlockLayoutRequests 会被置位,以禁止 scroll 时 requestLayout
 
-****** 在 Preference 中出现该 BUG
-       Preference 作为 经过包装的 ListView ,相对来说比较容易出现该 BUG:
-       see also [[Preference]]
-       - Preference.onBindView() 实际是经过包装的 getView()
-       - Preference 自带的 setTitle(), setSummary() 的写法:
+***** 在 Preference 中出现该 BUG
+Preference 作为 经过包装的 ListView ,相对来说比较容易出现该 BUG:
+see also [[Preference]]
+  - Preference.onBindView() 实际是经过包装的 getView()
+  - Preference 自带的 setTitle(), setSummary() 的写法:
 
 #+BEGIN_EXAMPLE
-     1		 Preference.setTitle(title):
-     2		   if (title == null && mTitle != null || title != null && !title.equals(mTitle)):
-     3		     mTitle = title;
-     4		     notifyChanged();
+  Preference.setTitle(title):
+    if (title == null && mTitle != null || title != null && !title.equals(mTitle)):
+      mTitle = title;
+      notifyChanged();
 #+END_EXAMPLE
 
-     如果调用者在 onBinderView 中调用了 setXXX() 方法, 则会出现该 BUG.
+如果调用者在 onBinderView 中调用了 setXXX() 方法, 则会出现该 BUG.
 
 *** view overlay
 *** GestureOverlayView
