@@ -32,7 +32,7 @@
 (load-file "~/.elisp/dotemacs/yasnippet.el")
 (load-file "~/.elisp/dotemacs/eim.el")
 (load-file "~/.elisp/dotemacs/python.el")
-(load-file "~/.elisp/dotemacs/openwith.el")
+;; (load-file "~/.elisp/dotemacs/openwith.el")
 (load-file "~/.elisp/dotemacs/mark.el")
 (load-file "~/.elisp/dotemacs/sdcv.el")
 (load-file "~/.elisp/dotemacs/color.el")
@@ -310,7 +310,7 @@
 ;; (global-set-key (kbd "C-x k") 'kill-this-buffer)
 (setq ring-bell-function 'ignore)
 (setq visible-bell nil)
-(setq-default cursor-type 'bar)
+;; (setq-default cursor-type 'box)
 
 (eval-after-load "calc"
   '(progn

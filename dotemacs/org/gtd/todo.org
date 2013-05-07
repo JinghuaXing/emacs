@@ -258,3 +258,9 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-05-03 Fri 16:32]
 * TODO git merge 算法                                                  :todo:
 [2013-05-06 Mon 14:20]
+* TODO `with-current-buffer` style asynctask in android?               :todo:
+[2013-05-08 Wed 20:16]
+* TODO TouchInterceptor in music                                       :todo:
+[2013-05-09 Thu 18:13]
+* TODO android 坐标                                                    :todo:
+[2013-05-10 Fri 18:07]

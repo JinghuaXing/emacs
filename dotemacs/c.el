@@ -18,7 +18,7 @@
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
-  (add-to-list 'which-func-modes 'java-mode)
+  ;; (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)
   (hs-hide-initial-comment-block)
   (local-set-key (kbd "C-c o o") 'hs-toggle-hiding)

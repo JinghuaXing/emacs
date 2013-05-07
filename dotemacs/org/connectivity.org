@@ -180,6 +180,24 @@ NetworkConfig is generated from : frameworks/base/core/res/res/values/config.xml
           addRouteToAddress(newLp, newDns);
     // `updateRoutes` ends here
 #+END_SRC
+***** handleApplyDefaultProxy
+#+BEGIN_SRC text
+  handleApplyDefaultProxy
+    sendproxybroadcast(proxy)
+      sendStickyBroadcast(new Intent(Proxy.PROXY_CHANGE_ACTION))
+      // 接收该 broadcast 的只有 AMS 和 webview, 为不同网络库设置代理:
+      // 1. 通过 AMS 给 UrlConnection 配置代理
+      // 2. 通过 webview 给 android webkit 使用的 chromium 配置代理
+      // 显然, apache HttpClient 没有考虑. 所以, 使用 UrlConnection 的
+      // android 应用和使用 webview 的应用如 browser 不需要应用自己配置
+      // 代理, 但使用 HttpClient 的应用需要自己配置代理.
+  
+  AMS::UPDATE_HTTP_PROXY
+    r.thread.setHttpProxy(host, port, exclList);
+      Proxy.setHttpProxySystemProperty(host, port, exclList);
+        System.setProperty("http.proxyHost", host);
+        System.setProperty("http.proxyPort", port);
+#+END_SRC
 ***** handleDisconnect
 ***** startUsingNetworkFeature / stopUsingNetworkFeature
 `startUsingNetworkFeature` is a request from the client of connecting to a

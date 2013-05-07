@@ -31,7 +31,7 @@
 ;; (global-set-key (kbd "C-x C-d") 'dired)
 (global-set-key (kbd "C-x C-k") 'ido-kill-buffer)
 ;;(global-set-key [(meta .)] 'lev/find-tag)
-;; (global-set-key (kbd "<f11>") 'calendar)
+(global-set-key (kbd "<f11>") 'douban-music)
 (global-set-key (kbd "M-m") 'ace-jump-mode)
 ;;(global-set-key (kbd "s-SPC") 'ace-jump-mode)
 
