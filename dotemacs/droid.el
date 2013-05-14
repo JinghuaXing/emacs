@@ -1,14 +1,43 @@
 (defun droid()
   (interactive)
-  (let ((command (ido-completing-read "command: " '("make" "push" "log" "reboot"))))
+  (let ((command (ido-completing-read "command: " '("make" "push" "log" "reboot" "kill"))))
     (cond 
      ((string= command "make") (call-interactively 'droid-make))
      ((string= command "push") (call-interactively 'droid-push))
      ((string= command "log") (call-interactively 'droid-log))
      ((string= command "reboot") (call-interactively 'droid-reboot))
+     ((string= command "kill") (call-interactively 'droid-kill))
      )
     )
   )
+
+(defun droid-kill()
+  (interactive)
+  (let ((droid_process (start-process "droid-kill" nil "droid" "list_process"))
+	)
+    (setq process_list nil)
+    (set-process-filter droid_process '(lambda(process output)
+					 (setq output (replace-in-string output "" ""))
+					 (setq process_list (append process_list (split-string output)))
+					 ))
+
+    (set-process-sentinel droid_process '(lambda(proc change)
+    					   (when (string-match "finished" change)
+    					     (setq target (ido-completing-read "target: " process_list))
+					     (when target
+					       (start-process "nil" nil "droid" "kill" target)
+					       )
+    					     )
+    					   ))
+    )
+  )
+
+(split-string "mux_post_recv
+usb
+f_mtp
+file-storage
+headset_switch
+")
 
 (defun droid-log ()
   (interactive)
