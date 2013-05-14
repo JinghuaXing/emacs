@@ -264,3 +264,9 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-05-09 Thu 18:13]
 * TODO android 坐标                                                    :todo:
 [2013-05-10 Fri 18:07]
+* TODO exchange auto_discovery                                         :todo:
+[2013-05-13 Mon 19:51]
+* TODO TextChangedListener                                             :todo:
+[2013-05-14 Tue 11:22]
+* TODO Http the definitive guide                               :todo:reading:
+[2013-05-14 Tue 13:31]

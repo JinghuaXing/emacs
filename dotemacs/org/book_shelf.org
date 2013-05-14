@@ -14,3 +14,5 @@
 - [[file:~/Dropbox/ebook/ruby/The%20Ruby%20Programming%20Language%20(O'Reilly%202008).pdf][The Ruby Programming Language.pdf]]
 ** bash
 - [[file:~/Dropbox/ebook/bash/Sam's%20-%20Teach%20Yourself%20Shell%20Programming%20in%2024%20hours.pdf][Sam's - Teach Yourself Shell Programming in 24 hours.pdf]]
+** networking
+- [[file:~/Dropbox/ebook/networking/Http_The_Definitive_Guide.pdf][Http The Definitive Guide.pdf]]

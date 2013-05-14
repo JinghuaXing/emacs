@@ -45,6 +45,7 @@
 ;; (define-key org-mode-map (kbd "C-c C-p") 'outline-backward-same-level)
 
 (define-key org-agenda-mode-map (kbd "C-c C-c") 'org-agenda-set-tags)
+(define-key org-agenda-mode-map (kbd "C-c /") 'org-agenda-filter-by-tag)
 (setq org-agenda-sorting-strategy '((agenda time-up priority-down category-keep)
 				    (todo todo-state-down priority-down category-keep)
 				    (tags priority-down category-keep)
