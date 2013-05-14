@@ -21,6 +21,7 @@
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
 (load-file "~/.elisp/dotemacs/my.el")
+(load-file "~/.elisp/dotemacs/droid.el")
 (load-file "~/.elisp/dotemacs/c.el")
 (load-file "~/.elisp/dotemacs/key.el")
 (load-file "~/.elisp/dotemacs/escreen.el")

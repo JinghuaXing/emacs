@@ -35,7 +35,7 @@
   (auto-fill-mode 1)
   (linum-mode 1)
   (flyspell-prog-mode)
-  (local-set-key (kbd "C-c C-c") 'compile)
+  (local-set-key (kbd "C-c C-c") 'droid)
 
   (setq c-hanging-braces-alist
   	'((brace-list-open after)
