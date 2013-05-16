@@ -1,12 +1,13 @@
 (defun droid()
   (interactive)
-  (let ((command (ido-completing-read "command: " '("make" "push" "log" "reboot" "kill"))))
+  (let ((command (ido-completing-read "command: " '("make" "push" "log" "reboot" "kill" "connect"))))
     (cond 
      ((string= command "make") (call-interactively 'droid-make))
      ((string= command "push") (call-interactively 'droid-push))
      ((string= command "log") (call-interactively 'droid-log))
      ((string= command "reboot") (call-interactively 'droid-reboot))
      ((string= command "kill") (call-interactively 'droid-kill))
+     ((string= command "connect") (call-interactively 'droid-connect))
      )
     )
   )
@@ -31,13 +32,6 @@
     					   ))
     )
   )
-
-(split-string "mux_post_recv
-usb
-f_mtp
-file-storage
-headset_switch
-")
 
 (defun droid-log ()
   (interactive)

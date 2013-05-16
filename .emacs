@@ -321,3 +321,6 @@
   )
 
 (autoload 'douban-music "douban-music-mode" nil t)
+
+(eval-after-load "sql"
+  '(load-library "sql-indent"))
