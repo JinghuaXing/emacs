@@ -38,10 +38,6 @@ CLOSED: [2012-09-14 Fri 13:13] SCHEDULED: <2012-09-13 Thu>
 according to JLS, YES
 * DONE unciode, java utf-16, surrogate pair                          
 CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
-* TODO java language specification                                     :todo:
-:PROPERTIES:
-:ID:       72c81ccd-7185-441b-ab83-bb3b17496590
-:END:
 * TODO how to deltect GC reason                                        :todo:
 :PROPERTIES:
 :ID:       1588189a-9e3a-420a-90c9-49e2079575a3
