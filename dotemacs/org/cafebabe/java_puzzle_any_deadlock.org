@@ -1,0 +1,34 @@
+#+TITLE: Java Puzzle:deadlock?
+* Java Puzzle:dead lock?
+
+#+BEGIN_HTML
+<pre lang="java" line="1">
+class TestB extends Thread {
+    Integer i1;
+    Integer i2;
+
+    public TestB(int a,int b) {
+	i1=a;
+	i2=b;
+	System.out.println(""+System.identityHashCode(i1));
+    }
+
+    public void run() {
+	synchronized (i1) {
+	    synchronized (i2) {
+		System.out.println("run");
+	    }
+	}
+    }
+}
+
+public class TestA {
+    public static void main(String[] args) {
+	new TestB(1,2).start();
+	new TestB(2,1).start();
+    }
+}
+</pre>
+#+END_HTML
+
+Will the above code cause any deadlock?

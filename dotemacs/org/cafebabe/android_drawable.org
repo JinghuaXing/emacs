@@ -1,0 +1,164 @@
+#+TITLE: Android Drawable
+* Android Drawable
+[[android-sdk/docs/guide/topics/resources/drawable-resource.htm]]
+** BitmapDrawable
+*** Bitmap File
+**** Nine-Patch File
+*** XML Bitmap
+**** dither
+**** tileMode
+XML Nine-Patch File doesn't support `tileMode` attr
+** LayerDrawable
+A LayerDrawable is a drawable object that manages an array of other
+drawables. Each drawable in the list is drawn in the order of the list—the last
+drawable in the list is drawn on top.
+
+#+BEGIN_SRC xml
+  <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+      <item>
+        <bitmap android:src="@drawable/android_red"
+          android:gravity="center" />
+      </item>
+      <item android:top="10dp" android:left="10dp">
+        <bitmap android:src="@drawable/android_green"
+          android:gravity="center" />
+      </item>
+      <item android:top="20dp" android:left="20dp">
+        <bitmap android:src="@drawable/android_blue"
+          android:gravity="center" />
+      </item>
+  </layer-list>
+#+END_SRC
+** StateListDrawable
+#+BEGIN_SRC xml
+  <selector xmlns:android="http://schemas.android.com/apk/res/android">
+      <item android:state_pressed="true"
+            android:drawable="@drawable/button_pressed" /> <!-- pressed -->
+      <item android:state_focused="true"
+            android:drawable="@drawable/button_focused" /> <!-- focused -->
+      <item android:state_hovered="true"
+            android:drawable="@drawable/button_focused" /> <!-- hovered -->
+      <item android:drawable="@drawable/button_normal" /> <!-- default -->
+  </selector>
+#+END_SRC
+*** state-changing event
+StateListDrawable is seriously coupled with `View`, because state-changing
+event is defined by `View` and is mostly generated from `View`, e.g.:
+
+- View.setEnabled()
+- View.onTouchEvent()
+- View.setPressed()
+- View.onWindowFocusChanged()
+- ...
+
+**** StateListDrawable.onStateChange
+*** state-matching algorithm
+During each state change, the state list is traversed top to bottom and the
+first item that matches the current state is used—the selection is not based on
+the "best match," but simply the first item that meets the minimum criteria of
+the state.
+
+if onStateChange(int [] state) is invoked, state[] may contains several
+stats, e.g.:
+- button_pressed = true
+- button_focused = true
+
+When traversing top down the `selector`, the first item with
+`state_pressed=true` will match and the item is selected, leave alone the
+`state_focused=true` item.
+
+** LevelListDrawable
+#+BEGIN_SRC xml
+  <level-list xmlns:android="http://schemas.android.com/apk/res/android" >
+      <item
+          android:drawable="@drawable/status_off"
+          android:maxLevel="0" />
+      <item
+          android:drawable="@drawable/status_on"
+          android:maxLevel="1" />
+  </level-list>
+#+END_SRC
+
+#+BEGIN_SRC xml
+  <level-list xmlns:android="http://schemas.android.com/apk/res/android">
+      <item android:maxLevel="4" android:drawable="@android:drawable/stat_sys_battery_0" />
+      <item android:maxLevel="15" android:drawable="@android:drawable/stat_sys_battery_15" />
+      <item android:maxLevel="35" android:drawable="@android:drawable/stat_sys_battery_28" />
+      <item android:maxLevel="49" android:drawable="@android:drawable/stat_sys_battery_43" />
+      <item android:maxLevel="60" android:drawable="@android:drawable/stat_sys_battery_57" />
+      <item android:maxLevel="75" android:drawable="@android:drawable/stat_sys_battery_71" />
+      <item android:maxLevel="90" android:drawable="@android:drawable/stat_sys_battery_85" />
+      <item android:maxLevel="100" android:drawable="@android:drawable/stat_sys_battery_100" />
+  </level-list>
+#+END_SRC
+
+LevelListDrawable seems like a more generic StateListDrawable: we can specify
+different `state` thought `level`
+
+*** setLevel()
+** ScaleDrawable
+A drawable defined in XML that changes the size of another drawable based on its
+current level.
+#+BEGIN_SRC xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <scale xmlns:android="http://schemas.android.com/apk/res/android"
+      android:drawable="@drawable/logo"
+      android:scaleGravity="center_vertical|center_horizontal"
+      android:scaleHeight="80%"
+      android:scaleWidth="80%" />
+#+END_SRC
+*** setLevel()
+通过 setLevel, 可以调整 scale, MAX_LEVEL 为 10000, MIN_LEVEL 为 0
+*** ProgressBar make use of ScaleDrawable
+** GradientDrawable
+draw image thought XML ...
+#+BEGIN_SRC xml
+  <shape xmlns:android="http://schemas.android.com/apk/res/android"
+      android:shape="rectangle">
+      <gradient
+          android:startColor="#FFFF0000"
+          android:endColor="#80FF00FF"
+          android:angle="45"/>
+      <padding android:left="7dp"
+          android:top="7dp"
+          android:right="7dp"
+          android:bottom="7dp" />
+      <corners android:radius="8dp" />
+  </shape>
+#+END_SRC
+** AnimationDrawable
+#+BEGIN_SRC xml
+   <animation-list android:id="selected" android:oneshot="false">
+      <item android:drawable="@drawable/wheel0" android:duration="50" />
+      <item android:drawable="@drawable/wheel1" android:duration="50" />
+      <item android:drawable="@drawable/wheel2" android:duration="50" />
+      <item android:drawable="@drawable/wheel3" android:duration="50" />
+      <item android:drawable="@drawable/wheel4" android:duration="50" />
+      <item android:drawable="@drawable/wheel5" android:duration="50" />
+   </animation-list>
+#+END_SRC
+*** start() & stop()
+** TransitionDrawable
+Pool man's AnimationDrawable
+A TransitionDrawable is a drawable object that can cross-fade between the two
+drawable resources. Only `TWO` items are supported. ... kinds of simple
+animations.
+#+BEGIN_SRC xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <transition xmlns:android="http://schemas.android.com/apk/res/android">
+      <item android:drawable="@drawable/on" />
+      <item android:drawable="@drawable/off" />
+  </transition>
+#+END_SRC
+*** startTransition() & reverseTransition()
+** ClipDrawable
+** Misc
+*** Drawable Cascading
+Drawables like `LevelListDrawable`, `ScaleDrawable`, `StateListDrawable` can
+hold a inner `src` drawable, thus form drawable cascading.
+*** why `setLevel()` is implemented in `Drawable`?
+Since setLevel() is only meaningful for `LevelListDrawable` and
+`ScaleDrawable`?  
+
+The same question arises for `setState()` ... em, maybe
+`Drawable Cascading` answers.

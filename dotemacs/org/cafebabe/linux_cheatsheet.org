@@ -1,0 +1,268 @@
+#+TITLE: Linux Cheat Sheet
+* Linux Cheat Sheet
+** linux 平台下开发者必备技能
+*** 熟练使用 shell 命令, 了解常用的系统命令
+*** 具备 shell 编程的能力
+*** 熟悉常用脚本语言, 如 perl, python
+*** 熟悉常用工具
+*** 能够习惯没有 GUI 的生活
+*** 精通 vim 或 emacs
+*** 理解 KISS 原则
+** shell 命令 
+linux 下的 shell 有许多种, 但默认的是 bash, 所以以下只涉及 bash 命令
+*** 文件相关
+**** cat
+显示文件内容
+- cat /home/test/Test.java
+**** cd
+  `Change Directory`, 即修当前目录 (参考 pwd 命令)
+ - cd
+   切换到用户的 home 目录
+ - cd /home/test
+   切换到 /home/test
+ - cd ..
+   切换到上一级目录
+**** chgrp
+更改文件所属的用户组
+- chgrp group_test /home/test.Test.java
+**** chmod
+更改文件的权限
+***** 关于文件的权限
+每个文件的权限使用一个包含四个数字的串来表示:
+例如:0751 表示这个文件是:
+- 第一个7表示这个文件对于其 owner 是 可读的 (4)+ 可写的 (2) + 可执行的 (1)
+- 第二个5表示这个文件对于与该文件同属一个 group 的用户是 可读(4)+可执行(1) 的
+- 第三个1表示对于其他用户(非 owner, 非同 group) 的用户是可执行(1)的
+- 第一个0一般很少使用, 它表示的是 setuid(4)+setgid(2)+sticky(1), 一般不需要了解...
+***** chmod
+- chmod 777 file
+- chmod a+x file
+- chmod u-r file
+- chmod g-w file
+- chmod o-r file
+
+其中:
+- a,u,g,o表示 all, user, group, other,
+- x,r,w 表示可执行, 可读, 可写
+**** chown
+改变文件的 owner
+**** chgrp
+改变文件的 group
+**** convmv
+修改文件名的编码
+
+例如, 已经某个文件名的编码是 gbk, 我想把它变为 utf-8
+- convmv -f gbk -t utf-8 --notest
+**** cp
+复制文件和目录
+- cp file1 file2
+- cp -a /dir1 /
+**** file
+根据文件头的 magic number 判断文件类型(而不是通过扩展名)
+- file 1.png
+  1.png: PNG image, 480 x 800, 8-bit/color RGB, non-interlaced
+**** head
+显示文件的前几行 (参考 tail)
+**** ls
+显示目录内容
+- ls
+  显示当前目录内容
+- ls /dir
+- ls -a /dir
+  显示 dir 下所有内容, 包括隐藏文件
+- ls -l
+- ls -la
+**** locate
+通过预先建立索引的方式快速查找文件
+- 先执行 updatedb 建立一个全磁盘的文件索引
+- 一旦索引建立, 以后可以通过 locate "file_pattern" 很快的找到文件名与
+  file_pattern 匹配的文件
+- 在文件有变更的需要使用 updatedb 更新索引
+**** ln
+生成一个文件或目录的链接, 根据参数的不同, 可以生成两种链接
+- hard link (硬链接)
+  例如:ln file1 file2
+  其中 file1 是已存在的一个文件,  file2尚不存在, 执行完该命令后, file1 和 file2
+  成为指向文件系统中同一个 inode 的两个引用, 对任何一个引用的修改都会反映到另一
+  个引用, 而且只有两个引用都被删除后该 inode 才会被删除. 可以在执行该命令前后通
+  过 [[stat]] 命令查看有什么变化(注意 stat 输出的 Inode 值和 Links 值的变化)
+- symbolic link (符号链接)
+  相当于 windows 中的快捷方式
+  - ln -s file1 file2
+    则新生成的 file2 在文件系统中是一个全新的 inode , 但它在 inode 元数据中会直
+    接保存 "file1" 这个字符串. 当 file1 被删除时, file2还存在, 但无法访问到数据
+    了. 
+    ln -s 有一个好处是可以跨分区, 跨文件系统的建立符号链接,而且也可以对目录建立
+    符号链接, 因为它只是保存字符串. 而 ln 则无法突破上述限制.
+**** mkdir
+新建文件
+- mkdir dir
+- mkdir -p dir1/dir2
+**** mv
+**** popd
+从栈中 pop 一个目录,并切换到那个目录 (参考 [[pushd]])
+**** pushd
+将当前目录 push 到栈中, 然后切换到另一目录 (参考 [[popd]])
+**** pwd
+显示当前目录
+**** rm
+删除文件(删除后无法恢复)
+- rm -rf dir/
+**** rmdir
+删除目录 (目录必须为空)
+**** stat
+显示文件的元数据, 例如是否是符号链接, 权限, owner, size, time-stamp
+**** tail
+显示文件的最后几行(参考 head)
+- dmesg|tail
+**** touch
+*** 管道与重定向
+- cmd > file
+- cmd >> file
+- cmd &> file
+- cmd > file 2>&1
+- cat < file
+- echo "abc"|cat
+**** xargs
+- find ./ -iname "*.java"|xargs rm
+- find ./ -iname "*.java"|xargs -I{}  rm {}
+*** 压缩
+**** tar
+- tar cvf file.tar dir/
+  将 dir 下的文件打包成 file.tar
+  - c 表示 create
+  - v 表示 verbose
+  - f 表示后面接的参数是目标文件名
+- tar xf file.tar
+  解包
+- tar tf file.tar
+  显示 file.tar 文件的内容
+**** tar.gz
+tar.gz 是指对一个 tar 文件使用 gzip 压缩生成的压缩文件, 这是因为 gzip 只能压缩单
+个文件, 无法压缩一个目录, 所以需要先用 tar 对目录进行打包. tar.gz 与 tar 文件的
+命令类似, 只是多了一个 z 参数表示这是一个 gzip 压缩的 tar.
+
+- tar zcvf file.tar.gz dir
+- tar ztvf file.tar
+- tar zxf file.tar
+
+**** tar.bz2
+tar.bz2 是对 tar 使用 bzip2 压缩生成的压缩文件, 与 tar.gz 类似, 要把 z 参数
+换成 j 就可以了.
+**** zip
+- zip
+- unzip
+**** rar
+- unrar
+**** 7z
+*** 文本处理
+**** ctags
+**** more
+**** sort
+**** uniq
+**** iconv
+**** od
+**** find
+**** diff
+**** grep
+**** sed
+**** awk
+**** wc
+*** 作业管理
+**** &
+**** ;
+**** |
+**** nohup
+**** fg
+**** bg
+**** C***Z
+**** jobs
+**** wait
+*** 系统管理
+**** df
+显示磁盘使用情况
+**** free
+显示内存使用情况
+**** du
+显示目录的磁盘占用情况
+**** dd
+复制文件? 通常只用来做两件事:
+- 以 raw 方式直接读取设备的内容
+  dd if=/dev/hda of=/boot/mbr bs=512 count=1fc3
+  该命令的意思是:
+  - 从 /dev/hda (即硬盘) 设备读取数据
+  - 保存到 /boot/mbr 文件
+  - 每次读取的块大小是 512 字节
+  - 一共读取 1fc3 个
+  最终的结果是把硬盘的 MBR (主引导记录) 保存到了 /boot/mbr 文件中
+- 通过 /dev/zero 文件生成任意大小的测试文件
+  dd if=/dev/zero of=file bs=1024 count=1024
+  该命令生成一个1MB大小的文件, 其中 /dev/zero 是一个特殊的设备, 它保证每次读操作
+  都返回一个0,而且永远不会读到EOF
+**** mount
+挂载设备
+- mount /dev/sda1 /mnt/usb
+  挂载 u 盘 (/dev/sda1 具体是哪个需要看 [[dmesg]] 的输出, /mnt/usb 是指挂载到哪个目
+  录, 可以任意指定, 挂载成功后可以通过 /mnt/usb 访问 u 盘的文件
+- mount 
+  显示当前 mount 的情况
+- mount -t iso9660 -o loop file1.iso /mnt/cdrom
+  挂载 iso 镜像
+**** date
+显示当前时间
+**** time
+显示一个命令的执行时间
+- time sleep 10
+**** umount
+**** shutdown
+**** reboot
+**** lsof
+**** ps
+**** top
+**** kill
+**** su
+**** sudo
+**** hostname
+**** /etc/hosts
+*** 网络相关
+**** curl
+**** wget
+**** nc
+**** telnet
+**** lftp
+**** netstat
+**** ifconfig
+**** dhclient
+**** nload
+**** iptables
+**** tc
+**** ip
+**** route
+**** ping
+**** traceroute
+**** tcpdump
+**** ssh
+**** scp
+**** sftp
+
+*** Log
+**** whoami
+**** last
+**** dmesg
+**** who
+**** w
+*** 其他
+**** screen
+**** man
+**** info
+**** reset
+**** base64
+**** md5sum
+**** sha1sum
+**** yes
+*** 环境变量
+**** PATH
+**** http_proxy
+**** ftp_proxy
+** shell 编程
+

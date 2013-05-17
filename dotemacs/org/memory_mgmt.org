@@ -1,7 +1,0 @@
-* Memory Management (ptmalloc)
-** reducing memory fragment
-** kinds of algorithms
-*** buddy
-*** slab
-*** ptmalloc
-[[http://blog.csdn.net/unbutun/article/details/5827615][http://blog.csdn.net/unbutun/article/details/5827615}]]

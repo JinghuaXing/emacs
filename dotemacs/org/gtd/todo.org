@@ -1,6 +1,3 @@
-#+LAST_MOBILE_CHANGE: 2012-11-17 22:17:46
-#+TITLE:
-#+AUTHOR: sunwayforever@gmail.com
 * TODO Android eng-mode vs. user-mode                                  :todo:
 :PROPERTIES:
 :ID:       e929f022-e18c-4dbf-aa92-7701bbd40931
@@ -55,15 +52,6 @@ CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
 :PROPERTIES:
 :ID:       d4730067-ec50-4cfc-b00b-b88c82c665ba
 :END:
-
-* DONE import/export any account                                    
-CLOSED: [2012-07-11 Wed 17:15]
-  
-* CANCELLED set default photo in contact provider                   
-CLOSED: [2012-07-05 Thu 13:31]
-  
-* CANCELLED what if contact importing failed due to radio-off       
-CLOSED: [2012-07-05 Thu 13:32]
 * DONE gerrit                                                       
 CLOSED: [2012-09-18 Tue 16:02] SCHEDULED: <2012-09-14 Fri>
 CLOCK: [2012-09-18 Tue 14:54]--[2012-09-18 Tue 16:01] =>  1:07

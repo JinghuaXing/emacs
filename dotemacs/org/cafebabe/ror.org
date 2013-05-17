@@ -1,0 +1,10 @@
+#+TITLE: RoR
+* RoR
+** Convention
+** Model
+*** ORM 
+Object Relational Model
+*** CRUD 
+Create, Read, Update, Delete
+** View
+** Controller

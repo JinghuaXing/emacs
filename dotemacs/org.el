@@ -1,3 +1,9 @@
+(require 'deft)
+(setq deft-directory "~/.elisp/dotemacs/org/cafebabe")
+(setq deft-extension "org")
+(setq deft-text-mode 'org-mode)
+(global-set-key (kbd "<f12>") 'deft)
+
 (require 'org-install)
 (require 'org-agenda)
 ;; (require 'org-export-generic)
@@ -11,7 +17,7 @@
 ;; (org-remember-insinuate)
 (defalias 'todo 'org-remember)
 
-(setq org-directory "~/.elisp/dotemacs/org/")
+(setq org-directory "~/.elisp/dotemacs/org/cafebabe")
 
 (setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd") ))
 
@@ -142,3 +148,33 @@
 (setq org-mobile-inbox-for-pull "~/.elisp/dotemacs/org/flagged.org")
 ;; Set to <your Dropbox root directory>/MobileOrg.
 (setq org-mobile-directory "~/Dropbox/MobileOrg")
+
+
+(require 'org-publish)
+(setq org-publish-project-alist
+      '(
+	("cafebabe"
+	 :base-directory "~/.elisp/dotemacs/org/cafebabe"
+	 :base-extension "org"
+	 :publishing-directory "~/.github.pages/cafebabe"
+	 :recursive t
+	 :publishing-function org-publish-org-to-html
+	 :headline-levels 4             ; Just the default for this project.
+	 :auto-preamble t
+	 :exclude ".*_secret.org"
+	 :auto-sitemap t
+	 :sitemap-sort-folders nil    
+	 )
+	("gtd"
+	 :base-directory "~/.elisp/dotemacs/org/gtd/"
+	 :base-extension "org"
+	 :publishing-directory "~/.github.pages/gtd"
+	 :recursive t
+	 :publishing-function org-publish-org-to-html
+	 :headline-levels 4             ; Just the default for this project.
+	 :auto-preamble t
+	 :auto-sitemap t
+	 :exclude ".*_secret.org"
+	 :sitemap-sort-folders nil    
+	 )
+	))

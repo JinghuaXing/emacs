@@ -1,0 +1,62 @@
+#+TITLE: Org Mode
+* Org mode
+** easy template
+`<` following a SELECTOR  and TAB
+- s #+begin_src
+- e #+begin_example
+- q #+begin_quote
+- v #+begin_verse
+- c #+begin_center
+- l #+begin_latex
+- L #+latex
+more template by setting `org-structure-template-alist`
+* Org Babel
+** Structure of code blocks
+#+BEGIN_EXAMPLE
+
+#+NAME: <name>
+#+BEGIN_SRC <language> <switches> <header arguments>
+    <body>
+#+END_SRC
+
+#+END_EXAMPLE
+АэИз:
+#+BEGIN_SRC ruby :exports both :results replace
+10.times do |v|
+    puts v
+end
+#+END_SRC
+*** header argument
+**** :exports
+  1. :exports code
+  2. :exports results
+  3. :exports both
+  4. :exports none
+**** :results
+there are 3 kinds of :results header argument:
+1. collections
+2. type
+3. handling
+***** collections
+1. value
+2. output
+***** type
+1. table
+2. list
+3. verbatim
+4. raw
+5. latex
+6. html
+7. code
+***** handling
+1. silent
+2. replace
+3. append
+4. prepend
+
+***** for example
+:results output replace raw
+
+* Tips
+** in-line images
+org-toggle-inline-images (C-c-x-v)

@@ -1,0 +1,227 @@
+#+TITLE: Java Quiz
+* Java Quiz
+** 编程题
+*** Singleton
+**** Q
+写一段应用 Singleton 模式的 sample code
+(注: Singleton 模式是`限制一个类只能存在一个实例`)
+**** A
+Note: 以下四个例子, 分数依次递增
+
+#+BEGIN_SRC java
+  Classs Singleton {
+      private static Singleton sInstance=new Singleton();
+      private Singleton() {
+          
+      }
+  
+      public static Singleton getInstance() {
+          return sInstance;
+      }
+  }
+#+END_SRC
+
+#+BEGIN_SRC java
+  class Singleton {
+      private static Singleton sInstance;
+      private Singleton() {
+  
+      }
+  
+      synchronized public static Singleton getInstance() {
+          if (sInstance==null) {
+              sInstance=new Singleton();
+          }
+          return sInstance;
+      }
+  }
+#+END_SRC
+
+#+BEGIN_SRC java
+  class Singleton {
+      private static Singleton sInstance;
+      private Singleton() {
+    
+      }
+    
+      public static Singleton getInstance() {
+          if (sInstance==null) {
+              synchronized (this) {
+                  if (sInstance==null) {
+                      sInstance=new Singleton();
+                  } 
+              }
+          }
+          return sInstance;
+      }
+  }
+#+END_SRC
+
+#+BEGIN_SRC java
+  class Singleton {
+      private static class Holder {
+          public static Singleton sInstance=new Singleton();
+      }
+      private Singleton() {
+      
+      }
+      
+      public static Singleton getInstance() {
+          return Holder.sInstance;
+      }
+  }
+#+END_SRC
+
+*** wait/notify
+**** Q 
+#+BEGIN_SRC java
+  public class Test {
+      static volatile boolean sNotified;
+      public static void main(String [] args) {
+          Thread t1=new Thread() {
+                  public void run() {
+                      System.out.println("thread1")
+                  }
+              };
+          Thread t2=new Thread() {
+                  public void run() {
+                      System.out.println("thread2")                      
+                  }
+              };
+  
+          t1.start();
+          t2.start();
+      }
+  
+  }
+#+END_SRC
+使用 wait/notify 修改 t1 及 t2 的 run() 函数 (不得修改其他地方), 以保证该段代码的输出一定是 
+#+BEGIN_EXAMPLE
+thread1
+thread2
+#+END_EXAMPLE
+**** A
+#+BEGIN_SRC java
+  public class Test {
+      static volatile boolean sNotified;
+      public static void main(String [] args) {
+          Thread t1=new Thread() {
+                  public void run() {
+                      synchronized (Test.class) {
+                          System.out.println("thread1");
+                          sNotified=true;
+                          Test.class.notify();
+                      }
+                  }
+              };
+          
+          Thread t2=new Thread() {
+                  public void run() {
+                      synchronized (Test.class) {
+                          if (!sNotified) {
+                              try {
+                                  Test.class.wait();                              
+                              } catch (InterruptedException e) {} 
+                          } 
+                      }
+                      System.out.println("thread2");
+                  }
+              };
+  
+          t2.start();
+          t1.start();
+      }
+  }
+#+END_SRC
+*** 二分查找
+**** Q
+实现一个 binarySearch 函数, 函数原型如下: 
+#+BEGIN_SRC java
+  /** 
+   * binary search an int value from a sorted int array 
+   * 
+   * @param array  sorted int array in ascending order
+   * @param key  int value to search
+   * 
+   * @return array index of the `key` , return -1 if not found
+   */
+  int binarySearch(int [] array, int key)
+#+END_SRC
+**** A
+#+BEGIN_SRC java
+  int binarySearch(int[] array, int key) {
+      if (array==null) {
+          return -1;
+      } 
+      int low = 0;
+      int high = array.length-1;
+      while(low <= high) {
+          int middle = (low + high)/2;
+          if (key == array[middle]) {
+              return middle;
+          } else if (key <array[middle]) {
+              high = middle - 1;
+          } else {
+              low = middle + 1;
+          }
+      }
+      return -1;
+  }  
+#+END_SRC
+** 问答题
+*** Java 是如何做到 "一次编译,到处运行"的
+
+java 的平台无关特性依赖于两方面: 
+
+1. 一个Java虚拟机
+2. 标准的类库
+
+实现跨平台性的方法是大多数编译器在进行Java语言程序的编码时候会生成一个用字节码
+（Bytecode）写成的“半成品”，这个“半成品”会在Java虚拟机（解释层）的帮助下运行，
+虚拟机会把它转换成当前所处硬件平台的原始代码。之后，Java虚拟机会打开标准库，进行
+数据（图片、线程和网络）的访问工作。主要注意的是，尽管已经存在一个进行代码翻译的
+解释层，有些时候Java的字节码代码还是会被JIT编译器进行二次编译
+
+*** 简述Java 垃圾回收机制
+
+当一个对象没有任何引用的时候，Java的自动垃圾收集机制就发挥作用，自动删除这个对象
+所占用的空间，释放存储器以避免存储器泄漏。
+
+最简单的 GC 是基于引用计数的, 但因为无法处理循环计数问题而无法实用. 另外还有基
+于 trace 的 GC, 如 mark&sweep, stop&copy 等. 
+
+当系统内存不足时会自动触发 GC,  也可以通过 system.gc() 进行手动触发 GC.  GC 会导
+致类的 finalize 函数被调用.
+
+*** 面向对象编程主要有哪些基本理论并举例说明
+- 抽象
+  
+为具体的问题找到最恰当的类定义, 并且在最恰当的继承级别上解释问题.
+
+例如, 我们在设计一个关于`拉不拉多犬`的类时, 会根据问题的需求将其抽象为"中型犬",
+或者更一般性的将其抽象为"动物"
+
+- 封装
+
+ 封装即隐藏实现细节, java 通过访问权限保证封装性.
+  
+- 继承
+
+一个类会有“子类”。子类比原本的类（称为父类）要更加具体化，子类会继承父类的属性
+和行为，并且也可包含它们自己的.
+
+- 多态
+
+由继承而产生的相关的不同的类，其对象对同一消息会做出不同的响应
+
+*** 简述 java 对象的各种引用
+
+- 强引用
+- 软引用
+- 弱引用
+- 虚引用
+
+*** 上台阶, 每次可以选择上一级或上两级, 请问上到50级台阶有多少种走法? 说明解法即可
+斐波那契数列:
+A(50)=A(49)+A(48)
+

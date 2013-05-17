@@ -1,0 +1,105 @@
+#+TITLE: Android IME Bug
+* CR Report
+   在EditText编辑时反复按Home来切换Launcher和EditText,导致在EditText中无法输入 
+** 复现
+   1. 先打开'短信', 在短信内容中输入一些文字,然后按Home返回Launcher
+   2. 在Launcher点再次打开'短信', 同时按Home, 确保短信还没有显示出任何界面就被关
+      闭
+   3. 重复第2步一到两次即可复现
+
+** 分析
+*** 正常的操作时IMF的行为
+    1. 在输入短信时按Home返回Launcher
+       - Launcher启动时会调用
+#+BEGIN_EXAMPLE
+	 InputManager.hideSoftInputFromWindow()
+#+END_EXAMPLE
+	 去隐藏SoftInput, 因为Launcher是不需要用SoftInput的
+       - Launcher的界面完整显示出来后, 会触发ViewRoot的WINDOW\_FOCUS\_CHANGED事件
+#+BEGIN_EXAMPLE
+	 ViewRoot.handleMessage:WINDOW_FOCUS_CHANGED
+	   InputManager.onWindowFocus()
+	     InputManager.checkFocus()
+               //checkFocus中这个判断很重要,若此时光标所在的view没有变化且不需要
+               //重启IME,则直接返回, 例如, 若之前是输入法光标在EditText1, 而后来
+               //变成EditText2, 则会重新startInputInner, 或者输入法光标所在View
+               //没变,但mNextServedNeedStart为true, 也会startInputInner,
+               //mNextServedNeedsStart这个标记会在后面提到
+	       //
+	       // MARK1
+	       if (mServedView == mNextServedView && !mNextServedNeedsStart):
+                 return;
+	       startInputInner()
+	         InputMethodManagerService.startInput()
+        	   InputMethodManagerService.startInputLocked()
+                     //MARK2
+                     if (!mIWindowManager.inputMethodClientHasFocus(cs.client)):
+	               //正常情况下, 该判断条件一定不会成立,因为在这里
+                       //startInputInner是因为FOCUS_CHANGED被触发的, 这里Launcher
+	               //肯定已经获得焦点
+	               return;
+                     if (mCurClient != cs) {
+                       //在这里mCurClient代表短信,而cs代表Launcher,所以Launcher
+                       //会将短信对应的InputClient置为deactivate(通过
+                       //setActive(false))
+                       //正因为如此,下次短信启动时, 会发现虽然它的输入法光标位置
+                       //没变,但因为mNextServedNeedsStart为false, 说明它曾被deactivate, 那么它在
+                       //执行同样这段onWindowFocus时, 不会在MARK1处直接return
+                       unbindCurrentClientLocked();
+                         mCurClient.client.setActive(false);
+                     ....
+	             //绑定具体IME的service, 设置session, 启动IME...
+
+#+END_EXAMPLE
+    2. 在Launcher点再次打开'短信', 确保短信界面已经显示出来之前不要按Home
+       短信启动时,因为之前已经在EditText中输入过文字, 所以在WINDOW\_FOCUS\_CHANGED
+       之前,会有一次额外的动作:
+
+#+BEGIN_EXAMPLE
+ 	at android.view.inputmethod.InputMethodManager.startInputInner(InputMethodManager.java:969)
+	at android.view.inputmethod.InputMethodManager.restartInput(InputMethodManager.java:902)
+	at android.widget.TextView.setText(TextView.java:2631)
+	at android.widget.TextView.setText(TextView.java:2580)
+	at android.widget.EditText.setText(EditText.java:75)
+	at android.widget.TextView.setTextKeepState(TextView.java:2828)
+	at android.widget.TextView.setTextKeepState(TextView.java:2568)
+	at com.android.mms.ui.ComposeMessageActivity.drawBottomPanel(ComposeMessageActivity.java:3357)
+	at com.android.mms.ui.ComposeMessageActivity.loadMessageContent(ComposeMessageActivity.java:2200)
+	at com.android.mms.ui.ComposeMessageActivity.onStart(ComposeMessageActivity.java:2176)
+	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1129)
+#+END_EXAMPLE
+
+       即:在短信获得焦点之前, 会因为setText导致startInputInner被调用,但此时因为
+       短信没有焦点,所以startInputInner会在上一段代码的MARK2处返回. 虽然这会导致
+       startInputInner的后续代码,如unbindCurrentClient, 绑定IME,等不会被调用,但
+       没有关系,因为WINDOW\_FOCUS\_CHANGED事件一会儿肯定会发生. 
+*** 异常操作时IMF的行为
+    这里的异常操作是指:在启动短信时,不等短信的界面显示出来就直接按Home,导致
+    短信收不到WINDOW\_FOCUS\_CHANGED事件.
+    
+    1. 在Launcher中点击短信并迅速返回
+       首先, 短信的setText导致的startInputInner还是会被调用,并直接在MARK2处返回.
+       因为短信迅速返回,所以WINDOW\_FOCUS\_CHANGED事件没有处理, 导致短信没有机会将
+       Launcher的InputClient置为\inactive
+
+    2. Launcher启动
+       与正常操作时的第一步类似,Launcher也会先hideSoftInput, 然后获得焦点会尝试
+       startInputInner,但不同的是,这时代码会在MARK1处返回,因为IMMS认为它还是
+       active的, 不需要重启输入法. 
+       因为直接返回,导致launcher没有办法在后续代码中将短信的InputClient置为
+       inactive
+    3. 当再次打开短信时,因为IMMS认为它还是active的, 所以又会从MARK1处返回....导
+       致无法重新绑定输入法.
+    4. 如此反复...
+
+
+    
+** 解决方法
+   因为进入短信时, 在获得焦点之前首先会因为setText导致startInputInner被调用,所以
+   可以在MARK2处增加一行:
+#+BEGIN_EXAMPLE
+   		cs.client.setActive(false);
+#+END_EXAMPLE
+   这样使短信可以不信赖WINDOW\_FOCUS\_CHANGED事件来deactivate launcher的InputClient.
+   既然一个client想启动输入法却没有焦点,也许我们可以安全的将它置为inactive, 以便
+   下次它获得焦点时再启动输入法.

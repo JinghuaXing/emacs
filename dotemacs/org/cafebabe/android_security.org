@@ -1,0 +1,518 @@
+#+TITLE: Android Security
+* Android Security
+** Android Permission
+*** declare
+**** protection level
+- normal
+
+The default value. A lower-risk permission that gives requesting
+applications access to isolated application-level features, with
+minimal risk to other applications, the system, or the user. The
+system automatically grants this type of permission to a requesting
+application at installation, without asking for the user's explicit
+approval (though the user always has the option to review these
+permissions before installing).
+
+- dangerous
+
+A higher-risk permission that would give a requesting application
+access to private user data or control over the device that can
+negatively impact the user. Because this type of permission introduces
+potential risk, the system may not automatically grant it to the
+requesting application. For example, any dangerous permissions
+requested by an application may be displayed to the user and require
+confirmation before proceeding, or some other approach may be taken to
+avoid the user automatically allowing the use of such facilities.
+
+- signature
+
+A permission that the system grants only if the requesting application
+is signed with the same certificate as the application that declared
+the permission. If the certificates match, the system automatically
+grants the permission without notifying the user or asking for the
+user's explicit approval.
+
+- signatureOrSystem
+
+A permission that the system grants only to applications that are in
+the Android system image or that are signed with the same certificates
+as those in the system image. Please avoid using this option, as the
+signature protection level should be sufficient for most needs and
+works regardless of exactly where applications are installed. The
+"signatureOrSystem" permission is used for certain special situations
+where multiple vendors have applications built into a system image and
+need to share specific features explicitly because they are being
+built together.
+
+e.g. 
+
+#+BEGIN_SRC xml
+  <permission android:name="android.permission.INSTALL_PACKAGES"
+      android:label="@string/permlab_installPackages"
+      android:description="@string/permdesc_installPackages"
+      android:protectionLevel="signature|system" />
+#+END_SRC
+
+*** grant
+pm.grantPermissions
+#+BEGIN_SRC java
+  scanPackageLI()
+    grantPermissionsLPw()
+  
+#+END_SRC
+
+*** check
+**** component permission (or binder permission?)
+see also [[Binder.getCallingPid() & Binder.getCallingUid()][getCallingPid]]
+- check `component permission` when access certain component: startService, sendBroadcast, startActivity
+see [[startService][startService]], [[sendBroadcast][sendBroadcast]], [[startActivity][startActivity]]
+note: sendBroadcast will make sure both the sender and the receiver
+has gained the requiredPermission imposed by the counterpart.
+
+- check `application permission` when access application's any component
+#+BEGIN_EXAMPLE
+  <application ... android:permission="xxx">  </application>
+#+END_EXAMPLE
+
+***** ams.checkPermission
+ams.checkComponentPermission(perm, pid, uid, ...)
+  ams.checkPermission(String permission, int calling_pid, int calling_uid) 
+    ams.enforceCallingPermission(perm)
+    ams.checkCallingPermission(perm)
+***** pms.checkUidPermission
+see also [[grant]]
+***** Other
+Note that component permission may be checked by framework, or by app themselves.
+
+**** api or os permission (e.g. file permission..)
+
+/system/etc/permissions/platform.xml reads:
+#+BEGIN_EXAMPLE
+  <permission name="android.permission.INTERNET" >
+      <group gid="inet" />
+  </permission>
+  ...
+#+END_EXAMPLE
+
+The above tags are associating low-level group IDs with permission
+names.  By specifying such a mapping, you are saying that any application
+process granted the given permission will also be running with the given
+group ID attached to its process, so it can perform any filesystem (read,
+write, execute) operations allowed for that group.
+
+with this kind of permission setting, low level c api, e.g. sqlite, luni
+
+*** PermissionController Service
+see also [[check]]
+
+PermissionController Service is a service added by
+ActivityManagerService though addService("permission"), it's only a
+encapsulation of AMS.checkPermission() and further
+PMS.checkUidPermission(), thus native code can also check permission.
+
+android::checkCallingPermission() in native code use
+PermissionController service to check permission in native code:
+
+#+BEGIN_EXAMPLE
+  binder = defaultServiceManager()->checkService("permission");
+  pc = interface_cast<IPermissionController>(binder);
+  pc.checkPermission()
+#+END_EXAMPLE
+
+*** Other
+**** mappings between uid/gid and permission
+platform.xml reads:
+#+BEGIN_SRC xml
+  <permissions>
+  
+      <!-- ================================================================== -->
+      <!-- ================================================================== -->
+      <!-- ================================================================== -->
+  
+      <!-- The following tags are associating low-level group IDs with
+           permission names.  By specifying such a mapping, you are saying
+           that any application process granted the given permission will
+           also be running with the given group ID attached to its process,
+           so it can perform any filesystem (read, write, execute) operations
+           allowed for that group. -->
+  
+      <permission name="android.permission.BLUETOOTH_ADMIN" >
+          <group gid="net_bt_admin" />
+      </permission>
+  
+      <permission name="android.permission.BLUETOOTH" >
+          <group gid="net_bt" />
+      </permission>
+  
+      <permission name="android.permission.INTERNET" >
+          <group gid="inet" />
+      </permission>
+      
+      <!-- ... -->
+      
+      <!-- The following tags are assigning high-level permissions to specific
+           user IDs.  These are used to allow specific core system users to
+           perform the given operations with the higher-level framework.  For
+           example, we give a wide variety of permissions to the shell user
+           since that is the user the adb shell runs under and developers and
+           others should have a fairly open environment in which to
+           interact with the system. -->
+  
+      <!-- Standard permissions granted to the shell. -->
+      <assign-permission name="android.permission.WRITE_EXTERNAL_STORAGE" uid="shell" />
+      <assign-permission name="android.permission.SEND_SMS" uid="shell" />
+      <assign-permission name="android.permission.CALL_PHONE" uid="shell" />
+      <!-- ... -->
+      <assign-permission name="android.permission.MODIFY_AUDIO_SETTINGS" uid="media" />
+      <assign-permission name="android.permission.ACCESS_DRM" uid="media" />
+      <assign-permission name="android.permission.ACCESS_SURFACE_FLINGER" uid="media" />
+      <assign-permission name="android.permission.WAKE_LOCK" uid="media" />
+  
+      <assign-permission name="android.permission.ACCESS_SURFACE_FLINGER" uid="graphics" />
+      <library name="android.test.runner"
+              file="/system/framework/android.test.runner.jar" />
+      <library name="javax.obex"
+              file="/system/framework/javax.obex.jar"/>
+  
+  </permissions>
+  
+#+END_SRC
+**** PendingIntent / IntentSender
+when A's PendingIntent is delivered to B, B calls PendingIntent.send()
+to send the underlying intent *on behalf of* A, A's permission is also
+delegated to B
+
+**** uri permission
+** Traditional linux security config
+Traditionally, linux using  some config files to enforce security:
+
+- /etc/password
+- /etc/shadow
+- /etc/group
+
+But, android simply doesn't have the counterpart. 
+
+Take a look at:
+- system/core/include/private/android_filesystem_config.h
+- /bionic/libc/bionic/stubs.c
+
+We will realize that:
+1. users is not listed in /etc/password, but hard-coded in `android_filesystem_config.h'
+2. this is not /etc/group ...  
+   in fact, process gid is assigned at run-time according to
+   `permission', Typically, when user A launch a linux program, the
+   program uid/gid/groups will be set according to user A's
+   uid/gid/groups, but progress can also call setuid/gid/groups
+   manually (with enough privilege) to reset the uid/gid/groups
+   (zygote adopts the later approach to restrict user progress's
+   privilege). 
+
+   e.g. progresses granted "EXTERNAL_STORAGE" permission can
+   read/write sdcard, because these progresses will be put into
+   `sdcard_rw` group. but this doesn't mean that the file's owner is
+   added into the `sdcard_rw` group beforehand, in fact, PM will
+   maintain the group info, when forking the process from zygote,
+   zygote will invoke setgroups to add the process to `sdcard_rw`
+   group.
+** ASEC
+Android Security Executable Cache
+
+When apk are installed to sdcard, for security reason, it must not be
+placed in the sdcard directly , instead, a security container is used
+to save the encrypted apk (xxx.asec), we need to mount (use
+MountService) the security container to a cached directory (/mnt/asec)
+to get the decrypted apk (pkg.apk)
+*** ASEC
+ASEC handle two things: 
+1. when installing to sdcard, encrypt the orig `apk' to `asec'
+2. when booting, mount the `asec' as `apk' using `sks'
+
+**** /mnt/secure/asec/com.xxx.xxx.asec
+the secure container (encrypted apk), /mnt/asec/xxx/pkg.apk is
+extracted from this file in run-time
+    
+secure container is created, mounted, umounted by MountService, which
+relies on `asec` executable binary to perform
+`mount,umount,create,delete..` of the secure containers:
+
+To create a secure container of 1.apk:
+#+BEGIN_SRC text
+  asec create cid
+  asec mount cid /mnt/asec/xxxix
+  cp 1.apk /mnt/asec/xxxx/pkg.apk
+  asec umount cid
+#+END_SRC
+
+***** More details:
+#+BEGIN_EXAMPLE
+  $>mount
+  1      tmpfs /mnt/asec tmpfs rw,relatime,mode=755,gid=1000 0 0
+  2      /dev/block/vold/179:1 /mnt/sdcard vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+  3      /dev/block/vold/179:1 /mnt/secure/asec vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+  4      tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
+  5      /dev/block/dm-0 /mnt/asec/com.sunway.testwebview-1 vfat ro,dirsync,nosuid,nodev,noexec,relatime,uid=1000,fmask=0222,dmask=0222,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+#+END_EXAMPLE
+
+That is,
+1. sdcard is mounted as two part:
+  1. the entire sdcard is mounted to /mnt/sdcard (line 2)
+  2. sdcard/.android_secure is *bind-mount* to /mnt/secure/asec (line 3)
+     *note*: android mount the sdcard/.android_secure to tmpfs (line 4) to obscure the actual asec data on sdcard, so that normal operations
+     on sdcard won't touch asec data at run-time.
+2. /mnt/secure/asec/xxx.asec is mounted as loop device, e.g.:
+   mount /mnt/secure/asec/xxx.asec -o loop=/dev/loop0
+3. cryptsetup key /dev/block/dm-0 /dev/loop0
+4. mount /dev/block/dm-0 /mnt/asec/xxxx (line 5)
+         
+Step 3 is essential: android use `device-mapper crypto` as the
+`encrypt file system` behind secure container, which can mount a
+encrypted image file to a mapped device (dm-0)
+**** /mnt/asec/com.xx xx.xxxx/pkg.apk
+As is shown is init.rc:
+
+#+BEGIN_EXAMPLE
+  # from init.rc
+  # Secure container public mount points.
+  mkdir /mnt/asec  0700 root system
+  mount tmpfs tmpfs /mnt/asec mode=0755,gid=1000
+#+END_EXAMPLE
+
+that is, /mnt/asec/ is actually mounted from a tmpfs, it's content
+(com.xxx.xx/pkg.apk) actually is the run-time decryption of
+/mnt/secure/asec/com.xxx.asec
+**** /data/misc/systemkeys/AppsOnSD.sks
+the *AES* key to encrypt pkg.apk and decrypt xxx.asec, all the secure container share the same key.
+
+*** device mapper (dm_crypt)
+*** To summarize:
+secure container is analogous to the `encrypt file system`.
+** Signature & Certificate
+see also [[keytool & jarsigner]]
+*** Android APK 签名比对
+
+[[http://www.blogjava.net/zh-weir/archive/2011/07/19/354663.html][Android APK 签名比对]]
+                                                                                                                       
+发布过Android应用的朋友们应该都知道，Android APK的发布是需要签名的。签名机制在Android应用和框架中有着十分重要的作用。
+
+例如，Android系统禁止更新安装签名不一致的APK；如果应用需要使用system权限，必须保证APK签名与Framework签名一致，等等。在
+《APK Crack》一文中，我们了解到，要破解一个APK，必然需要重新对APK进行签名。而这个签名，一般情况无法再与APK原先的签名保
+持一致。（除非APK原作者的私钥泄漏，那已经是另一个层次的软件安全问题了。）
+
+简单地说，签名机制标明了APK的发行机构。因此，站在软件安全的角度，我们就可以通过比对APK的签名情况，判断此APK是否由“官方”
+发行，而不是被破解篡改过重新签名打包的“盗版软件”。
+
+Android签名机制
+
+    为了说明APK签名比对对软件安全的有效性，我们有必要了解一下Android APK的签名机制。为了更易于大家理解，我们从Auto-Sign
+工具的一条批处理命令说起。
+
+在《APK Crack》一文中，我们了解到，要签名一个没有签名过的APK，可以使用一个叫作Auto-sign的工具。Auto-sign工具实际运行的
+是一个叫做Sign.bat的批处理命令。用文本编辑器打开这个批处理文件，我们可以发现，实现签名功能的命令主要是这一行命令：
+
+    java -jar signapk.jar testkey.x509.pem testkey.pk8 update.apk update_signed.apk
+
+    这条命令的意义是：通过signapk.jar这个可执行jar包，以“testkey.x509.pem”这个公钥文件和“testkey.pk8”这个私钥文件对“
+update.apk”进行签名，签名后的文件保存为“update_signed.apk”。
+
+    对于此处所使用的私钥和公钥的生成方式，这里就不做进一步介绍了。这方面的资料大家可以找到很多。我们这里要讲的是
+signapk.jar到底做了什么。
+
+    signapk.jar是Android源码包中的一个签名工具。由于Android是个开源项目，所以，很高兴地，我们可以直接找到signapk.jar的
+源码！路径为/build/tools/signapk/SignApk.java。
+
+对比一个没有签名的APK和一个签名好的APK，我们会发现，签名好的APK包中多了一个叫做META-INF的文件夹。里面有三个文件，分别名
+为MANIFEST.MF、CERT.SF和CERT.RSA。signapk.jar就是生成了这几个文件（其他文件没有任何改变。因此我们可以很容易去掉原有签名
+信息）。
+
+    通过阅读signapk源码，我们可以理清签名APK包的整个过程。
+
+1、 生成MANIFEST.MF文件：
+
+程序遍历update.apk包中的所有文件(entry)，对非文件夹非签名文件的文件，逐个生成SHA1的数字签名信息，再用Base64进行编码。具
+体代码见这个方法：
+
+    private static Manifest addDigestsToManifest(JarFile jar)
+
+关键代码如下：
+
+ 1     for (JarEntry entry: byName.values()) {
+ 2         String name = entry.getName();
+ 3         if (!entry.isDirectory() && !name.equals(JarFile.MANIFEST_NAME) &&
+ 4             !name.equals(CERT_SF_NAME) && !name.equals(CERT_RSA_NAME) &&
+ 5                (stripPattern == null ||!stripPattern.matcher(name).matches())) {
+ 6                 InputStream data = jar.getInputStream(entry);
+ 7                 while ((num = data.read(buffer)) > 0) {
+ 8                     md.update(buffer, 0, num);
+ 9                 }
+10                 Attributes attr = null;
+11                 if (input != null) attr = input.getAttributes(name);
+12                 attr = attr != null ? new Attributes(attr) : new Attributes();
+13                 attr.putValue("SHA1-Digest", base64.encode(md.digest()));
+14                 output.getEntries().put(name, attr);
+15           }
+16     }
+
+    之后将生成的签名写入MANIFEST.MF文件。关键代码如下：
+
+1     Manifest manifest = addDigestsToManifest(inputJar);
+2     je = new JarEntry(JarFile.MANIFEST_NAME);
+3     je.setTime(timestamp);
+4     outputJar.putNextEntry(je);
+5     manifest.write(outputJar);
+
+    这里简单介绍下SHA1数字签名。简单地说，它就是一种安全哈希算法，类似于MD5算法。它把任意长度的输入，通过散列算法变成固
+定长度的输出（这里我们称作“摘要信息”）。你不能仅通过这个摘要信息复原原来的信息。另外，它保证不同信息的摘要信息彼此不同
+。因此，如果你改变了apk包中的文件，那么在apk安装校验时，改变后的文件摘要信息与MANIFEST.MF的检验信息不同，于是程序就不能
+成功安装。
+
+2、 生成CERT.SF文件：
+
+对前一步生成的Manifest，使用SHA1-RSA算法，用私钥进行签名。关键代码如下：
+
+1     Signature signature = Signature.getInstance("SHA1withRSA");
+2     signature.initSign(privateKey);
+3     je = new JarEntry(CERT_SF_NAME);
+4     je.setTime(timestamp);
+5     outputJar.putNextEntry(je);
+6     writeSignatureFile(manifest,
+7     new SignatureOutputStream(outputJar, signature));
+
+    RSA是一种非对称加密算法。用私钥通过RSA算法对摘要信息进行加密。在安装时只能使用公钥才能解密它。解密之后，将它与未加
+密的摘要信息进行对比，如果相符，则表明内容没有被异常修改。
+
+3、 生成CERT.RSA文件：
+
+生成MANIFEST.MF没有使用密钥信息，生成CERT.SF文件使用了私钥文件。那么我们可以很容易猜测到，CERT.RSA文件的生成肯定和公钥
+相关。
+
+CERT.RSA文件中保存了公钥、所采用的加密算法等信息。核心代码如下：
+
+1     je = new JarEntry(CERT_RSA_NAME);
+2     je.setTime(timestamp);
+3     outputJar.putNextEntry(je);
+4     writeSignatureBlock(signature, publicKey, outputJar);
+
+    其中writeSignatureBlock的代码如下：
+
+ 1     private static void writeSignatureBlock(
+ 2         Signature signature, X509Certificate publicKey, OutputStream out)
+ 3             throws IOException, GeneralSecurityException {
+ 4                 SignerInfo signerInfo = new SignerInfo(
+ 5                 new X500Name(publicKey.getIssuerX500Principal().getName()),
+ 6                 publicKey.getSerialNumber(),
+ 7                 AlgorithmId.get("SHA1"),
+ 8                 AlgorithmId.get("RSA"),
+ 9                 signature.sign());
+10 
+11         PKCS7 pkcs7 = new PKCS7(
+12             new AlgorithmId[] { AlgorithmId.get("SHA1") },
+13             new ContentInfo(ContentInfo.DATA_OID, null),
+14             new X509Certificate[] { publicKey },
+15             new SignerInfo[] { signerInfo });
+16 
+17         pkcs7.encodeSignedData(out);
+18     }
+
+    好了，分析完APK包的签名流程，我们可以清楚地意识到：
+
+1、 Android签名机制其实是对APK包完整性和发布机构唯一性的一种校验机制。
+
+2、 Android签名机制不能阻止APK包被修改，但修改后的再签名无法与原先的签名保持一致。（拥有私钥的情况除外）。
+
+3、 APK包加密的公钥就打包在APK包内，且不同的私钥对应不同的公钥。换句话言之，不同的私钥签名的APK公钥也必不相同。所以我们
+可以根据公钥的对比，来判断私钥是否一致。
+
+APK签名比对的实现方式
+
+    好了，通过Android签名机制的分析，我们从理论上证明了通过APK公钥的比对能判断一个APK的发布机构。并且这个发布机构是很难
+伪装的，我们暂时可以认为是不可伪装的。
+
+    有了理论基础后，我们就可以开始实践了。那么如何获取到APK文件的公钥信息呢？因为Android系统安装程序肯定会获取APK信息进
+行比对，所以我们可以通过Android源码获得一些思路和帮助。
+
+    源码中有一个隐藏的类用于APK包的解析。这个类叫PackageParser，路径为frameworks\base\core\java\android\content\pm\
+PackageParser.java。当我们需要获取APK包的相关信息时，可以直接使用这个类，下面代码就是一个例子函数：
+
+ 1     private PackageInfo parsePackage(String archiveFilePath, int flags){
+ 2         
+ 3         PackageParser packageParser = new PackageParser(archiveFilePath);
+ 4         DisplayMetrics metrics = new DisplayMetrics();
+ 5         metrics.setToDefaults();
+ 6         final File sourceFile = new File(archiveFilePath);
+ 7         PackageParser.Package pkg = packageParser.parsePackage(
+ 8                 sourceFile, archiveFilePath, metrics, 0);
+ 9         if (pkg == null) {
+10             return null;
+11         }
+12         
+13         packageParser.collectCertificates(pkg, 0); 
+14         
+15         return PackageParser.generatePackageInfo(pkg, null, flags, 0, 0);
+16     }
+
+    其中参数archiveFilePath指定APK文件路径；flags需设置PackageManager.GET_SIGNATURES位，以保证返回证书签名信息。
+
+    具体如何通过PackageParser获取签名信息在此处不做详述，具体代码请参考PackageParser中的
+public boolean collectCertificates(Package pkg, int flags)和private Certificate[] loadCertificates
+(JarFile jarFile, JarEntry je, byte[] readBuffer)方法。至于如何在Android应用开发中使用隐藏的类及方法，可以参看我的这篇
+文章：《Android应用开发中如何使用隐藏API》。
+
+    紧接着，我们就可以通过packageInfo.signatures来访问到APK的签名信息。还需要说明的是 Android中Signature和Java中
+Certificate的对应关系。它们的关系如下面代码所示：
+
+1     pkg.mSignatures = new Signature[certs.length];
+2     for (int i=0; i<N; i++) {
+3         pkg.mSignatures[i] = new Signature(
+4         certs[i].getEncoded());
+5     }
+
+    也就是说signature = new Signature(certificate.getEncoded()); certificate证书中包含了公钥和证书的其他基本信息。公钥
+不同，证书肯定互不相同。我们可以通过certificate的getPublicKey方法获取公钥信息。所以比对签名证书本质上就是比对公钥信息。
+
+    OK，获取到APK签名证书之后，就剩下比对了。这个简单，功能函数如下所示:
+
+ 1     private boolean IsSignaturesSame(Signature[] s1, Signature[] s2) {
+ 2             if (s1 == null) {
+ 3                 return false;
+ 4             }
+ 5             if (s2 == null) {
+ 6                 return false;
+ 7             }
+ 8             HashSet<Signature> set1 = new HashSet<Signature>();
+ 9             for (Signature sig : s1) {
+10                 set1.add(sig);
+11             }
+12             HashSet<Signature> set2 = new HashSet<Signature>();
+13             for (Signature sig : s2) {
+14                 set2.add(sig);
+15             }
+16             // Make sure s2 contains all signatures in s1.
+17             if (set1.equals(set2)) {
+18                 return true;
+19             }
+20             return false;
+21         }
+
+APK签名比对的应用场景
+
+    经过以上的论述，想必大家已经明白签名比对的原理和我的实现方式了。那么什么时候什么情况适合使用签名对比来保障
+Android APK的软件安全呢？
+
+    个人认为主要有以下三种场景：
+
+1、 程序自检测。在程序运行时，自我进行签名比对。比对样本可以存放在APK包内，也可存放于云端。缺点是程序被破解时，自检测功
+能同样可能遭到破坏，使其失效。
+
+2、 可信赖的第三方检测。由可信赖的第三方程序负责APK的软件安全问题。对比样本由第三方收集，放在云端。这种方式适用于杀毒安
+全软件或者APP Market之类的软件下载市场。缺点是需要联网检测，在无网络情况下无法实现功能。（不可能把大量的签名数据放在移
+动设备本地）。
+
+3、 系统限定安装。这就涉及到改Android系统了。限定仅能安装某些证书的APK。软件发布商需要向系统发布上申请证书。如果发现问
+题，能追踪到是哪个软件发布商的责任。适用于系统提供商或者终端产品生产商。缺点是过于封闭，不利于系统的开放性。
+
+以上三种场景，虽然各有缺点，但缺点并不是不能克服的。例如，我们可以考虑程序自检测的功能用native method的方法实现等等。软
+件安全是一个复杂的课题，往往需要多种技术联合使用，才能更好的保障软件不被恶意破坏。
+
+*** Android 证书文件位置
+- build/target/product/security/
+  

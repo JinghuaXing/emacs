@@ -1,0 +1,1029 @@
+#+TITLE: Android
+* Android
+#+CATEGORY:android
+** Android coredump
+** Android IMF
+** DONE [#A] Android Testing
+SCHEDULED: <2011-03-14 Mon>
+- State "DONE"       [2011-03-13 Sun 18:01]
+  see [[@Instrumentation]]
+  there are 3 different testing in android
+     - Testing using JUnit's Test{Runner,Suite,Case}
+     - Testing using AndroidTest{Runner,Suite,Case}
+     - Testing using InstrumentationTest{Runner,Suite,Case}
+*** JUnit TestRunner
+there are classes such as `TestSuite` and `TestCase`, but there is no `TestRunner` in android.
+if u want to kick off a JUnit testing, there are 2 alternative ways:
+ 1. write some `TestCase` and run the application as `JUnit TestCase` in eclipse or using cmd like `java -cp jnit.jar com.sunway.test`,
+    Note that: the testing will run in the PC side instead of android emulator or device.
+ 2. in the android application code, create a TestSuite instance manually, and add some TestCase to it, then invoke TestSuite.runTest() manually.
+    (similar with AndroidTestRunner)
+*** AndroidTestRunner
+AndroidTestRunner, in contract with JUnit TestRunner, it maintain a Context instance (need to call AndroidTestRunner.setContext(context) to set it
+manually, then any underlying AndroidTestCase can call `getContext()` to get the Context instance.
+
+Q:how to kick off the testing?
+A:manually...
+
+if u use AndroidTestRunner, u must setup the testing manually, e.g. new AndroidTestRunner, new TestSuite, add AndroidTestCase to suite, and invoke
+runner.runTest() at last.
+*** InstrumentationTestRunner
+InstrumentationTestRunner, in contract with AndroidTestRunner, it itself is a Instrumentation, and thus the Context is set automatically by
+Instrumentation.init() when AMS calls bindApplication().
+InstrumentationTestCase can call `getInstrumentation()` to get the Instrumentation instance.
+
+InstrumentationTestRunner extends *Instrumentation*, thus the testing can be kick-off by Instrumentation.onCreate(), in fact:
+#+BEGIN_EXAMPLE
+    InstrumentationTestRunner.onCreate()
+      mTestRunner = getAndroidTestRunner();
+      mTestRunner.setContext(getTargetContext());
+      mTestRunner.setInstrumentation(this);
+      mTestRunner.setTest(testSuiteBuilder.build());       ;;testSuiteBuilder will scan all the testCase automatically
+      mTestRunner.addTestListener();
+      start(); ;; Instrumentation.start() will start another thread and call onStart()
+        onStart();
+	  mTestRunner.runTest();
+#+END_EXAMPLE
+that is , InstrumentationTestRunner actually is not a TestRunner, what it does is two things:
+  1. reply on Instrumentation.onCreate() to kick of the testing
+  2. reply on inner AndroidTestRunner to run all the test.
+
+#+BEGIN_EXAMPLE
+    AndroidTestRunner.runTest()						o
+      for (TestCase testCase : mTestCases):
+        setContextIfAndroidTestCase(testCase, mContext, testContext);
+        setInstrumentationIfInstrumentationTestCase(testCase, mInstrumentation); ;; set mInstrumentation to InstrumentationTestCase so that they can make use
+	                                                                         ;; of it.
+        testCase.run(mTestResult);
+#+END_EXAMPLE
+*** class hierachy graph
+#+BEGIN_EXAMPLE
+     	            	       	       	       	      -+----------+
+	     						       | TestCase |
+                        				      -+-----+----+
+	     						      	     |
+     	     for unit test	     -+----------------------+---------------------+
+ 	       	    -+------------------------+--------------------+ 		       	   |
+	     	     |		      -+------+--------+	   |   	      -+-----------+-----------+
+	     	     |		       |AndroidTestCase|	   |	       |InstrumentationTestCase|
+	     	     |		      -+------+--------+       	   |   	      -+-----------+-----------+
+	     	     |		      	      |		       	   |	      		   |
+	     	     |		   -+---------+---------+      	   |	      -+-----------+-----------+
+	     	     |		    |	   		|      	   |	       |       	  	       |
+	     	     |	 -+---------+------+  -+--------+------+   | -+--------+-------+       	     .....
+	     	     |	  |ProviderTestCase|   |ServiceTestCase|   |  |ActivityTestCase|
+	     	     |	 -+----------------+  -+---------------+   | -+--------+-------+
+	     	     |			       	                   |           |
+  	     | 	       	       	       	      -+-----------+-----------+----------------------+    for functional test
+	     	     |			       	       |  	   |	       -+---------------------+---------------+
+   	     | 	       	       	  -+-----------+---------+ |	       	| -+------------------+-------------+ |
+	     	     |		           |ActivityUnitTestCase | |	       	|  | ActivityInstrumentationTestCase| |
+	     	     |		       	  -+---------------------+ |	       	| -+--------------------------------+ |
+		    -+---------------------------------------------+   	       -+-------------------------------------+
+#+END_EXAMPLE
+
+   - AndroidTestCase
+     - AndroidTesCase.setContext()/getContext()
+     - AndroidTestCase doesn't interact with AMS, e.g. ServiceTestCase has methods like startService(), but as against to
+       Instrumentation.startActivitySync(), ServiceTestCase.startService() only call through to mService.start(), mContext is mainly used to access
+       resource?
+   - InstrumentationTestCase
+     - InstrumentationTestCase can call getInstrumentation() and getContext() (mContext is set by AMS automatically)
+     - ActivityInstrumentationTestCase is for functional testing: the activity under test will be create using the system infrastructure
+       (by calling mInstrumentation.launchActivity) will call Instrumentation.startActivitySync to launch the activity, and perform functional testing
+     - ActivityUnitTestCase  is for unit testing: the activity under test will be create with minimal connection to the system infrastructure, and you can
+       invoke setActivityConetxt() to inject a mock context.
+** Animation
+*** TranslateAnimation
+** DONE ANR
+   CLOSED: [2011-06-13 Mon 10:52]
+   - State "DONE"       [2011-06-13 Mon 10:52]
+   see [[Strict Mode]]
+*** DONE [#A] Broadcast ANR					  :broadcast:
+    SCHEDULED: <2011-02-15 Tue> CLOSED: [2011-02-15 Tue 19:41]
+    - State "DONE"       [2011-02-15 Tue 19:41]
+    see SendBroadcast
+*** [#B] KeyEvent ANR                                            :keyevent:
+    key event is dispatched by AMS one by one, that is ,until prev key event is
+    dispatched, AMS will wait to dispatching next key event, until ANR occurs.
+
+    when key event is dispatched to ViewRoot, ViewRoot will
+    diliverToViewHierachy, then notify WMS that key is dispatched.
+
+    KeyWaiter says:
+#+BEGIN_HTML
+<pre lang="java" line="1">
+    long keyDispatchingTimeout = 10 * 1000;
+</pre>
+#+END_HTML
+*** DONE Service ANR						    :service:
+    CLOSED: [2011-06-13 Mon 10:52]
+    - State "DONE"       [2011-06-13 Mon 10:52]
+AMS calls:
+#+BEGIN_EXAMPLE
+1. sendServiceArgs()
+     bumpServiceExcuting
+       sendMessageAtTime(SERVICE_TIMEOUT) (20s)
+       after SERVICE_TIMEOUT (20s), appNotResponding() will be call, and ANR occurs
+     app.thread.scheduleServiceArgs()
+     activityThread will call service.onStart()
+     activityThread calls mWindowSession.serviceDone() to tell AMS that onStart returns. then the SERVICE_TIMEOUT msg is removed
+
+2. realStartService()
+     bumpServiceExecuting()
+	sendMessageAtTime(SERVICE_TIMEOUT) (20s)
+     app.thread.scheduleCreateService()
+     activityThread will call service.onCreate()
+     activityThread calls mWindowSession.serviceDone()
+#+END_EXAMPLE
+** Ant & android
+** ANT and android project
+** Application
+see also [[Context.getApplicationContext()]]
+*** persistent application
+see also [[Android Process Crash and Restart]]
+1. An application is persistent only when it is [[system application]]; 3rd application will never be taken as persistent.
+2. application with `manifest.xml/application/android:persistent=true' is
+   considered to be persistent.
+3. when the persistent application is killed (crash, killPid ...), AMS will always restart it.
+4. persistent application will be launched during system boot, before the BOOT_COMPLETED is broadcasted
+** AppWidget
+** ASEC
+Android Security Executable Cache
+*** dm_crypt
+** Ashmem
+** DONE AsyncQueryHandler && loader                                 :coding:
+CLOSED: [2012-09-08 周六 16:12] SCHEDULED: <2012-09-03 Mon>
+
+** Audio
+*** AudioFlingerService
+**** Track
+**** PlaybackThread
+**** MixerThread
+*** AudioPolicyService
+*** AudioTrack
+*** MediaServer
+*** Higher level
+**** MediaPlayer
+**** MediaRecorder
+**** SoundPool
+**** AudioService
+**** AudioRecord
+*** MediaPlayerService
+** Bionic libc
+*** Prelink
+** ClassLoader
+*** DexClassLoader
+*** PathClassLoader
+*** Context.getClassLoader
+    see also [[Context.getClassLoader]]
+** ContentObserver
+
+** ContentProvider , ContentResover & SQLite
+*** ContentProvider.openFile() & ContentProvider.openInputStream()
+*** DONE `withYieldAllowed` how to work?                             :todo:
+CLOSED: [2013-01-14 Mon 15:57]
+- State "DONE"       from "TODO"       [2013-01-14 Mon 15:57]
+[2013-01-14 Mon 11:57]
+[[http://stackoverflow.com/questions/9599809/does-yieldifcontendedsafely-lose-the-benefits-of-a-transaction][Does yieldIfContendedSafely() lose the benefits of a transaction?]]
+
+From stackoverflow:
+
+Q:
+
+I have a long-running operation which I perform in a background thread. As it is
+important for the operation to either complete successfully or not at all, I am
+wrapping the entire operation in a transaction.
+
+Aspects of the UI need read-only access to the database during this time. To
+avoid blocking the UI, I am experimenting with inserting calls to
+db.yieldIfContendedSafely() in the main loop of the background operation.
+
+This does what I want in that the UI is no longer blocked, but it's not
+completely clear to me if this is risking a loss of data integrity.
+
+The javadoc for yieldIfContendedSafely() says:
+
+    Temporarily end the transaction to let other threads run.  The transaction
+    is assumed to be successful so far. Do not call setTransactionSuccessful
+    before calling this. When this returns a new transaction will have been
+    created but not marked as successful. This assumes that there are no nested
+    transactions (beginTransaction has only been called once) and will throw an
+    exception if that is not the case.
+
+Does this mean that my long-running operation is actually being committed to the
+database in separate chunks, or is the overall transaction maintaining enough
+state to commit the whole lot in one go at the end, thus preserving
+data-integrity?
+
+A:
+
+    Does this mean that my long-running operation is actually being committed to
+    the database in separate chunks
+
+Yes. Within yieldIfContendedSafely(), Android calls setTransactionSuccessful(),
+endTransaction(), and begins a new transaction -- committing your statements in
+the process. There is no mechanism to rollback the "real" transaction after it
+ends.
+
+This behavior only occurs if there is another thread waiting on the database,
+otherwise yieldIfContendedSafely() does nothing.
+
+I checked this with the following scenario. I started two threads: one inserted
+data into a table using a transaction, another read data out of the same
+table. The transaction didn't call setTransactionSuccessful() so normally
+everything is rolled back at the end, leaving the table empty. I added a call to
+yieldIfContendedSafely(), and afterwards the table was not empty and had data
+from the transaction.
+** DONE [#A] Context
+   SCHEDULED: <2011-06-02 Thu> CLOSED: [2011-06-13 Mon 16:57]
+   - State "DONE"       [2011-06-13 Mon 16:57]
+   Context can be used to:
+   - Access application's resource and manipulate files in /data/data/xxx (through Context.mPackageInfo)
+   - Context.mainThread (ActivityThread) is a interface exposed by ActivityThread to Android component, so that Context can interact with various
+     system services on behalf of ActivityThread (permission checking, IApplicationThread, ...)
+   - call through to many system services, e.g. AMS, PMS
+
+   Context ( or ContextImpl ) is the facade of the running Context, it mainly represents:
+     1. mPackageInfo -- the PackageInfo, represents the data, e.g. ApplicationInfo, ActivityInfo, data file (resource, asset, db ...), ClassLoader, ...
+     2. mMainThread -- the ActivityThread, represents the process, e.g. looper, ApplicationThread
+
+#+END_EXAMPLE
+*** Context class hierachy
+#+BEGIN_EXAMPLE
+	     				           Context
+ 					       	      |
+				   -+-----------------+---------------+
+				    |	     			      |
+				    |		       	       	      |
+	    		     ContextWrapper    	                 ContextImpl
+                              |		    		      ^    	       	       	       	    
+	    -+------------------+---+---------+-		      |
+	     |			| 	      |		 	      |
+	     |			| 	      |		 	      | composition
+  ContextThemeWrapper  Service     Application      	      |
+ 	    |	  |    	       	|      	      |		 	      |
+	    |	 -+-------------+-------------+----------+------------+
+  Activity
+
+#+END_EXAMPLE
+    Actually, Activity,Receiver,Service all use ContextImpl as the common implementation of the Context, but instead of inherit from ContextImpl,
+    they implement from the ContextWrapper, whose `attachBaseContext()` will compose the ContextImpl as mBase, to which ContextWrapper will delegates
+    all of the context functions.
+*** How ContextImpl is initialized
+    Take `startActivity` for example
+#+BEGIN_EXAMPLE
+     1	    AMS::startActivityMayWait()
+     2	      ActivityInfo aInfo = ActivityThread.getPackageManager().resolveIntent().activityInfo;
+     3	      startActivityLocked(...,aInfo,...)
+     4	        HistoryRecord r=new HistoryRecord(...,aInfo,...)
+     5		startActivityUncheckedLocked(r,...)
+     6		  ...
+     7		  app.thread.scheduleLaunchActivity(...,r.info,...)
+     8		    // ActivityThread
+     9		    ActivityRecord ar=new ActivityRecord();
+    10		    ar.activityInfo=info;
+    11		    performLaunchActivity(r,...)
+    12		      ar.packageInfo=getPackageInfo(r.activityInfo)
+    13		      // classLoader is obtained from packageInfo , or aInfo
+    14		      Activity activity=mInstrumentation.newActivity(ar.packageInfo.getClassLoader(),intent.getComponent,...)
+    15		      ContextImpl context=new ContextImpl(); // GOTCHA!
+    16		      context.init(ar.packageInfo,r.token,this)
+    17		        // mainThread=this
+    18	  	        mPackageInfo = packageInfo;
+    19			mResources = mPackageInfo.getResources(mainThread);
+    20			mMainThread = mainThread;
+    21		      activity.attach(context,...)
+    22		        // call ContextWrapper.attachBaseContext() to compose the ContextImpl to mBase
+    23		        attachBaseContext(context);
+    24		      ....
+    25		      call onCreate, onStart ...
+#+END_EXAMPLE
+*** Context.createPackageContext()
+     Return a new Context object for the given application name.  This
+     Context is the same as what the named application gets when it is
+     launched, containing the same resources and class loader.  Each call to
+     this method returns a new instance of a Context object; Context objects
+     are not shared, however they share common state (Resources, ClassLoader,
+     etc) so the Context instance itself is fairly lightweight.
+
+     As mentioned before, Context represents both data and process. Can createPackageContext() create a Context object that we can use to run in
+     other package's process? No!
+
+#+BEGIN_EXAMPLE
+     1	     createPackageContext():
+     2	        ActivityThread.PackageInfo pi =  mMainThread.getPackageInfo(packageName, flags);
+     3	        ContextImpl c = new ContextImpl();
+     4		// notice `init` take mMainThread as the mMainThread of the created context, thus, the context still runs in the caller's process.
+     5	        c.init(pi, null, mMainThread, mResources);
+     6		return c;
+#+END_EXAMPLE
+*** Restricted Context
+*** Context.getClassLoader()
+*** Context.getApplicationContext()
+    return an process global `Application` instance.
+    - We can inherit the `Application` class and set it to the `Application` field in AndroidManifest.xml, so that getApplicationContext() can return our own `Application` instance.
+    - since `Application` extends ContextWrapper and has been init with a ContextImpl, it is a context of the full functionality.
+      You can use it as a `persistent` Context.
+    
+    *Note:*
+    getApplicationContext() return a context:
+    - with full functionality
+    - with less data dependency than activty/service/receiver
+    Thus it makes it meaningful for us to use application context instead of
+    activty/service/receiver as the CONTEXT if we need to STORE the context to
+    somewhere else, e.g. in a static place, since activty/service/receiver is
+    volatile, and often has dependency with mass of data.
+
+**** onCreate()
+     Called when the application is stopping.  There are no more application
+     objects running and the process will exit.  <em>Note: never depend on
+     this method being called; in many cases an unneeded application process
+     will simply be killed by the kernel without executing any application
+     code.
+     If you override this method, be sure to call super.onTerminate().
+**** onTerminate()
+**** onConfigurationChanged()
+**** onLowMemory()
+*** ContextImpl.getOuterContext()
+    OuterContext means ContextImple's `outer` context, e.g. activity or service
+** Dalvik
+*** dalvik-cache
+:PROPERTIES:
+:CUSTOM_ID: @dalvik-cache
+:END:
+/data/dalvik-cache
+** dbus
+** Debug related
+*** hprof & MAT
+    - 在代码中生成
+      Debug.dumpHprofData()
+    - 使用信号on-demand生成
+#+BEGIN_EXAMPLE
+    $ chmod 777 /data/misc -R
+    $ ps # 找到进程号
+    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
+    $ ls /data/misc/*.hprof 
+#+END_EXAMPLE
+    - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
+*** traceview
+**** dmtracedump
+     dmtracedump -g out.png -t 30% test.trace
+*** hierachyviewer
+*** Thread.dumpStack()
+*** logcat
+adb shell setprop log.tag.mytag verbose
+*** adb am start
+*** monkey
+*** tombstone
+
+** DONE [#C] FileObserver
+   SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 14:55]
+   - State "DONE"       [2011-02-10 Thu 14:55]
+     FileObserver relies on `inotify`
+     it mainly use jni to call inotify_init() to init the inotify_fd,
+     then call inotify_add_watch(path) to add watch a file path,
+     and at last init one ObserverThread, and run
+
+#+BEGIN_EXAMPLE
+     while (true):
+       read(inotify_fd);
+       env->CallVoidMethod() ;; call ObserverThread.onEvent() to notify FileObserver
+#+END_EXAMPLE
+
+** HAL								    :ARCHIVE:
+** important files
+*** device
+1. data/system/packages.xml
+2. /mnt/secure/asec
+3. /mnt/asec
+4. /system/etc/permissions/platform.xml
+5. /system/etc/security/cacerts.bks
+6. /data/dalvik-cache
+7. /data/property
+8. /system/build.prop
+9. /data/system/registered_services/android.accounts.AccountAuthenticator.xml
+10. /data/system/registered_services/android.content.SyncAdapter.xml
+*** src
+    1. framework/base/core/res
+    2. framework/base/core/jni
+    3. system/core/init
+    4. system/core/include/private/android_filesystem_config.h
+    5. build/target/product/security/
+** init
+*** init.rc
+*** System init
+init will start some daemon, service_manager, media_service. Then call
+app_process to call zygoteInit.java to start zygote. ZygoteInit.java,
+first will fork and start system_server, then listen on one local
+socket through runSelectLoopMode(). SystemServer.java's main() will
+firstly load 'android_server'.so and call it's init1() to start
+binderThreadPool and call SystemServer's init2(), which will init an
+ServerThread and start some java service like AMS, WMS.
+
+system_server is setuid to `system` uid.
+
+Note: 
+zygote will keep running with `root` uid, so that zygote can
+setuid/gid/groups on newly forked progress, so that new java progress
+will run with proper uid/gid/groups
+*** Zygote init
+    app_process --> app_main.cpp: framework/base/cads/app_process
+    ZygoteInit.java: framework/base/core/java/com/android/internal/os
+#+BEGIN_EXAMPLE
+    app_process::main()
+      runtime.start("com.android.internal.os.ZygoteInit", startSystemServer);
+       ZygoteInit.main()
+         registerZygoteSocket();
+	 startSystemServer();
+	   pid = Zygote.forkSystemServer();
+	   if (pid == 0):
+             handleSystemServerProcess(parsedArgs);
+	       closeServerSocket(); // for newly forked system_server process, close zygote socket inherited from parent
+	       RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
+	         zygoteInitNative();
+		   proc->startThreadPool();
+		   invokeStaticMain(startClass, startArgs); // startClass is "com.android.server.SystemServer"
+		     SystemServer.java:main()
+		       System.loadLibrary("android_servers");
+		       init1(args); // init1 is native method in android_servers.so
+		         android_server_SystemServer_init1(JNIEnv* env, jobject clazz)
+			   system_init();
+			     runtime->callStatic("com/android/server/SystemServer", "init2");
+			       SystemServer.java:init2()
+			         Thread thr = new ServerThread();
+				   // start any system service, e.g. ams, wms..
+				   // prepare the looper and loop in it.
+				   // the looper is TAKEN as the `main` looper  of the `system` process
+				 thr.start();
+			     ProcessState::self()->startThreadPool();
+			     IPCThreadState::self()->joinThreadPool();
+	 runSelectLoopMode();
+#+END_EXAMPLE
+    Q: Why SystemServer.java will call android_server.so:init1(), which will call SystemServer.java:init2()? instead of call init2() directly?
+    A: android_server.so:init1() is needed because it will call `joinThreadPool` to put the process into ThreadPool. There is no java correspondent of
+       joinThreadPool()
+
+** Input Method Framework
+** IntentSender
+   :PROPERTIES:
+   :CUSTOM_ID:       @IntentSender
+   :ATTACH_DIR_INHERIT: t
+   :END:
+   see [[@PendingIntent]]
+** Launcher							    :ARCHIVE:
+** Looper & Message & Message Queue
+   see [[@ActivityThread]]
+**** Message Queue
+****** DONE [#A] Idle Handler
+       SCHEDULED: <2011-02-09 Wed> CLOSED: [2011-02-09 Wed 17:57]
+       - State "DONE"       [2011-02-09 Wed 17:57]
+#+BEGIN_EXAMPLE
+       MessageQueue.next()
+         while true:
+	   msg=pullNextLocked(now)
+	     foreach msg:
+	       if now>msg.when:
+	         return msg
+	   if msg==null:
+	     return msg
+	   else:
+	     idlers = mIdleHandlers.toArray();
+	   foreach idler in idlers:
+	     keep=idler.queueIdle();
+	     if !keep:
+               mIdleHandlers.remove(idler);
+           if (mMessages != null):
+             this.wait(mMessages.when-now); // if there is a message, but it's not up to date, wait until it is up to date
+           else:
+             this.wait();  // no message, wait until new message arrives
+           // MessageQueue.enqueueMessage() will call this.notify()
+#+END_EXAMPLE
+******* <<<Idler>>>
+	Idler class is used by ActivityThread when resumeActivity. when resumeActivity returns, ActivityThread will put one Idler in the MessageQueue,
+	when the queue is idle (activity is ready), Idler.queueIdle() will be called, which will notify AMS to finish activities registered before.
+
+**** DONE Message.obtain() & Message.recycle()
+     SCHEDULED: <2011-05-28 Sat> CLOSED: [2011-05-27 Fri 14:55]
+     - State "DONE"       [2011-05-27 Fri 14:55]
+     - Message.obtain():
+#+BEGIN_EXAMPLE
+     synchronized (mPoolSync) {
+         if (mPool != null) {
+             Message m = mPool;
+             mPool = m.next;
+             m.next = null;
+             return m;
+         }
+     }
+     return new Message();
+#+END_EXAMPLE
+     - Message.recycle():
+#+BEGIN_EXAMPLE
+     synchronized (mPoolSync) {
+         if (mPoolSize < MAX_POOL_SIZE) {
+             clearForRecycle();
+	       what = 0;
+               obj = null;
+               when = 0;
+               target = null;
+               callback = null;
+	       ...
+             next = mPool;
+             mPool = this;
+         }
+     }
+#+END_EXAMPLE
+     - sendMessage():
+#+BEGIN_EXAMPLE
+       sendMessageDelayed(msg,delayMillis)
+         sendMessageAtTime(msg, uptimeMillis)
+	   queue.enqueueMessage(msg, uptimeMillis);
+	     if (msg.when != 0):
+               throw new AndroidRuntimeException(msg + " This message is already in use.");
+	       msg.when = uptimeMillis;  // important
+	       if (p == null || when == 0 || when < p.when): // reorder messages in queue according to msg.when
+                 msg.next = p;
+                 mMessages = msg;
+                 this.notify(); // notify waiting
+	       else:
+                 Message prev = null;
+                 while (p != null && p.when <= when) {
+                   prev = p;
+                   p = p.next;
+                 }
+                 msg.next = prev.next;
+                 prev.next = msg;
+                 this.notify();
+#+END_EXAMPLE
+     - Looper.loop():
+#+BEGIN_EXAMPLE
+       while true:
+         Message msg=queue.next(); // might block
+	 msg.target.dispatchMessage(msg);
+	 msg.recycle()
+#+END_EXAMPLE
+       Note:
+       Looper.loop() will recycle message automatically, thus *NEVER* invoke Message.recycle() manually!  Or else `message is already in use` exception
+       will be thrown. Because: when u call recycle() manually, the message will finally be recycled twice, after the 2nd recycle(), the message list will
+       have circular reference, and the succeeding obtainMessage() will definitly obtain the *same* message *again and again*
+
+     To summarize:
+     - Generally, message can't be re-used, except for the situation that `Message is firstly recycled by Message.recycle() and then reused by
+       Message.obtain()`, or else any other form of Message re-use will cause exception.
+     - Loop will invoke Message.recycle() automatically, thus never call it manually.
+**** misc
+***** Looper.setMessageLogging()
+***** DONE <<<HandlerThread>>>
+      CLOSED: [2011-02-24 Thu 15:00]
+      - State "DONE"       [2011-02-24 Thu 15:00]
+      Handy class that starting a thread with a looper, u can call HandlerThread.getLooper() to get the looper.
+      note that getLooper() will block until the looper is ready.
+
+***** Messenger
+      see [[@Messenger]]
+** LowMemoryKiller
+*** oom adj
+** misc
+*** DONE [#A] bitmap recycle
+    SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 11:46]
+    - State "DONE"       [2011-02-10 Thu 11:46]
+    Bitmap.recycle() will call nativeRecycle() to release native memory used by Skia. But, we don't need call it directly, since Bitmap.finalize()
+    will call it.
+*** android 尺寸单位 (px,pt,dp,sp..)
+** MountService
+   :PROPERTIES:
+   :CUSTOM_ID: @MountService
+   :END:
+   see [[@NativeDaemonConnector]]
+   see [[@vold]]
+#+BEGIN_EXAMPLE
+		       -+------socket-------+
+	   	        |	     	    |
+	       	       	|    	     	    V
+   MountService-----connector  	       	   vold <-----netlink-----> kernel
+	   	       	^	     	    |
+	   	       	|	     	    |
+	       	       -+------binder-------+
+#+END_EXAMPLE
+
+** NativeDaemonConnector
+   :PROPERTIES:
+   :CUSTOM_ID: @NativeDaemonConnector
+   :END:
+   see [[@MountService]]
+   android use NativeDaemonConnector to interactive native daemons, including
+   - vold
+   - netd
+   - installd
+** NDK								    :ARCHIVE:
+** Notification
+   :PROPERTIES:
+   :CUSTOM_ID: Notification
+   :END:
+   Notification intent will use FLAG_NEW_TASK implicitly, and the target activity *should* use blank string ("") as affinity, to reduce the risk that
+   startActivity from notification falls into an existing task;
+
+*** "" as taskAffinity
+    see `startActivityUnchecked`
+
+    activity with "" as taskAffinity will have it taskAffinity set to null; So that `findTaskLocked` in `startActivityUnchecked` will not try to find
+    any existing task according to taskAffinity, instead, it will try to find the target task by the condition
+
+                        *the target task's starting intent must be identical with the calling intent*
+
+    which impose a stronger restriction on the target task searing, and thus reduce conflict.
+
+    Different activities with the same "" taskAffinity will not be placed in the same task when start activty with NEW_TASK, since their starting intent is
+    different.
+
+** DONE PendingIntent
+   CLOSED: [2011-03-07 Mon 15:58]
+   - State "DONE"       [2011-03-07 Mon 15:58]
+   :PROPERTIES:
+     :CUSTOM_ID: @PendingIntent
+   :END:
+   see [[PendingIntent @ Permission][Permission]]
+   see [[@IntentSender]]
+   A description of an Intent and target action to perform with
+   it. Instances of this class are created with getActivity(Context, int,
+   Intent, int), getBroadcast(Context, int, Intent, int), getService(Context,
+   int, Intent, int); the returned object can be handed to other applications so
+   that they can perform the action you described on your behalf at a later
+   time.
+
+   By giving a PendingIntent to another application, you are granting it the
+   right to perform the operation you have specified as if the other application
+   was yourself (with the same permissions and identity (*uid*) ). As such, you
+   should be careful about how you build the PendingIntent: often, for example,
+   the base Intent you supply will have the component name explicitly set to one
+   of your own components, to ensure it is ultimately sent there and nowhere
+   else.
+
+   A PendingIntent itself is simply a reference to a token maintained by the
+   system describing the original data used to retrieve it. This means that,
+   even if its owning application's process is killed, the PendingIntent itself
+   will remain usable from other processes that have been given it. If the
+   creating application later re-retrieves *the same kind of PendingIntent* (same
+   operation, same Intent action, data, categories, and components, and same
+   flags), it will receive a PendingIntent representing the same token if that
+   is still valid, and can thus call cancel() to remove it.
+
+   *Note*:
+   if u want to generate different PendingIntent for different intents, make
+   sure the PendingIntent's request_code is different, or intents are different.
+
+   Intent equality:
+   That is, if intents' action, data, type, class, and categories are the same.
+   This does *not* compare any extra data included in the intents.
+
+** PowerManagment
+*** WakeLock
+** Preference
+   - State "CANCELED"   from "DOING"      [2011-07-26 Tue 16:25]
+*** PreferenceActivity
+- PreferenceActivity extends ListActivity
+- Basic usage:
+  1. setContentView(resId)
+	 optional, if called, resId must contain a ListView with id="@+android/List"
+  2. PreferenceActivity.addPreferencesFromResource()
+- Basically, PreferenceActivity is an Activity contains a ListView, and it delegate anything about the ListView to a inner member: PreferenceManager
+*** PreferenceManager
+    PreferenceManager is a utility functional object
+    - PreferenceManager extends NULL
+    - PreferenceManager mainly does two things:
+      1. maintain the underlying SharedPreference
+      2. maintain the PreferenceScreen (inflate PreferenceScreen from xml)
+*** PreferenceScreen
+    PreferenceScreen is one of the two core concepts of Preference  (another is Preference)
+    *NOTE*: PreferenceScreen vs. ListAdapter
+
+    - PreferenceScreen extends PreferenceGroup
+    - it maintains a PreferenceGroupAdapter (extends ListAdapter), which is shown in the ListView
+      The adapter will map the Preference to ListView item.
+*** Preference
+    *NOTE*: Preference vs. ListView item
+    - when Preference is changed (through Preference.notifyChanged()), it will eventually
+      invoke PreferenceScreen.PreferenceGroupAdapter.notifyDatasetChanged(), thus update the ListView.
+    - when PreferenceGroupAdapter decides to getView(), it will eventually call through to Preference.getView()->Preference.onBindView()
+    - Preference's builtin setTitle()/setSummary() will call notifyChanged() automatically, thus cause onBindView()
+*** KeyEvent dispatch
+#+BEGIN_EXAMPLE
+    ListView.onItemClicked
+      Preference.performClick
+        Preference.mOnClickListener
+	if not intercepted:
+	  PreferenceActivity.OnPreferenceTreeClickListener
+	if not intercepted && mIntent != null:
+	  startActivity(mIntent)
+#+END_EXAMPLE
+*** To summurize:
+    PreferenceScreen vs. ListAdapter
+    Preference vs. ListItem
+** ServiceManager
+see also [[binder]]
+** SharedPreference
+** StatusBar & SystemUI
+** DONE Strict Mode
+SCHEDULED: <2011-06-13 Mon> CLOSED: [2011-06-13 Mon 15:24]
+- State "DONE"       [2011-06-13 Mon 15:24]
+  see [[ANR]]
+- use BlockGuard (StrictMode) to detect possible ANR caused by file/network IO in mainThread
+** Surfacing							    :ARCHIVE:
+** System Property
+1. android property is by no means related to java property.
+2. android SDK doesn't provide public java API to access android property; However, internal java API is available
+3. android SDK provide java API to manipulate java property.
+*** android property
+- adb shell getprop / adb shell setprop
+- there is NO java api to set/get android property
+- only root can set android property
+**** internal
+main() @ init.c  // in system/core/init
+property_init()
+property_set("ro.hardware", hardware);
+property_set(...)
+**** reference
+#+BEGIN_QUOTE
+Every property has a name and value. Both name and value are text
+strings. Property is heavily used in Android to record system setting
+or exchange information between processes. The property is globally
+visible in the whole system. Every process can get/set a property. On
+system initialization, Android will allocates a block of shared memory
+for storing the properties. This is done in “init” daemon whose source
+code is at: device/system/init. The “init” daemon will start a
+Property Service. The Property Service is running in the process of
+“init” daemon. Every client that wants to SET property needs to
+connect to the Property Service and send message to Property
+Service. Property Service will update/create the property in shared
+memory. Any client that wants to GET property can read the property
+from the shared memory directly. This promotes the read
+performance. The client application can invoke the API function
+exposed from libcutils to GET/SET a property. The source code of
+libcutils locates at: device/libs/cutils.
+
+The API function is:
+int property_get(const char *key, char *value, const char *default_value);
+int property_set(const char *key, const char *value);
+
+The libcutils is in turn calling the __system_property_xxx function in
+libc to get a property from the shared memory. The source code of libc
+is at: device/system/bionic. The Property Service is also in turn
+calling the __system_property_init function in libc to initiate the
+shared memory for properties. When starting the Property Service will
+load the default properties from below files:
+
+/default.prop
+/system/build.prop
+/system/default.prop
+/data/local.prop
+
+The properties are loaded in the above order. Later loaded properties
+will override the previous values. After those properties are loaded,
+the last loaded is the persistent properties which is persisted in
+/data/property. Special Properties
+
+If a property’s name begins with “ro.”, then this property is treated
+as a read-only property. Once set, the value of the property can’t be
+changed.
+
+If a property’s name begins with “persist.”, then when setting this
+property, the value will be written to /data/property, too.
+
+If a property’s name begins with “net.”, when when setting this
+property, the “net.change” property will be set automatically to
+contain the name of the last updated property. (It’s tricky. The
+netresolve module uses this property to track if there is any change
+on the net.* properties.)
+
+The property “ctrl.start” and “ctrl.stop” is used to start and stop a
+service. Every service must be defined in /init.rc. On system startup,
+the init daemon will parse the init.rc and start the Property
+Service. Once received a request to set the property of “ctrl.start”,
+the Property Service will use the property value as the service name
+to find the service and then start the service. The service starting
+result is then put to the property “init.svc.<service name>”. The
+client application can poll the value of that property to determine
+the result. Android toolbox
+
+The Android toolbox provides two applets: setprop and getprop to get
+and set properties. The usage is:
+
+getprop <property name>
+setprop <property name> <property value> 
+
+Java
+The java application can use the System.getProperty() and System.setProperty() function to Get and Set the property.
+
+Action
+
+By default the set property will only cause "init" daemon to write to
+shared memory, it won't execute any script or binary. But you can add
+your actions to correspond to property change in init.rc. For example,
+in the default init.rc, you can find.
+
+# adbd on at boot in emulator
+on property:ro.kernel.qemu=1
+
+start adbd
+on property:persist.service.adb.enable=1
+
+start adbd
+on property:persist.service.adb.enable=0
+
+stop adbd
+
+So if you set persist.service.adb.enable to 1, the "init" daemon knows
+it has actions to do, then it will start adbd service.
+#+END_QUOTE
+*** java property
+System.getProperty() / System.setProperty()
+** system_server
+*** ServerThread
+** Toast
+** Tools
+*** aapt
+*** adb
+**** dumpsys
+**** am
+     am start
+     am startservice
+     am broadcast
+     am instrument
+     am monitor
+**** pm
+     pm list instrumentation
+     pm setInstallLocation
+     pm getInstallLocation
+**** sendevent
+*** aidl
+**** in,out
+     - void foo(in Foo foo,out Bar bar)
+     - void foo(String s) // s is `in` implicitly, since String is immutable
+     - void foo(Integer i) // i in `in` implicitly, since Integer is also immutable
+     - void foo(Foo foo) // compile error, must specify in/out/inout for foo
+**** oneway
+     - oneway int foo();
+*** android
+*** ddms
+*** decompile
+**** dex2jar
+**** jd-gui
+**** apktool
+*** hierachyviewer
+*** layouopt
+*** sign
+**** jarsigner
+**** signapk.jar
+**** keytool
+*** traceview
+**** set traceview buffer size in ddms
+     .android/ddms.cfg:
+       profilerBufferSizeMb=100
+** Uri
+*** uri encoding
+** DONE Util [4/4]                                                  :coding:
+CLOSED: [2012-09-14 Fri 10:37]
+- [X] LruCache
+- [X] Pair
+- [X] SparseArray
+- [X] TimingLogger
+** vold
+   :PROPERTIES:
+   :CUSTOM_ID: @vold
+   :END:
+   *android's alternative to linux udev*
+   src location: /system/vold
+** Widget
+*** ActivityGroup
+*** AdapterView
+*** Layout
+**** LinearLayout
+**** FrameLayout
+**** GridLayout
+**** CANCELED RelativeLayout
+     - State "CANCELED"   from "DOING"      [2011-07-18 Mon 17:43]
+*** ListView
+**** convertView
+**** Adapter
+***** getView
+***** ViewBinder
+***** ViewHolder
+***** DONE [#A] NotifyDatasetChanged()
+      CLOSED: [2011-02-24 Thu 13:33]
+#+BEGIN_EXAMPLE
+     1	      BaseAdapter.NotifyDatasetChanged()
+     2	        AdapterView.AdapterDataSetObserver.onChanged()
+     3		  mDataChanged=true;
+     4		  AbsList.requestLayout()
+     5		    if !mBlockLayoutRequests && !mInLayout: // mInLayout makes sure that NotifyDatasetChanged() in getView() will not cause infinite loop
+     6		      super.requestLayout();
+     7		      ...
+     8		      ViewRoot.requestLayout()
+     9		        ViewRoot.performTraversals()
+    10			  deco.measure()
+    11			  deco.layout()
+    12	                    ListView.onLayout()
+    13			      mInLayout=true;
+    14			      ListView.layoutChildren()
+    15			        remove_all_children
+    16			        makeAndAddView()
+    17			          if !mDataChanged:
+    18				    reuse_previous_views
+    19				  else:
+    20				    obtainView()
+    21				      Adapter.getView()
+    22			        mDataChanged=false;
+    23			  deco.draw();
+#+END_EXAMPLE
+**** cacheColorHint
+**** FastScroller
+**** Android BUG: NotifyDatasetChanged() when scrolling
+- BUG表现: 在 getView() 中调用 NotifyDatasetChanged(), 当滑动 ListView 时, onItemClick 无法响应
+- 原因:
+  1. NotifyDatasetChanged: see also  [[NotifyDatasetChanged]]
+     其中最重要的三点:
+       1. NotifyDatasetChanged 会在开始时将 mDataChanged 置位, 然后调用 AbsListView.requestLayout
+       2. AbsListView.requestLayout 在 *mBlockLayoutRequests* 时什么也不做! ( 重要 )
+       3. ListView layoutChildren 完成后会将 mDataChanged 复位
+  2. AbsListView TouchEvent dispatch
+     当 mDataChanged 置位时, touch up 事件不会被处理, 因为 mDataChanged 置位, 表示 数据已改变, 而该 ListView 还没有被重新 layout, 这
+     时应该阻止 itemClick 事件, 因为用户点击时看到的数据很可能并不是真正的数据
+  3. ListView scroll
+     上面提到的一重要的数据是 mBlockLayoutRequests, 这个值表示 ListView 当前禁止 requestLayout.
+     当发生 scroll 事件时, ListView 调用 trackMotionScroll(incrementalDeltaY, incrementalDeltaY); 处理滚动,
+     该函数大致是:
+#+BEGIN_SRC java
+  trackMotionScroll()
+    mRecycler.addScrapView(start,count); // cache 滑动出去的 view
+      mRecyclerListener.onMovedToScrapHeap(scrap);
+    detachViewsFromParent(start, count); // detach 滑动出去的 view from ViewGroup
+    mBlockLayoutRequests = true;
+      fillGap() --> makeAndAddView() --> obtainView() --> getView() 获得新的 view 以填充滑动时产生的 gap
+    mBlockLayoutRequests = false;
+    invokeOnItemScrollListener();
+    awakenScrollBars();
+#+END_SRC
+最重要的一点是: 在 scroll 时, mBlockLayoutRequests 会被置位,以禁止 scroll 时 requestLayout
+
+***** 在 Preference 中出现该 BUG
+Preference 作为 经过包装的 ListView ,相对来说比较容易出现该 BUG:
+see also [[Preference]]
+  - Preference.onBindView() 实际是经过包装的 getView()
+  - Preference 自带的 setTitle(), setSummary() 的写法:
+
+#+BEGIN_EXAMPLE
+  Preference.setTitle(title):
+    if (title == null && mTitle != null || title != null && !title.equals(mTitle)):
+      mTitle = title;
+      notifyChanged();
+#+END_EXAMPLE
+
+如果调用者在 onBinderView 中调用了 setXXX() 方法, 则会出现该 BUG.
+
+*** view overlay
+*** GestureOverlayView
+*** SurfaceView
+*** TabActivity
+*** TabHost
+*** ViewAnimator
+*** WebView
+**** [#C] Cookie
+     see [[@HTTP_Cookie]]
+***** CookieManager
+***** CookieSyncManager
+** Zygote
+*** Java Process Creation
+#+BEGIN_SRC text
+  AMS::startSpecificActivity()
+    Process::start(className,uid..)
+      Process::startViaZygote()
+        Pro::zygoteSendArgAndGetPid()
+          for zygote socket read pid
+#+END_SRC
+
+zygote socket:
+#+BEGIN_SRC text
+  runSelectLoopMode()
+    got request form socket
+       runOnce()
+         forkAndSpecialize(int uid, int gid, int[] gids..)
+           - uid: the UNIX uid that the new process should setuid() to after fork()ing and and before spawning any threads.
+           - gid: the UNIX gid that the new process should setgid() to after fork()ing and and before spawning any threads.
+           - gids: null-ok; a list of UNIX gids that the new process should setgroups() to after fork and before spawning any threads.
+             because zygote runs with root uid, it can setuid/gid/groups freely
+           // in child process
+           handleChildProc()
+             closeSocket();
+             RuntimeInit.zygoteInit(parsedArgs.remainingArgs);
+               commonInit()
+                 Thread.setDefaultUncaughtExceptionHandler(new UncaughtHandler()); // NOTE: the UncaughtHandler does nothing but crash the app
+               zygoteInitNative()
+                 gCurRuntime->onZygoteInit()
+                   proc->startThreadPool();
+               invokeStaticMain();
+          in parent process
+              return child pid
+#+END_SRC
+*** Zygote init
+see also [[System init]]

@@ -1,0 +1,101 @@
+#+TITLE: Jave Interface
+* Java interface vs. C++ multiple inheritance, the method invocation overhead
+** C++ multiple inheritance                                         :ATTACH:
+:PROPERTIES:
+:Attachments: wpid-1_e858fa2952a6c48cb91bbbd48642a5134bed5028.png
+:ID:       83a89ae3-bc29-4858-81ba-65e01ff28ad1
+:END:
+#+BEGIN_SRC c++
+  class B1 {
+      virtual void foo() {}
+  };
+  class B2 {
+      virtual void bar() {}
+  };
+  
+  class D:public B1,public B2 {
+      void foo() {}
+      void bar() {}
+      virtual void test() {}
+  };
+  
+  #include 
+  #include 
+  using namespace std;
+  
+  int main(int argc, char *argv[]) {
+      D * pd=new D();
+      B1 * pb1=pd;
+      B2 * pb2=pd;
+  
+      printf("entries of D's vtbl: (actually, is B1's vtbl)\n");
+      int * ptr=reinterpret_cast(pd);
+      int * vtbl=(int *)(*(ptr));
+      printf("%x\n",*(vtbl+0));
+      printf("%x\n",*(vtbl+1));
+      printf("%x\n",*(vtbl+2));
+  
+      printf("entries of B1's vtbl\n");
+      ptr=reinterpret_cast(pb1);
+      vtbl=(int *)(*(ptr));
+      printf("%x\n",*(vtbl+0));
+      printf("%x\n",*(vtbl+1));
+      printf("%x\n",*(vtbl+2));
+  
+      printf("entries of B2's vtbl\n");
+      ptr=reinterpret_cast(pb2);
+      vtbl=(int *)(*(ptr));
+      printf("%x\n",*(vtbl+0));
+      return 0;
+  }
+#+END_SRC
+
+Memory layout
+
+That is, for C++ multiple inheritance, vptl is seperated to different base
+class. For each base class, there is ONE vptr (and thus vptl). There is not so
+much overhead comparing to single inheritance, it is quite easy to find the
+correct vptl of a certain base class.
+** Java interface                                                   :ATTACH:
+:PROPERTIES:
+:Attachments: wpid-2_d8750707d61c54fcdbc86a4936b442efb6971941.png
+:ID:       63bf50ee-ead6-482a-85a5-296c2f86a970
+:END:
+Java interface is similar with C++ multiple inheritance. Java use the
+`invokeinterface` opcode to call interface functions.
+#+BEGIN_SRC java
+  CASE(_invokeinterface): {
+      u2 index = Bytes::get_native_u2(pc+1);
+      ConstantPoolCacheEntry* cache = cp->entry_at(index);
+      methodOop callee;
+      klassOop iclass = (klassOop)cache->f1();
+      // get receiver
+      int parms = cache->parameter_size();
+      oop rcvr = STACK_OBJECT(-parms);
+      instanceKlass* int2 = (instanceKlass*) rcvr->klass()->klass_part();
+      itableOffsetEntry* ki = (itableOffsetEntry*) int2->start_of_itable();
+      int i;
+      for ( i = 0 ; i < int2->itable_length() ; i++, ki++ ) {
+          if (ki->interface_klass() == iclass) break;
+      }
+      int mindex = cache->f2();
+      itableMethodEntry* im = ki->first_method_entry(rcvr->klass());
+      callee = im[mindex].method();
+  }
+#+END_SRC
+
+Memory layout:
+
+The `itable` is a collection the interfaces that the class implements. Each
+entry of the itable contains the vtable of the interface.
+
+That is, `invokeinterface` will first iterate over the itable to find the right
+interface, then get the corresponding vtable, then invoke the correct method.
+** To summaries:
+Both C++ and Java has provided several `vtable`s to support multiple inheritance
+or interface. But C++ tends to seperate the vtables, while Java tends to keep
+them together.
+
+For C++, the class cast procedure also do the work of `locate the correct
+vtable`, what’s more, the compiler knows how to do the cast at compile
+time. (except for virtual inheritance), thus C++’s approach is more efficient.

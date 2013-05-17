@@ -1,0 +1,12 @@
+#+TITLE: Android Memory
+* Android Memory
+** tools
+*** mat
+*** valgrind
+*** dumpsys meminfo
+*** cat /proc/pid/smaps
+*** procmem
+*** procrank
+** appendix
+- [[http://stackoverflow.com/questions/2298208/how-to-discover-memory-usage-of-my-application-in-android][how-to-discover-memory-usage-of-my-application-in-android]]
+- [[http://stackoverflow.com/questions/131303/linux-how-to-measure-actual-memory-usage-of-an-application-or-process][linux-how-to-measure-actual-memory-usage-of-an-application-or-process]]

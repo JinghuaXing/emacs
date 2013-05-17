@@ -1,0 +1,27 @@
+#+TITLE: Book Shelf
+* Book Shelf
+** lisp
+- [[file:~/Dropbox/ebook/lisp/%5BLisp%E7%9B%B8%E5%85%B3%E6%96%87%E6%A1%A3%5D.practical.common.lisp.pdf][Practical.Common.Lisp.pdf]]
+  132
+[[file:~/Dropbox/ebook/lisp/On_Lisp-%E4%B8%AD%E6%96%87%E5%AE%8C%E6%95%B4%E7%89%88.pdf][- On_Lisp-中文完整版.pdf]]
+** git
+- [[progit.pdf]]
+- [[Git.Community.Book.zh.pdf]]
+** sqlite
+- [[file:~/Dropbox/ebook/sqlite/The%20Definitive%20Guide%20to%20SQLite%20Second%20Edition.pdf][The Definitive Guide to SQLite Second Edition.pdf]]
+** perl
+- [[Programming.Perl.4th.Edition.pdf]]
+** ruby
+- [[file:~/Dropbox/ebook/ruby/The%20Ruby%20Programming%20Language%20(O'Reilly%202008).pdf][The Ruby Programming Language.pdf]]
+** bash
+- [[file:~/Dropbox/ebook/bash/Sam's%20-%20Teach%20Yourself%20Shell%20Programming%20in%2024%20hours.pdf][Sam's - Teach Yourself Shell Programming in 24 hours.pdf]]
+** networking
+- [[file:~/Dropbox/ebook/networking/Http_The_Definitive_Guide.pdf][Http The Definitive Guide.pdf]]
+** java
+- [[http://book.douban.com/subject/6522893/][Book:深入理解Java虚拟机]]
+- [[http://java.sun.com/docs/books/jni/][Book:Java Native Interface: Programmer's Guide and Specification]]
+- [[http://www.artima.com/insidejvm/blurb.html][Book:Inside the Java Virtual Machine]]
+- [[http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html][The "Double-Checked Locking is Broken" Declaration ]]
+- [[http://www.cs.umd.edu/~pugh/java/memoryModel/][The Java Memory Model]]
+- [[http://www.javaconcurrencyinpractice.com/][Book:Java Concurrency in Practice]]
+- [[http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html][Java SE Security]]

@@ -1,0 +1,44 @@
+#+TITLE: Java Puzzle:thread join
+* Java Puzzle:Thread join
+
+#+BEGIN_SRC java
+  public class Test {
+      public static void main(String [] args) {
+          final Thread t1=new Thread() {
+                  public void run() {
+                      try {
+                          Thread.sleep(5000);
+                          System.out.println("t1 exit");
+                      } catch (Exception e) {
+                          
+                      } 
+                  }
+              };
+  
+          Thread t2=new Thread() {
+                  public void run() {
+                      yield(); // make sure t1 runs first
+                      synchronized (t1) {
+                          try {
+                              Thread.sleep(10000);
+                              System.out.println("t2 exit");
+                          } catch (Exception e) {
+                              
+                          } 
+                      }
+                  }
+              };
+          t1.start();
+          t2.start();
+          try {
+              t1.join();
+              System.out.println("main exit");        
+          } catch (Exception e) {
+              
+          } 
+      }
+      
+  }
+#+END_SRC
+
+The output should be ... ?

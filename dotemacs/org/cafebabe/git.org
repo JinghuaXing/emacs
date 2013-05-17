@@ -1,0 +1,480 @@
+#+TITLE: Git
+* Git
+** Git basis
+- git 是一个基于 key-value 的文件系统
+- git 的 value 主要是四种对象: commit, tree, tag, object
+- git 的 key 是一个 40B 的 hash 值, 以及各种各样的与 hash 等价的 reference 名
+- git 会将同一个文件存在三个地方: snapshot, staging area (index), working tree
+
+** Command
+*** Porcelain
+**** add
+将 working tree的内容复制到 staging area
+- git add .
+- git add foo.java
+**** archive
+git archive HEAD --format=tar.gz > archive.tar.gz
+**** bisect
+binary search, 即使用二分查找的方法查找某个 bug 是由哪将提交引入的
+**** blame
+显示一个文件的每一行的最近一次修改, 包括 commit 及 author
+- git blame foo.java      
+**** branch
+显示, 建立, 删除分支
+- ~git branch -d test_branch~
+  删除本地的 test\_branch 分支, 如果该分支有新的 commit 没有 merge 到其
+  start-point, 则操作失败
+- ~git branch -D test_branch~
+  强制删除 test\_branch 分支
+- ~git branch test_branch~
+  创建 test\_branch
+- ~git branch test_branch 5c505c15cf761~
+  以 5c505c15cf761 为 start-point 创建新分支 test\_branch (start-point 可以是任意
+  有效的 commit, 如 commit hash, tag, branch name, ...)
+- ~git branch -r~
+  显示远程分支
+- ~git branch --set-upstream test_branch remote/test_branch~
+  设置 test\_branch 的 upstream 分支为 remote/test\_branch, 这样在 test\_branch 下
+  push, pull, fetch 等不再需要指明 远程仓库及远程分支
+**** checkout
+checkout 一个 snapshot 到 working tree
+- ~git checkout android_2.3.5~
+
+  切换到 android_2.3.5分支, 即使用 android_2.3.5 分支的 snapshot 覆盖 staging
+  area 及 working tree. 由于这个操作会覆盖 staging area 及 working
+  directory, 所以 git 要求这个操作前当前分支必须是 clean 的, 即没有 un-staged 和
+  un-commit 的内容, 否则会提示操作失败.
+
+- ~git checkout -b android_2.3.5_local remote/android_2.3.5~
+
+  这个操作是 git branch android_2.3.5_local remote/android_2.3.5 是一样的效果的.正
+  常情况下, 由于 remote/android_2.3.5 不是本地分支, 不加 -b 参数的 checkout 命令
+  会使当前处于 detached head 状态, 即没有一个显式的引用指向当前 HEAD, 所以一旦
+  checkout 后做了一些修改, 然后不小心又将 HEAD 指向其它地方(通过 reset 或
+  branch, checkout 命令), 会导致我们难以回到之前的点, 之前的修改就可能会丢失. (通
+  过后面提到的 reflog 实际上还是能回去的)
+
+  checkout 还有第二个重要的用法: 
+- ~git checkout -- working_file~
+
+  这个命令是使用 staging area 中的 对应的file 覆盖 working tree, 例如对本地
+  一个已经纳入 git 管理的文件做了修改的动作, 尚未 git add, 则这时修改还没有进入
+  staging area, 使用这个命令就可以丢弃本地的修改. 后面有会提到 git reset 命令,
+  和这个很容易混淆
+
+git checkout 命令容易与 git reset 混淆, 为了便于区分, 一般情况下, 可以认为: 
+
+1. _git  checkout 操作的是 staging area 与 working tree_
+2. _git reset 操作的是 snapshot(或者叫 tree 对象) 与 staging area_
+
+**** cherry
+find commit not merged upstream
+- ~git cherry~
+
+类似于: 
+~git log <remote/branch>...HEAD && git log HEAD...<remote/branch>~
+或者:
+~git rev-list HEAD --not <remote/branch> && git rev-list <remote/branch> --not HEAD~
+**** cherry-pick
+刚某个分支上的某些 commit merge到另一个分支
+- git cherry-pick commit1 commit2 commit3
+  
+  cherry-pick 实际上是使用 merge 进行工作的, 具体来说, 它的工作过程大约是:
+  1. checkout 出当前分支与 commit1 的 merge-base (即两个分支的交点) 作为 base
+  2. 在 base 上 apply commit1, 由于 commit1 本来就在 base 的上游
+     (fast-forward), 所以这一步不会冲突
+  3. 把 base merge 到 当前分支 (这一步可能冲突)
+
+所以, 不要认为 cherry-pick 可以简单的把一个 commit 搬到另一个分支, cherry-pick
+使用 merge 会在另一个分支上生成新的 commit, 而且可能冲突, 还可能因为 merge 的原
+因导致与原分支不同的结果, 最后一定要 double check 一下. 
+**** clean
+git clean -df
+**** commit
+git commit 会将 staging area 的内容打包生成 tree 对象, 然后生成 commit 对象的过
+程.
+- git commit
+  git commit 之前, 需要将 working tree 的修改通过 git add 添加到 staging
+  area.
+  
+  一旦 git commit, 一般情况下数据是很难丢失的, 除非你删除了 .git 目录 ... , 或者执行
+  了一些特定的操作..
+  
+**** diff
+显示文件更改
+- git diff 
+  显示 working-directory 与 staging area 的不同
+- git diff --staged
+  显示 staging area 与 snapshot 的不同
+- git diff -- path
+  与前两个命令不同的是, 这个只显示对应于 path 的修改
+- git diff commit
+  显示 HEAD 与 commit 的不同
+- git diff commit1..commit2
+  显示 commit1 与 commit2 的不同
+- git diff A...B
+  与 git diff $(git-merge-base A B) B 相同, 即 显示 B相对于 A,B 的共同祖先的修改. 
+**** difftool
+add these to .gitconfig:
+#+BEGIN_EXAMPLE
+[diff]
+        tool = meld
+#+END_EXAMPLE
+**** fetch
+获取远程仓库的更新, 并更新本地的远程分支
+
+每次 fetch 后,  refs/remotes/REMOTE/.. 下的各个远程分支所指向的 commit 会被更新, 
+远程更新的对象和其他一些 ref, 例如 lightweight tag 也会被下载到本地,
+
+远程分支记录的只是上次 fetch 时远程仓库的状况, 所以不要以为通过查找远程分支可以
+知道当前远程仓库的状况, 如果想的话, 先 fetch
+
+- git fetch
+  若当前分支是远程分支的跟踪分支, 则会更新对应的远程分支.
+- git fetch REMOTE
+  更新 REMOTE 仓库中远程分支
+- git fetch REMOTE <ref-spec>
+
+  ref-spec 更进一步指明远程仓库中的分支与本地远程分支的对应关系, 例如:
+  git fetch korg refs/heads/android2.3.5_vlx:refs/remotes/korg/android2.3.5_vlx
+  
+  其中 : 之前的部分对应的是 korg 仓库上的绝对路径, 而 : 后面的部分对应的是本地
+  .git 目录下的绝对路径. 
+
+  通过 git fetch 将远程仓库更新到本地远程分支后, 就可以对远程分支进行 rebase,
+  merge 等操作了, 远程分支其实类似于一个"只读"的分支.
+**** log
+- git log
+- git log --since
+- git log --author
+- git log commit1...commit2
+  显示存在于 commit2 对应的 branch 中, 但没有存在于 commit1 对应的 branch中的
+  commit, 类似于:
+  git log $(git merge-base commit1 commit2) commit2
+
+  这个命令用来比较远程分支与本地分支的不同时比较有用.
+**** merge
+- git merge commit
+  将 commit 与 HEAD merge,  之后 HEAD 指向新生成的 commit
+
+  例如当前分支为 master:
+#+BEGIN_EXAMPLE
+           A---B---C topic
+          /
+     D---E---F---G master
+#+END_EXAMPLE
+  执行 git merge topic 后的结果为:
+
+#+BEGIN_EXAMPLE
+           A---B---C topic
+          /         \
+     D---E---F---G---H master
+#+END_EXAMPLE
+
+  与 rebase 不同的是, merge 会生成一个新的 commit (上例中的H)
+
+  merge 与 rebase 的选择:
+  1. rebase 可以有机会修改之前的 commit
+  2. rebase 不会生成新的 commit
+  3. rebase 会使 commit history 好看一些 ...
+  4. rebase 会丢失 merge 信息, 有时会给 review 带来困扰
+  5. 小规模合并用 rebase,  大规模时用 merge
+  6. 个人倾向于尽量用 rebase 而不是 merge...
+
+git merge 可以通过参数指定不同的 strategy, 例如 ours strategy 是指遇到冲突时总是
+丢弃对方的修改.
+  
+**** mergetool
+add these to .gitconfig:
+#+BEGIN_EXAMPLE
+[merge]
+        tool = meld
+#+END_EXAMPLE
+**** pull
+- git pull <REMOTE> <ref-spec>
+git pull === git fetch ; git merge
+
+推荐不要使用 git pull, 而用 git fetch; git merge 或 git rebase 代替, 因为这样可
+以有机会在 merge 远程代码时先看一下有什么变化. 
+**** push
+- git push <REMOTE> <ref-spec>
+  
+  git push 必须保证本地分支与远程分支是 fast-forward 关系, 即 本地分支通过
+  parent 上溯可以到达远程分支, 否则操作会失败. 如果通过指定 ref-spec 的 + 参数强
+  制 non-fast-forward push, 可能会给远程仓库造成严重的后果. 
+
+**** rebase
+
+设当前分支为 topic, 当前分支的状态为:
+
+#+BEGIN_EXAMPLE
+                 A---B---C topic
+                /
+           D---E---F---G master
+#+END_EXAMPLE
+
+git rebase master 后分支的状态为:
+
+#+BEGIN_EXAMPLE
+              A'--B'--C' topic
+             /
+D---E---F---G master
+#+END_EXAMPLE
+
+即 git rebase 的过程是:
+1. 先从当前分支找到位于 HEAD 与 $(git merge-base master topic) 之间的 commit: A, B,C
+2. 将 topic reset 到 master, 然后依次 merge A, B, C
+3. merge 过程中会生成新的 commit: A', B', C'
+
+将 git rebase 过程中有冲突时, 可以使用:
+- 解决冲突, 然后 git rebase --continue 来 merge 下一个 commit
+- 使用 git rebase --abort 全部放弃, 回到 rebase 前的状态
+- 使用 git rebase --skip 忽略当前 commit, 继续 merge 下一个 commit
+
+一般情况下不要把一个远程分支 rebase 到其他分支, 或者更一般的情况: 不要把一个与别
+人共享的分支 rebase 到其他分支.
+***** rebase onto
+#+BEGIN_SRC example
+                         H---I---J topicB
+                               /
+                      E---F---G  topicA
+                     /
+        A---B---C---D  master
+
+then the command (current branch is on topicB)
+
+    git rebase --onto master topicA 
+
+would result in:
+
+                     H'--I'--J'  topicB
+                    /
+                    | E---F---G  topicA
+                    |/
+        A---B---C---D  master
+#+END_SRC
+**** reflog
+reflog 是对付 detached head, 错误的 reset 等情况的神器.
+
+简单的说, reflog 就是 reference log, 它会记录 HEAD 指针的变化, 例如, 如果使用
+git reset --hard commit 将 HEAD reset 后, reflog 会增加一条记录, 保存 reset 之间
+的 HEAD, 我们可以通过 reflog 中的这条记录轻松的恢复到 reset 之前的状态.
+
+注意: reflog 只会保存在本地. 
+***** git log -g
+**** reset
+与 checkout 类似, reset 有两种格式: 加 path 与不加 path
+1. 不加 path
+   - git reset --soft commit
+     将当前分支的 HEAD 指向另一个 commit, 但是只更新 snaptshot (或 tree), 完全不
+     修改 staging area 和 working tree
+   - git reset --mixed commit
+     在前一个命令的基础上, 还会更新 staging area
+   - git reset --hard commit
+     在前一个命令的基础上, 还会更新 working tree
+
+     所以, soft --> mixed --> hard 更新的内容是由少变多, 危险程度也依次递增, 使
+     用时应格外小心. 另外, 虽然通过 reflog 可以恢复到 reset 之前的状态, 但
+     staging area 和 working tree 一旦丢失是无法恢复的.
+2. 使用 path 参数
+   - git reset commit -- path
+     还记得 git checkout -- path 么? 这个命令是使用 staging area 恢复 working
+     directory
+     
+     git reset commit -- path 与它类似, 不过它是使用 snapshot 恢复 staging area
+     ...
+
+     如果我们想使用 snapshot 直接恢复 working tree 呢? 
+     - 通过这两个命令配合
+     - 或者使用 git checkout --patch tree-dish -- path :)
+**** revert
+如果发现某次 commit 有严重的 side effect 想取消那次 commit 的话:
+1. 若 commit 只是在本地分支, 还没有 push 到远程, 而且该 commit 是 HEAD, 那我们可
+   以简单的通过 git reset --hard HEAD~ 丢弃这个 commit
+2. 若 commit 还没有 push 到远程, 但该 commit 不是 HEAD, 我们可以 reset 到
+   commit~, 然后 cherry pick 该 commit 之上的所有 commit
+3. 若 commit 已经 push 到远程, 那只有使用 revert 了
+
+git revert 大致的工作过程是:
+1. git diff -R commit > patch_file
+   生成 当前 HEAD 与 commit 的逆向 diff
+2. git apply patch_file
+   
+**** rm
+- 直接使用 rm 命令
+  rm file1 后, working tree 没有了 file1, 但 staging area 还存在, 所以这时要恢复
+  该文件的话需要:
+  ~git checkout -- file1~
+- ~git rm --cached file1~
+  该命令直接从 staging area 中删除 file1, 所以要恢复的话:
+  - 使用 ~git reset HEAD file1~, 从 snapshot 恢复 file1 到 staging area
+  - 或 ~git add file1~, 将同一个文件重新复制到 staging area
+- ~git rm~
+  该命令同时删除 staging area 和 working tree 中的 file1, 要恢复的话:
+  - ~git reset HEAD file1 && git checkout -- file1~
+
+**** show
+git show 实际上算一个 plumbing command, 但一般用户可以使用它来查看某次 commit 的
+内容, 如 git show HEAD
+**** stash
+git stash 的作用相当于多个 staging area. 
+当我们正在某个 topic branch 中工作, 这时有个严重的 bug 需要立即切换到其他分支去
+fix, 如果这时我们直接 git checkout branch2 切换到 branch2, 则 git 会自动将当前分
+支上没有 commit 的修改 merge 到 branch2 ..., 这肯定不是我们想要的, 所以我们需要:
+1. 将所有当前分支的修改 commit
+2. 或者使用 stash
+  
+- ~git stash save <message>~
+
+将当前的更改保存到一个 stash 中, 并使用 message 来标识. 然后 git 会自动使用
+~git reset --hard HEAD~ 丢弃我们的更改. 
+
+- ~git stash list~
+- ~git stash apply <stash>~
+
+**** status
+git status 显示的信息可能有:
+- your local branch is n commits ahead of the remote branch
+  说明你该 push 了
+- your local branch is n commits fall behind the remote ..
+  说明你该 rebase 了
+**** submodule
+**** tag
+tag 分为两种: light weight tag 和 annotated tag
+- light weight tag 只是 refs/tags/中的一些引用
+- annotated tag 是真正的 git object, 会包含更多的信息, 如 message, signature ...
+*** Plumbing
+**** cat-file
+**** commit-tree
+**** fsck
+**** gc
+**** hash-object
+**** ls-remote
+**** merge-base
+**** receive-pack
+**** rev-list
+**** rev-parse
+**** send-pack
+**** symbolic-ref
+**** update-index
+**** update-ref
+**** write-tree
+*** refspec
+
+**** fetch
++refs/heads/*:refs/remotes/<REMOTE>/*
+
+其中, `src` 是远程仓库 ref 的路径, `dst` 是本地的路径;
+
+因为 fetch 是将远程仓库的 ref 更新到本地的 refs/remotes/<REMOTE> 下
+**** push
++refs/heads/*:refs/heads/*
+
+其中, `src` 是本地 ref 的路径, `dst` 是远程仓库的路径
+** Best practice
+** Files
+*** config
+*** HEAD
+*** index
+*** objects
+*** refs
+**** heads
+**** remotes
+**** tags
+** Extension
+*** TopGit
+*** StGit
+*** WIP
+*** git-svn
+** Misc
+*** use GIT_CURL_VERBOSE env to debug curl problem
+*** config
+#+BEGIN_EXAMPLE
+[color]
+	ui = auto
+[user]
+	name = wei.sun
+	email = wei.sun@spreadtrum.com
+[http]
+	postBuffer = 524288000
+[commit]
+	template = /home/apuser/.gitmessage
+[giggle]
+	main-window-maximized = true
+	main-window-geometry = 700x550+0+25
+	main-window-view = FileView
+	history-view-vpane-position = 501
+	file-view-vpane-position = 469
+[alias]
+	co = checkout
+	ad = add
+	ci = commit
+	cp = cherry-pick
+	st = status
+	br = branch
+	mt = mergetool
+	dt = difftool 
+	ps = push
+	pl = pull
+	cl = clean
+	lg = log
+[merge]
+	tool = meld 
+[diff]
+	tool = meld
+[difftool]
+	prompt = No
+[core]
+      # ignore file mode change
+	filemode = false 
+#+END_EXAMPLE
+** Gerrit
+[[http://review.coreboot.org/Documentation/index.html][Gerrit Code Review for Git]]
+*** Hook
+.git/hooks/commit-msg
+
+主要有两个功能:
+- verify\_commit
+- add_changeid
+  若 commit-msg 包含 Change-ID, 则使用这个 Change-ID, 否则,生成新的 change-id,
+  并附加到 commit message 中.
+
+  生成 change_id 基本上是 head commit 去掉 commit message 后通过 hash_object 生成的
+  SHA-1, 所以 :
+  - cherry-pick 生成的 commit 的 change_id 是一样的
+  - 但 merge 不行, 因为它会生成新的 commit
+  - commit --amend 生成的 commit 也是一样的, 因为在生成 change_id 时,  commit
+    message 不会考虑在内
+*** Uploading changes
+当用户向 gerrit push 时, 不能直接向 refs/heads/xxx_branch push, 而是需要向一个特
+定的 refs/for/xxx_branch push, 但 gerrit 在这个 refs 下并不创建任何 ref, 而是在
+refs/changes/{nn}/{task}/{patch_set} 下创建对应于该 commit 的 ref, 其中  task 是
+根据 change_id 生成的 task 号, nn 是 task 的最后两位数,  patch_set 则是根据同一
+个 change_id 的多个 commit 自动递增的. 通过 git fetch gerrit_url
+refs/changes/{nn}/{task}/{patch_set}, gerrit 评审者可以看到该 commit 的修改.
+
+对同一个 task (或 change-id) 的多次 push, 会导致 gerrit 对同一个 task 生成多个
+patch-set, 前提是:
+1. 要 push 的 各个 commit 的 parent 必须是相同的[fn:1]
+2. 有相同的 change-id 或 通过 git push gerrit_url commit:refs/changes/{task_id}
+   形式 push 的并指定了相同的 task_id
+**** gerrit receive-pack
+gerrit 重写了一个 git-receive-pack, 提供了几个和 gerrit 相关的参数, 如
+--reviewer
+
+*** Command line tools
+** Repo
+*** init
+*** sync
+*** for-all
+*** upload
+*** start
+*** abandon
+** Refs
+- [[http://nvie.com/posts/a-successful-git-branching-model/][A Successful Git Branching Model]]
+** Footnotes
+
+[fn:1] 有待证实
+
+
+

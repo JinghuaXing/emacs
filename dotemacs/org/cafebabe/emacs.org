@@ -1,0 +1,197 @@
+#+TITLE: Emacs
+* Emacs
+** align
+** auto-highlight-symbol-mode
+** c-macro-expand
+C-c C-e
+** check-parens
+** Completion
+*** AutoComplelete & AutoJavaComplete
+*** YASnippet
+** cua-mode & column-edit mode
+** delete-blank-lines
+   C-x C-o
+** delete-trailing-whitespace
+** dired
+   - A 对m的文件进行查找，按M-,找下一个,可以用来代替 find-grep-dired
+   - Q 对m的文件执行C-M-%,按M-,替换下一个
+   - find-grep-dired
+   - grep-find
+** ediff
+   - ediff-suspend && eregistry
+** eim
+   可以在EMACS中使用的输入法
+** eshell
+** file-cache
+** fill
+   - fill-column
+     C-x f
+   - fill-prefix
+     C-x i
+   - fill-paragraph
+   - auto-fill-mode
+   - refill-mode
+** find-file时的默认起始路径？
+   M-x cd
+** flush-lines keep-lines
+** flyspell-mode
+** foo_bar 如何作为两个word?
+   默认情况下"_"被看作是word的一部分,用 modify-syntax-entry可以告诉emacs把某些字
+   符做为word分隔符,做为注释的开始,做为 parenthesis的开始等.
+   (modify-syntax-entry ?_ "_") 告诉emacs把 _ 做为 symbol constituent 就可以了
+** highlight-changes-mode
+** highlight-regexp
+** how to replace \n
+   query-replace C-q C-j
+** ibuffer
+** ido
+** list-colors-display
+** M-spc M-\
+** magit-mode
+** occur
+   M-s o
+** org-mode
+*** org-babel
+- org-edit-src-code C-c '
+** re-builder
+** rectangle操作
+   C-x r t,C-x r k,C-x r o
+   C-x r x,C-x r i 剪贴板
+** reverse-region,sort-lines,sort-columns
+** save-some-buffers
+C-x s
+** scroll-all-mode
+** toggle-truncate-lines
+** undo-tree-mode
+** unix2dos & dos2unix
+  - dos2unix
+   C-x RET f unix
+  - unix2dos
+   C-x RET f dos
+** untabify
+** 如何把2,3,4替换成3,4,5..
+   Q:
+   比如
+   xxx 1 xx
+   xxx 2 xxx
+   替换成
+   xxx 2 xx
+   xxx 3 xx
+
+   A:
+   C-M-% [0-9]+ RET \,(+ \#& 1) RET
+
+   ps:C-h f query-replace-regexp
+
+   In interactive calls, the replacement text can contain `\,'
+   followed by a Lisp expression.  Each
+   replacement evaluates that expression to compute the replacement
+   string.  Inside of that expression, `\&' is a string denoting the
+   whole match as a string, `\N' for a partial match, `\#&' and `\#N'
+   for the whole or a partial match converted to a number with
+   `string-to-number', and `\#' itself for the number of replacements
+   done so far (starting with zero).
+
+** 寄存器操作
+   C-x r SPC,C-x r j 保存位置，跳回
+   C-x r m,C-x r b 保存bookmark,打开bookmark
+   C-x r w,C-x r j 保存window配置，恢复window配置
+** 插入行号
+   C-u M-|
+   cat -n
+
+** Essential Emacs Tips
+*** align
+*** backward-up-list
+*** c-macro-expand C-c C-e
+*** check-parens
+*** Completion
+   - AutoComplelete & AutoJavaComplete
+   - YASnippet
+*** cua-mode & column-edit mode
+*** delete-blank-lines
+   C-x C-o
+*** delete-trailing-whitespace
+*** dired
+   - A 对m的文件进行查找，按M-,找下一个,可以用来代替 find-grep-dired
+   - Q 对m的文件执行C-M-%,按M-,替换下一个
+   - find-grep-dired
+   - grep-find
+*** eim
+   可以在EMACS中使用的输入法
+*** ESC ESC ESC
+*** eshell
+*** fill
+   - fill-column
+     C-x f
+   - fill-prefix
+     C-x i
+   - fill-paragraph
+   - auto-fill-mode
+   - refill-mode
+*** find-file时的默认起始路径？
+   M-x cd
+*** flush-lines keep-lines
+*** flyspell-mode
+*** foo_bar 如何作为两个word?
+   默认情况下"_"被看作是word的一部分,用 modify-syntax-entry可以告诉emacs把某些字
+   符做为word分隔符,做为注释的开始,做为 parenthesis的开始等.
+   (modify-syntax-entry ?_ "_") 告诉emacs把 _ 做为 symbol constituent 就可以了
+*** highlight-changes-mode
+*** highlight-regexp
+*** how to replace \n
+   query-replace C-q C-j
+*** ibuffer
+*** ido
+*** list-colors-display
+*** M-spc M-\
+*** magit.el
+*** occur
+   M-s o
+*** org-mode
+   - org-edit-src-code C-c '
+*** re-builder
+*** rectangle操作
+   C-x r t,C-x r k,C-x r o
+   C-x r x,C-x r i 剪贴板
+*** reverse-region,sort-lines,sort-columns
+*** scroll-all-mode
+*** toggle-truncate-lines
+*** undo-tree-mode
+*** unix2dos & dos2unix
+  - dos2unix
+   C-x RET f unix
+  - unix2dos
+   C-x RET f dos
+*** untabify
+*** 如何把2,3,4替换成3,4,5..
+   Q:
+   比如
+   xxx 1 xx
+   xxx 2 xxx
+   替换成
+   xxx 2 xx
+   xxx 3 xx
+    
+   A:
+   C-M-% [0-9]+ RET \,(+ \#& 1) RET
+    
+   ps:C-h f query-replace-regexp
+    
+   In interactive calls, the replacement text can contain `\,'
+   followed by a Lisp expression.  Each
+   replacement evaluates that expression to compute the replacement
+   string.  Inside of that expression, `\&' is a string denoting the
+   whole match as a string, `\N' for a partial match, `\#&' and `\#N'
+   for the whole or a partial match converted to a number with
+   `string-to-number', and `\#' itself for the number of replacements
+   done so far (starting with zero).
+
+*** 寄存器操作
+   C-x r SPC,C-x r j 保存位置，跳回
+   C-x r m,C-x r b 保存bookmark,打开bookmark
+   C-x r w,C-x r j 保存window配置，恢复window配置
+*** 插入行号
+   C-u M-|
+   cat -n
+

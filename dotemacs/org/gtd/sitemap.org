@@ -1,0 +1,4 @@
+#+TITLE: Sitemap for project gtd
+
+   + [[file:project.org][project]]
+   + [[file:todo.org][todo]]

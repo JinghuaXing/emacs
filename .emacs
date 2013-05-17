@@ -302,11 +302,6 @@
 ;; (setq auto-async-byte-compile-exclude-files-regexp "/etc/")
 ;; (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
 
-(require 'deft)
-(setq deft-directory "~/.elisp/dotemacs/org")
-(setq deft-extension "org")
-(setq deft-text-mode 'org-mode)
-(global-set-key (kbd "<f12>") 'deft)
 
 ;; (global-set-key (kbd "C-x k") 'kill-this-buffer)
 (setq ring-bell-function 'ignore)

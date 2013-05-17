@@ -1,0 +1,71 @@
+#+TITLE: Lisp
+* On Lisp
+** 函数
+*** 定义函数
+定义函数的过程,实际上就是生成一个函数对象, 然后把它赋给某一个 symbol, 但既然
+lisp 拥有独立的函数和变量两个 name-space, 那么上面提到的赋值有两类写法:
+
+1. symbol-value
+   
+#+BEGIN_SRC lisp
+  (setf mul #'(lambda (x) (* x x)))
+  (setf (symbol-value 'mul) #'(lambda (x) (* x x)))
+#+END_SRC
+
+在这种情况下, mul 符号的 symbol-value 是该函数对象, 在调用时使用:
+#+BEGIN_SRC lisp
+  (apply (symbol-value 'mul) '(10))
+  (apply mul '(10))
+  (mul 10)                                ;出错
+#+END_SRC
+2. symbol-function
+
+#+BEGIN_SRC lisp
+  (setf (symbol-function 'mul) #'(lambda (x) (* x x)))
+  (defun mul (x) (* x x))
+#+END_SRC
+
+在这种情况下, mul 符号的 symbol-function 是该函数对象, 调用时使用:
+#+BEGIN_SRC lisp
+  (mul 10)
+  (apply (symbol-function 'mul) '(10))
+  (apply mul 10)                          ;出错
+#+END_SRC
+
+综上所述: 
+
+1. defun 和 (symbol xxx) 是一种语法糖, 和 symbol-function + lambda 定义是等价的
+2. ~(apply symbol xxx)~ 等价于 ~(apply (symbol-value 'symbol) xxx)~
+3. defun 对 symbol-function 友好 vs. apply 对 symbol-value 友好
+
+另外, symbol-function 取值时也可以用 ~#~ 代替, 例如 ~(symbol-function 'x)
+<==> #'x~
+
+**** +-*/
+系统自定义的+-*/等函数都是 symbol-function 类型的 symbol, 所以:
+~(+ x y) <==> (apply #'+ '(x y))~
+*** 函数做为参数
+1. 函数对象做为参数
+#+BEGIN_SRC lisp
+  (mapcar (lambda (x) (+ 1 x)) '(1 2 3))
+#+END_SRC
+2. symbol-function  symbol 做为参数
+#+BEGIN_SRC lisp
+  (defun plus (x) (+ 1 x))
+  (mapcar #'plus '(1 2 3))
+#+END_SRC
+3. symbol-value symbol 做为参数
+#+BEGIN_SRC lisp
+  (setf plus (lambda (x) (+ 1 x)))
+  (mapcar plus '(1 2 3))
+#+END_SRC
+**** 其他一些例子
+- sort
+  #+BEGIN_SRC lisp
+    (sort '(1 2 3) #'>)
+    (remove-if #'evenp '(1 2 3))
+  #+END_SRC
+从这些例子看来, symbol-function 类的 symbol 在函数做为参数时使用的更普遍的一些,
+因为通过 ~#'~ 我们能一眼看出这个 symbol 是"代表"一个函数?
+*** 作用域
+**** 词法作用域 vs. 动态作用域

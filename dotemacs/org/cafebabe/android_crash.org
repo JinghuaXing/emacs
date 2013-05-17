@@ -1,0 +1,119 @@
+#+TITLE: How Android Is Crashed
+* Android Crash
+** Android Process Crash, Die and Restart
+    SCHEDULED: <2011-07-18 Mon> 
+    - State "TODO"       from "DONE"       [2012-12-20 Thu 13:57]
+    - State "DONE"       from "DOING"      [2011-07-18 Mon 14:39]
+      see also [[persistent application]]
+      see also [[STICKY service]]
+      see also [[Java Process Creation]]
+      see also [[binder's death]]
+      Note: we can also restart process manually by: AM.restartPackage()
+*** APP crash: process crashed because of UncaughtException
+  1. setDefaultUncaughtExceptionHandler during process creation
+#+BEGIN_EXAMPLE
+     1	    Thread.setDefaultUncaughtExceptionHandler @ RuntimeInit.java
+     2	      UncaughtHandler implements Thread.UncaughtExceptionHandler
+     3	        public void uncaughtException(Thread t, Throwable e):
+     4		  ActivityManagerNative.getDefault().handleApplicationCrash(mApplicationObject, new ApplicationErrorReport.CrashInfo(e));
+     5		  Process.killProcess(Process.myPid());
+     6	          System.exit(10);
+#+END_EXAMPLE
+  2.  when there are ANY uncaught exception in ANY thread, AMS.handleApplicationCrash will be invoked, and then process will be killed
+#+BEGIN_EXAMPLE
+     1	      AMS.handleApplicationCrash()
+     2	        crashApplication(r, crashInfo);
+     3	          makeAppCrashingLocked()
+     4	            handleAppCrashLocked(app);
+     5	              // NOTE: when handling app crashing, the process is still alive, so there is still a chance for AMS to stop activity/service(s)..
+     6	              // if crashing too much, stopActivity, and in SOME cases, bringDownService
+     7	              if (crashTime != null && now < crashTime+MIN_CRASH_INTERVAL):
+     8	                killServicesLocked(app, false);
+     9	                // `killServiceLocked`, the name is quite misleading, maybe it should be named to `killOrRestartService`xs
+    10	                foreach (activity of app):
+    11	                  finishActivityLock();
+    12	              // although crashTime interval is long enough, but if the crashed app owns the top running activity...also finish the activities
+    13	              ...
+    14	              foreach (service of app):
+    15	                service.crashCount++;
+    16	      // NOTE: any way, after handleApplicationCrash, the process will definitely be killed. But before it is killed, AMS can destroy the activity/service
+    17	      // explicitly, and what's more important, restart service in some cases;
+#+END_EXAMPLE
+  3. Process.killProcess
+     After handleApplicationCrash(), the process will be killed
+
+     When process exit, all fd(s) will be closed; when the fd of /dev/binder is closed, binder_release() in binder.c will be called;
+     binder_release will trigger the binder_death notification of the IApplicationThread binder node;
+     For each Java process, AMS hold their IApplicationThread, in app.thread. Thus, when the process exit, AMS.AppDeathRecipient (which implements
+     IBinder.DeathRecipient) will be notified.
+
+     AppDeathRecipient mainly does some cleaning up of activity/service, but if the app is persistent, it will always be restarted
+#+BEGIN_EXAMPLE
+     AppDeathRecipient.binderDie()
+       ...
+       cleanUpApplicationRecordLocked()
+         if (app.persistent):
+           startProcessLocked(app, "restart", app.processName);
+#+END_EXAMPLE
+
+  4. AMS.killServiceLocked
+#+BEGIN_EXAMPLE
+     if (service.crashCount >= 2):
+       bringDownServiceLocked(sr, true);
+     else:
+       scheduleServiceRestartLocked(sr, true);
+       // after 5s, service will be restarted
+       // sr.stopIfKill is true if the service is started as STICKY
+       if (sr.stopIfKilled):
+         if (!hasClients):
+           // Whoops, no reason to restart! since no one bind the service
+           bringDownServiceLocked(sr, true);
+#+END_EXAMPLE
+ To summaries: After an uncaught exception occurs in any thread, the process
+   will crash through the registered Thread.UncaughtExceptionHandler. The
+   handler will firstly finish activities, and if the service has crashed >=2
+   times, the service will be bringDown (service.onDestroy will be called) If
+   the service is crashing for the 1st time, doesn't bring it down
+   (service.onDestroy will not be called, although the service will be killed
+   due to the process will be killed later), and schedule the restart of the
+   service after the process is killed later.
+   
+*** APP die: process crashed because of KILL
+when process is killed, AMS mainly rely on DeathRecipient to clean it up or
+restart it.
+
+#+BEGIN_EXAMPLE
+DeathRecipient:
+  appDiedLocked(mApp, mPid, mAppThread);
+    handleAppDiedLocked()
+      cleanUpApplicationRecordLocked(app, restarting, allowRestart, -1);
+        killServicesLocked(app, allowRestart);
+          if (sr.crashCount >= 2 && (sr.serviceInfo.applicationInfo.flags
+                  &ApplicationInfo.FLAG_PERSISTENT) == 0) {
+              bringDownServiceLocked(sr, true);
+          } else if (!allowRestart) {
+              bringDownServiceLocked(sr, true);
+          } else {
+              boolean canceled = scheduleServiceRestartLocked(sr, true);
+              if (sr.stopIfKilled) {
+                // NOTE: stopIfKilled means not STICKY
+                bringDownServiceLocked(sr, true);
+              }
+          }
+        if (app.persistent) {
+          startProcessLocked(app, "restart", app.processName);
+        }
+
+#+END_EXAMPLE
+To summarize:
+
+Died app will be restarted if:
+- has STICKY service
+- is persistent ** Alarm
+** How to Restart On Crash?
+*** PERSIST application
+*** STICKY Service
+*** Using two process to monitor each other?
+** misc.
+*** how to clear Notification on crash?
+1. startForeground

@@ -1,0 +1,72 @@
+#+TITLE: Java Puzzle:value not changed?
+* Java Puzzle:value not changed?
+** case 1
+
+TestA.java
+
+#+BEGIN_SRC java
+public class TestA {
+   public static void main(String[] args) {
+       System.out.println(TestB.value);
+   }
+}
+#+END_SRC
+
+TestB.java
+
+#+BEGIN_SRC java
+class TestB {
+    public static final String value="abc"
+}
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+~>javac TestA.java TestB.java
+~>java TestA
+abc
+#+END_EXAMPLE
+
+modify TestB.java:
+
+#+BEGIN_SRC java
+class TestB {
+    public static final String value="abcd"
+}
+#+END_SRC
+
+and recompile the sole TestB.java:
+
+#+BEGIN_EXAMPLE
+~>javac TestB.java
+~>java TestA
+abc
+#+END_EXAMPLE
+
+instead of "abcd"!
+** case 2
+
+TestB is modified as:
+
+#+BEGIN_SRC java
+class TestB {
+    public static String value="abc";
+}
+#+END_SRC
+
+when modify "abc" to "abcd" and recompile TestB.java, nothing strange happens: 
+after value is changed to "abcd", the program will output "abcd" normally.
+
+** case 3
+
+TestB is modified as:
+
+#+BEGIN_SRC java
+class TestB {
+    public static final String value;
+    static {
+       value="abc";
+    }
+}
+#+END_SRC
+
+nothing strange happens.

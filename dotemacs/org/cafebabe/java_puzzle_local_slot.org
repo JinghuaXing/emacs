@@ -1,0 +1,68 @@
+#+TITLE: Java Puzzle:Local Variable Slot
+* Java Puzzle:Local Variable Slot
+** case 1
+TestA.java
+
+#+BEGIN_SRC java
+  public class TestA {
+      public static void main(String[] args) {
+          {
+              Byte [] buffer=new Byte[100*1024*1024];
+          }
+          System.gc();
+      }
+  }
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+~>javac TestA.java
+~>java -verbose:gc TestA
+[GC 409913K->409792K(469504K), 0.0040360 secs]
+[Full GC 409792K->409721K(469504K), 0.1765240 secs]
+#+END_EXAMPLE
+
+** case 2 
+TestA.java
+
+#+BEGIN_SRC java
+  public class TestA {
+      public static void main(String[] args) {
+          {
+              Byte [] buffer=new Byte[100*1024*1024];
+          }
+          int a=0;
+          System.gc();
+      }
+  }
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+~>javac TestA.java
+~>java -verbose:gc TestA
+[GC 409913K->409952K(469504K), 0.0013590 secs]
+[Full GC 409952K->121K(469504K), 0.0034800 secs]
+#+END_EXAMPLE
+
+** Tell the difference
+in case 1:
+
+#+BEGIN_EXAMPLE
+# minor GC doesn't recycle much memory: since large object (the 400MB array)
+# is direct allocated in tenured generation
+
+[GC 409913K->409792K(469504K), 0.0040360 secs]  
+
+# major GC in tenured generation also doesn't recycle much memory
+
+[Full GC 409792K->409721K(469504K), 0.1765240 secs]   
+#+END_EXAMPLE
+
+in case 2:
+
+#+BEGIN_EXAMPLE
+[GC 409913K->409952K(469504K), 0.0013590 secs]
+# oh..400MB array is GCed
+[Full GC 409952K->121K(469504K), 0.0034800 secs]
+#+END_EXAMPLE
+
+In case 2, Why `int a=0` will cause the array be GCed?
