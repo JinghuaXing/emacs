@@ -264,3 +264,5 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-05-16 Thu 11:33]
 * TODO SurfaceView                                                     :todo:
 [2013-05-16 Thu 16:00]
+* TODO test                                                            :todo:
+[2013-05-17 Fri 12:55]
