@@ -45,13 +45,13 @@
      + [[file:java/java.org][Jave]]
      + [[file:java/java_interface.org][Jave Interface]]
      + [[file:java/visitor_pattern.org][Visitor Pattern]]
-     + java_puzzle
-       + [[file:java/java_puzzle/java_puzzle_local_slot.org][Java Puzzle:Local Variable Slot]]
-       + [[file:java/java_puzzle/java_puzzle_class_init_hang.org][Java Puzzle:class initialization hangs]]
-       + [[file:java/java_puzzle/java_puzzle_clinit.org][Java Puzzle:class not initialized?]]
-       + [[file:java/java_puzzle/java_puzzle_any_deadlock.org][Java Puzzle:deadlock?]]
-       + [[file:java/java_puzzle/java_puzzle_thread_join.org][Java Puzzle:thread join]]
-       + [[file:java/java_puzzle/java_puzzle_value_not_initialized.org][Java Puzzle:value not changed?]]
+     + java puzzle
+       + [[file:java/java puzzle/java_puzzle_local_slot.org][Java Puzzle:Local Variable Slot]]
+       + [[file:java/java puzzle/java_puzzle_class_init_hang.org][Java Puzzle:class initialization hangs]]
+       + [[file:java/java puzzle/java_puzzle_clinit.org][Java Puzzle:class not initialized?]]
+       + [[file:java/java puzzle/java_puzzle_any_deadlock.org][Java Puzzle:deadlock?]]
+       + [[file:java/java puzzle/java_puzzle_thread_join.org][Java Puzzle:thread join]]
+       + [[file:java/java puzzle/java_puzzle_value_not_initialized.org][Java Puzzle:value not changed?]]
    + linux
      + [[file:linux/linux_app.org][Linux Applications]]
      + [[file:linux/linux_cheatsheet.org][Linux Cheat Sheet]]

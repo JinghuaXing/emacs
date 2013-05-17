@@ -110,7 +110,7 @@
  '(org-capture-bookmark nil)
  '(org-confirm-babel-evaluate nil)
  '(org-export-headline-levels 2)
- '(org-export-html-style "    <link rel=\"stylesheet\" type=\"text/css\" href=\"stylesheet.css\" media=\"screen\" />")
+ '(org-export-html-style "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/stylesheets/main.css\" media=\"screen\" />")
  '(org-export-latex-emphasis-alist (quote (("*" "\\textbf{%s}" nil) ("/" "\\emph{%s}" nil) ("_" "\\underline{%s}" nil) ("+" "\\st{%s}" nil) ("=" "\\protectedtexttt" t) ("~" "\\verb" t))))
  '(org-export-with-toc 2)
  '(org-icalendar-include-todo t)

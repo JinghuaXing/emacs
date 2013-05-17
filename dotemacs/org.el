@@ -1,8 +1,10 @@
-(require 'deft)
-(setq deft-directory "~/.elisp/dotemacs/org/cafebabe")
-(setq deft-extension "org")
-(setq deft-text-mode 'org-mode)
-(global-set-key (kbd "<f12>") 'deft)
+;; (require 'deft)
+;; (setq deft-directory "~/.elisp/dotemacs/org/cafebabe")
+;; (setq deft-extension "org")
+;; (setq deft-text-mode 'org-mode)
+;; (global-set-key (kbd "<f12>") 'deft)
+
+(global-set-key (kbd "<f12>") '(lambda()  (interactive) (find-file "~/.elisp/dotemacs/org/cafebabe")))
 
 (require 'org-install)
 (require 'org-agenda)
