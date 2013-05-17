@@ -95,7 +95,7 @@
 					 (goto-char (mark t))
 					 )
 				       ))
-(define-key dired-mode-map (kbd "C-c C-c") 'compile)
+(define-key dired-mode-map (kbd "C-c C-c") 'droid)
 
 ;; (define-key dired-mode-map (kbd "c") (lambda ()
 ;; 					     (interactive)
