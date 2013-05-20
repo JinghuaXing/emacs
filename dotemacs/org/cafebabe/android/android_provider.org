@@ -1,0 +1,59 @@
+#+TITLE: Android ContentProvider
+* ContentProvider
+** Registration
+** Initialization
+** Usage
+*** ContentProvider.openFile() & ContentProvider.openInputStream()
+** Others
+*** `withYieldAllowed` how to work?                                   
+
+[[http://stackoverflow.com/questions/9599809/does-yieldifcontendedsafely-lose-the-benefits-of-a-transaction][Does yieldIfContendedSafely() lose the benefits of a transaction?]]
+
+From stackoverflow:
+
+Q:
+
+I have a long-running operation which I perform in a background thread. As it is
+important for the operation to either complete successfully or not at all, I am
+wrapping the entire operation in a transaction.
+
+Aspects of the UI need read-only access to the database during this time. To
+avoid blocking the UI, I am experimenting with inserting calls to
+db.yieldIfContendedSafely() in the main loop of the background operation.
+
+This does what I want in that the UI is no longer blocked, but it's not
+completely clear to me if this is risking a loss of data integrity.
+
+The javadoc for yieldIfContendedSafely() says:
+
+    Temporarily end the transaction to let other threads run.  The transaction
+    is assumed to be successful so far. Do not call setTransactionSuccessful
+    before calling this. When this returns a new transaction will have been
+    created but not marked as successful. This assumes that there are no nested
+    transactions (beginTransaction has only been called once) and will throw an
+    exception if that is not the case.
+
+Does this mean that my long-running operation is actually being committed to the
+database in separate chunks, or is the overall transaction maintaining enough
+state to commit the whole lot in one go at the end, thus preserving
+data-integrity?
+
+A:
+
+    Does this mean that my long-running operation is actually being committed to
+    the database in separate chunks
+
+Yes. Within yieldIfContendedSafely(), Android calls setTransactionSuccessful(),
+endTransaction(), and begins a new transaction -- committing your statements in
+the process. There is no mechanism to rollback the "real" transaction after it
+ends.
+
+This behavior only occurs if there is another thread waiting on the database,
+otherwise yieldIfContendedSafely() does nothing.
+
+I checked this with the following scenario. I started two threads: one inserted
+data into a table using a transaction, another read data out of the same
+table. The transaction didn't call setTransactionSuccessful() so normally
+everything is rolled back at the end, leaving the table empty. I added a call to
+yieldIfContendedSafely(), and afterwards the table was not empty and had data
+from the transaction.
