@@ -82,21 +82,21 @@
 
 **** startService
 #+BEGIN_EXAMPLE
-      AMS:startServiceLocked()
-        AMS:retrieveServiceLocked()
-	    if ret=mServicesByIntent.get(intent)
-	        return ret; //      * All currently running services indexed by the Intent used to start them.
-	    else
-                PM:resolveService()  // just like resolveActivity
-		    PM:queryIntentServices()
-		        if intent.getComponent()
-			    use it;
-			else
-			    PM:queryIntent() // return a list of candidates, note that the list is sorted according to [[IntentFilter.priority][IntentFilter.priority]]
-		    if candidates>1      // more than ONE candidate
-		        use candidate.get(0)  // pick the first one. because the candidates are sorted according
-			                         // to IntentFilter.priority, so the candidate with the highest priority is selected.
-            checkComponentPermission()
+  AMS:startServiceLocked()
+    AMS:retrieveServiceLocked()
+        if ret=mServicesByIntent.get(intent)
+            return ret; //      * All currently running services indexed by the Intent used to start them.
+        else
+            PM:resolveService()  // just like resolveActivity
+                PM:queryIntentServices()
+                    if intent.getComponent()
+                        use it;
+                    else
+                        PM:queryIntent() // return a list of candidates, note that the list is sorted according to [[IntentFilter.priority][IntentFilter.priority]]
+                if candidates>1      // more than ONE candidate
+                    use candidate.get(0)  // pick the first one. because the candidates are sorted according
+                                             // to IntentFilter.priority, so the candidate with the highest priority is selected.
+        checkComponentPermission()
 #+END_EXAMPLE
 
 **** sendBroadcast
@@ -128,31 +128,47 @@ just as startService, priority are considered, and a list of all candidates are 
 
 	 11/17/10 6:37 pm
 	 To prevent if activity.onPause doesn't return in a period of time(500ms), AMS will call sendMessageDelayed() in startPausingLocked() to send itself one PAUSE_TIMEOUT msg to force itself call activityPaused().
-
+         
 	 That is, although activity.onPause() may block, AMS is assured to resume	next activity in 500ms.
 
-	 11/17/10 5:47 pm
-      1. activity.finish() will call AMS's finishActivity() through AIDL, providing activity's IBinder as parameter so that AMS can recognize the corresponding HistoryRecord in AMS.
+
+      1. activity.finish() will call AMS's finishActivity() through
+         AIDL, providing activity's IBinder as parameter so that AMS
+         can recognize the corresponding HistoryRecord in AMS.
 
       2. AMS calls
 	 finishActivityLocked()
 	 startPausingLocked()
 	 thread.schedulePauseActivity()
 
-      3. thread.schedulePauseActivity() will call activity.onPause(), then notify AMS that activity is paused through AMS.activityPaused()
+      3. thread.schedulePauseActivity() will call activity.onPause(),
+         then notify AMS that activity is paused through
+         AMS.activityPaused()
 
       4. activityPaused()
 	 completePauseActivity()
 	 mark activity for stop when idle
 	 resumeTopActivity()
+
 **** attachApplication
 
-attachApplication is the 3rd step to start a new activity. (1. startPausing, 2. activityPaused.)
-When one new activityThread is created, after calling onCreate, activityThread will invoke AMS.attachApplication to notify AMS that process is OK, then AMS can call realStartActivity to launch the activity.
+attachApplication is the 3rd step to start a new
+activity. (1. startPausing, 2. activityPaused.)
+
+When one new activityThread is created, after calling onCreate,
+activityThread will invoke AMS.attachApplication to notify AMS that
+process is OK, then AMS can call realStartActivity to launch the
+activity.
 
 **** activityPaused
-activityPaused is called by ActivityThread to notity AMS that the mResumed activity is paused(or onPause is timeout)
-after that, if prev should be finished (when finish activity), it will call finishCurrentActivity to finish prev activity. Then resumeTopActivity will be called again to really resume another activity.
+
+activityPaused is called by ActivityThread to notity AMS that the
+mResumed activity is paused(or onPause is timeout)
+
+after that, if prev should be finished (when finish activity), it will
+call finishCurrentActivity to finish prev activity. Then
+resumeTopActivity will be called again to really resume another
+activity.
 
 **** startActivityLocked
 
@@ -187,7 +203,10 @@ startSpecificActivityLocked,
   startProcessLocked
 #+END_EXAMPLE
 
-for the 2nd scenero, when activityThread is started in startProcessLocked, it will call AMS.attachApplication to notify AMS that the process is ready, attachApplication will then call realStartActivity again to real kaunch the activity.
+for the 2nd scenero, when activityThread is started in
+startProcessLocked, it will call AMS.attachApplication to notify AMS
+that the process is ready, attachApplication will then call
+realStartActivity again to real kaunch the activity.
 
 **** resumeTopActivityLocked
 
@@ -229,30 +248,43 @@ real start an activity instead of resume or start a new process.
 
 This is called in 2 scen:
 1) startSpecificActivity in resumeTopActivity
-2) attachApplication, since when attachApplication, the process definitly exist and activity is surely not started yet. resumeTopActivity is redunctant, calling realStartActivity is enough.
+2) attachApplication, since when attachApplication, the process
+   definitly exist and activity is surely not started
+   yet. resumeTopActivity is redunctant, calling realStartActivity is
+   enough.
 *** ActivityThread side
 **** ActivityRecord
-      12/28/10 7:50 pm
-      ActivityRecord will save the real Activity instance and some other info.  It corresponds to AMS::HistoryRecord.
-      ActivityRecord use one Map<IBinder,ActivityRecord> to save process's all activities.
-      Evey ActivityThread.scheduleXxx ()  takes  an 'Token' (an IBinder)  as para so that ActivityThread can get the corres ActivityRecord from the map.
+
+ActivityRecord will save the real Activity instance and some other
+info.  It corresponds to AMS::HistoryRecord. ActivityRecord use one
+Map<IBinder,ActivityRecord> to save process's all activities.
+
+Evey ActivityThread.scheduleXxx () takes an 'Token' (an IBinder) as
+para so that ActivityThread can get the corres ActivityRecord from the
+map.
+
 **** IApplicationThread
 ***** schedulePausingActivity
-       schedulePausingActivity will firstly call activity.onPaused, and wait for
-       return, then it will notify AMS through AMS.activityPaused that the
-       activity is paused.
+schedulePausingActivity will firstly call activity.onPaused, and wait for
+return, then it will notify AMS through AMS.activityPaused that the
+activity is paused.
 ***** scheduleResumeActivity
-       it will call onResume, when onResume returns, it will add one Idler to
-       AMS's queue, to make sure AMS will be norified when queue is idle to stop
-       and destroy pending need-to-finish act ivies
+it will call onResume, when onResume returns, it will add one Idler to
+AMS's queue, to make sure AMS will be norified when queue is idle to stop
+and destroy pending need-to-finish act ivies
 ***** scheduleLaunchActivity
-       when called by AMS.realStartActivity, scheduleLaunchActivity will
-       sequencially call onCreate, onStart,
-       onRestoreInstanceState,onPostCreate,onResume.
+when called by AMS.realStartActivity, scheduleLaunchActivity will
+sequencially call onCreate, onStart,
+onRestoreInstanceState,onPostCreate,onResume.
 *** Activity side
-     - onStop, onRestart is only related to activity visibility. they are invoked by mWindowManager.setAppVisibility() due to visibility change.
-     - onStart may be called due to visibility change or life cycle change.
-     - onPause, onDestroy, onResume is the core concept related to activity life cycle, they are called only when life cycle is changed.
+     - onStop, onRestart is only related to activity visibility. they
+       are invoked by mWindowManager.setAppVisibility() due to
+       visibility change.
+     - onStart may be called due to visibility change or life cycle
+       change.
+     - onPause, onDestroy, onResume is the core concept related to
+       activity life cycle, they are called only when life cycle is
+       changed.
 **** finish
 **** onPause
       only when starting another *Activity*, will the former activity's  onPause be called;
@@ -1528,12 +1560,12 @@ This is called in 2 scen:
 #+END_EXAMPLE
 
 #+BEGIN_EXAMPLE
-	New process:
-	  ActivityThread::attach()
-	     AMS::attachApplication()
-	        foreach mPendingServices:
-	           realStartService()
-	                thread.scheduleCreate..
+  New process:
+    ActivityThread::attach()
+      AMS::attachApplication()
+        foreach mPendingServices:
+          realStartService()
+            thread.scheduleCreate..
 #+END_EXAMPLE
 *** bindService &  unbindService
 **** ServiceConnection
@@ -1585,20 +1617,18 @@ This is called in 2 scen:
 	     1. the connection is not a BIND_AUTO_CREATE connection
 	     2. service is started by startService
 	     3. that are still other BIND_AUTO_CREATE connections bound to the service
-*** ServiceRecor
+*** ServiceRecord
 d12/28/10 8:12 pm
 similar with AMS::HistoryRecord. mainly save the r.ap and r.app.thread so as to interact with the service's process. .  But there is no correspondant like ActivityRecord in ActivityThread, since service needn't interqact with WMS, and it's life cycle is quite simple. (create, start, stop)
-*** DONE STICKY service
-     SCHEDULED: <2011-06-01 Wed> CLOSED: [2011-07-18 Mon 17:21]
-     - State "DONE"       from "DOING"      [2011-07-18 Mon 17:21]
-     STICKY mainly make sense when process has crashed due to uncaught exception.
-     see also [[Android Process Crash and Restart]]
+*** STICKY service
+STICKY mainly make sense when process has crashed due to uncaught exception.
+see also [[Android Process Crash and Restart]]
 ** Broadcast                                                     :broadcast:
 *** OrderedBroadcast
 **** AbortBroadcast()
 **** GetResult..()
 **** priority
-      broadcast receiver's intent filter's `priority` will be used to by the AMS to determine the order in which the broadcast is send to
+broadcast receiver's intent filter's `priority` will be used to by the AMS to determine the order in which the broadcast is send to
 **** SetResult..()
 *** protected-broadcast
 PACKAGE_REMOVED/PACKAGE_ADDED/BOOT_COMPLETED are all protected-broadcasts, only the process with "system" uid can send the broadcast
@@ -1617,82 +1647,79 @@ To summarize:
 be sent by SYSTEM,PHONE,SHELL or root`
 
 *** SendBroadcast
-     CLOSED: [2011-02-15 Tue 19:37]
-     - State "DONE"       [2011-02-15 Tue 19:37]
-     12/28/10 8:11 pm
-     every call to sendBroadcast will init a new receiver instance.
-#+BEGIN_EXAMPLE lang:c
-     AMS:broadcastIntentLocked()
-       // find out who will recv this broadcast
-       if intent.getComponent():
-         receivers.add(r);
-       else:
-         if !Intent.FLAG_RECEIVER_REGISTERED_ONLY:
-	   receivers=PM.queryIntentReceivers();
-	 registeredReceivers = ReceiverResolver.queryIntent(); ;;ReceiverResolver is a in-memory storage that stores runtime-registered receivers
-       // now, `receivers` stores receivers from PM, `registeredReceivers` stores receivers from ReceiverResolver
-       if !ordered:
-         BroadcastRecord r=new BroadcastRecord(registeredReceivers);
-	 mParallelBroadcasts.add(r);
-         add/update mStickyBroadcasts if the broadcast is STICKY 
-         ;; note: mStickyBroadcasts is only re-broadcasted on registerReceiver()
-	 scheduleBroadcastsLocked()
-	   sendMessage(BROADCAST_INTENT_MSG);
-	     processNextBroadcast();
-	       foreach BroadcastRecord in mParallelBroadcasts:
-	         foreach receiver in BroadcastRecord:
-		   deliverToRegisteredReceiver();
-		     ;; make sure receiver has the requiredPermission imposed by the sender,  e.g. PERMISSION_BOOT_COMPLETED, sender can imposed a
-		     ;; requiredPermission through sendBroadcast(intent,requiredPermission)
-		     if r.requiredPermission!=null:
-		       checkComponentPermission(r.requiredPermission,filter.receiverList.pid, filter.receiverList.uid, -1);
-		     ;; make sure the sender has the requiredPermission imposed by the receiver's filter
-		     if filter.requiredPermission != null:
-		       checkComponentPermission(filter.requiredPermission,r.callingPid, r.callingUid, -1);
-		     performReceive();
-		       if app.thread !=null:
-		         app.thread.scheduleRegisteredReceiver();
-			   ReceiverDispatcher.performReceive() ;; for registeredReceivers, receiver class are identified by ReceiverDispatcher (which is send to
-			                                       ;; AMS during registerReceiver()
-			     new Args() {
-			       run():
-			         receiver.onReceive();
-			         if ordered:
-			           AMS:finishReceiver(); ;; not called here
-			     }
-			     H.post(Args);
-         registeredReceivers=null; ;; since registeredReceivers is broadcasted already as mParallelBroadcasts, it should not be merged with receivers
-       ;; if  !ordered, registeredReceivers are broadcasted all at once, without TIMEOUT consideration! SO, registeredReceivers in non-ordered broadcast
-       ;; will never cause ANR!
-       ;; if ordered, both registeredReceivers and receivers are merged in a single list, so that both registeredReceivers and receivers are broadcasted in
-       ;; order
-       merge_into_one_receiver_list();
-       scheduleBroadcastsLocked();
-         sendMessage();
-	   processNextBroadcast();
-	     r=OrderedBroadcast.get(0);
-	     if r.nextReceiver>r.receivers.size():
-	       removeMessages(BROADCAST_TIMEOUT_MSG);
-	     r.receiverTime=now();
-	     if current receiver is the first one of r:
-	       sendMessageAtTime(BROADCAST_TIMEOUT_MSG,r.receiverTime+BROADCAST_TIMEOUT);
-	     if current receiver is a registeredReceivers:
-	       scheduleBroadcastsLocked(get Current Receiver); ;; direct call
-	     else:
-	       if app!=null:
-	         app.thread.scheduleReceiver();
-		   handlerReceiver()
-		     receiver = (BroadcastReceiver)cl.loadClass(component).newInstance(); ;; for static receivers, receivers are identified by component name
-		     receiver.onReceive(context.getReceiverRestrictedContext(),...)
-		     AMS:finishReceiver(); ;; notify AMS that it can process next broadcast.
-	       else:
-	         startProcess();
-		 mPendingBroadcast=r; ;; mPendingBroadcast will broadcasted when process is ready and attached to AMS
-
-        BROADCAST_TIMEOUT_MSG's handle Message() will check whether r.receiverTime is updated, if so, that means one of Ra's receiver has returned, so
-	handler will not cause an ANR
+every call to sendBroadcast will init a new receiver instance.
+#+BEGIN_EXAMPLE
+  AMS:broadcastIntentLocked()
+    // find out who will recv this broadcast
+    if intent.getComponent():
+      receivers.add(r);
+    else:
+      if !Intent.FLAG_RECEIVER_REGISTERED_ONLY:
+        receivers=PM.queryIntentReceivers();
+      registeredReceivers = ReceiverResolver.queryIntent(); ;;ReceiverResolver is a in-memory storage that stores runtime-registered receivers
+    // now, `receivers` stores receivers from PM, `registeredReceivers` stores receivers from ReceiverResolver
+    if !ordered:
+      BroadcastRecord r=new BroadcastRecord(registeredReceivers);
+      mParallelBroadcasts.add(r);
+      add/update mStickyBroadcasts if the broadcast is STICKY 
+      ;; note: mStickyBroadcasts is only re-broadcasted on registerReceiver()
+      scheduleBroadcastsLocked()
+        sendMessage(BROADCAST_INTENT_MSG);
+          processNextBroadcast();
+            foreach BroadcastRecord in mParallelBroadcasts:
+              foreach receiver in BroadcastRecord:
+                deliverToRegisteredReceiver();
+                  ;; make sure receiver has the requiredPermission imposed by the sender,  e.g. PERMISSION_BOOT_COMPLETED, sender can imposed a
+                  ;; requiredPermission through sendBroadcast(intent,requiredPermission)
+                  if r.requiredPermission!=null:
+                    checkComponentPermission(r.requiredPermission,filter.receiverList.pid, filter.receiverList.uid, -1);
+                  ;; make sure the sender has the requiredPermission imposed by the receiver's filter
+                  if filter.requiredPermission != null:
+                    checkComponentPermission(filter.requiredPermission,r.callingPid, r.callingUid, -1);
+                  performReceive();
+                    if app.thread !=null:
+                      app.thread.scheduleRegisteredReceiver();
+                        ReceiverDispatcher.performReceive() ;; for registeredReceivers, receiver class are identified by ReceiverDispatcher (which is send to
+                                                            ;; AMS during registerReceiver()
+                          new Args() {
+                            run():
+                              receiver.onReceive();
+                              if ordered:
+                                AMS:finishReceiver(); ;; not called here
+                          }
+                          H.post(Args);
+      registeredReceivers=null; ;; since registeredReceivers is broadcasted already as mParallelBroadcasts, it should not be merged with receivers
+    ;; if  !ordered, registeredReceivers are broadcasted all at once, without TIMEOUT consideration! SO, registeredReceivers in non-ordered broadcast
+    ;; will never cause ANR!
+    ;; if ordered, both registeredReceivers and receivers are merged in a single list, so that both registeredReceivers and receivers are broadcasted in
+    ;; order
+    merge_into_one_receiver_list();
+    scheduleBroadcastsLocked();
+      sendMessage();
+        processNextBroadcast();
+          r=OrderedBroadcast.get(0);
+          if r.nextReceiver>r.receivers.size():
+            removeMessages(BROADCAST_TIMEOUT_MSG);
+          r.receiverTime=now();
+          if current receiver is the first one of r:
+            sendMessageAtTime(BROADCAST_TIMEOUT_MSG,r.receiverTime+BROADCAST_TIMEOUT);
+          if current receiver is a registeredReceivers:
+            scheduleBroadcastsLocked(get Current Receiver); ;; direct call
+          else:
+            if app!=null:
+              app.thread.scheduleReceiver();
+                handlerReceiver()
+                  receiver = (BroadcastReceiver)cl.loadClass(component).newInstance(); ;; for static receivers, receivers are identified by component name
+                  receiver.onReceive(context.getReceiverRestrictedContext(),...)
+                  AMS:finishReceiver(); ;; notify AMS that it can process next broadcast.
+            else:
+              startProcess();
+              mPendingBroadcast=r; ;; mPendingBroadcast will broadcasted when process is ready and attached to AMS
+  
+     BROADCAST_TIMEOUT_MSG's handle Message() will check whether r.receiverTime is updated, if so, that means one of Ra's receiver has returned, so
+     handler will not cause an ANR
 #+END_EXAMPLE
-   To summarize:
+To summarize:
    1. dynamic registered receiver
       *the same BroadcastReceiver instance is used for Multi-broadcast*
       - in non-ordered broadcast

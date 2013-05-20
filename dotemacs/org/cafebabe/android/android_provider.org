@@ -1,9 +1,57 @@
 #+TITLE: Android ContentProvider
 * ContentProvider
-** Registration
-** Initialization
+** Publish & Install
+*** install on app bring up
+#+BEGIN_SRC text
+  ActivityThread.main
+    thread.attach
+      AMS.attachApplication(thread)
+        AMS.attachApplicationLocked(thread)
+          List providers = generateApplicationProvidersLocked(app)
+            providers = getPackageManager().queryContentProviders()
+            foreach (providers):
+              mProvidersByClass.put(comp, new ContentProviderRecord());
+            return providers;
+          // generateApplicationProvidersLocked
+          thread.bindApplication(..., providers,...)
+            handleBindApplication()
+              installContentProviders(providers)
+                foreach (providers):
+                  installProvider(provider)
+                AMS.publishContentProviders(providers)
+                  foreach (providers):
+                    mProvidersByName.put(authority, provider);
+            // handleBindApplication
+        // attachApplicationLocked        
+#+END_SRC
+
+*** install for double confirm
+#+BEGIN_SRC text
+  ContentResover.query()
+    ContentResover.acquireProvider()
+      ContextImpl.ApplicationContentResolver.acquireProvider()
+        thread.acquireProvider()
+          IContentProvider provider = acquireExistingProvider(c, name);
+          if provider!=null:
+             return provider
+          holder = ActivityManagerNative.getDefault().getContentProvider(name);
+            AMS.getContentProviderImpl()
+              // if provider is running, return it
+              // or else, start the process, and WAIT FOR IT
+              // TODO
+            // getContentProviderImpl
+          provider = installProvider(c, holder.provider, holder.info,..)
+            if (holder.provider == null):
+              // the provider is not installed yet, create it
+              // localProvider...LOCAL?
+              localProvider = (ContentProvider)cl.loadClass(info.name).newInstance();
+              localProvider.attachInfo(c, info);
+                ContentProvider.this.onCreate(); // A-HA, onCreate
+        // thread.acquireProvider
+#+END_SRC
 ** Usage
-*** ContentProvider.openFile() & ContentProvider.openInputStream()
+*** query
+*** openFile
 ** Others
 *** `withYieldAllowed` how to work?                                   
 
