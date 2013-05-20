@@ -1,3 +1,4 @@
+#+TITLE: Android Preload
 * Preload Drawable
 Preload Drawable 机制是 zygote 针对图片内存使用的一个优化. 
 Zygote 进程是所有 java 进程的父进程, 在开机的早些阶段启动, 它启动后会
@@ -40,3 +41,4 @@ AssetManager 会维护一个 drawable cache, 通过 preloadDrawable 加载进来
 不使用 `copy-on-write' 这种 trick, 而是使用显式的 shared mmap 来共享系
 统图片, 不过这种方式可能难以实现, 因为 dvm 是在 dalvik heap 中分配图片
 内存的, 我们可能没有办法让它工作在其他的 vma. 
+* Preload Class
