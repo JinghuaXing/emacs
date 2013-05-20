@@ -232,7 +232,9 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-04-25 Thu 12:43]
 * TODO uri permission                                                  :todo:
 [2013-04-25 Thu 18:54]
-* TODO git branch model                                                :todo:
+* DONE git branch model                                                :todo:
+CLOSED: [2013-05-20 Mon 18:40]
+- State "DONE"       from "TODO"       [2013-05-20 Mon 18:40]
 [2013-04-26 Fri 19:46]
 * TODO socks 代理原理                                                  :todo:
 [2013-05-02 Thu 16:39]

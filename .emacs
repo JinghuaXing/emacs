@@ -37,7 +37,7 @@
 (load-file "~/.elisp/dotemacs/mark.el")
 (load-file "~/.elisp/dotemacs/sdcv.el")
 (load-file "~/.elisp/dotemacs/color.el")
-(load-file "~/.elisp/dot-mode.el")
+(load-file "~/.elisp/graphviz.el")
 (load-file "~/.elisp/dotemacs/w3m.el")
 (load-file "~/.elisp/dotemacs/font.el")
 (load-file "~/.elisp/dotemacs/tex.el")
