@@ -1,8 +1,8 @@
 #+TITLE: Android ContentProvider
 * ContentProvider
 ** Publish & Install
-*** install on app bring up
-#+BEGIN_SRC text
+*** single-process providers are installed during app bring up
+#+BEGIN_SRC java
   ActivityThread.main
     thread.attach
       AMS.attachApplication(thread)
@@ -18,6 +18,13 @@
               installContentProviders(providers)
                 foreach (providers):
                   installProvider(provider)
+                    // during app bring up, the holder.provider must be null
+                    if (holder.provider == null):
+                      // the provider is not installed yet, create it
+                      // localProvider...LOCAL?
+                      localProvider = (ContentProvider)cl.loadClass(info.name).newInstance();
+                      localProvider.attachInfo(c, info);
+                        ContentProvider.this.onCreate(); // A-HA, onCreate
                 AMS.publishContentProviders(providers)
                   foreach (providers):
                     mProvidersByName.put(authority, provider);
@@ -25,30 +32,59 @@
         // attachApplicationLocked        
 #+END_SRC
 
-*** install for double confirm
-#+BEGIN_SRC text
-  ContentResover.query()
-    ContentResover.acquireProvider()
-      ContextImpl.ApplicationContentResolver.acquireProvider()
-        thread.acquireProvider()
-          IContentProvider provider = acquireExistingProvider(c, name);
-          if provider!=null:
-             return provider
-          holder = ActivityManagerNative.getDefault().getContentProvider(name);
-            AMS.getContentProviderImpl()
-              // if provider is running, return it
-              // or else, start the process, and WAIT FOR IT
-              // TODO
-            // getContentProviderImpl
-          provider = installProvider(c, holder.provider, holder.info,..)
-            if (holder.provider == null):
-              // the provider is not installed yet, create it
-              // localProvider...LOCAL?
-              localProvider = (ContentProvider)cl.loadClass(info.name).newInstance();
-              localProvider.attachInfo(c, info);
-                ContentProvider.this.onCreate(); // A-HA, onCreate
-        // thread.acquireProvider
+*** multi-process providers are installed on demand
+#+BEGIN_SRC java
+  ContentResolver.query()
+    ContentResolver.acquireProvider(uri);
+      ContentResolver.acquireProvider(uri.getAuthority());
+        ContextImpl.ApplicationContentResolver.acquireProvider(name);
+          thread.acquireProvider()
+            IContentProvider provider = acquireExistingProvider(c, name);
+              ProviderClientRecord pr = mProviderMap.get(name);
+              if pr.mProvider != null:
+                return pr.mProvider;
+            holder = ActivityManagerNative.getDefault().getContentProvider(name);
+              AMS.getContentProviderImpl()
+                // if provider is running, return it
+                // or else, start the process, and WAIT FOR IT
+                // TODO
+              // getContentProviderImpl
+            // if holder.provider is null, then the provider is not
+            // installed during app bring up .. so it is a multi-process
+            // provider, install it locally
+            provider = installProvider(c, holder.provider, holder.info,..)
+              if (holder.provider == null):
+                // the provider is not installed yet, create it
+                // localProvider...LOCAL?
+                localProvider = (ContentProvider)cl.loadClass(info.name).newInstance();
+                localProvider.attachInfo(c, info);
+                  ContentProvider.this.onCreate(); // A-HA, onCreate
+              // whether the provider is a local provider or a remote provider, it is cached in the mProviderMap. 
+              mProviderMap.put(names, provider);
+          // thread.acquireProvider
 #+END_SRC
+*** To summaries
+
+ContentProvider is maintained both in AMS and in ActivityThread for
+different purpose. 
+
+- AMS
+
+it maintains the `HashMap<String, ContentProviderRecord>
+mProvidersByName`, which caches all the ContentProvider published by
+apps.  The ContentProvider.provider is a IContentProvider
+(ContentProvider.Transport) for IPC. 
+
+That is, AMS is a central IContentProvider cache
+
+- ActivityThread
+
+ActivityThread maintains a `HashMap<String, ProviderClientRecord>
+mProviderMap' for cache purpose. 
+
+ActivityThread need to maintains the cache because of `multi-process'
+provider , since they can not be cached by AMS because they are process-local. 
+
 ** Usage
 *** query
 *** openFile
