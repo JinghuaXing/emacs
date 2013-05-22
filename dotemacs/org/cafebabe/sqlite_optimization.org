@@ -1,0 +1,56 @@
+#+TITLE: Android SQLite Optimization Plan
+* Android SQLite Optimization Plan
+#+BEGIN_QUOTE
+Premature optimization is the root of all evil  -- Donald Knuth
+#+END_QUOTE
+
+Before applying the `optimization', to my knowledge , the following
+topics should be carefully explored.
+
+** Benchmark tools
+
+** SQLite tuning
+*** threading model
+*** page size
+*** cache size
+*** synchronous
+*** in-memory db
+*** count change
+*** vacuum
+*** ...
+
+** Best practice
+*** Sql best practice
+**** index
+**** glob & like
+**** trigger
+**** user functions
+**** conflict resolution
+**** join
+**** explain query plan
+**** ...
+
+*** Android database api best practice 
+**** applyBatch
+**** ContentProviderClient
+**** withYieldAllowed
+**** DatabaseUtils.insertHelper
+**** DatabaseUtils.longForQuery
+**** use SQLiteDatabase
+**** notifyChange & ContentObserver
+**** CursorWindow
+**** Multiple-process provider
+**** ...
+
+** Optimization
+*** Android framework optimization
+**** Write Ahead Logging
+**** Multiple connection
+**** SQLiteDatabase locking model
+**** ...
+*** SQLite optimization
+**** ...
+
+** Read The F***ing Source Code
+- sqlite (100 K-LOCs)
+- android database api (15 K-LOCs)

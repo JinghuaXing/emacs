@@ -85,11 +85,12 @@ mProviderMap' for cache purpose.
 ActivityThread need to maintains the cache because of `multi-process'
 provider , since they can not be cached by AMS because they are process-local. 
 
+** 
 ** Usage
 *** query
 *** openFile
 ** Others
-*** `withYieldAllowed` how to work?                                   
+*** withYieldAllowed
 
 [[http://stackoverflow.com/questions/9599809/does-yieldifcontendedsafely-lose-the-benefits-of-a-transaction][Does yieldIfContendedSafely() lose the benefits of a transaction?]]
 
@@ -141,3 +142,5 @@ table. The transaction didn't call setTransactionSuccessful() so normally
 everything is rolled back at the end, leaving the table empty. I added a call to
 yieldIfContendedSafely(), and afterwards the table was not empty and had data
 from the transaction.
+*** ContentProviderNative
+*** ContentProvider.Transport

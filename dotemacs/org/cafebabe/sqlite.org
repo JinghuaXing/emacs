@@ -709,6 +709,10 @@ sqlite3 中因为支持 FTS, 所以也支持几种分词算法:
 - select * from search_index where content match "token1 token2"
 - select * from search_index where content match "tok*"
 
+*** SQLite Optimization FAQ
+
+http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html
+
 * Footnotes
 
 [fn:1] because A is holding a `shared` lock
