@@ -123,7 +123,7 @@ again will be wrapped into a local cursor object named
                      elif: // other type
                    // end for
                  // end while
-                 sqlite3_reset(statement);      
+                 sqlite3_reset(statement);
       if ret:
         mPos=newPos;
 #+END_SRC
@@ -152,7 +152,7 @@ again will be wrapped into a local cursor object named
    2) onMove
 
       `fillWindow` is during `onMove`, e.g. `moveToFirst`, `moveToNext`, ...
-      
+
 **** CursorWindow
 `CursorWindow` is parcelable, it represents a `window` of sqlite query data.
 
@@ -191,7 +191,7 @@ e.g. during local `onMove`
 *** sqlite3_analyzer
 *** sqlite command
 **** .output
-**** .mode 
+**** .mode
 list|column|insert|line|tabs|tcl|csv
 **** .dump
 **** .read
@@ -252,8 +252,8 @@ see also `trigger`
 - check
 **** trigger
 #+BEGIN_SRC sql
-  create [temp|temporary] trigger name 
-  [before|after|instead of] [insert|delete|update|update of columns] on table 
+  create [temp|temporary] trigger name
+  [before|after|instead of] [insert|delete|update|update of columns] on table
   [for each row] [when expr]
   begin
   action
@@ -261,13 +261,13 @@ see also `trigger`
 #+END_SRC
 - using trigger to update view
 #+BEGIN_SRC sql
-  create trigger on_update_foods_view 
-  instead of update on foods_view 
-  for each row 
-  begin 
-     update foods set name=new.fname where id=new.fid; 
-     update food_types set name=new.tname where id=new.tid; 
-  end; 
+  create trigger on_update_foods_view
+  instead of update on foods_view
+  for each row
+  begin
+     update foods set name=new.fname where id=new.fid;
+     update food_types set name=new.tname where id=new.tid;
+  end;
 #+END_SRC
 **** transaction
 - begin
@@ -284,7 +284,7 @@ see also `trigger`
 confict resolution can be specified in
 - table or view defination
 #+BEGIN_SRC sql
-create temp table cast(name text unique on conflict rollback); 
+create temp table cast(name text unique on conflict rollback);
 #+END_SRC
 - in `insert`, `update`
 #+BEGIN_SRC sql
@@ -292,7 +292,7 @@ insert or replace into table values (xxx);
 #+END_SRC
 - trigger
 **** join
-- inner join 
+- inner join
 join
 - left outer join
 left out join
@@ -312,9 +312,24 @@ refers [[explain query plan]] to delete whether index is used for optimization
 **** insert
 **** update
 **** select
+
+#+BEGIN_EXAMPLE
+
+          -+-------------------------------------------------------------------------------------+
+           |       -+-----------------------------------------------------------+                |        result
+           |        |                        -+---------------+                 |                |          ^
+           |        |                         |               |                 |                |          |
+SELECT DISTINCT heading FROM tables WHERE predicate GROUP BY columns HAVING predicate ORDER BY columns LIMIT init,int;
+           | 6      | 5         | 1           | 2             | 3               | 4              | 7        | 8
+           |        |           |             |               |                 |                |          |
+          -+--------+          -+-------------+              -+-----------------+               -+----------+
+
+#+END_EXAMPLE
+***** distinct
+***** where
 ***** group by
-***** order by
 ***** having
+***** order by
 ***** limit
 ***** aggregation
 - avg
@@ -355,7 +370,7 @@ used to transform column values
                 where food_id=f.id) as frequency
   from foods f
   where frequency like '%High'
-  
+
 #+END_SRC
 **** functions
 ***** LAST_INSERT_ROWID()
@@ -597,7 +612,7 @@ http://en.wikipedia.org/wiki/Stemming
 
 A stemmer for English, for example, should identify the string "cats" (and
 possibly "catlike", "catty" etc.) as based on the root "cat".and "stemmer",
-"stemming", "stemmed" as based on "stem". 
+"stemming", "stemmed" as based on "stem".
 
 A stemming algorithm reduces the words "fishing", "fished", "fish", and "fisher"
 to the root word, "fish". On the other hand, "argue", "argued", "argues",
@@ -626,7 +641,7 @@ tokenize 的过程主要分为三步:
 主要有以下几种分词方法:
 
 1. N元分词
-   就是简单的每N个字算一个词, 
+   就是简单的每N个字算一个词,
    - 1元分词:
    英/文/分/词/比/较/简/单
 
@@ -663,9 +678,9 @@ http://blog.csdn.net/chaocy/article/details/5938741
 幕式/在国/国家/体育场/隆重举行/
 
 - etc
-  
+
 sqlite3 中因为支持 FTS, 所以也支持几种分词算法:
-- simple 
+- simple
   针对英文, 根据空格分词
 - porter
   针对英文, 使用 port stemmer
@@ -698,7 +713,7 @@ sqlite3 中因为支持 FTS, 所以也支持几种分词算法:
 
 全文查找速度很快,但有一个明显的缺点: 检索的效果依赖于关键字的选择.
 
-例如, 
+例如,
 - 使用 "tty" 无法检索到 " hello kitty "这句话
 - 使用 "天天" 可能无法检索到 "今天天气不错"
 

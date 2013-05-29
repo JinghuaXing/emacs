@@ -519,6 +519,9 @@ is the complete regexp."
       (cond
        ;; check to see whether filename ends in `.el'
        ;; and if so, append its name to a list.
+       ((equal "sitemap.org" (substring (car (car current-directory-list)) -11))
+	nil
+	)
        ((equal "org" (substring (car (car current-directory-list)) -3))
 	(setq el-files-list
 	      (cons (car (car current-directory-list)) el-files-list)))
