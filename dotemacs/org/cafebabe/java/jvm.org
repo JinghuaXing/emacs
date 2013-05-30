@@ -1,34 +1,35 @@
 #+TITLE: JVM
 * Java VM Specification 
 ** String.intern()
-    CLOSED: [2011-08-01 Mon 15:22]
-    - State "DONE"       from "DOING"      [2011-08-01 Mon 15:22]
-    see also [[constant pool]]
+see also [[constant pool]]
 
-    String.intern()与constant pool的关系?
-    VM 运行后, VM 本身会维护一个 internedStrings<char *, String> 的 HashMap, String.intern() 的作用是:
-    - 从 internedStrings 中查找是否已存在, 若不存在, 向 map 中插入一条记录, 最后返回 map的value,
-    - 所以 assert(new String("abc").intern() == new String("abc").intern());
+String.intern()与constant pool的关系?
+VM 运行后, VM 本身会维护一个 internedStrings<char *, String> 的 HashMap, String.intern() 的作用是:
+- 从 internedStrings 中查找是否已存在, 若不存在, 向 map 中插入一条记录, 最后返回 map的value,
+- 所以 assert(new String("abc").intern() == new String("abc").intern());
 
-    String.intern() 使用的 internedStrings 本身和 constant pool 并没有直接关系, 但:
+  String.intern() 使用的 internedStrings 本身和 constant pool 并没有直接关系, 但:
 #+BEGIN_EXAMPLE
     String s1="abc";
     String s2=new String("abc");
     assert(s1==s2.intern());
 #+END_EXAMPLE
-    有两种可能:
-      1. VM 在 resolve class (resolve constant pool) 时, 一次性的将所有 CONSTANT_String_info 全通过 intern() 放到 internedStrings 中, 然后 CONSTANT_String_info
-	 的 data 为 生成的 String 对象
-      2. LAZY initialization: 如 [[constant pool]] 所述, 访问 CONSTANT_String_info 使用 `ldc` 指令, 而 `ldc` 指令可以隐式的调用 String.intern(), 并返回 intern() 的结果
+有两种可能:
+1. VM 在 resolve class (resolve constant pool) 时, 一次性的将所有
+     CONSTANT_String_info 全通过 intern() 放到 internedStrings 中, 然后
+     CONSTANT_String_info的 data 为 生成的 String 对象
+  
+2. LAZY initialization: 如 [[constant pool]] 所述, 访问
+     CONSTANT_String_info 使用 `ldc` 指令, 而 `ldc` 指令可以隐式的调用
+     String.intern(), 并返回 intern() 的结果
 
-    To summarize:
+   To summarize:
     - 对于 string literal, 再显式调用 intern() 没有意义
     - 对于 运行时 string, 若 string 经常重复, 可以通过 intern() 做 cache
 ** Constant Pool
-    - State "DONE"       from "DOING"      [2011-08-01 Mon 15:11]
-    see also [[String.intern()]]
-    see also [[autoboxing]]
-    see also [[valueOf]]
+see also [[String.intern()]]
+see also [[autoboxing]]
+see also [[valueOf]]
 
 #+BEGIN_EXAMPLE
     String s1="abc";
@@ -51,6 +52,7 @@
      - fully qualified names of classes and interfaces
      - field names and descriptors (type...)
      - method names and descriptors (params,type,...)
+
     Constant pool can contain the following variety entries:
      - CONSTANT_Utf8
      - CONSTANT_Integer
@@ -69,7 +71,7 @@
       2. help dynamic linking resolution
       3. name cache
 **** class, method, field..
-   java code:
+java code:
 #+BEGIN_EXAMPLE
    public class Test {
      int x;
@@ -83,7 +85,7 @@
      }
    }
 #+END_EXAMPLE
-   byte code:
+byte code:
 #+BEGIN_EXAMPLE
    const #1 = Method	#6.#18;	//  java/lang/Object."<init>":()V
    const #2 = class	#19;	//  Test
@@ -262,13 +264,11 @@
      - ldc 对于 int 只是放 primitive 值放在 stack中, Integer的 autoboxing 实际就是隐式的调用了 Integer.valueOf
      - float常量始终存放在constant pool中
 ** Class Loader
-**** DONE class unloading
-     SCHEDULED: <2011-08-03 Wed> CLOSED: [2011-08-03 Wed 17:56]
-     - State "DONE"       from "DOING"      [2011-08-03 Wed 17:56]
+*** class unloading
 ** invokeXXX
-**** invokevirtual vs. invokespecial
-     similar with c++'s call-by-reference and call-by-value; that is, `invokespecial` will prohibit polymorphism.
-**** invokestatic
-     direct addressing
-**** invokeinterface
-     contant-pool would be iterated to find the interface method, since an object can inhereit multiply interface;
+*** invokevirtual vs. invokespecial
+similar with c++'s call-by-reference and call-by-value; that is, `invokespecial` will prohibit polymorphism.
+*** invokestatic
+direct addressing
+*** invokeinterface
+contant-pool would be iterated to find the interface method, since an object can inhereit multiply interface;

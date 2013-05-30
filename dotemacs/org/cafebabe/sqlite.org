@@ -440,8 +440,21 @@ used to transform column values
 ***** aggregation 函数只可以使用在 select 之后和 having 之后
 ***** 使用两个 left-outer-join 模拟 full-outer-join
 ***** distinct 可以使用 group by 来模拟
+***** compound query 只允许在最后使用一个 order-by, 不过可以用 sub-query 来跳过这一限制
+***** sub-query 几乎可以使用在任何地方, 不过只允许返回一列, 但可以返回多行 (虽然有时只有第一行有效)
 ***** sqlite 允许在有 group by 中查询中 select group-by 之外的字段, 只是结果是不可靠的. 例如:
+
+#+BEGIN_SRC sql
 select name, id from xxx group by id;
+#+END_SRC
+
+同理适用于 aggregation functions, 例如:
+
+#+BEGIN_SRC sql
+select *, count(*) from xxx;
+#+END_SRC
+
+***** integer primary key => autoincrement
 *** sqlite internal
 **** concurrent & lock
 ***** lock

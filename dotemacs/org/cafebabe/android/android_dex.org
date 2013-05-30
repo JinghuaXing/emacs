@@ -1,0 +1,6 @@
+#+TITLE: Android DEX & ODEX
+* Android DEX & ODEX
+** dex
+** odex
+http://blog.sina.com.cn/s/blog_77d0785c0100vp8j.html
+http://www.addictivetips.com/mobile/what-is-odex-and-deodex-in-android-complete-guide/
