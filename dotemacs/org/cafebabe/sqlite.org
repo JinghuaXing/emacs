@@ -326,22 +326,43 @@ SELECT DISTINCT heading FROM tables WHERE predicate GROUP BY columns HAVING pred
 
 #+END_EXAMPLE
 ***** distinct
+distinct 可以同时修饰多个字段
+#+BEGIN_SRC sql
+select distinct id, name from xxx; 
+#+END_SRC
+表示只有 (id,name) 都相同时才算相同
 ***** where
 ***** group by
 ***** having
 ***** order by
 ***** limit
-***** aggregation
-- avg
-- sum
-- max
-- min
-- count
 ***** sub-query
 - for `select`
+#+BEGIN_SRC sql
+  select _id, (select name from xx where _id=f._id ) from xx as f;
+#+END_SRC
 - for `from`
+#+BEGIN_SRC sql
+  select _id from (select _id,name from xxx);
+#+END_SRC
 - for `order by`
+#+BEGIN_SRC sql
+  select _id from xxx as f order by (select score from xxx where _id=f._id);
+#+END_SRC  
+- for `where'
+#+BEGIN_SRC sql
+select _id from xxx where _id in (select _id from xxx);
+#+END_SRC
+
+Note:
+- sub-query 几乎可以用在任何地方
+- sub-query 通常需要设置别名
+- sub-query 只能返回一列.
+- sub-query 有时需要返回一行 (例如在 order by 的场合), 这时若返回多行,
+  则系统只会使用第一行. 
 ***** compound query
+compound query 要求各个查询返回相同的例, 且只能在 compound query 最后
+有一个 order by 
 ****** union [all]
 a | b
 ****** intercept
@@ -373,21 +394,54 @@ used to transform column values
 
 #+END_SRC
 **** functions
-***** LAST_INSERT_ROWID()
-***** ifnull(x,y)
-如果 x 为 null, 返回 y
-***** substr
-***** quote
-***** length
-***** lower
-***** upper
-***** abs
-***** max
-***** min
-***** random
-***** round
-***** date
+***** core functions
+- LAST_INSERT_ROWID()
+- coalesce (x, y, z, ...)
+  return the first not null value, or null
+
+  e.g. coalesce (null, 1, 2, null) returns 1
+- ifnull (x, y) 
+  ifnull (x, y) <==> coalesce(x, y)
+- nullif (x, y)
+  若 x,y 相同返回 null, 否则返回 x.
+- glob
+- like
+- substr
+- trim
+- ltrim
+- rtrim
+- instr
+- quote
+- length
+- lower
+- upper
+- abs
+- max
+- min
+- random
+- replace
+- hex
+- round
+- date
+***** aggregation function
+- avg
+- sum
+- total
+- max
+- min
+- count (x)
+- count (*)
 **** fts
+**** Summary
+***** cross-join != full-outer-join
+***** having 与 where 的区别
+- haveing 发生在 group by 之后, 而 where 发生在 group by 之前;  
+- 可以使用 aggregation 函数
+***** aggregation 函数只可以使用在 select 之后和 having 之后
+***** 使用两个 left-outer-join 模拟 full-outer-join
+***** distinct 可以使用 group by 来模拟
+***** sqlite 允许在有 group by 中查询中 select group-by 之外的字段, 只是结果是不可靠的. 例如:
+select name, id from xxx group by id;
 *** sqlite internal
 **** concurrent & lock
 ***** lock

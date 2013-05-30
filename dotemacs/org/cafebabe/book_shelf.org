@@ -8,7 +8,7 @@
 - [[progit.pdf]]
 - [[Git.Community.Book.zh.pdf]]
 ** sqlite
-- [[file:~/Dropbox/ebook/sqlite/The%20Definitive%20Guide%20to%20SQLite%20Second%20Edition.pdf][The Definitive Guide to SQLite Second Edition.pdf]]
+- [[file:~/Dropbox/ebook/sqlite/The%20Definitive%20Guide%20to%20SQLite%20Second%20Edition.pdf][The Definitive Guide to SQLite Second Edition.pdf]] 86
 ** perl
 - [[Programming.Perl.4th.Edition.pdf]]
 ** ruby
