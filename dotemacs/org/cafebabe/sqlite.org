@@ -207,12 +207,20 @@ explain query plan select * from foo;
 #+END_SRC
 **** vacuum
 *** sqlite SQL
+**** attach database
+attach database "foo.db" as db2;
+select * from db2.tbl_1;
+detach database db2;
 **** create table
 ***** storage class
 - integer
+61
 - real
+61.0
 - text
+"a"
 - blob
+x'61'
 ***** constrains
 ****** column-level constrains
 - not null
@@ -229,6 +237,8 @@ explain query plan select * from foo;
 #+END_SRC
 see also `trigger`
 - collate
+  - binary
+  - nocase
 - default
 - autoincrement
 ****** table-level constrains
@@ -274,12 +284,29 @@ see also `trigger`
 - commit
 - rollback
 - savepoint
+#+BEGIN_SRC sql
+  begin transaction;
+  insert into xxx;
+  ...
+  savepoint test
+  ...
+  rollback to test
+  ...
+  commit
+#+END_SRC
+  insert into xxx;
+  save
 **** confict resolution
 - replace
 - ignore
+  忽略本次错误, 继续执行
 - fail
+  结束, 但不回滚
 - abort
+  default
+  回滚, 然后结束
 - rollback
+  回滚, 但不结束
 
 confict resolution can be specified in
 - table or view defination
@@ -304,9 +331,25 @@ not supported
 select from tbl1, tbl2
 **** index
 refers [[explain query plan]] to delete whether index is used for optimization
+
 - index
 - unique index
 - covering index
+  covering index 是指同一个 index 中有多个字段, 查找时直接从 index 中
+  取得了数据, 而不是从 index 取得主键, 再到主表获取数据. 例如:
+
+  create index m3_index on foo(x,y);
+  explain query plan select y from foo where x="a";
+
+0|0|0|SEARCH TABLE foo USING COVERING INDEX m3_index (x=?) (~10 rows)
+
+Note:
+- collate 会影响 index, 例如若 select 时或建表时使用的 collate 与建立
+  index 时指定的 collate 不一致时, index 无法起作用.
+- create index 可以指定多个字段 (以利于形成 covering index), 但多个字
+  段是联合在一起索引的, 例如 (x,y,z), 则使用 x, x and y, x and y and
+  z 时索引起作用, 但使用 y and z, z 时不起作用. 
+
 **** view
 - using trigger to update view
 **** insert
@@ -454,7 +497,38 @@ select name, id from xxx group by id;
 select *, count(*) from xxx;
 #+END_SRC
 
-***** integer primary key => autoincrement
+***** integer primary key => autoincrement (but with filling-gaps)
+***** autoincrement 会导致后续的值一定比之前的大 (不会有 filling-gaps 效果), 当到达最大值后, 返回 data is full error
+这一点需要与 integer primary key 区别
+***** autoincrement 必须在 integer primary key 后使用
+***** storage class vs. sort
+storage class 与列的定义无关, 它取决了输入的数据的格式:
+61, 61,0, "a", x'61', null 的 storage class 分别为 integer, real,
+text, blob, null
+
+不同的 storage class 的排序规则:
+null < integer = real < text < blob
+
+see also [[type affinity]]
+***** sqlite 的 view 是不可修改的, 但可以用 trigger 来模拟实现可修改的 view
+***** index 可以同时指定多个字段, 以便使用 covering index, 但要注意查询条件, 例如
+(x,y,z)三个字段的索引,使用 x, x and y, x and y and z 会使用索引, 但
+y, y and z, z 不会.
+***** 一次查询可能会使用多个索引, 例如使用 or 的情况下:
+create index m1_index on foo(x);
+create index m1_index on foo(y);
+select x from foo where x="a" or y="a";
+0|0|0|SEARCH TABLE foo USING INDEX m1_index (x=?) (~10 rows)
+0|0|0|SEARCH TABLE foo USING INDEX m2_index (y=?) (~10 rows)
+***** unique index
+***** 有些情况下 index 无法使用, 例如
+- glob "a*"
+- like (测试了下似乎 sqlite 并不会对 like 进行优化, 可能和版本有关?)
+- 多列索引时有些情况
+- select xx from xx where length(x)=5, 等
+***** savepoint & rollback to
+***** conflict resolution
+***** attach database
 *** sqlite internal
 **** concurrent & lock
 ***** lock
@@ -489,7 +563,6 @@ select *, count(*) from xxx;
 - begin immediate
 - begin exclusive
 
-**** *** SQLite and Multiple Threads
 **** SQLite and Multiple Threads
 http://www.sqlite.org/threadsafe.html
 
@@ -656,7 +729,7 @@ do.
 - GRAND and REVOKE
 *** sqlite pragma
 **** auto_vacuum = 0/1
-**** cache_size = Number-of-pages
+**** cache_size
 **** default_cache_size
 **** case_sensitive_like = 0/1
 **** count_change = 0/1
