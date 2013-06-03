@@ -187,6 +187,22 @@ e.g. during local `onMove`
 #+END_SRC
 
 ** C API
+*** sqlite3_open
+*** sqltie3_prepare_v2
+*** sqlite3_step
+*** sqlite3_reset
+*** sqlite3_bind
+*** sqlite3_exec
+*** sqlite3_get_tables
+*** sqlite3_mprintf
+*** sqlite3_commit_hook
+*** sqlite3_rollback_hook
+*** extension api
+**** user defined functions
+sqlite3_create_funtion
+**** user defined aggregates
+**** user define collations
+sqlite3_create_collation
 ** sqlite
 *** sqlite3_analyzer
 *** sqlite command
@@ -213,6 +229,8 @@ select * from db2.tbl_1;
 detach database db2;
 **** create table
 ***** storage class
+使用 select typeof (xx) 来查看 storage class
+
 - integer
 61
 - real
@@ -221,6 +239,7 @@ detach database db2;
 "a"
 - blob
 x'61'
+
 ***** constrains
 ****** column-level constrains
 - not null
@@ -532,11 +551,18 @@ select x from foo where x="a" or y="a";
 *** sqlite internal
 **** concurrent & lock
 ***** lock
+- unlocked
 - shared
+执行任何语句前要进行 shared 状态
 - reserved
+  执行任何写语句前需要进入 reserved 状态
+
   shared 想升级为 reserved, 必须保证当前没有任何 reserved 及 exclusive lock
 - exclusive
   - pending
+    
+    commit 前需要进行 pending 状态
+
     reserved 升级为 exclusive 时会先暂时的升级为 pending, pending lock 会禁止任
     何新的 lock 的获取, 包括 shared, 否则可以会因为不停的有新的 shared lock 进入
     而导致 reserved 永远无法升级为 exclusive.
@@ -563,7 +589,9 @@ select x from foo where x="a" or y="a";
 - begin immediate
 - begin exclusive
 
-**** SQLite and Multiple Threads
+**** threads
+***** Shared Cache Mode
+***** threading modes
 http://www.sqlite.org/threadsafe.html
 
 SQLite support three different threading modes:
@@ -588,7 +616,7 @@ selected.
 
 The default mode is serialized.
 
-***** Compile-time selection of threading mode
+****** Compile-time selection of threading mode
 
 Use the SQLITE_THREADSAFE compile-time parameter to selected the
 threading mode. If no SQLITE_THREADSAFE compile-time parameter is
@@ -612,7 +640,7 @@ mutexing logic is omitted from the build and it is impossible to
 enable either multi-thread or serialized modes at start-time or
 run-time.
 
-***** Start-time selection of threading mode
+****** Start-time selection of threading mode
 
 Assuming that the compile-time threading mode is not single-thread,
 then the threading mode can be changed during initialization using the
@@ -621,7 +649,7 @@ SQLite into single-thread mode, the SQLITE_CONFIG_MULTITHREAD verb
 sets multi-thread mode, and the SQLITE_CONFIG_SERIALIZED verb sets
 serialized mode.
 
-***** Run-time selection of threading mode
+****** Run-time selection of threading mode
 
 If single-thread mode has not been selected at compile-time or
 start-time, then individual database connections can be created as

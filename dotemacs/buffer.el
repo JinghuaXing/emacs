@@ -1,11 +1,11 @@
-;; (add-hook 'ibuffer-mode-hook
-;;           (lambda ()
-;;             (setq ibuffer-filter-groups
-;;                   '(
-;; 		    ("Java" (mode . java-mode))
-;; 		    ("C" (or (mode . c++-mode) (mode . c-mode)))
-;;                     ("Dired" (mode . dired-mode))
-;; 		    ))))
+(add-hook 'ibuffer-mode-hook
+          (lambda ()
+            (setq ibuffer-filter-groups
+                  '(
+		    ("Java" (mode . java-mode))
+		    ("C" (or (mode . c++-mode) (mode . c-mode)))
+                    ("Dired" (mode . dired-mode))
+		    ))))
 
 (require 'bs)
 (require 'ibuffer)
