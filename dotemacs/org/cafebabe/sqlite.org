@@ -197,6 +197,9 @@ e.g. during local `onMove`
 *** sqlite3_mprintf
 *** sqlite3_commit_hook
 *** sqlite3_rollback_hook
+*** sqlite3_busy_handler
+*** sqlite3_busy_timeout
+*** sqlite3_trace
 *** extension api
 **** user defined functions
 sqlite3_create_funtion
@@ -367,7 +370,7 @@ Note:
   index 时指定的 collate 不一致时, index 无法起作用.
 - create index 可以指定多个字段 (以利于形成 covering index), 但多个字
   段是联合在一起索引的, 例如 (x,y,z), 则使用 x, x and y, x and y and
-  z 时索引起作用, 但使用 y and z, z 时不起作用. 
+  z 时索引起作用, 但使用 y and z, z 时不起作用.
 
 **** view
 - using trigger to update view
@@ -390,7 +393,7 @@ SELECT DISTINCT heading FROM tables WHERE predicate GROUP BY columns HAVING pred
 ***** distinct
 distinct 可以同时修饰多个字段
 #+BEGIN_SRC sql
-select distinct id, name from xxx; 
+select distinct id, name from xxx;
 #+END_SRC
 表示只有 (id,name) 都相同时才算相同
 ***** where
@@ -410,7 +413,7 @@ select distinct id, name from xxx;
 - for `order by`
 #+BEGIN_SRC sql
   select _id from xxx as f order by (select score from xxx where _id=f._id);
-#+END_SRC  
+#+END_SRC
 - for `where'
 #+BEGIN_SRC sql
 select _id from xxx where _id in (select _id from xxx);
@@ -421,10 +424,10 @@ Note:
 - sub-query 通常需要设置别名
 - sub-query 只能返回一列.
 - sub-query 有时需要返回一行 (例如在 order by 的场合), 这时若返回多行,
-  则系统只会使用第一行. 
+  则系统只会使用第一行.
 ***** compound query
 compound query 要求各个查询返回相同的例, 且只能在 compound query 最后
-有一个 order by 
+有一个 order by
 ****** union [all]
 a | b
 ****** intercept
@@ -462,7 +465,7 @@ used to transform column values
   return the first not null value, or null
 
   e.g. coalesce (null, 1, 2, null) returns 1
-- ifnull (x, y) 
+- ifnull (x, y)
   ifnull (x, y) <==> coalesce(x, y)
 - nullif (x, y)
   若 x,y 相同返回 null, 否则返回 x.
@@ -497,7 +500,7 @@ used to transform column values
 **** Summary
 ***** cross-join != full-outer-join
 ***** having 与 where 的区别
-- haveing 发生在 group by 之后, 而 where 发生在 group by 之前;  
+- haveing 发生在 group by 之后, 而 where 发生在 group by 之前;
 - 可以使用 aggregation 函数
 ***** aggregation 函数只可以使用在 select 之后和 having 之后
 ***** 使用两个 left-outer-join 模拟 full-outer-join
@@ -550,17 +553,41 @@ select x from foo where x="a" or y="a";
 ***** attach database
 *** sqlite internal
 **** concurrent & lock
-***** lock
+sqlite 在不同的层次上定义了三种锁
+***** thread lock
+- shared cache mode lock
+  - threading modes lock
+***** db file lock
+****** lock
+
+这里的 lock 是指数据库级别的文件锁.
+实际上, 为了实现这种多状态的锁, sqlite 针对 sqlite db 文件的三块区域定
+义了三个读写锁, 通过对不同的区域的锁定实现不同的状态.
+
+#+BEGIN_EXAMPLE
+                                      read
+                              -+------------------------------------+
+                               |                exclusive           |
+                               |          -+------------------------+--------+
+              -+---+        -+-+-+  write  | -+---+---+---+---+---+-v-+----+ |
+               |  -+-------->+  -+-------->+  +   |   |   |   |   |   |    | |
+              -+-+-+        -+---+         | -+---+---+---+---+---+-+-+----+ |
+             rese|rved       pending       |          shared        |        |
+                 ^         (starting)     -+------------------------+--------+
+                -+--------------------------------------------------+
+#+END_EXAMPLE
+
+- pending
 - unlocked
 - shared
 执行任何语句前要进行 shared 状态
 - reserved
-  执行任何写语句前需要进入 reserved 状态
+  执行任何写语句前需要首先进入 reserved 状态
 
   shared 想升级为 reserved, 必须保证当前没有任何 reserved 及 exclusive lock
 - exclusive
   - pending
-    
+
     commit 前需要进行 pending 状态
 
     reserved 升级为 exclusive 时会先暂时的升级为 pending, pending lock 会禁止任
@@ -568,7 +595,7 @@ select x from foo where x="a" or y="a";
     而导致 reserved 永远无法升级为 exclusive.
 
   reserved要想升级为 exclusive, 必须保证当前没有任何其他的 lock, 包含 shared
-***** dead lock example
+****** dead lock example
 | A connection                             | B connection                              |
 |------------------------------------------+-------------------------------------------|
 | BEGIN;                                   |                                           |
@@ -584,26 +611,27 @@ select x from foo where x="a" or y="a";
 | INSERT INTO foo values ("bar")           |                                           |
 | SQL error: database is locked            |                                           |
 
-***** transaction
+****** transaction
 - begin [deferred]
 - begin immediate
 - begin exclusive
 
 **** threads
 ***** Shared Cache Mode
+****** Read Uncommitted Isolation Level
 ***** threading modes
 http://www.sqlite.org/threadsafe.html
 
 SQLite support three different threading modes:
 
-- Single-thread. 
+- SINGLETHREAD
 
 In this mode, all mutexes are disabled and SQLite is unsafe to use in
 more than a single thread at once.
 
 同时只能有一个线程在使用 connection (相同或不同的), 否则出现段错误.
 
-- Multi-thread. 
+- MULTITHREAD
 
 In this mode, SQLite can be safely used by multiple threads provided
 that no single database connection is used simultaneously in two or
@@ -611,7 +639,7 @@ more threads.
 
 同时可以有多个线程使用 connection (不同的), 否则段错误.
 
-- Serialized. 
+- SERIALIZED
 
 In serialized mode, SQLite can be safely used by multiple threads with
 no restriction.
@@ -625,6 +653,8 @@ compile-time. Except, single-thread mode cannot be overridden once
 selected.
 
 The default mode is serialized.
+
+在 android 4.0 上, 该配置在编译时设为 SERIALIZED, 在 android 4.1 变为 MULTITHREAD
 
 同时可以有多个线程使用 connection (相同或不同的)
 
@@ -642,17 +672,17 @@ The default mode is serialized.
 | 使用 MULTITHREAD 在两个线程使用相同的 connection 查询 |   27 |   28 |   9 |
 |-------------------------------------------------------+------+------+-----|
 
-可见, 
+可见,
 
 - 不使用多线程的情况下, SINGLETHREAD 和 MULTITHREAD 差不多,SERIALZIED
   变慢
-- 使用多线程的情况下, 
+- 使用多线程的情况下,
   - SINGLETHREAD 无法使用
   - MULTITHREAD 可以利用多线程显著的降低 real time
   - SERIALZIED 使用不同的线程时也比 MULTITHREAD 稍慢
   - SERIALZIED 使用相同的线程时速度无法接受
 
-综上, 使用 MULTITHREAD 多线程使用不同的 connection 是最好的选择. 
+综上, 使用 MULTITHREAD 多线程使用不同的 connection 是最好的选择.
 
 ****** Compile-time selection of threading mode
 
@@ -796,12 +826,16 @@ do.
 *** sqlite pragma
 **** auto_vacuum = 0/1
 **** cache_size
+cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最多
+能 cache 多少修改. 
+
 **** default_cache_size
 **** case_sensitive_like = 0/1
 **** count_change = 0/1
 **** encoding = "UTF-8"
 **** page_size = bytes
 **** synchronous = FULL/NORMAL/OFF
+synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 ** Other
