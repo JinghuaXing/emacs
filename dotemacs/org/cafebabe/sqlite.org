@@ -206,6 +206,64 @@ sqlite3_create_funtion
 **** user defined aggregates
 **** user define collations
 sqlite3_create_collation
+*** sample code
+#+BEGIN_SRC c
+  #include <sqlite3.h>
+  #include <pthread.h>
+  
+  void query(sqlite3 * db) {
+      sqlite3_stmt *stmt;
+      const char * tail;
+      int rc=sqlite3_prepare_v2(db,"select * from test", -1, &stmt, &tail);
+      if (rc!=SQLITE_OK) {
+          fprintf("error prepare stmt: %s", sqlite3_errmsg(db));
+          exit (1);
+      }
+      int count=0;
+      rc=sqlite3_step(stmt);
+      while (rc==SQLITE_ROW) {
+          count++;
+          rc=sqlite3_step(stmt);
+      }
+      sqlite3_finalize(stmt);
+      printf("query returns %d\n",count);
+  }
+  
+  void * fun(void * args) {
+      query((sqlite3 *)args);
+  }
+  
+  
+  int main(int argc, char *argv[]) {
+      sqlite3_config(SQLITE_CONFIG_SERIALIZED);
+      /* sqlite3_enable_shared_cache(SQLITE_OPEN_SHAREDCACHE); */
+      sqlite3 *db;
+      sqlite3 *db2;
+  
+      int rc=sqlite3_open_v2("/home/sunway/test.db", &db, SQLITE_OPEN_READWRITE, 0);
+  
+      if (rc) {
+          printf("can't open db: %s",sqlite3_errmsg(db));
+          sqlite3_close(db);
+          exit(1);
+      }
+  
+      pthread_t tid;
+      pthread_create(&tid, NULL, fun, db);
+  
+      query(db);
+      pthread_join(tid, NULL);
+      /* char * sql="insert into test values (\"test\",1)"; */
+      /* char * zerr; */
+      /* rc=sqlite3_exec(db,sql,0,0,&zerr); */
+      /* if (rc!=SQLITE_OK) { */
+      /*  printf("error when insert: %s", zerr); */
+      /*  exit (1); */
+      /* } */
+      return 0;
+  }
+  
+#+END_SRC
 ** sqlite
 *** sqlite3_analyzer
 *** sqlite command
@@ -854,40 +912,64 @@ cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最�
 **** encoding = "UTF-8"
 **** page_size = bytes
 **** synchronous = FULL/NORMAL/OFF
-synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件
+synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
+
+特别的,在 WAL 模式下, synchronous 为 NORMAL 时 commit 也不再写数据库,
+只有checkout 时才刷新.
+
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 ** Other
 *** WAL
-Write Ahead Logging (WAL) 是与传统的 rollback journal (或 delete
-journal, shadow paging) 完全不同的一种 journal mode. 通过 WAL, 数据库可
-以做到读和写互相完全不干扰.
+Write Ahead Logging (WAL) 是与 sqlite 默认的 rollback journal (或
+delete journal, shadow paging) 完全不同的一种 journal mode. 通过 WAL,
+数据库可以做到读和写互相完全不干扰, 并且减少 IO 操作.
 
 **** How WAL works
 当 commit 一个 write transaction 时, rollback journal 的作法是先刷新所
-有修改到 journal file, 然后再刷新 cache 到数据库. 而 WAL 的作法是只将修
-改刷新到 wal journal file 中, 而不修改数据库. 只有当用户调用 pragma
-wal_checkpoint 或 超过 1000 页被修改时, wal journal file 中的修改才会
+有修改到 journal, 然后再刷新 cache 到数据库. 而 WAL 的作法是只将修
+改刷新到 wal journal 中, 而不修改数据库. 只有当用户调用 pragma
+wal_checkpoint 或 超过 1000 页被修改时, wal journal 中的修改才会
 被写回到数据库. 
 
 为了使 read transaction 能读到最新的数据, 每个 read transaction 开始时
-会扫描 wal journal file, 并在 wal file 中记下一个 mark, 在读数据库时,根
-据一个 wal index shm 判断要读的 page 是否在 wal journal file 中, 若存在,
-并且不超过 mark point, 则使用 wal journal file 中的数据, 否则使用数据库
-中的数据. 这样可以使得读写不用互相等待. (但这样有一点问题, 就是无法保证
-读到最新的数据, 因为有可能在读的过程中, 又有新的数据追加到 wal journal
+会扫描 wal journal, 并在 wal file 中记下一个 mark point, 在读数据库时,
+根据一个 wal index shm 判断要读的 page 是否在 wal journal 中, 若存在,
+并且不超过 mark point, 则使用 wal journal 中的数据, 否则使用数据库中的
+数据. 这样可以使得读写不用互相等待. (但这样有一点问题, 就是无法保证读到
+最新的数据, 因为有可能在读的过程中, 又有新的数据追加到 wal journal
 file 中 makr point 之后)
 
-WAL 的优点:
-- 读写互不影响
-- commit 不需要写太多的数据, 降低了IO的使用
+***** WAL 的优点
 
-WAL 的缺点:
-- 可能无法读到"最新"的数据
+- 读写互不影响
+- 降低了IO的使用
+  
+  commit 只需要写 wal journal file, 不需要写数据库. 特别的, 若 WAL 模式
+  下设置 pragma synchronous 为 NORMAL 的话,则 commit 根本不会导致 IO 操
+  作,只有 checkpoint 才会.  因此, 在 wal 模式下, commit 不进行 IO 可能
+  会导致异常重启后数据丢失, 但不会造成数据库崩溃.
+
+  checkpoint 进行的 IO 操作包括:
+  1. 写 wal 到磁盘
+  2. 写 wal 到数据库
+  3. 重置 wal
+
+***** WAL 的缺点
+
+- 可能无法读到"最新"的数据, 因为 read transaction 无法 block write
+  transaction
 - 过大的 read transaction 会阻止 checkpoint (当 read transaction 正在进
-  行时, 虽然允许 write transaction 追加数据到 wal journal file, 但不允
-  许清空, 因为 read transaction 已经在journal file 中标记了 mark
-  point), 进而导致 wal journal file 过大, 从而使 read transaction 变慢
+  行时, 虽然允许 write transaction 追加数据到 wal journal, 但不允许清空,
+  因为 read transaction 已经在journal 中标记了 mark point), 进而导致
+  wal journal 过大, 从而使 read transaction 变慢
+
+***** WAL 的配置
+- pragma journal_mode=wal 开启 wal 模式
+- pragma journal_mode=delete 关闭 wal 模式
+- wal 模式的配置是 persistent 的
+- pragma wal_autocheckpoint=1000 设置 autocheckpoint 的 thresh-hold
+  特别的, 这个值越大, 则写的性能越高, 这个值越小, 则读的性能越好. 
 
 **** 关于 WAL journal file 的一个实验
 #+BEGIN_SRC sql

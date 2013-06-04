@@ -117,7 +117,7 @@
 ;;   (interactive "DFind (directory): \nsFind-grep (grep regexp): ")
 ;;   (find-dired dir (concat "-iname " "\"*" wildcard "*\"" ))
 ;;   )
-(global-set-key (kbd "C-x f") 'my-find-dired)
+;; (global-set-key (kbd "C-x f") 'my-find-dired)
 (global-set-key (kbd "M-,") (lambda ()
 			      (interactive)
 			      (if current-prefix-arg
