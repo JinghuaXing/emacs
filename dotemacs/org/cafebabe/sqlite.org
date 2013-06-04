@@ -596,6 +596,8 @@ sqlite 在不同的层次上定义了三种锁
 
   reserved要想升级为 exclusive, 必须保证当前没有任何其他的 lock, 包含 shared
 ****** dead lock example
+
+|------------------------------------------+-------------------------------------------|
 | A connection                             | B connection                              |
 |------------------------------------------+-------------------------------------------|
 | BEGIN;                                   |                                           |
@@ -610,6 +612,7 @@ sqlite 在不同的层次上定义了三种锁
 | # acquiring `reserved` lock failed[fn:2] |                                           |
 | INSERT INTO foo values ("bar")           |                                           |
 | SQL error: database is locked            |                                           |
+|------------------------------------------+-------------------------------------------|
 
 ****** transaction
 - begin [deferred]
@@ -618,6 +621,21 @@ sqlite 在不同的层次上定义了三种锁
 
 **** threads
 ***** Shared Cache Mode
+
+shared cache mode 主要应用在嵌入式系统中, 可以使同一个进程的多个
+connection 共享 page cache, 以显著的降低内存和 io 的消耗. 但这需要引入
+额外的锁机制, 导致多个线程同时查询时速度非常慢
+
+shared cache mode 的比较:
+
+|-------------------------------+----------------|
+| MULTITHREAD, 三个线程同时查询 | 每个线程的 rss |
+|-------------------------------+----------------|
+| 未使用 shared cache mode      | 8M             |
+| 使用 shared cache mode        | 3.3M           |
+|-------------------------------+----------------|
+
+
 ****** Read Uncommitted Isolation Level
 ***** threading modes
 http://www.sqlite.org/threadsafe.html
@@ -661,16 +679,17 @@ The default mode is serialized.
 ****** Benchmark
 查询 1600 W 条记录所耗的时间的比较
 
-|-------------------------------------------------------+------+------+-----|
-| 查询类型                                              | real | user | sys |
-|-------------------------------------------------------+------+------+-----|
-| 使用 SINGLETHREAD 查询一次                            |  3.5 |  3.5 | 0.4 |
-| 使用 MULTITHREAD 查询一次                             |  3.5 |  3.5 | 0.4 |
-| 使用 SERIALZIED 查询一次                              |  3.8 |  3.8 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询 |  7.3 |    4 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询 |  7.8 |  4.2 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用相同的 connection 查询 |   27 |   28 |   9 |
-|-------------------------------------------------------+------+------+-----|
+|---------------------------------------------------------------+------+------+-----|
+| 查询类型                                                      | real | user | sys |
+|---------------------------------------------------------------+------+------+-----|
+| 使用 SINGLETHREAD 查询一次                                    |  3.5 |  3.5 | 0.4 |
+| 使用 MULTITHREAD 查询一次                                     |  3.5 |  3.5 | 0.4 |
+| 使用 SERIALZIED 查询一次                                      |  3.8 |  3.8 | 0.4 |
+| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.3 |    4 | 0.4 |
+| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.8 |  4.2 | 0.4 |
+| 使用 MULTITHREAD 在两个线程使用相同的 connection 查询         |   27 |   28 |   9 |
+| 使用 SHARED CACHE MODE 在两个线程中使用不同的 connection 查询 |   31 |   31 |  11 |
+|---------------------------------------------------------------+------+------+-----|
 
 可见,
 
@@ -840,6 +859,58 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 ** Other
 *** WAL
+Write Ahead Logging (WAL) 是与传统的 rollback journal (或 delete
+journal, shadow paging) 完全不同的一种 journal mode. 通过 WAL, 数据库可
+以做到读和写互相完全不干扰.
+
+**** How WAL works
+当 commit 一个 write transaction 时, rollback journal 的作法是先刷新所
+有修改到 journal file, 然后再刷新 cache 到数据库. 而 WAL 的作法是只将修
+改刷新到 wal journal file 中, 而不修改数据库. 只有当用户调用 pragma
+wal_checkpoint 或 超过 1000 页被修改时, wal journal file 中的修改才会
+被写回到数据库. 
+
+为了使 read transaction 能读到最新的数据, 每个 read transaction 开始时
+会扫描 wal journal file, 并在 wal file 中记下一个 mark, 在读数据库时,根
+据一个 wal index shm 判断要读的 page 是否在 wal journal file 中, 若存在,
+并且不超过 mark point, 则使用 wal journal file 中的数据, 否则使用数据库
+中的数据. 这样可以使得读写不用互相等待. (但这样有一点问题, 就是无法保证
+读到最新的数据, 因为有可能在读的过程中, 又有新的数据追加到 wal journal
+file 中 makr point 之后)
+
+WAL 的优点:
+- 读写互不影响
+- commit 不需要写太多的数据, 降低了IO的使用
+
+WAL 的缺点:
+- 可能无法读到"最新"的数据
+- 过大的 read transaction 会阻止 checkpoint (当 read transaction 正在进
+  行时, 虽然允许 write transaction 追加数据到 wal journal file, 但不允
+  许清空, 因为 read transaction 已经在journal file 中标记了 mark
+  point), 进而导致 wal journal file 过大, 从而使 read transaction 变慢
+
+**** 关于 WAL journal file 的一个实验
+#+BEGIN_SRC sql
+  -- these are auto-committed
+  insert into test values ("a", 1);
+  insert into test values ("a", 1);
+  insert into test values ("a", 1);
+  -- 现在, 记录应该存在 test.db-wal 中, 但还没有写到数据库中
+  -- case A: 不调用 pragma wal_checkpoint
+    -- kill sqlite3_process
+    -- case A1: 先删除 test.db-wal, 再打开 test.db
+      select count(*) from test where name="a";
+      0
+    -- case A2: 不删除 test.db-wal, 找开 test.db
+      select count(*) from test where name="a";
+      3
+  -- case B: 调用 pragma wal_checkpoint
+    -- kill sqlite3_process
+    -- 无论是否删除 test.db-wal, 打开 test.db
+      select count(*) from test where name="a";
+      3
+#+END_SRC
+
 *** FTS
 FTS (Full Text Search), 即全文检索,主要有以下几个方面:
 
