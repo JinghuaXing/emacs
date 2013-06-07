@@ -287,3 +287,11 @@ CLOSED: [2013-05-20 Mon 18:40]
 
 
 [2013-06-04 Tue 20:07]
+* TODO cursor window 的 fillwindow 是否有问题                          :todo:
+1. 查询返回 cursor
+2. moveToFirst, 查询第一项 A
+3. moveTo 10000 (超过一个 window 的大小)
+4. 在开头插入数据
+5. moveToFirst, 查询第一项为 B
+Q: A B 是否可能不同?
+[2013-06-07 Fri 19:01]

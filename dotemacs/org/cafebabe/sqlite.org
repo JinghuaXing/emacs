@@ -1,6 +1,28 @@
 #+TITLE: SQLite
 * SQLite
 ** Android API
+
+#+BEGIN_EXAMPLE
+
+                                                   +----------------+
+                                                   | SQLiteDatabase |                         +------------------+
+                                                   +-+----------+---+                  +----->+ SQLiteConnection-+-<---+
+                                                     |          |                      |      +------------------+     |
+                                                     |          v                      |      +------------------+     |
+                       +--------------------+--------+     +----+------------------+   +----->+ SQLiteConnection |     |
+                       |                    |              | SQLiteConnection Pool-+---+      +-----+-----+------+     |
+                       v thread_1           v thread_2     +-------+---------------+                |     ^            |
+                  +----+----------+    +----+----------+           ^                                |     |            |
+                  | SQLiteSession |    | SQLiteSession-+-----------+      +----------------------+  |     |            |
+                  +----+-------+--+    +------+--+-----+           |      |PreparedStatementCache+<-+     |            |
+                       |       |              |                    |      +----------------------+        |            |
+                       |       +--------------+--------------------+                                      |            |
+                       |                      |                                                           |            |
+                       |                      +-----------------------------------------------------------+            |
+                       |                                                                                               |
+                       +-----------------------------------------------------------------------------------------------+
+#+END_EXAMPLE
+
 *** SQLiteDatabase & SQLiteDatabase (c)
 **** addCustomFunction
 *** SQLiteStatement (c)
@@ -154,10 +176,11 @@ again will be wrapped into a local cursor object named
       `fillWindow` is during `onMove`, e.g. `moveToFirst`, `moveToNext`, ...
 
 **** CursorWindow
-`CursorWindow` is parcelable, it represents a `window` of sqlite query data.
+`CursorWindow` is parcelable, it represents a `window` of sqlite query
+data. The underlying data of a Java CursorWindow object is managed by
+CursorWindow c++ object, in both of the server side and the client
+side.
 
-The underlying data of a Java CursorWindow object is managed by CursorWindow
-c++ object, in both of the server side and the client side.
 ***** init
 #+BEGIN_SRC text
   onMove
@@ -184,7 +207,79 @@ e.g. during local `onMove`
         CursorToBulkCursorAdaptor.getWindow(newPosition)
           mCursor.moveToPosition(startPos)
           return mCursor.getWindow()
+            // SQLiteCursor
+            mCursor.fillWindow(position, window);  
+              mQuery.fillWindow(position,window);
+                getSession().executeForCursorWindow();
+                  SQLiteConnection.nativeExecuteForCursorWindow(start, requiredRow)  
+                  // native
+                    while (window not full):
+                      sqlite3_step(stmt);
+                      copy_row(window)
+                    sqlite3_reset(stmt)
+                  nativeFinalizeStatement(stmt);
 #+END_SRC
+
+****** 关于 CursorWindow 的一个 bug (or feature)
+
+每次 onMove (包括 cursor.moveToPosition 等) 都会导致底层的 statement 实
+际上会重新查询 .... 所以这种设计会导致这个 bug (or feature?)
+
+#+BEGIN_SRC java
+  private void query() {
+      SQLiteDatabase db = SQLiteDatabase.openDatabase("/storage/sdcard1/test.db", null,SQLiteDatabase.OPEN_READWRITE, null);
+      Cursor cursor=db.query("test", new String[] {"name","count"}, null,null, null, null, "name");
+      Log.e("sunway","query:get count:"+cursor.getCount());
+      cursor.moveToFirst();
+      Log.e("sunway","moveToFirst: data:"+cursor.getString(0));
+      cursor.moveToLast();
+      Log.e("sunway","moved to last");
+      Log.e("sunway","insert a row");
+
+      db.beginTransaction();
+      db.execSQL("INSERT INTO test VALUES (\"aaa\",1)");
+      Log.e("sunway","done");
+      db.setTransactionSuccessful();
+      db.endTransaction();
+      
+      cursor.moveToFirst();
+      Log.e("sunway","moveToFirst again: data:"+cursor.getString(0));
+      cursor.close();
+  }
+#+END_SRC
+
+当原有数据足够多时 (保证 moveToLast 会调用 fillWindow 替换掉当前
+window), 对同一 cursor 调用两次 moveToFirst 查询的结果不同 .... 若要避
+免这个情况, 要么底层的 cursor window 足够大, 能容纳所有的内容, 要么
+cursor 查询返回后不 finalized statement, 这样可以保证 read transaction
+持有 shared lock, 那么其他 write transaction 会因为无法获得 exclusive
+lock 而无法修改数据库.
+
+***** CursorWindow and `ashmem'
+
+The underlying data of a Java CursorWindow is managed by CursorWindow
+c++ object, and is stored using `ashmem'
+
+#+BEGIN_SRC c++
+    status_t CursorWindow::writeToParcel(Parcel* parcel) {
+        status_t status = parcel->writeString8(mName);
+        if (!status) {
+            status = parcel->writeDupFileDescriptor(mAshmemFd);
+        }
+        return status;
+    }
+  
+  status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outCursorWindow) {
+      String8 name = parcel->readString8();
+  
+      status_t result;
+      int ashmemFd = parcel->readFileDescriptor();
+      // ...
+  }
+#+END_SRC
+
+So, CursorWindow parceling is quite efficient using `ashmem', and
+that why CursorWindow could deliver more than 1MB data using binder.
 
 ** C API
 *** sqlite3_open
@@ -200,6 +295,10 @@ e.g. during local `onMove`
 *** sqlite3_busy_handler
 *** sqlite3_busy_timeout
 *** sqlite3_trace
+*** sqlite3_finalize
+在 auto-commit 模式下, sqlite3_finalize 相当于 commit 的作用:
+- 释放锁
+- sync 日志与数据库
 *** extension api
 **** user defined functions
 sqlite3_create_funtion
@@ -210,7 +309,7 @@ sqlite3_create_collation
 #+BEGIN_SRC c
   #include <sqlite3.h>
   #include <pthread.h>
-  
+
   void query(sqlite3 * db) {
       sqlite3_stmt *stmt;
       const char * tail;
@@ -228,29 +327,29 @@ sqlite3_create_collation
       sqlite3_finalize(stmt);
       printf("query returns %d\n",count);
   }
-  
+
   void * fun(void * args) {
       query((sqlite3 *)args);
   }
-  
-  
+
+
   int main(int argc, char *argv[]) {
       sqlite3_config(SQLITE_CONFIG_SERIALIZED);
       /* sqlite3_enable_shared_cache(SQLITE_OPEN_SHAREDCACHE); */
       sqlite3 *db;
       sqlite3 *db2;
-  
+
       int rc=sqlite3_open_v2("/home/sunway/test.db", &db, SQLITE_OPEN_READWRITE, 0);
-  
+
       if (rc) {
           printf("can't open db: %s",sqlite3_errmsg(db));
           sqlite3_close(db);
           exit(1);
       }
-  
+
       pthread_t tid;
       pthread_create(&tid, NULL, fun, db);
-  
+
       query(db);
       pthread_join(tid, NULL);
       /* char * sql="insert into test values (\"test\",1)"; */
@@ -262,7 +361,7 @@ sqlite3_create_collation
       /* } */
       return 0;
   }
-  
+
 #+END_SRC
 ** SQLite
 *** sqlite3_analyzer
@@ -904,7 +1003,7 @@ do.
 **** auto_vacuum = 0/1
 **** cache_size
 cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最多
-能 cache 多少修改. 
+能 cache 多少修改.
 
 **** default_cache_size
 **** case_sensitive_like = 0/1
@@ -919,6 +1018,7 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
+
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
@@ -946,7 +1046,7 @@ InsertHelper.
           for (int j = 0; j < 10000; j++) {
               // execSQL test
               // db.execSQL("insert into test values (\"test\",2)");
-  
+
               // InsertHelper
               helper.insert(values);
           }
@@ -954,43 +1054,43 @@ InsertHelper.
           long time2=System.currentTimeMillis();
           db.endTransaction();
           long time3=System.currentTimeMillis();
-              
+
           exec_time+=(time2-time1);
           commit_time+=(time3-time2);
       }
       long endTime=System.currentTimeMillis();
       Log.e("sunway","done: all_time: "+(endTime-startTime)+"mss avg_exec_time: "+exec_time/10 +"ms "+" avg_commit_time: "+commit_time/10+"ms");
-  
+
   }
-  
-  
+
+
 #+END_SRC
 
 - c 测试程序
 #+BEGIN_SRC c
   #include "sqlite3.h"
   #include <pthread.h>
-  
+
   void insert(sqlite3 * db) {
       char * zerr;
       int rc=0;
       rc=sqlite3_exec(db,"pragma synchronous=full;",0,0,&zerr);
-  
+
       struct timeval tv;
       int begin=0;
       int end=0;
       int exec_time=0;
       int commit_time=0;
-      
+
       int j=0;
-  
+
       gettimeofday(&tv,NULL);
       begin=tv.tv_sec*1000+tv.tv_usec/1000;
-          
+
       for (j=0; j<10; j++) {
           gettimeofday(&tv,NULL);
           int time1=tv.tv_sec*1000+tv.tv_usec/1000;
-          
+
           rc=sqlite3_exec(db,"begin transaction",0,0,&zerr);
           char * sql="insert into test values (?1, ?2)";
           sqlite3_stmt *stmt;
@@ -1005,9 +1105,9 @@ InsertHelper.
           }
           gettimeofday(&tv,NULL);
           int time2=tv.tv_sec*1000+tv.tv_usec/1000;
-  
+
           rc=sqlite3_exec(db,"end transaction",0,0,&zerr);
-  
+
           gettimeofday(&tv,NULL);
           int time3=tv.tv_sec*1000+tv.tv_usec/1000;
           sqlite3_finalize(stmt);
@@ -1016,38 +1116,43 @@ InsertHelper.
       }
       gettimeofday(&tv,NULL);
       end=tv.tv_sec*1000+tv.tv_usec/1000;
-  
+
       printf("done: total_time: %d ms, avg_exec_time: %d ms, avg_commit_time: %d ms\n", end-begin, exec_time/10, commit_time/10);
   }
-  
-  
+
+
   int main(int argc, char *argv[]) {
       sqlite3 *db;
       sqlite3_open_v2("/data/test.db", &db, SQLITE_OPEN_READWRITE, 0);
-      
+
       pthread_t tid;
       pthread_create(&tid, NULL, insert, db);
       pthread_join(tid, NULL);
-      
+
       return 0;
   }
-  
+
 #+END_SRC
 
-|-------------+---------+--------------+------------+---------------+-----------------|
-| synchronous | storage | method       | total_time | avg_exec_time | avg_commit_time |
-|-------------+---------+--------------+------------+---------------+-----------------|
-| off         | sd      | c            |       2002 |           172 |              27 |
-| off         | mtd     | c            |       1888 |           163 |              25 |
-| full        | sd      | c            |       3641 |           165 |             198 |
-| full        | mtd     | c            |       1913 |           158 |              31 |
-| off         | sd      | execSQL      |      12996 |          1269 |              29 |
-| off         | sd      | insertHelper |      10458 |          1029 |              16 |
-| off         | mtd     | insertHelper |      10067 |           977 |              29 |
-| full        | sd      | execSQL      |      15385 |          1252 |             285 |
-| full        | sd      | insertHelper |      11874 |           987 |             199 |
-| full        | mtd     | insertHelper |       9948 |           963 |              31 |
-|-------------+---------+--------------+------------+---------------+-----------------|
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
+| synchronous | storage | method       | total_time (ms) | avg_exec_time (ms) | avg_commit_time (ms) |
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
+| off         | sd      | c            |            2002 |                172 |                   27 |
+| off         | mtd     | c            |            1888 |                163 |                   25 |
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
+| full        | sd      | c            |            3641 |                165 |                  198 |
+| full        | mtd     | c            |            1913 |                158 |                   31 |
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
+| full        | ssd     | c            |             450 |                 19 |                   25 |
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
+| off         | sd      | execSQL      |           12996 |               1269 |                   29 |
+| off         | sd      | insertHelper |           10458 |               1029 |                   16 |
+| off         | mtd     | insertHelper |           10067 |                977 |                   29 |
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
+| full        | sd      | execSQL      |           15385 |               1252 |                  285 |
+| full        | sd      | insertHelper |           11874 |                987 |                  199 |
+| full        | mtd     | insertHelper |            9948 |                963 |                   31 |
+|-------------+---------+--------------+-----------------+--------------------+----------------------|
 
 - 总结
   - 使用 java  api 测试时, 执行 sql 语句的速度
@@ -1055,7 +1160,7 @@ InsertHelper.
   - insertHelper 比普通的 execSQL 有 20% 的提升
   - java api 和 c api 在 commit 时间上没有差别
   - 在 sd 卡上, synchronous off 有近10倍的性能提长[fn:3]
-  - 在 mtd 上, synchronous 似乎没有差别. 
+  - 在 mtd 上, synchronous 似乎没有差别.
 
 ** Other
 *** WAL
@@ -1068,7 +1173,7 @@ delete journal, shadow paging) 完全不同的一种 journal mode. 通过 WAL,
 有修改到 journal, 然后再刷新 cache 到数据库. 而 WAL 的作法是只将修
 改刷新到 wal journal 中, 而不修改数据库. 只有当用户调用 pragma
 wal_checkpoint 或 超过 1000 页被修改时, wal journal 中的修改才会
-被写回到数据库. 
+被写回到数据库.
 
 为了使 read transaction 能读到最新的数据, 每个 read transaction 开始时
 会扫描 wal journal, 并在 wal file 中记下一个 mark point, 在读数据库时,
@@ -1082,7 +1187,7 @@ file 中 makr point 之后)
 
 - 读写互不影响
 - 降低了IO的使用
-  
+
   commit 只需要写 wal journal file, 不需要写数据库. 特别的, 若 WAL 模式
   下设置 pragma synchronous 为 NORMAL 的话,则 commit 根本不会导致 IO 操
   作,只有 checkpoint 才会.  因此, 在 wal 模式下, commit 不进行 IO 可能
@@ -1107,7 +1212,7 @@ file 中 makr point 之后)
 - pragma journal_mode=delete 关闭 wal 模式
 - wal 模式的配置是 persistent 的
 - pragma wal_autocheckpoint=1000 设置 autocheckpoint 的 thresh-hold
-  特别的, 这个值越大, 则写的性能越高, 这个值越小, 则读的性能越好. 
+  特别的, 这个值越大, 则写的性能越高, 这个值越小, 则读的性能越好.
 
 **** 关于 WAL journal file 的一个实验
 #+BEGIN_SRC sql
