@@ -264,7 +264,7 @@ sqlite3_create_collation
   }
   
 #+END_SRC
-** sqlite
+** SQLite
 *** sqlite3_analyzer
 *** sqlite command
 **** .output
@@ -919,6 +919,144 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
+** Benchmark
+分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
+存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
+InsertHelper.
+
+- java 测试程序
+#+BEGIN_SRC java
+  private void writeDatabase() {
+      // mtd test: use /data/test.db to  mtd
+      // sd test: use  /storage/sdcard1/test.db
+      SQLiteDatabase db = SQLiteDatabase.openDatabase("/data/test.db", null,SQLiteDatabase.OPEN_READWRITE, null);
+      // synchronous = full
+      // synchronous = off
+      db.execSQL("pragma synchronous=full");
+      long startTime=System.currentTimeMillis();
+      InsertHelper helper=new InsertHelper(db, "test");
+      ContentValues values=new ContentValues();
+      values.put("name", "test");
+      values.put("count", 3);
+      int commit_time=0;
+      int exec_time=0;
+      for (int i = 0; i < 10; i++) {
+          long time1=System.currentTimeMillis();
+          db.beginTransaction();
+          for (int j = 0; j < 10000; j++) {
+              // execSQL test
+              // db.execSQL("insert into test values (\"test\",2)");
+  
+              // InsertHelper
+              helper.insert(values);
+          }
+          db.setTransactionSuccessful();
+          long time2=System.currentTimeMillis();
+          db.endTransaction();
+          long time3=System.currentTimeMillis();
+              
+          exec_time+=(time2-time1);
+          commit_time+=(time3-time2);
+      }
+      long endTime=System.currentTimeMillis();
+      Log.e("sunway","done: all_time: "+(endTime-startTime)+"mss avg_exec_time: "+exec_time/10 +"ms "+" avg_commit_time: "+commit_time/10+"ms");
+  
+  }
+  
+  
+#+END_SRC
+
+- c 测试程序
+#+BEGIN_SRC c
+  #include "sqlite3.h"
+  #include <pthread.h>
+  
+  void insert(sqlite3 * db) {
+      char * zerr;
+      int rc=0;
+      rc=sqlite3_exec(db,"pragma synchronous=full;",0,0,&zerr);
+  
+      struct timeval tv;
+      int begin=0;
+      int end=0;
+      int exec_time=0;
+      int commit_time=0;
+      
+      int j=0;
+  
+      gettimeofday(&tv,NULL);
+      begin=tv.tv_sec*1000+tv.tv_usec/1000;
+          
+      for (j=0; j<10; j++) {
+          gettimeofday(&tv,NULL);
+          int time1=tv.tv_sec*1000+tv.tv_usec/1000;
+          
+          rc=sqlite3_exec(db,"begin transaction",0,0,&zerr);
+          char * sql="insert into test values (?1, ?2)";
+          sqlite3_stmt *stmt;
+          const char * tail;
+          rc=sqlite3_prepare_v2(db, sql, strlen(sql), &stmt,&tail);
+          int i=0;
+          for (i = 0; i < 10000; ++i) {
+              sqlite3_bind_text(stmt, 1, "test", strlen("text"), SQLITE_TRANSIENT);
+              sqlite3_bind_int(stmt, 2,1);
+              sqlite3_step(stmt);
+              sqlite3_reset(stmt);
+          }
+          gettimeofday(&tv,NULL);
+          int time2=tv.tv_sec*1000+tv.tv_usec/1000;
+  
+          rc=sqlite3_exec(db,"end transaction",0,0,&zerr);
+  
+          gettimeofday(&tv,NULL);
+          int time3=tv.tv_sec*1000+tv.tv_usec/1000;
+          sqlite3_finalize(stmt);
+          exec_time+=(time2-time1);
+          commit_time+=(time3-time2);
+      }
+      gettimeofday(&tv,NULL);
+      end=tv.tv_sec*1000+tv.tv_usec/1000;
+  
+      printf("done: total_time: %d ms, avg_exec_time: %d ms, avg_commit_time: %d ms\n", end-begin, exec_time/10, commit_time/10);
+  }
+  
+  
+  int main(int argc, char *argv[]) {
+      sqlite3 *db;
+      sqlite3_open_v2("/data/test.db", &db, SQLITE_OPEN_READWRITE, 0);
+      
+      pthread_t tid;
+      pthread_create(&tid, NULL, insert, db);
+      pthread_join(tid, NULL);
+      
+      return 0;
+  }
+  
+#+END_SRC
+
+|-------------+---------+--------------+------------+---------------+-----------------|
+| synchronous | storage | method       | total_time | avg_exec_time | avg_commit_time |
+|-------------+---------+--------------+------------+---------------+-----------------|
+| off         | sd      | c            |       2002 |           172 |              27 |
+| off         | mtd     | c            |       1888 |           163 |              25 |
+| full        | sd      | c            |       3641 |           165 |             198 |
+| full        | mtd     | c            |       1913 |           158 |              31 |
+| off         | sd      | execSQL      |      12996 |          1269 |              29 |
+| off         | sd      | insertHelper |      10458 |          1029 |              16 |
+| off         | mtd     | insertHelper |      10067 |           977 |              29 |
+| full        | sd      | execSQL      |      15385 |          1252 |             285 |
+| full        | sd      | insertHelper |      11874 |           987 |             199 |
+| full        | mtd     | insertHelper |       9948 |           963 |              31 |
+|-------------+---------+--------------+------------+---------------+-----------------|
+
+- 总结
+  - 使用 java  api 测试时, 执行 sql 语句的速度
+    比 c 程序慢 7 倍左右
+  - insertHelper 比普通的 execSQL 有 20% 的提升
+  - java api 和 c api 在 commit 时间上没有差别
+  - 在 sd 卡上, synchronous off 有近10倍的性能提长[fn:3]
+  - 在 mtd 上, synchronous 似乎没有差别. 
+
 ** Other
 *** WAL
 Write Ahead Logging (WAL) 是与 sqlite 默认的 rollback journal (或
@@ -1126,3 +1264,6 @@ http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html
 [fn:1] because A is holding a `shared` lock
 
 [fn:2] because B is holding a `reserved` lock
+
+[fn:3] 具体的情况应该取决于: 1. page cache 的大小 2. 生产者(sql 程序)
+与消费者(io) 的处理数据的速度的差

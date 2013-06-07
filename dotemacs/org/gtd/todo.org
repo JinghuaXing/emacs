@@ -268,3 +268,22 @@ CLOSED: [2013-05-20 Mon 18:40]
 [2013-05-27 Mon 16:59]
 * TODO odex                                                            :todo:
 [2013-05-30 Thu 17:07]
+* TODO sqlite optimization                                                     :todo:
+
+- enable WAL
+  - set synchronous to NORMAL in WAL
+  - tuning auto_checkpoint in WAL
+- use connection pool for non-WAL
+
+- tuning content operation size limit
+
+- tuning cache_size
+
+- tuning db notification
+
+- for 4.0
+  - porting connection pool from 4.1
+  - change threading mode from SERIALIZED to MULTITHREAD
+
+
+[2013-06-04 Tue 20:07]
