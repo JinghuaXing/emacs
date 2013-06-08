@@ -151,9 +151,7 @@ see also [[Android Process Crash and Restart]]
 ** ASEC
 Android Security Executable Cache
 *** dm_crypt
-** Ashmem
-** DONE AsyncQueryHandler && loader                                 :coding:
-CLOSED: [2012-09-08 周六 16:12] SCHEDULED: <2012-09-03 Mon>
+** AsyncQueryHandler && loader                                       :coding:
 
 ** Audio
 *** AudioFlingerService

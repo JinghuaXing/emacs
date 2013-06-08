@@ -1,0 +1,88 @@
+#+TITLE: Android ashmem
+* Android ashmem
+** ashmem 原理
+*** open
+1. open /dev/ashmem as mFd
+2. allocate asma in kernel and set to file->priv_data
+#+BEGIN_SRC c
+  
+  truct ashmem_area {
+      /* asma 的定义, 它并不包含真正的共享内存, 而只是记下了一个
+         基于 tmpfs 的file,由kernel的 shm_file_setup 等来实现
+       */
+       char name[ASHMEM_FULL_NAME_LEN];/* optional name for /proc/pid/maps */  
+       struct list_head unpinned_list; /* list of all ashmem areas */   
+       struct file *file;      /* the shmem-based backing file */   
+       size_t size;            /* size of the mapping, in bytes */   
+       unsigned long prot_mask;    /* allowed prot bits, as vm_flags */   
+   };
+  
+  int ashmem_create_region(const char *name, size_t size)   
+  {    
+      int fd, ret;   
+      fd = open(ASHMEM_DEVICE, O_RDWR);   
+       
+      if (name) {    
+          char buf[ASHMEM_NAME_LEN];   
+          strlcpy(buf, name, sizeof(buf));   
+          ret = ioctl(fd, ASHMEM_SET_NAME, buf);
+      }
+      ret = ioctl(fd, ASHMEM_SET_SIZE, size);   
+      return fd;   
+   } 
+  
+  static int ashmem_open(struct inode *inode, struct file *file)   
+  {    
+      struct ashmem_area *asma;   
+      int ret;   
+       
+      ret = nonseekable_open(inode, file);   
+      asma = kmem_cache_zalloc(ashmem_area_cachep, GFP_KERNEL);   
+      INIT_LIST_HEAD(&asma->unpinned_list);    
+      // asma->name 在后面 mmap 时会做为 tmpfs file 的名字, 其中这里只是
+      // 设置了 /dev/ashmem 这个前缀, 真正用户提供的名字会通过后续的
+      // ioctl 追加到asma->name 中
+      memcpy(asma->name, ASHMEM_NAME_PREFIX, ASHMEM_NAME_PREFIX_LEN);   
+      asma->prot_mask = PROT_MASK;
+      // IMPORTANT
+      file->private_data = asma;   
+      return 0;   
+   }
+#+END_SRC
+*** mmap
+1. use `shm_file_setup' to create an anonymous tmpfs file as tmpfile, which
+   corresponds to the asma allocated before.
+2. remember tmpfile to asma->file, so that mmap of the same mFd in
+   another process could refers to the filp->priv_data->file.
+3. mmap tmpfs
+
+#+BEGIN_SRC c
+  static int ashmem_mmap(struct file *file, struct vm_area_struct *vma)
+  {
+      struct ashmem_area *asma = file->private_data;
+      int ret = 0;
+      /* 该 file 从别的进程传递过来, asma->file 已经存在, 即在另一个进程
+       * 已经 mmap 到一个 tmpfs file 了 */
+      if (!asma->file) {
+          char *name = ASHMEM_NAME_DEF;
+          struct file *vmfile;
+          vmfile = shmem_file_setup(name, asma->size, vma->vm_flags);
+          asma->file = vmfile;
+      }
+      get_file(asma->file);
+      if (vma->vm_flags & VM_SHARED)
+          shmem_set_file(vma, asma->file);
+      else {
+          if (vma->vm_file)
+              fput(vma->vm_file);
+          vma->vm_file = asma->file;
+      }
+      vma->vm_flags |= VM_CAN_NONLINEAR;
+  }
+#+END_SRC
+
+** MemoryFile
+MemoryFile 的 public 接口中并没有包含 getParcelFileDescriptor, 这从根
+本上限制了 MemoryFile 无法提供共享内存的功能, 虽然底层的 ashmem 是支持
+的...
+** CursorWindow and ashmem

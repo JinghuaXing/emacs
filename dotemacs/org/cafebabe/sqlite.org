@@ -281,6 +281,17 @@ c++ object, and is stored using `ashmem'
 So, CursorWindow parceling is quite efficient using `ashmem', and
 that why CursorWindow could deliver more than 1MB data using binder.
 
+#+BEGIN_EXAMPLE
+
+~@sunway-x230> adb shell procmem 642|grep "CursorWindow"
+     0K       0K       0K       0K       0K       0K       0K       0K  /dev/ashmem/CursorWindow:
+     0K       0K       0K       0K       0K       0K       0K       0K  /dev/ashmem/CursorWindow:
+     4K       4K       2K       0K       0K       4K       0K       0K  /dev/ashmem/CursorWindow:
+     0K       0K       0K       0K       0K       0K       0K       0K  /dev/ashmem/CursorWindow:
+     4K       4K       4K       4K       0K       0K       4K       0K  /dev/ashmem/CursorWindow:
+
+#+END_EXAMPLE
+
 ** C API
 *** sqlite3_open
 *** sqltie3_prepare_v2
