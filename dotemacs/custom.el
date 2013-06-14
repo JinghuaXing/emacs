@@ -35,6 +35,7 @@
  '(canlock-password "e8b2356fc28fdc87defe0d5b18dda7a9d2f2e7db")
  '(cedet-android-current-version "15")
  '(cedet-android-sdk-root "~/source/android-sdk")
+ '(clean-buffer-list-kill-regexps (quote ("\\*.*\\*")))
  '(column-number-mode t)
  '(company-backends (quote (company-nxml company-css company-files company-dabbrev)))
  '(company-begin-commands (quote (quote (self-insert-command))))

@@ -6,7 +6,7 @@
 (global-set-key (kbd "M-N") 'back-button-global-forward)
 (global-set-key (kbd "M-P") 'back-button-global-backward)
 
-(load-file "~/.elisp/dotemacs/pulse.el")
+;; (load-file "~/.elisp/dotemacs/pulse.el")
 (require 'auto-mark)
 (global-auto-mark-mode 1)
 (setq auto-mark-command-class-alist (quote (
