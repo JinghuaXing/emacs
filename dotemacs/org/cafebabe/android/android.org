@@ -787,15 +787,15 @@ System.getProperty() / System.setProperty()
 *** adb
 **** dumpsys
 **** am
-     am start
-     am startservice
-     am broadcast
-     am instrument
-     am monitor
+am start
+am startservice
+am broadcast
+am instrument
+am monitor
 **** pm
-     pm list instrumentation
-     pm setInstallLocation
-     pm getInstallLocation
+pm list instrumentation
+pm setInstallLocation
+pm getInstallLocation
 **** sendevent
 *** aidl
 **** in,out
@@ -809,8 +809,17 @@ System.getProperty() / System.setProperty()
 *** ddms
 *** decompile
 **** dex2jar
+**** smali
+- 通过odex生成class文件
+  java -jar baksmali.jar -x android123.odex
+- 通过class生成classes.dex 文件
+  java -Xmx512M -jar smali.jar out -o classes.dex
+
 **** jd-gui
 **** apktool
+**** dx
+**** dexdump
+**** aapt
 *** hierachyviewer
 *** layouopt
 *** sign

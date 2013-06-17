@@ -80,6 +80,7 @@ keytool -import -alias test2 -file test.p7r -keystore test.jks
 **** 导出 pfx ?
 不支持, 可使用 pkeytool 或 portecle
 *** pkeytool
+支持导出么钥匙的 keytool
 *** openssl
 man openssl
 man pkcs12
@@ -116,3 +117,4 @@ man req
 - 根据私钥生成公钥
   openssl pkey -in test.key -out test.pem -outform pem -pubout
 *** portecle
+GUI tool to manage keystore

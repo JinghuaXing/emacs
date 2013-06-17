@@ -1,6 +1,184 @@
 #+TITLE: Android DEX & ODEX
 * Android DEX & ODEX
+** Tools
+*** dexdump
+*** dx [class->dex]
+- class 转换为 dex 
+  dx --dex HelloWorld.class  --output=classes.dex
+*** dex2jar [dex->class]
+将 dex 转换为 class/jar
+- dex2jar classes.dex
+*** smali [smali->dex]
+- smali 转换为 dex
+  java -jar smali.jar -o classes.dex HelloWorld.smali
+*** baksmali [dex->smali]
+- dex 转换为 smali
+  java -jar baksmali classes.dex
+*** apktool [dex->smali->dex]
+apktool use smali/baksmali to decode/encode dex, and also
+decode/encode xml e.g. manifest.xml
+
+*** adb shell dalvikvm
+android 里的 `java`, 例如:
+adb shell dalvikvm -cp /data/Test.apk Hello
 ** dex
+*** dex 基于寄存器
+
+java -jar smali.jar classes.dex
+
+#+BEGIN_EXAMPLE
+  .class public LHelloWorld;
+  
+  #Ye olde hello world application
+  #To assemble and run this on a phone or emulator:
+  #
+  #java -jar smali.jar -o classes.dex HelloWorld.smali
+  #zip HelloWorld.zip classes.dex
+  #adb push HelloWorld.zip /data/local
+  #adb shell dalvikvm -cp /data/local/HelloWorld.zip HelloWorld
+  #
+  #if you get out of memory type errors when running smali.jar, try
+  #java -Xmx512m -jar smali.jar HelloWorld.smali
+  #instead
+  
+  .super Ljava/lang/Object;
+  
+  .method public static main([Ljava/lang/String;)V
+      .registers 2
+  
+      sget-object v0, Ljava/lang/System;->out:Ljava/io/PrintStream;
+  
+      const-string        v1, "Hello World!"
+  
+      invoke-virtual {v0, v1}, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+  
+      return-void
+  .end method
+#+END_EXAMPLE
+*** dex 优化了常量池
+
+dexdump classes.dex
+
+#+BEGIN_EXAMPLE
+Processing 'classes.dex'...
+Opened 'classes.dex', DEX version '035'
+Class #0            -
+  Class descriptor  : 'LHelloWorld2;'
+  Access flags      : 0x0001 (PUBLIC)
+  Superclass        : 'Ljava/lang/Object;'
+  Interfaces        -
+  Static fields     -
+  Instance fields   -
+  Direct methods    -
+    #0              : (in LHelloWorld2;)
+      name          : '<init>'
+      type          : '()V'
+      access        : 0x10001 (PUBLIC CONSTRUCTOR)
+      code          -
+      registers     : 1
+      ins           : 1
+      outs          : 1
+      insns size    : 4 16-bit code units
+00016c:                                        |[00016c] HelloWorld2.<init>:()V
+00017c: 7010 0500 0000                         |0000: invoke-direct {v0}, Ljava/lang/Object;.<init>:()V // method@0005
+000182: 0e00                                   |0003: return-void
+      catches       : (none)
+      positions     : 
+        0x0000 line=2
+      locals        : 
+        0x0000 - 0x0004 reg=0 this LHelloWorld2; 
+
+    #1              : (in LHelloWorld2;)
+      name          : 'main'
+      type          : '([Ljava/lang/String;)V'
+      access        : 0x0009 (PUBLIC STATIC)
+      code          -
+      registers     : 3
+      ins           : 1
+      outs          : 2
+      insns size    : 8 16-bit code units
+000184:                                        |[000184] HelloWorld2.main:([Ljava/lang/String;)V
+000194: 6200 0000                              |0000: sget-object v0, Ljava/lang/System;.out:Ljava/io/PrintStream; // field@0000
+000198: 1a01 0c00                              |0002: const-string v1, "hello" // string@000c
+00019c: 6e20 0400 1000                         |0004: invoke-virtual {v0, v1}, Ljava/io/PrintStream;.println:(Ljava/lang/String;)V // method@0004
+0001a2: 0e00                                   |0007: return-void
+      catches       : (none)
+      positions     : 
+        0x0000 line=4
+        0x0007 line=5
+      locals        : 
+
+  Virtual methods   -
+  source_file_idx   : 2 (HelloWorld2.java)
+
+Class #1            -
+  Class descriptor  : 'LHelloWorld;'
+  Access flags      : 0x0001 (PUBLIC)
+  Superclass        : 'Ljava/lang/Object;'
+  Interfaces        -
+  Static fields     -
+  Instance fields   -
+  Direct methods    -
+    #0              : (in LHelloWorld;)
+      name          : '<init>'
+      type          : '()V'
+      access        : 0x10001 (PUBLIC CONSTRUCTOR)
+      code          -
+      registers     : 1
+      ins           : 1
+      outs          : 1
+      insns size    : 4 16-bit code units
+0001a4:                                        |[0001a4] HelloWorld.<init>:()V
+0001b4: 7010 0500 0000                         |0000: invoke-direct {v0}, Ljava/lang/Object;.<init>:()V // method@0005
+0001ba: 0e00                                   |0003: return-void
+      catches       : (none)
+      positions     : 
+        0x0000 line=2
+      locals        : 
+        0x0000 - 0x0004 reg=0 this LHelloWorld; 
+
+    #1              : (in LHelloWorld;)
+      name          : 'main'
+      type          : '([Ljava/lang/String;)V'
+      access        : 0x0009 (PUBLIC STATIC)
+      code          -
+      registers     : 3
+      ins           : 1
+      outs          : 2
+      insns size    : 8 16-bit code units
+0001bc:                                        |[0001bc] HelloWorld.main:([Ljava/lang/String;)V
+0001cc: 6200 0000                              |0000: sget-object v0, Ljava/lang/System;.out:Ljava/io/PrintStream; // field@0000
+0001d0: 1a01 0c00                              |0002: const-string v1, "hello" // string@000c
+0001d4: 6e20 0400 1000                         |0004: invoke-virtual {v0, v1}, Ljava/io/PrintStream;.println:(Ljava/lang/String;)V // method@0004
+0001da: 0e00                                   |0007: return-void
+      catches       : (none)
+      positions     : 
+        0x0000 line=4
+        0x0007 line=5
+      locals        : 
+
+  Virtual methods   -
+  source_file_idx   : 1 (HelloWorld.java)
+
+
+#+END_EXAMPLE
+
+可见, `hello` 这个字符串在两个 class 中引用的是同一个常量池中的值. 
+
 ** odex
 http://blog.sina.com.cn/s/blog_77d0785c0100vp8j.html
 http://www.addictivetips.com/mobile/what-is-odex-and-deodex-in-android-complete-guide/
+
+dexopt 最大的作用是: 将本来 java 在类加载时完成的符号解析的工作拿出来,
+提前将符号解析出来, 并且使用相应的 `quick' 指令代替原来的基于常量池符号
+引用的指令, 例如: 将之前的
+
+#+BEGIN_EXAMPLE
+invoke-virtual {v0,v1},Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+#+END_EXAMPLE
+
+替换为
+
+#+BEGIN_EXAMPLE
+invoke-virtual-quick {v0,v1},vtable #0x3b
+#+END_EXAMPLE
