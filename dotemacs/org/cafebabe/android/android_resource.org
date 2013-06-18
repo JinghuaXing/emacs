@@ -343,6 +343,19 @@ sort of `Assets`
 *** Preference Inflater
 *** Stub Inflater
 *** misc
+**** Configuration Qualifiers
+
+- What indeed is `isMoreSpecificThan' ? How to choose the `MORE
+  SPECIFIC' resource ? How to make decision between `mdpi' and `hdpi'
+  drawable ? ...
+- The priority between different configuration qualifiers?
+  e.g. whether `drawable-mdpi' is more specific than
+  `drawable-w720dp' ? since `mdpi' and `w720dp' is actually
+  irrelevant.
+
+http://developer.android.com/guide/topics/resources/providing-resources.html
+http://developer.android.com/guide/practices/screens_support.html
+
 **** get application resources?
 1. use PackageContext
 
