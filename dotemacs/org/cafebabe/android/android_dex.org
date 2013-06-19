@@ -169,19 +169,52 @@ Class #1            -
 http://blog.sina.com.cn/s/blog_77d0785c0100vp8j.html
 http://www.addictivetips.com/mobile/what-is-odex-and-deodex-in-android-complete-guide/
 
-dexopt 最大的作用是: 将本来 java 在类加载时完成的符号解析的工作拿出来,
-提前将符号解析出来, 并且使用相应的 `quick' 指令代替原来的基于常量池符号
-引用的指令, 例如: 将之前的
+*** dexopt
+dexopt is located in dalvik/dexopt/OptMain.cpp
 
-#+BEGIN_EXAMPLE
-invoke-virtual {v0,v1},Ljava/io/PrintStream;->println(Ljava/lang/String;)V
-#+END_EXAMPLE
+**** dexopt 的作用
+- verification
 
-替换为
+- optimization
+  /dalvik/vm/analysis/Optimize.cpp::optimizeMethod
 
-#+BEGIN_EXAMPLE
-invoke-virtual-quick {v0,v1},vtable #0x3b
-#+END_EXAMPLE
+  1. quick替换 与 符号解析
+     
+     将本来 java 在类加载时完成的符号解析的工作拿出来,提前将符号解析出
+     来, 并且使用相应的 `quick' 指令代替原来的基于常量池符号引用的指令,
+     例如: 将之前的
+
+     #+BEGIN_EXAMPLE
+     invoke-virtual {v0,v1},Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+     #+END_EXAMPLE
+
+     替换为
+
+     #+BEGIN_EXAMPLE
+     invoke-virtual-quick {v0,v1},vtable #0x3b
+     #+END_EXAMPLE
+
+  2. inline method
+
+- register map
+
+**** There are three ways to launch dexopt
+
+1. From the VM.  This takes a dozen args, one of which is a file
+   descriptor that acts as both input and output.  This allows us to
+   remain ignorant of where the DEX data originally came from.
+
+2. From installd or another native application.  Pass in a file
+   descriptor for a zip file, a file descriptor for the output, and a
+   filename for debug messages.  Many assumptions are made about
+   what's going on (verification + optimization are enabled, boot
+   class path is in BOOTCLASSPATH, etc).
+
+3. On the host during a build for preoptimization. This behaves almost
+   the same as (2), except it takes file names instead of file
+   descriptors.
+
+
 
 *** Why `dalvik-cache' need to be rebuild for all apps when framework.jar (or services.jar ...) is changed?
 
