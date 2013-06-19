@@ -182,3 +182,11 @@ invoke-virtual {v0,v1},Ljava/io/PrintStream;->println(Ljava/lang/String;)V
 #+BEGIN_EXAMPLE
 invoke-virtual-quick {v0,v1},vtable #0x3b
 #+END_EXAMPLE
+
+*** Why `dalvik-cache' need to be rebuild for all apps when framework.jar (or services.jar ...) is changed?
+
+since framework.jar (and services.jar, android.policy.jar ...) is
+`dynamic' linked to app (actually java doesn't have the concept of
+`dynamic link' and `static link', `dynamic' here means the jar is not
+packed into the apk), when the jar is changed, apps using the jar
+must be re-resolved according to the jar.

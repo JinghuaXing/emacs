@@ -532,6 +532,11 @@ will run with proper uid/gid/groups
     Bitmap.recycle() will call nativeRecycle() to release native memory used by Skia. But, we don't need call it directly, since Bitmap.finalize()
     will call it.
 *** android 尺寸单位 (px,pt,dp,sp..)
+- px 即像素
+- dip 是传统的屏幕分辩率的度量, 即一英寸宽度上像素点的个数
+- 1 dp = 宽度 density 为 160 dpi 的屏幕上(例如 hvga) 一个像素所占宽度
+  = 1/160 inch
+
 ** MountService
    :PROPERTIES:
    :CUSTOM_ID: @MountService

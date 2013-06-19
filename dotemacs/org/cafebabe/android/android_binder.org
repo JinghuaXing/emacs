@@ -13,33 +13,33 @@ Binder driver 中有四个最重要的数据结构:
 - binder_ref
 - binder_thread
 *** binder_proc
-     binder_proc是binder driver中处于最顶层的数据结构, 它代表了一个与binder
-     driver打交道的进程, 任意一个和binder打交道的进程, 不管是server还是client,
-     在kernel都有且只有一个binder_proc结构与之对应.
+binder_proc是binder driver中处于最顶层的数据结构, 它代表了一个与binder
+driver打交道的进程, 任意一个和binder打交道的进程, 不管是server还是client,
+在kernel都有且只有一个binder_proc结构与之对应.
 
-     binder_proc主要成员包括:
-     - files
-       与进程的task_struct中的files相同, 通过binder传递fd (文件描述符)时需要使用
-       该成员
-     - VMA
-       与进程task_struct中的mm相同, 分配/释放 binder buffer时需要使用该成员
-     - nodes
-       该进程"拥有"的binder_node, 可以暂且把一个binder_node看作进程对外提供的一
-       个service, 所以nodes相当于该进程对外提供的所有service.
+binder_proc主要成员包括:
+ - files
+   与进程的task_struct中的files相同, 通过binder传递fd (文件描述符)时需要使用
+   该成员
+ - VMA
+   与进程task_struct中的mm相同, 分配/释放 binder buffer时需要使用该成员
+   - nodes
+     该进程"拥有"的binder_node, 可以暂且把一个binder_node看作进程对外提供的一
+     个service, 所以nodes相当于该进程对外提供的所有service.
 
-     - threads
-       进程中所有的binder_thread, 这些binder_thread是一些真正的worker thread,
-       binder_node所代表的service就是在这些线程中执行任务的.
+   - threads
+     进程中所有的binder_thread, 这些binder_thread是一些真正的worker thread,
+     binder_node所代表的service就是在这些线程中执行任务的.
 
-     - buffers, free_buffers, allocated_buffers
-       每个进程有固定大小的buffer (1M-8K), 用来保存binder调用时的参数和返回值
-     - refs_by_desc, refs_by_node
-       这两个结构体是两根红黑树, 树结点的value都是binder_ref, 但对于refs_by_desc树,
-       结点的key是binder_ref.desc, 对于refs_by_node, key是binder_node
+   - buffers, free_buffers, allocated_buffers
+     每个进程有固定大小的buffer (1M-8K), 用来保存binder调用时的参数和返回值
+   - refs_by_desc, refs_by_node
+     这两个结构体是两根红黑树, 树结点的value都是binder_ref, 但对于refs_by_desc树,
+     结点的key是binder_ref.desc, 对于refs_by_node, key是binder_node
 
 **** binder_proc结构体的初始化
-      binder_proc代表一个与binder打交道的进程, 不论binder server或是binder
-      client, 都有且仅有一个binder_proc与之对应.
+binder_proc代表一个与binder打交道的进程, 不论binder server或是binder
+client, 都有且仅有一个binder_proc与之对应.
 #+BEGIN_HTML
 <pre lang="c++" line="1">
       binder_proc的初始化:
@@ -52,62 +52,60 @@ Binder driver 中有四个最重要的数据结构:
 	        filp->private_data=proc
 </pre>
 #+END_HTML
-      filp->private_data是进程私有数据, 每当进程通过系统调用进入kernel时, driver
-      代码总是可以通过task_struct->filp->private_data轻松找到该进程对应的
-      binder_proc
+filp->private_data是进程私有数据, 每当进程通过系统调用进入kernel时, driver
+代码总是可以通过task_struct->filp->private_data轻松找到该进程对应的
+binder_proc
 **** binder_proc的清除
-      当进程终止时, binder_proc会被driver清除.
+当进程终止时, binder_proc会被driver清除.
 
-      binder_proc的清除:
-      当进程终止时 (正常退出或因为信号异常退出), kernel会负责关闭该进程打开的所
-      有文件描述符, 因为进程通过打开过/dev/binder, 所以kernel会关闭该文件描述符,
-      这个动作会导致driver的binder_release函数被调用:
-#+BEGIN_HTML
-<pre lang="c++" line="1">
-      binder_release()
-        binder_proc proc = filp->private_data;
-	// service manager进程挂掉了...
-	if (binder_context_mgr_node->proc==proc):
-	  binder_context_mgr_node=NULL;
-	// 释放该进程所有的binder_thread
-	// 释放该进程所有binder_node,同时通知使用这些 binder_node (service) 的所
-	// 有 binder_ref (client):  这个binder挂掉了 (binder.linkToDeath)
-	foreach (node: proc->nodes):
-	  // 从 proc->nodes中删除该node
-	  rb_erase(node, proc->nodes)
-	  // 如果该node没有任何binder_ref使用它 (service没有任何client)
-	  if (hlist_empty (node->refs)):
-	    kfree(node);
-	  else:
-	    foreach (ref:node->refs):
-	      // linkToDeath
-	      if (ref->death):
-	        // 给ref->proc->todo添加一个work(通知它node已经dead),
-		// 并唤醒 ref 所在的进程
-		list_add_tail(ref->death->...)
-		wake_up_interruptible(ref->proc->wait);
-	// 释放所有的binder_ref
-	// 释放所有的binder_buffer
-	// 最后释放binder_proc结构体本身
-	kfree(proc)
-</pre>
-#+END_HTML
+binder_proc的清除:
+当进程终止时 (正常退出或因为信号异常退出), kernel会负责关闭该进程打开的所
+有文件描述符, 因为进程通过打开过/dev/binder, 所以kernel会关闭该文件描述符,
+这个动作会导致driver的binder_release函数被调用:
+#+begin_src java
+  binder_release()
+    binder_proc proc = filp->private_data;
+    // service manager进程挂掉了...
+    if (binder_context_mgr_node->proc==proc):
+      binder_context_mgr_node=NULL;
+    // 释放该进程所有的binder_thread
+    // 释放该进程所有binder_node,同时通知使用这些 binder_node (service) 的所
+    // 有 binder_ref (client):  这个binder挂掉了 (binder.linkToDeath)
+    foreach (node: proc->nodes):
+      // 从 proc->nodes中删除该node
+      rb_erase(node, proc->nodes)
+      // 如果该node没有任何binder_ref使用它 (service没有任何client)
+      if (hlist_empty (node->refs)):
+        kfree(node);
+      else:
+        foreach (ref:node->refs):
+          // linkToDeath
+          if (ref->death):
+            // 给ref->proc->todo添加一个work(通知它node已经dead),
+            // 并唤醒 ref 所在的进程
+            list_add_tail(ref->death->...)
+            wake_up_interruptible(ref->proc->wait);
+    // 释放所有的binder_ref
+    // 释放所有的binder_buffer
+    // 最后释放binder_proc结构体本身
+    kfree(proc)
+#+end_src
 *** binder_node
-     从用户的角度看,binder_node代表一个service, 它与c++ binder的BBinder对
-     象有一一对应关系.
+从用户的角度看,binder_node代表一个service, 它与c++ binder的BBinder对
+象有一一对应关系.
 
-     binder_node的主要成员有:
-     - binder_proc proc
+binder_node的主要成员有:
+ - binder_proc proc
 
-       表示这个binder_node属于哪个进程. 即这个service是哪个进程提供的.
-     - void * ptr
-       这个binder_node对应的用户空间的c++ BBinder对象的地址
+   表示这个binder_node属于哪个进程. 即这个service是哪个进程提供的.
+ - void * ptr
+   这个binder_node对应的用户空间的c++ BBinder对象的地址
 
-     - refs
-       还记得前面提到的binder_proc被清除时如何处理linkToDeath的么?
+ - refs
+   还记得前面提到的binder_proc被清除时如何处理linkToDeath的么?
 
 
-     binder_node与binder_proc的关系:
+binder_node与binder_proc的关系:
 #+BEGIN_EXAMPLE
      		 -+----------------------+
       -+----------+>+  server binder_proc  +-<------------+
