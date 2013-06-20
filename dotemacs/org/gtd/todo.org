@@ -176,7 +176,9 @@ CLOSED: [2013-02-25 Mon 15:25]
 :ID:       28a99153-cfc8-4fc5-849b-9e2663191cfc
 :END:
 [2013-04-02 Tue 12:35]
-* TODO android pm grant permission                                     :todo:
+* DONE android pm grant permission                                     :todo:
+CLOSED: [2013-06-20 Thu 17:13]
+- State "DONE"       from "TODO"       [2013-06-20 Thu 17:13]
 :PROPERTIES:
 :ID:       2d8d0a83-d9ec-469f-87e0-fa1d2d21b585
 :END:
@@ -205,7 +207,9 @@ CLOSED: [2013-04-03 Wed 11:08]
 :ID:       3793198a-cba1-4cc3-b07f-1ee201e3aaba
 :END:
 [2013-04-11 Thu 19:16]
-* TODO vss,rss,pss,uss                                                 :todo:
+* DONE vss,rss,pss,uss                                                 :todo:
+CLOSED: [2013-06-20 Thu 15:56]
+- State "DONE"       from "TODO"       [2013-06-20 Thu 15:56]
 :PROPERTIES:
 :ID:       e4eebba4-e455-4318-9a2f-feebf86a5525
 :END:
@@ -230,7 +234,9 @@ CLOSED: [2013-04-28 Sun 16:54]
 [2013-04-20 Sat 21:55]
 * TODO RenderScript & opengl                                           :todo:
 [2013-04-25 Thu 12:43]
-* TODO uri permission                                                  :todo:
+* DONE uri permission                                                  :todo:
+CLOSED: [2013-06-20 Thu 17:05]
+- State "DONE"       from "TODO"       [2013-06-20 Thu 17:05]
 [2013-04-25 Thu 18:54]
 * DONE git branch model                                                :todo:
 CLOSED: [2013-05-20 Mon 18:40]
@@ -309,5 +315,9 @@ A: yes...
 [2013-06-07 Fri 19:01]
 * TODO android backup                                                  :todo:
 [2013-06-17 Mon 20:57]
-* TODO Android resource: match, isBetterThan and isMoreSpecificThan    :todo:
+* DONE Android resource: match, isBetterThan and isMoreSpecificThan    :todo:
+CLOSED: [2013-06-20 Thu 14:51]
+- State "DONE"       from "TODO"       [2013-06-20 Thu 14:51]
 [2013-06-18 Tue 16:00]
+* TODO InputDispatcher & InputManagerService & InputFilter             :todo:
+[2013-06-21 Fri 14:00]

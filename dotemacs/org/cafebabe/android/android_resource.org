@@ -504,7 +504,7 @@ this config is better than targetConfig according to requestedConfig'
 
 3. 若 requestedConfig 位于 thisConfig 和 targetConfig 之间, 则系统会在
    两者间选一个中间点 r, requestedConfig 位于 thisConfig 和 中间点之间
-   的,选择 thisConfig, 否则造反 targetConfig. 中间点 r 的选择不是简单的
+   的,选择 thisConfig, 否则选择 targetConfig. 中间点 r 的选择不是简单的
    取了个中间值, 而要使用了一个公式来获得:
 
 
@@ -523,13 +523,29 @@ this config is better than targetConfig according to requestedConfig'
 
 通过 gnuplot 画图可以观察到:
 
-#+BEGIN_SRC gnuplot
-splot [0:100] [0:100] [0:100] (-x + sqrt(x**2+8*x*y))/2 , x/2+y/2
-# 固定 h 为 100
+#+BEGIN_SRC gnuplot :file plot.png
+set title "x->h, y->l, z->r"
+set output "plot.png"
+splot [0:1000] [0:1000] [0:1000] (-x + sqrt(x**2+8*x*y))/2 , x/2+y/2
+#+END_SRC
+
+#+RESULTS:
+[[file:plot.png]]
+
+固定 h 为 100
+#+BEGIN_SRC gnuplot :file plot2.png
+set title "x=100"
+set output "plot2.png"
 plot [0:200] [0:200] (-100 + sqrt(100**2+8*100*x))/2 , 100/2+x/2
 #+END_SRC
 
-当 h > l  时, r 始终偏向 l, 且 h-l 越大, 越偏向 l
+#+RESULTS:
+
+r 始终偏向 l (h>l), 且 h-l 越大, 越偏向 l
+
+例如:
+1. h=320, l=120, request=240, 则 r=160 (<220), 选择 h
+2. h=240, l=120, request=160, 则 r=147 (<180), 选择 h
 
 #+BEGIN_SRC java
   bool ResTable_config::isBetterThan(const ResTable_config& o,
@@ -1570,5 +1586,47 @@ resources.arsc 与 ResourceType.cpp 中的 ResTable 类有些对应关系: 一�
           resource 0x7f040001 com.sunway.test:string/test: t=0x03 d=0x00000008 (s=0x0008 r=0x00)
 #+END_EXAMPLE
 
-*** System asset & Zygote.preloadResources
-*** Resource drawable cache
+*** Preload Drawable
+Preload Drawable 机制是 zygote 针对图片内存使用的一个优化. 
+Zygote 进程是所有 java 进程的父进程, 在开机的早些阶段启动, 它启动后会
+调用 preloadDrawable 预先加载一些系统图片, 这些图片会置于 zygote 的
+AssetManager 的管理之下. 
+
+AssetManager 不是一个集中式的 service, 相反, 对于每个进程, 都会有一个
+AssetManager
+
+每个进程都有 AssetManager, 会导致每个应用都需要各自加载各自的资源, 但这
+种机制对于系统资源来说, 会造成内存的浪费, 因为所有系统资源对所有进程其
+实都是一样的.
+
+preloadDrawable 可以解决这种针对系统资源的浪费, 因为 zygote 是所有
+java 进程的父进程, linux kernel 里的 COW (copy on write) 机制决定了
+preloadDrawable 加载的资源是可以被所有 java 进程共享的. 
+
+UUI 中将 preloadDrawable 禁用了, 是因为 drawable cache 的存在.
+AssetManager 会维护一个 drawable cache, 通过 preloadDrawable 加载进来
+的图片会一直放在 cache 中, 导致 UUI 无法在运行时替换到系统的图片. 
+
+- UUI 若禁用 preloadDrawable, 会导致每个进程的 AssetManager 都去加载一
+  份系统资源,浪费内存
+- UUI 若不禁用 preloadDrawable, 会导致运行时系统图片无法被 UUI 替换. 
+
+我们可以调整 zygote, 让它在启动预先加载 UUI 定义的图片, 而不是系统
+默认的图片, 这样似乎是可以的, 但这样无法满足 UUI 的另一个 feature: 运
+行时的主题切换. 
+
+当运行时切换主题时, 必定要将所有进程的 AssetManager 中的系统资源替换掉,
+而对每一个进程的`write`会触发 `copy-on-write` 中的 copy, 还是无法共享
+资源.
+
+
+综上, zygote 使用 `copy-on-write` 这种 trick 来共享系统资源, 但 UUI 的
+动态切换主题功能使这种 trick 无法工作. 
+
+解决方法
+
+不使用 `copy-on-write' 这种 trick, 而是使用显式的 shared mmap 来共享系
+统图片, 不过这种方式可能难以实现, 因为 dvm 是在 dalvik heap 中分配图片
+内存的, 我们可能没有办法让它工作在其他的 vma. 
+
+**** Resource drawable cache

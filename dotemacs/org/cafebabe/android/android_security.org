@@ -79,7 +79,7 @@ ams.checkComponentPermission(perm, pid, uid, ...)
   ams.checkPermission(String permission, int calling_pid, int calling_uid) 
     ams.enforceCallingPermission(perm)
     ams.checkCallingPermission(perm)
-***** pms.checkUidPermission
+***** pms.checkUridPermission
 see also [[grant]]
 ***** Other
 Note that component permission may be checked by framework, or by app themselves.
@@ -183,6 +183,60 @@ to send the underlying intent *on behalf of* A, A's permission is also
 delegated to B
 
 **** uri permission
+ContentProvider has special permission settings for uri
+#+BEGIN_SRC xml
+  <provider android:name="ContactsProvider2"
+            android:grantUriPermissions="false"
+            android:readPermission="android.permission.READ_CONTACTS"
+            android:writePermission="android.permission.WRITE_CONTACTS">
+    <path-permission
+        android:pathPrefix="/search_suggest_query"
+        android:readPermission="android.permission.GLOBAL_SEARCH" />
+    <path-permission
+        android:pathPrefix="/search_suggest_shortcut"
+        android:readPermission="android.permission.GLOBAL_SEARCH" />
+    <path-permission
+        android:pathPattern="/contacts/.*/photo"
+        android:readPermission="android.permission.GLOBAL_SEARCH" />
+    <grant-uri-permission android:pathPattern=".*" />
+  </provider>
+#+END_SRC
+
+- <path-permission>
+
+指定拥有哪个 permission 的包可以访问该 path
+
+- <grant-uri-permissions>
+
+若为 true, 则所有 path 都可以通过
+Context.grantUriPermission(pkg,uri,mode) 使 pkg 对该 path 获得权限
+
+- <grant-uri-permission>
+
+若 grant-uri-permissions 为 false, 则该属于才起作用, 它指定了哪些
+path 可以被 grant permission
+
+***** grant uri permission
+已经获得权限的应用可以通过两种方法使另一个 package 获得对特定 uri 的权
+限 (即使该 package 本身就没有相应的权限)
+- Context.grantUriPermission
+- startActivity
+
+#+begin_src java
+  Intent i=new Intent(xxx);
+    /**
+     * If set, the recipient of this Intent will be granted permission to
+     * perform read operations on the Uri in the Intent's data and any URIs
+     * specified in its ClipData.  When applying to an Intent's ClipData,
+     * all URIs as well as recursive traversals through data or other ClipData
+     * in Intent items will be granted; only the grant flags of the top-level
+     * Intent are used.
+     */
+  i.setFlag((FLAG_GRANT_READ_URI_PERMISSION))
+  i.setData(uri)
+  startActivity(i)
+#+end_src
+
 ** Traditional linux security config
 Traditionally, linux using  some config files to enforce security:
 

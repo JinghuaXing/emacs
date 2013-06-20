@@ -7,6 +7,44 @@
 *** cat /proc/pid/smaps
 *** procmem
 *** procrank
+** xss
+- vss
+  虚拟地址
+- rss
+  占用的物理内存, 包含和其他进程共享的 mmap 区域
+- pss
+  物理内存, 但共享的部分会按比例分配
+- uss
+  物理内在, 不包含共享的部分
+
+所谓`共享'的部分, 不仅仅包含共享库,实际上,页表上所有物理页只要被多个进
+行共享 (包含 cow 这种情况) 就不会被计入 uss.
+
+例如:
+#+BEGIN_SRC c
+  int main(int argc, char *argv[]) {
+      fork();
+      sleep (1000);
+      return 0;
+  }
+#+END_SRC
+
+以上的代码, 
+
+当没有 fork 时, procrank 显示为:
+#+BEGIN_EXAMPLE
+1905    1396K    1392K     582K     556K  test_sqlite
+#+END_EXAMPLE
+
+当有 fork 时, procrank 显示为:
+
+#+BEGIN_EXAMPLE
+1975    1328K    1324K     323K      24K  test_sqlite
+1974    1404K    1400K     313K      12K  test_sqlite
+#+END_EXAMPLE
+
+注意看 uss 的差别. 
+
 ** appendix
 - [[http://stackoverflow.com/questions/2298208/how-to-discover-memory-usage-of-my-application-in-android][how-to-discover-memory-usage-of-my-application-in-android]]
 - [[http://stackoverflow.com/questions/131303/linux-how-to-measure-actual-memory-usage-of-an-application-or-process][linux-how-to-measure-actual-memory-usage-of-an-application-or-process]]
