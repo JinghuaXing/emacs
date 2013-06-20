@@ -196,6 +196,8 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
 
   2. inline method
 
+  3. ...
+
 - register map
 
 **** There are three ways to launch dexopt

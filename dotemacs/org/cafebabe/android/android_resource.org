@@ -22,16 +22,16 @@ id 是一类特殊的 resource, 它们没有值, 只是利用了它们的 resID 
 2.  动态的资源 (值是变化的)
 
 只定义了 resID 和 type, 没有定义值. 这种 resource 定义了一种 可配置的 "属性
-".  例如 attrs.xml 中通过 declare-styleable 定义的 style 的各个 attribute. 
+".  例如 attrs.xml 中通过 declare-styleable 定义的 style 的各个 attribute.
 
 某些 resource 可以指定这些属性, 例如
    - layout
    - menu
    - style
-     
+
 layout 可以通过 AttributeSet, TypedArray, obtainStyledAttributes 访问其
 attribute resource
-     
+
 ** LoadedApk
 ContextImpl 中有一个重要的成员叫 mPackageInfo, 是一个 LoadedApk 对象, 从名字就可
 以看出来, 这个对象是代表着一个 `已加载` 的 APK, 而一个 APK 主要包含三部分信息:
@@ -85,9 +85,9 @@ ContextImpl 中有一个重要的成员叫 mPackageInfo, 是一个 LoadedApk 对
    文件.
 2. res 中除 values 的其他资源文件会在 resources.arsc 中生成一些 resID 与 xml 路
    径的对应信息, 用于 getResources 时的查找. 并且这些资源文件会被转换为 axml 格
-   式后打包到 apk 中. 
+   式后打包到 apk 中.
 
-*** AXML 
+*** AXML
 axml 指通过 aapt 转换后的一种格式, 类似于 WBXML. 另外, axml 生成过程中也会做一些
 资源引用的预处理, 例如下面是被 AXMLPrinter2 dump 出来的 axml 的内容:
 
@@ -309,7 +309,7 @@ sort of `Assets`
                         padding=a.getDimensionPixelSize(attr,-1);
                       case : com.android.internal.R.styleable.View_id:
                         mId=a.getResourceId(attr,NO_ID;
-                      ...                                   
+                      ...
             return view;
           // createViewFromTag ends here
       // now that view is created, generate layout_params
@@ -326,7 +326,7 @@ sort of `Assets`
       root.addView(temp, params);
       // if MERGE ends here
     // inflate ends here
-          
+
 #+END_SRC
 **** To summaries
 1. get XmlResourceParser from Resource (maybe cached)
@@ -363,7 +363,7 @@ http://developer.android.com/guide/practices/screens_support.html
 
 density 在 match 阶段会被认为是都是 match 的, 因为系统对任何 density
 的图片都可以通过 scale 来和当前的屏幕匹配. 后续的 isBetterThan 会从各
-种 density 的图片中找到最合适的. 
+种 density 的图片中找到最合适的.
 
 #+BEGIN_SRC java
   bool ResTable_config::match(const ResTable_config& settings) const {
@@ -395,25 +395,25 @@ density 在 match 阶段会被认为是都是 match 的, 因为系统对任何 d
           if (screenSize != 0 && screenSize > setScreenSize) {
               return false;
           }
-  
+
           const int screenLong = screenLayout&MASK_SCREENLONG;
           const int setScreenLong = settings.screenLayout&MASK_SCREENLONG;
           if (screenLong != 0 && screenLong != setScreenLong) {
               return false;
           }
-  
+
           const int uiModeType = uiMode&MASK_UI_MODE_TYPE;
           const int setUiModeType = settings.uiMode&MASK_UI_MODE_TYPE;
           if (uiModeType != 0 && uiModeType != setUiModeType) {
               return false;
           }
-  
+
           const int uiModeNight = uiMode&MASK_UI_MODE_NIGHT;
           const int setUiModeNight = settings.uiMode&MASK_UI_MODE_NIGHT;
           if (uiModeNight != 0 && uiModeNight != setUiModeNight) {
               return false;
           }
-  
+
           if (smallestScreenWidthDp != 0
               && smallestScreenWidthDp > settings.smallestScreenWidthDp) {
               return false;
@@ -481,17 +481,55 @@ density 在 match 阶段会被认为是都是 match 的, 因为系统对任何 d
       }
       return true;
   }
-  
+
 #+END_SRC
 
-***** isBetterThan 
-
-density 的判断比较特殊, 基本上, 两个原则:
-1. 接近的优先
-2. 大的更优先
+***** isBetterThan
 
 isBetterThan(targetConfig, requestedConfig) is used to check `whether
 this config is better than targetConfig according to requestedConfig'
+
+其中density 的判断比较特殊, 基本上, 两个原则:
+
+1. 接近的优先
+2. 大的更优先
+
+具体的: 
+
+1. 若 requestedConfig 比 thisConfig 和 targetConfig 都大, 则从
+   thisConfig 和 targetConfig 中选择大的
+
+2. 若 requestedConfig 比 thisConfig 和 targetConfig 都小, 则从
+   thisConfig 和 targetConfig 中选择小的
+
+3. 若 requestedConfig 位于 thisConfig 和 targetConfig 之间, 则系统会在
+   两者间选一个中间点 r, requestedConfig 位于 thisConfig 和 中间点之间
+   的,选择 thisConfig, 否则造反 targetConfig. 中间点 r 的选择不是简单的
+   取了个中间值, 而要使用了一个公式来获得:
+
+
+#+BEGIN_CENTER
+   #+BEGIN_LaTeX
+   % 其中的h为 thisConfig 与 targetConfig 的最大值, l 为 thisConfig 与
+   % targetConfig 的最小值. 
+   $(2l-r)*h = r^2$
+
+   $\frac{2l}{r}-1=\frac{r}{h}$
+
+   $r = \frac{-h+\sqrt{h^2+8hl}}{2}$
+   #+END_LaTeX
+#+END_CENTER   
+
+
+通过 gnuplot 画图可以观察到:
+
+#+BEGIN_SRC gnuplot
+splot [0:100] [0:100] [0:100] (-x + sqrt(x**2+8*x*y))/2 , x/2+y/2
+# 固定 h 为 100
+plot [0:200] [0:200] (-100 + sqrt(100**2+8*100*x))/2 , 100/2+x/2
+#+END_SRC
+
+当 h > l  时, r 始终偏向 l, 且 h-l 越大, 越偏向 l
 
 #+BEGIN_SRC java
   bool ResTable_config::isBetterThan(const ResTable_config& o,
@@ -719,7 +757,7 @@ this config is better than targetConfig according to requestedConfig'
   }
 #+END_SRC
 
-***** isMoreSpecificThan' 
+***** isMoreSpecificThan'
   select more specific resource package from resource packages
   (e.g. when there are overlay packages)
 
@@ -823,7 +861,7 @@ package 的 pkg id, 所以查找 base package 的 resID 时取得的 package gro
 *** Overlay 机制的缺陷
 Overlay 机制主要是通过 idmap 完成 `original ID->overlay ID` 的映射而起作用的, 但
 是, 如果资源查找过程中涉及到 reference 时, idmap 提供的这种单向的 map 无法起作用,
-例如, 以 LayoutInflater 为例: 
+例如, 以 LayoutInflater 为例:
 
 假设通过 idmap 找到了这个 overlay package 中定义的 layout:
 
@@ -895,7 +933,7 @@ attrs.xml 中 ~declare-styleable~ 其实就是定义了一个该 `attr` 能出�
       <item name="android:paddingLeft">8dip</item>
   </style>
 
-Style 的名字也暗示了这个 style 可以做为什么的 style, 例如, Widget.TextView.ListSeparator 表示它可以做为 ListView 的 style, 
+Style 的名字也暗示了这个 style 可以做为什么的 style, 例如, Widget.TextView.ListSeparator 表示它可以做为 ListView 的 style,
 提供一种可做为 List Seperator 的 TextView 样式. 但 Style 名字只是一个暗示, 并不是一个强制的要求, 用户可以将 ActionBar 的 style 设为
 Widget.TextView.ListSeparator, 但因为 ActionBar 本身有可能在 obtainStyledAttributes 时从该 style 中根据获取不取它想要的属性, 所以可能
 导致这种 style 没有效果.
@@ -914,15 +952,15 @@ Widget.TextView.ListSeparator, 但因为 ActionBar 本身有可能在 obtainStyl
     <item name="android:windowActionBar">false</item>
     <item name="android:windowActionModeOverlay">true</item>
     <item name="android:windowCloseOnTouchOutside">@bool/config_closeDialogWhenTouchOutside</item>
-  
+
     <item name="android:colorBackgroundCacheHint">@null</item>
-  
+
     <item name="android:buttonBarStyle">@android:style/Holo.Light.ButtonBar.AlertDialog</item>
     <item name="borderlessButtonStyle">@android:style/Widget.Holo.Light.Button.Borderless.Small</item>
-  
+
     <item name="textAppearance">@android:style/TextAppearance.Holo.Light</item>
     <item name="textAppearanceInverse">@android:style/TextAppearance.Holo.Light.Inverse</item>
-  
+
     <item name="listPreferredItemPaddingLeft">16dip</item>
     <item name="listPreferredItemPaddingRight">16dip</item>
   </style>
@@ -944,7 +982,7 @@ theme 就可以给它们提供一个默认 style,
       android:style="@style/my_style"
       android:src="@drawable/test">
   </ImageView>
-  
+
   <style name="my_style"
          android:layout_height="wrap_content"
          android:layout_width="wrap_content">
@@ -971,7 +1009,7 @@ defStyleAttr, int defStyleRes)~
 
 其中:
 
-- set 
+- set
 
 作用类似于 `Context`, 因为它包含有该 xml tag 下所有的属性的key-value 对.
 
@@ -1018,7 +1056,7 @@ attr 是最特殊的一类 resouce:
 *** Example
 MyView 想要获得当前默认 theme 下 attribute 为 R.attr.test_style 的 style 中
    定义的 test_attr 值.
-   
+
 #+BEGIN_SRC xml
   <resources>
     <style name="TestTheme" parent="android:Theme.Holo">
@@ -1053,7 +1091,7 @@ MyView 想要获得当前默认 theme 下 attribute 为 R.attr.test_style 的 st
      getTheme().resolveAttribute(R.attr.test_attr, outValue2, true);
      int width=outValue2.getDimension();
    #+END_SRC
-   
+
 2. 方法二
    #+BEGIN_SRC java
      TypedValue outValue;
@@ -1483,15 +1521,17 @@ resources.arsc 与 ResourceType.cpp 中的 ResTable 类有些对应关系: 一�
                               |  Type String  |       |  Type Layout   |    | Type ...   |
                               +-----+---------+       +----------------+    +------------+
                                     |
-                                    |
                       +-------------+
-                      |
-                      |
-               +------+-------+
-               | Entry+Config |
-               |  => value    |
-               +--------------+
-
+                      |             |
+               +------+---+     +---+------+
+               | Config 1 |     | Config 2 |
+               +----------+     +-----+----+
+                                      | 
+                                      |             
+                     +---------+------+--+---------+
+                     | Entry 1 | Entry 2 | Entry 3 |
+                     +---------+---------+---------+
+                      
 
 #+END_SRC
 

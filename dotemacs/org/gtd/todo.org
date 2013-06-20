@@ -238,7 +238,10 @@ CLOSED: [2013-05-20 Mon 18:40]
 [2013-04-26 Fri 19:46]
 * TODO socks 代理原理                                                  :todo:
 [2013-05-02 Thu 16:39]
-* TODO how loader is notified                                          :todo:
+* DONE how loader is notified                                          :todo:
+CLOSED: [2013-06-19 Wed 17:37]
+- State "DONE"       from "TODO"       [2013-06-19 Wed 17:37]
+CursorLoader.loadInBackground register the listener
 [2013-05-03 Fri 11:48]
 * TODO tail recursion 尾递归                                           :todo:
 [2013-05-03 Fri 16:32]
@@ -306,5 +309,5 @@ A: yes...
 [2013-06-07 Fri 19:01]
 * TODO android backup                                                  :todo:
 [2013-06-17 Mon 20:57]
-* TODO Androi resource: isMoreSpecificThan?                            :todo:
+* TODO Android resource: match, isBetterThan and isMoreSpecificThan    :todo:
 [2013-06-18 Tue 16:00]

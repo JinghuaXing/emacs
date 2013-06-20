@@ -110,7 +110,7 @@
  '(nxml-slash-auto-complete-flag t)
  '(org-agenda-custom-commands (quote (("n" "Agenda and all TODO's" ((agenda "" ((org-agenda-ndays 7))) (alltodo))))))
  '(org-agenda-persistent-filter t)
- '(org-babel-load-languages (quote ((emacs-lisp . t) (ditaa . t) (dot . t) (perl . t) (python . t) (ruby . t) (plantuml . t))))
+ '(org-babel-load-languages (quote ((emacs-lisp . t) (dot . t) (ditaa . t) (R . t) (python . t) (ruby . t) (gnuplot . t) (clojure . t) (sh . t) (ledger . t) (org . t) (plantuml . t) (latex . t))))
  '(org-capture-bookmark nil)
  '(org-confirm-babel-evaluate nil)
  '(org-export-headline-levels 2)

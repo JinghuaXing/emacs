@@ -179,4 +179,4 @@
 	 )
 	))
 
-(add-hook 'after-init-hook 'org-agenda-list) 
+(add-hook 'after-init-hook 'org-agenda-list)
