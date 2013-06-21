@@ -342,6 +342,58 @@ sort of `Assets`
 *** MenuInflater
 *** Preference Inflater
 *** Stub Inflater
+*** XMLPullParser, AttribteSet, TypedValue
+**** XMLPullParser 负责解析 original-xml
+
+- parser.getAttributeName()
+- parse.getAttributeValue()
+- parset.getAttributeCount()
+- ...
+
+但 parser 只能拿到 xml 这一层次的东西, 关于 resource id 等, 它是无能为
+力的, 这时需要资源相关的 api 来进一步处理. 
+
+**** AttribteSet 解析 compiled-xml
+
+AttribteSet 兼有 XMLPullParser 和 resource id 相关的功能, 实际上,
+XmlResourceParser 就是 AttribteSet 的一个实例类. 它的功能不仅包含
+XMLPullParser 的所有功能, 还有一部分和 resource id 相关的功能, 因为它
+解析的是 compiled-xml, 像 resouce id 这类信息在 compiled-xml 存在, 但
+在 original-xml 中是不存在的. 
+
+- attr.getAttributeResourceValue()
+- attr.getAttributeNameResource()
+- ...
+
+**** TypedValue 是最终的和资源相关的 value
+
+AttribteSet 获取 resource id 后, 需要通过 resource (或 asset) 在资源中
+查找, 最终获取 TypedValue
+**** example
+#+BEGIN_SRC xml
+  <application android:icon="@drawable/icon"
+               android:label="@string/app_name"
+               pluto:test="@string/app_name2">
+  </application>
+#+END_SRC
+
+#+BEGIN_SRC java
+
+  // 返回一个字符串: "@string/app_name2"
+  parser.getAttributeValue("http://www.w3.org/2001/pluto.html","test")
+    
+  // 返回一个字符串: "@string/app_name2"
+  attrs.getAttributeValue("http://www.w3.org/2001/pluto.html", "test");
+    
+  // 返回 resource id
+  int testId = attrs.getAttributeResourceValue("http://www.w3.org/2001/pluto.html", "test", 0);
+  
+  // 返回最终引用的 app_name2
+  TypedValue outValue=new TypedValue();
+  res.getValue(testId, outValue, true);
+    
+    
+#+END_SRC
 *** misc
 **** Configuration Qualifiers: Providing resources and supporting multiple screen.
 

@@ -321,3 +321,7 @@ CLOSED: [2013-06-20 Thu 14:51]
 [2013-06-18 Tue 16:00]
 * TODO InputDispatcher & InputManagerService & InputFilter             :todo:
 [2013-06-21 Fri 14:00]
+* TODO xmlpullparser                                                   :todo:
+[2013-06-24 Mon 14:23]
+* TODO Message.setAsynchronous ? (see performTraversals)                        :todo:
+[2013-06-24 Mon 18:17]

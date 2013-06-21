@@ -15,43 +15,38 @@ WM.addView(decorView) to window.  but PopupWindow will not generate
 decorView since PopupWindow need not to be `decorated`.
 ** View
 *** View life cycle
-**** DONE requestLayout
-      SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-26 Wed 17:22]
-      - State "DONE"       [2011-01-26 Wed 17:22]
-      :PROPERTIES:
-	:CUSTOM_ID: @requestLayout
-      :END:
-      see [[@onMeasure]] [[@onLayout]]
-      requestLayout() is actually implemented in ViewRoot
-      View defined it's own requestLayout by:
+**** requestLayout
+see [[@onMeasure]] [[@onLayout]]
+requestLayout() is actually implemented in ViewRoot
+View defined it's own requestLayout by:
 #+BEGIN_EXAMPLE
-      View.requestLayout()
-        mParent.requestLayout() ;; for a view, mParent is the upper ViewGroup
-	  mParent.requestLayout() ;; ViewGroup implements View, thus recursive again to the parent
-	    ...
-	      top_view.requestLayout()
-	        ViewRoot.requestLayout() ;; top view's mParent is the ViewRoot
+  View.requestLayout()
+    mParent.requestLayout() ;; for a view, mParent is the upper ViewGroup
+      mParent.requestLayout() ;; ViewGroup implements View, thus recursive again to the parent
+        ...
+          top_view.requestLayout()
+            ViewRoot.requestLayout() ;; top view's mParent is the ViewRoot
 #+END_EXAMPLE
 
-    Call stack:
+Call stack:
 #+BEGIN_EXAMPLE
-    ViewRoot.requestLayout()
-      ViewRoot.scheduleTraversals()
-        ViewRoot.performTraversals() handles the msg
-	  mView.dispatchAttachedToWindow() ;; mView is the ViewRoot's top view
-	    ViewGroup.dispatchAttachedToWindow()
-	      view.dispatchAttachedToWindow() for every child view of the ViewGroup
-	        view.onAttachedToWindow() ;;  see [[onAttachedToWindow][onAttachedToWindow]]
-	  mView.measure()
-	    mView.onMeasure()
-	      layout.onMeasure() ;; e.g. LinearLayout, FrameLayout
-	        view.measure() ;; for every child view of the layout, including margin
-		  view.onMeasure() ;; see [[onMeasure][onMeasure]]
-	  mView.layout()
-	    layout.layout() ;; e.g. LinearLayout
-	      view.layout() ;; it seems that view.layout && view.onLayout doesn't do something meaningful?  it mainly stores the child's x,y,width,height
-	                    ;; so that we can, when touch the screen, tell which view is touched
-	        view.onLayout() ;; see [[onLayout][onLayout]],
+  ViewRoot.requestLayout()
+    ViewRoot.scheduleTraversals()
+      ViewRoot.performTraversals() handles the msg
+        mView.dispatchAttachedToWindow() ;; mView is the ViewRoot's top view
+          ViewGroup.dispatchAttachedToWindow()
+            view.dispatchAttachedToWindow() for every child view of the ViewGroup
+              view.onAttachedToWindow() ;;  see [[onAttachedToWindow][onAttachedToWindow]]
+        mView.measure()
+          mView.onMeasure()
+            layout.onMeasure() ;; e.g. LinearLayout, FrameLayout
+              view.measure() ;; for every child view of the layout, including margin
+                view.onMeasure() ;; see [[onMeasure][onMeasure]]
+        mView.layout()
+          layout.layout() ;; e.g. LinearLayout
+            view.layout() ;; it seems that view.layout && view.onLayout doesn't do something meaningful?  it mainly stores the child's x,y,width,height
+                          ;; so that we can, when touch the screen, tell which view is touched
+              view.onLayout() ;; see [[onLayout][onLayout]],
 #+END_EXAMPLE
 
 **** addView
@@ -59,30 +54,25 @@ decorView since PopupWindow need not to be `decorated`.
 **** onAttachedToWindow
       see [[@requestLayout]]
 **** onDetachedFromWindow
-**** DONE onLayout
-      CLOSED: [2011-03-15 Tue 16:50]
-      - State "DONE"       [2011-03-15 Tue 16:50]
-      :PROPERTIES:
-      :CUSTOM_ID: @onLayout
-      :END:
-      see [[@requestLayout]]
+**** onLayout
+see [[@requestLayout]]
 ***** android:layout_gravity & android:gravity
-       during onMeasure, view's size is fixed, after-wards, ViewGroup.onLayout will re-position children views and invoke child.onLayout to notify children
-       for their position.
+during onMeasure, view's size is fixed, after-wards, ViewGroup.onLayout will re-position children views and invoke child.onLayout to notify children
+for their position.
 
-       - similar with android:height, only a few views or ViewGroup has the android:gravity property.
-	 e.g. TextView has the android:gravity property, so that the inner text can be positioned to top/bottom/left/right
-	 LinearLayout also has the android:gravity, which control Linear Layout's children's gravity as a whole.
+- similar with android:height, only a few views or ViewGroup has the android:gravity property.
+  e.g. TextView has the android:gravity property, so that the inner text can be positioned to top/bottom/left/right
+  LinearLayout also has the android:gravity, which control Linear Layout's children's gravity as a whole.
 ****** How does LinearLayout make use of gravity.
-	- for *Vertical* LinearLayout with layout_height= *fill_parent* :
-	  vertical LinearLayout can only set it's android:gravity to `top,bottom,center_vertical`, which can move the children as a whole in
-	  vertical direction.
-	  vertical LinearLayout's child can set their android:layout_gravity to `left,right,center_horizontal`,which can move a single child view
-	  in the horizontal direction.
-
-	  that is, if u want to position a view in vertical LinearLayout to right-bottom, u can:
-	    - set LinearLayout.android:gravity to bottom
-	    - set view.android:layout_gravity to right
+- for *Vertical* LinearLayout with layout_height= *fill_parent* :
+  vertical LinearLayout can only set it's android:gravity to `top,bottom,center_vertical`, which can move the children as a whole in
+  vertical direction.
+  vertical LinearLayout's child can set their android:layout_gravity to `left,right,center_horizontal`,which can move a single child view
+  in the horizontal direction.
+  
+  that is, if u want to position a view in vertical LinearLayout to right-bottom, u can:
+  - set LinearLayout.android:gravity to bottom
+  - set view.android:layout_gravity to right
 
 #+BEGIN_EXAMPLE
 	    vertical LinearLayout      	       	      set android:gravity to bottom   		& set view1.layout_gravity to right
@@ -103,25 +93,25 @@ decorView since PopupWindow need not to be `decorated`.
 	   -+-----------------------+		     -+-----------------------+		       -+--------------------------+
 #+END_EXAMPLE
 
-	- for horizontal LinearLayout:
+- for horizontal LinearLayout:
 	  vice-versa
 
-**** [#B] invalidate
+**** invalidate
 *** view padding and margin
-     padding = 内边距
-     margin =  外边距
-     内,外是相对于容器(盒子)的边界而言, 以Button为例,Button可以看作一个盒子,设置button.padding会影响Button里的文字或图片与Button边界的距离,例如:
+padding = 内边距
+margin =  外边距
+内,外是相对于容器(盒子)的边界而言, 以Button为例,Button可以看作一个盒子,设置button.padding会影响Button里的文字或图片与Button边界的距离,例如:
 
-     Button
+Button
 #+BEGIN_EXAMPLE
        -+---------------+
        	|[padding] click|
        -+---------------+
 #+END_EXAMPLE
 
-     而button.margin会影响button与其更外层盒子(如layout)的边界
+而button.margin会影响button与其更外层盒子(如layout)的边界
 
-     LinearLayout
+LinearLayout
 #+BEGIN_EXAMPLE
        -+-------------------+
        	| [top margin] 	    |
@@ -131,19 +121,17 @@ decorView since PopupWindow need not to be `decorated`.
        -+-------------------+
 #+END_EXAMPLE
 
-   需要注意的一点是,android中view是没有margin属性的,只有 ViewGroup 才有margin属性, 所以,如果想达到上图的效果,不可能直接设置button的margin,而是需在将button
-   放在一个 ViewGroup 中,然后设置该 ViewGroup 的margin.
+需要注意的一点是,android中view是没有margin属性的,只有 ViewGroup 才有margin属性, 所以,如果想达到上图的效果,不可能直接设置button的margin,而是需在将button
+放在一个 ViewGroup 中,然后设置该 ViewGroup 的margin.
 
 *** DecorView
 *** findViewById
 *** Switch focus
-     11/17/10 9:41 am
-     Q:when press 'left' key, how the focus is changed?
-     A:
-     1. when viewRoot got the key event, it will firstly call 'dispatchKeyEventToViewHierachy' to dispatch the key event to it's correspondingg top level viw (i.e. DecorView)
-     2. If the key event is not handled by the view hierachy, viewRoot will call 'findFocus' to find next focus in 'handleFinishedEvent'
-
-     3. If the current focused view has set 'focus:right...' properties, viewRoot will call view.findViewById to find the next focus, or find the nearest focusable view in a specified rectangle area.
+Q:when press 'left' key, how the focus is changed?
+A:
+ 1. when viewRoot got the key event, it will firstly call 'dispatchKeyEventToViewHierachy' to dispatch the key event to it's correspondingg top level viw (i.e. DecorView)
+ 2. If the key event is not handled by the view hierachy, viewRoot will call 'findFocus' to find next focus in 'handleFinishedEvent'
+ 3. If the current focused view has set 'focus:right...' properties, viewRoot will call view.findViewById to find the next focus, or find the nearest focusable view in a specified rectangle area.
 
 *** getDrawingCache
 *** ViewGroup

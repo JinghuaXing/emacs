@@ -813,6 +813,7 @@ pm getInstallLocation
 *** android
 *** ddms
 *** decompile
+**** AXMLPrinter2
 **** dex2jar
 **** smali
 - 通过odex生成class文件
