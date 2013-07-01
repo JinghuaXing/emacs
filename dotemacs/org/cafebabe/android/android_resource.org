@@ -369,6 +369,7 @@ XMLPullParser 的所有功能, 还有一部分和 resource id 相关的功能, �
 
 AttribteSet 获取 resource id 后, 需要通过 resource (或 asset) 在资源中
 查找, 最终获取 TypedValue
+
 **** example
 #+BEGIN_SRC xml
   <application android:icon="@drawable/icon"
@@ -394,8 +395,7 @@ AttribteSet 获取 resource id 后, 需要通过 resource (或 asset) 在资源�
     
     
 #+END_SRC
-*** misc
-**** Configuration Qualifiers: Providing resources and supporting multiple screen.
+*** Configuration Qualifiers: Providing resources and supporting multiple screen.
 
 http://developer.android.com/guide/topics/resources/providing-resources.html
 http://developer.android.com/guide/practices/screens_support.html
@@ -411,7 +411,7 @@ http://developer.android.com/guide/practices/screens_support.html
    对多个 package 中最合适的 config 再进行比较, 找到所有 package 中最
    合适的 config
 
-***** match
+**** match
 
 density 在 match 阶段会被认为是都是 match 的, 因为系统对任何 density
 的图片都可以通过 scale 来和当前的屏幕匹配. 后续的 isBetterThan 会从各
@@ -536,7 +536,7 @@ density 在 match 阶段会被认为是都是 match 的, 因为系统对任何 d
 
 #+END_SRC
 
-***** isBetterThan
+**** isBetterThan
 
 isBetterThan(targetConfig, requestedConfig) is used to check `whether
 this config is better than targetConfig according to requestedConfig'
@@ -825,10 +825,10 @@ r 始终偏向 l (h>l), 且 h-l 越大, 越偏向 l
   }
 #+END_SRC
 
-***** isMoreSpecificThan'
+**** isMoreSpecificThan'
   select more specific resource package from resource packages
   (e.g. when there are overlay packages)
-
+*** misc
 **** get application resources?
 1. use PackageContext
 
@@ -1682,3 +1682,4 @@ AssetManager 会维护一个 drawable cache, 通过 preloadDrawable 加载进来
 内存的, 我们可能没有办法让它工作在其他的 vma. 
 
 **** Resource drawable cache
+*** mipmap drawable

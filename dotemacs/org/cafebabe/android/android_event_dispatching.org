@@ -7,36 +7,34 @@ WindowState.mClient (this is a IWindow), IWindow , as an AIDL register
 by viewRoot, will call viewRoot's dispatch() directory
 
 #+BEGIN_EXAMPLE
-     WMS get mClient, and call mClient.dispatch() through binder
-       ViewRoot.dispatchKey()
-         ViewRoot.sendEmptyMessage(DISPATCH_KEY)
-	   message handler: ViewRoot.deliverKeyEvent()
-	     ViewRoot.deliverKeyEventToViewHierarchy()
-	       Decorview.dispatchKeyEvent() ;; mView is the decorView
-	         if (is volume key)
-		   adjust volume
-		 if (has Window.Callback) ;; Activity, Dialog implents Window.Callback
-		   callback.dispatchKeyEvent()
-		     DecorView.superDispatchKeyEvent()
-		       ViewGroup.dispatchKeyEvent() ;; dispatch key event to view hierachy
-		         Travers the focus path, call every ViewGroup's dispatchKeyEvent, then finally,calls:
-			 focusView.dispatchKeyEvent()
-			   mOnKeyListener.onKey()
-			   if (not handled)
-			     event.dispatch(view) ;; view also implents Event.Callback
-		     if (not handled)
-		         event.dispatch(activity) ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
-		 else
-		   super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
-		                            ;; does not implents Window.Callback
-                 if (still not handled):
-                   Window.onKeyDown() or onKeyUp()
-                     // cope with MENU,CAMERA,VOLUME,MEDIA,CALL,SEARCH...
-               if (not handled)
-	         changeFocus()
-		 if not (focus changed)
-		   playSoundEffect
-	       sWindowSession.finishKey(mWindow) to tell AMS that key
+  WindowInputEventReceiver.onInputEvent();
+    ViewRoot.deliverKeyEvent()
+      ViewRoot.deliverKeyEventToViewHierarchy()
+        Decorview.dispatchKeyEvent() ;; mView is the decorView
+          if (is volume key)
+            adjust volume
+          if (has Window.Callback) ;; Activity, Dialog implents Window.Callback
+            callback.dispatchKeyEvent()
+              DecorView.superDispatchKeyEvent()
+                ViewGroup.dispatchKeyEvent() ;; dispatch key event to view hierachy
+                  Travers the focus path, call every ViewGroup's dispatchKeyEvent, then finally,calls:
+                  focusView.dispatchKeyEvent()
+                    mOnKeyListener.onKey()
+                    if (not handled)
+                      event.dispatch(view) ;; view also implents Event.Callback
+              if (not handled)
+                  event.dispatch(activity) ;; Activity implents Event.Callback, which implents onKeyUp, onKeyDown ...
+          else
+            super.dispatchKeyEvent() ;; view.dispatchKeyEvent, PopupWindow falls into this condition, since PopupWindow
+                                     ;; does not implents Window.Callback
+          if (still not handled):
+            Window.onKeyDown() or onKeyUp()
+              // cope with MENU,CAMERA,VOLUME,MEDIA,CALL,SEARCH...
+        if (not handled)
+          changeFocus()
+          if not (focus changed)
+            playSoundEffect
+        sWindowSession.finishKey(mWindow) to tell AMS that key
 #+END_EXAMPLE
 
     note that:
@@ -113,8 +111,70 @@ by viewRoot, will call viewRoot's dispatch() directory
 
 
 ** Lower Level (below ViewRoot)
-*** EventHub
-*** InputReader
-*** InputDispatcher
-*** InputMonitor
-*** InputFilter
+
+有最重要的几点需要明确:
+
+1. InputReader 使用 epoll 监听 EventHub 维护的多个输入设备.
+
+2. InputDispatcher, InputChannel 都使用了 Looper 进行高效的事件驱动.
+
+   1. C++ Looper 的实现十分高效 (通过 epoll, pipe, ..., 而不是通过线程同
+      步原语)
+
+3. InputEvent 是通过 ViewRoot 提供的 InputChannel 直接由 InputDispatcher 传
+   递给当前有焦点的进程的 ViewRoot, 并没有通过 WMS 中转, 以便提高效率.
+   不过 WMS 会负责通知 InputDispatcher 当前哪个 InputChannel 获得焦点.
+
+4. 在 dispatch 给 ViewRoot 之前, PhoneWindowManager 有机会通过.
+   InputDispatcher.interceptKeyBeforeQueueing/Dispatching 来处理系统硬
+   键, 如 HOME, POWERKEY, MENU, VOLUME, SEARCH, ...
+
+#+BEGIN_EXAMPLE
+
+                           +--------------+    +--------------+   +--------------+
+                           | /dev/input/1 |    | /dev/input/2 |   | /dev/input/3 |
+                           +-----------+--+    +------+-------+   +-------+------+
+                                       |              |                   |
+                                       |       +------+---+               |
+                                       +-------+ EventHub +---------------+
+                                               +-----+----+
+                                                     |   +---------------+
+                                                     |   v     epoll     |
+              +--------------------+        +--------+---+--------+      |
+              | ViewRoot.addWindow |        |  InputReaderThread  +------+
+              +------+-------------+        +--------+------------+
+                     |                               |   +----------------+
+                     v                               |   v looper.poll    |
+         +-----------+--------------+       +--------+---+-----------+    |
+         | WMS.registerInputChannel +-------+  InputDispatcherThread +----+
+         +--------------------------+       +--------+---------------+
+                                                     |
+                                                     |
+                                             +-------+---------------------------------------------------+
+                                             | PhoneWindowManager.interceptKeyBeforeQueueing/Dispatching |
+                                             +-------+---------------------------------------------------+
+                                                     | 1. find the InputChannel that has focus. 
+                                                     | 2. wake up the related looper
+                                                     | 3. Looper.handleEvent will notify the InputEventReceiver
+                                            +--------+------------------------+
+                                            | InputEventReceiver.onInputEvent |
+                                            +---------------------------------+
+
+#+END_EXAMPLE
+*** C++
+**** EventHub
+**** InputReader
+**** InputDispatcher
+- Looper
+- interceptKeyBeforeQueueing
+- interceptKeyBeforeDispatching
+**** InputManagerService
+**** InputEventReceiver
+- Looper
+*** Java
+**** InputManagerService
+**** InputEventReceiver
+**** InputMonitor
+**** InputChannel
+**** InputFilter
+** Event Dispatching ANR

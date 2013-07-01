@@ -178,7 +178,8 @@ C-o [进入scroll模式，用C-p,C-n移动到要保存的区域的开始，按SP
 ** shc
    shc -- generic shell script compiler
 ** ssh
-
+- socks 代理
+  ssh -D 1234 -f -N weisun@bs
 ** tac
 ** tex
 ** tidy

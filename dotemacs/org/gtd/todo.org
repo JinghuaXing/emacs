@@ -313,7 +313,9 @@ CLOSED: [2013-06-14 Fri 15:39]
 Q: A B 是否可能不同?
 A: yes...
 [2013-06-07 Fri 19:01]
-* TODO android backup                                                  :todo:
+* DONE android backup                                                  :todo:
+CLOSED: [2013-07-01 Mon 11:24]
+- State "DONE"       from "TODO"       [2013-07-01 Mon 11:24]
 [2013-06-17 Mon 20:57]
 * DONE Android resource: match, isBetterThan and isMoreSpecificThan    :todo:
 CLOSED: [2013-06-20 Thu 14:51]
@@ -325,3 +327,10 @@ CLOSED: [2013-06-20 Thu 14:51]
 [2013-06-24 Mon 14:23]
 * TODO Message.setAsynchronous ? (see performTraversals)                        :todo:
 [2013-06-24 Mon 18:17]
+* TODO learn tintin++                                                  :todo:
+[2013-06-26 Wed 13:41]
+* TODO android resource: how to do with resources in static jar lib    :todo:
+e.g. frameworks/ex/chips 
+[2013-06-26 Wed 14:04]
+* TODO mipmap drawable can't be replaced in Calculator                 :todo:
+[2013-06-28 Fri 18:07]

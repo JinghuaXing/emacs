@@ -242,9 +242,9 @@
 (global-unset-key (kbd "<C-wheel-down>"))
 
 ;; (prefer-coding-system 'gb18030)
-(prefer-coding-system 'utf-8-unix)
-(setq coding-system-for-read 'utf-8-unix)
-(setq coding-system-for-write 'utf-8-unix)
+;; (prefer-coding-system 'utf-8-unix)
+;; (setq coding-system-for-read 'utf-8-unix)
+;; (setq coding-system-for-write 'utf-8-unix)
 
 (require 'quickrun)
 (global-set-key (kbd "<f5>") 'quickrun)
@@ -319,3 +319,6 @@
 
 (eval-after-load "sql"
   '(load-library "sql-indent"))
+
+(require 'tintin-mode)
+(add-to-list 'auto-mode-alist '("\\.tin$" . tintin-mode))
