@@ -323,7 +323,9 @@ CLOSED: [2013-06-20 Thu 14:51]
 [2013-06-18 Tue 16:00]
 * TODO InputDispatcher & InputManagerService & InputFilter             :todo:
 [2013-06-21 Fri 14:00]
-* TODO xmlpullparser                                                   :todo:
+* DONE xmlpullparser                                                   :todo:
+CLOSED: [2013-07-03 Wed 13:37]
+- State "DONE"       from "TODO"       [2013-07-03 Wed 13:37]
 [2013-06-24 Mon 14:23]
 * TODO Message.setAsynchronous ? (see performTraversals)                        :todo:
 [2013-06-24 Mon 18:17]
@@ -332,5 +334,9 @@ CLOSED: [2013-06-20 Thu 14:51]
 * TODO android resource: how to do with resources in static jar lib    :todo:
 e.g. frameworks/ex/chips 
 [2013-06-26 Wed 14:04]
-* TODO mipmap drawable can't be replaced in Calculator                 :todo:
+* CANCELLED mipmap drawable can't be replaced in Calculator            :todo:
+CLOSED: [2013-07-02 Tue 12:11]
+- State "CANCELLED"  from "TODO"       [2013-07-02 Tue 12:11]
 [2013-06-28 Fri 18:07]
+* TODO Looper.pollOnce                                                 :todo:
+[2013-07-02 Tue 12:11]

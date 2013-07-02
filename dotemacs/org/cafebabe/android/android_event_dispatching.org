@@ -109,7 +109,6 @@ by viewRoot, will call viewRoot's dispatch() directory
       SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
       - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
 
-
 ** Lower Level (below ViewRoot)
 
 有最重要的几点需要明确:
@@ -153,7 +152,7 @@ by viewRoot, will call viewRoot's dispatch() directory
                                              +-------+---------------------------------------------------+
                                              | PhoneWindowManager.interceptKeyBeforeQueueing/Dispatching |
                                              +-------+---------------------------------------------------+
-                                                     | 1. find the InputChannel that has focus. 
+                                                     | 1. find the InputChannel that has focus.
                                                      | 2. wake up the related looper
                                                      | 3. Looper.handleEvent will notify the InputEventReceiver
                                             +--------+------------------------+
@@ -178,3 +177,40 @@ by viewRoot, will call viewRoot's dispatch() directory
 **** InputChannel
 **** InputFilter
 ** Event Dispatching ANR
+** 再看 Looper
+*** Java looper vs. C++ looper
+
+#+BEGIN_EXAMPLE
+                                                                 |
+                                                       Java      |    C++
+       +---------+                                               |
+       | Handler +--------+                                      |
+       +---------+        |                                      |
+                          |                                      |
+       +---------+        |   +--------+    +--------------+     |     +--------------------+  +--------+
+       | Handler +--------+---+ Looper +----+ MessageQueue +-----+-----+ NativeMessageQueue +--+ Looper |
+       +---------+        |   +--------+    +--------------+     |     +--------------------+  +--------+
+                          |                                      |
+       +---------+        |                                      |
+       | Handler +--------+                                      |
+       +---------+                                               |
+                                                                 |
+                                                                 |
+
+#+END_EXAMPLE
+
+
+- Java Looper (及其 Handler, Message) 与 C++ Looper (及其 Message,
+  MessageHandler) 并没有直接的关系, 而且,令人不解的是, Java looper 和
+  C++ looper 的许多代码, 例如, Java looper 的 enqueueMessage vs. C++
+  looper 的 sendMessage, 以及 Java looper 的 MessageQueue.next
+  vs. C++ looper 的 pollOnce 等, 都是很类似的....即 Java looper 与
+  C++ looper 对消息的收,发,处理都是独立的代码....Java looper 并不是对
+  C++ looper 的封装.
+
+- Java looper 与 C++ looper 的唯一联系, 是 MessageQueue <--->
+  NativeMessageQueue, 但 Java MessageQueue 与 NativeMessageQueue 的功
+  能也很有限, 只是借用了 C++ looper 高效的 pollOnce 和 wake 机制. 
+
+*** Looper.sendMessage
+*** Looper.pollOnce & wake
