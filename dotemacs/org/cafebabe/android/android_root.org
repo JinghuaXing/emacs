@@ -4,7 +4,7 @@
 *** SuperUser.apk
 *** The malicious `su'
 ** Rooting tookit
-*** zerRush
+*** zergRush
 ** After rooted, we can
 *** refrain notification
 *** refrain broadcast (include BOOT_COMPLETED)

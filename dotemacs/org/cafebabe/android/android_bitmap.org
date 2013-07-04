@@ -1,0 +1,38 @@
+#+TITLE: Android Bitmap
+* Android Bitmap
+** Tips
+- use LrcCache as memroy cache, and use disk cache to avoid bitmap decoding
+  http://developer.android.com/training/displaying-bitmaps/cache-bitmap.html
+
+- resize the bitmap to save memory
+  http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
+
+- use `inBitmap' to reuse memory
+  http://developer.android.com/training/displaying-bitmaps/manage-memory.html
+
+- about ARGB_8888, ARGB_4444 and RGB_565
+  http://www.curious-creature.org/2010/12/08/bitmap-quality-banding-and-dithering/
+
+** Java
+*** BitmapFactory
+**** BitmapFactory.options
+- inBitmap
+- inDither
+- inPreferredConfig
+- inSampleSize
+- inScaled
+- inTempStorage
+- inJustDecodeBounds
+  - outHeight
+  - outWidth
+
+
+** C++
+*** SkBitmap
+*** Allocator
+**** JavaPixelAllocator
+**** HeapAllocator
+*** SkPixelRef
+**** SkMallocPixelRef
+***** AndroidPixelRef
+

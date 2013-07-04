@@ -11,6 +11,11 @@ without the users notification, it's state will be `saved`, e.g.:
 
 Activity's `instance state` mainly matters 3 aspects:
 1. view hierarchy
+   - view hierarchy
+   - focused view id
+   - panels
+     - panels
+     - actionBarState
 2. managed dialog
 3. fragments
 
@@ -76,5 +81,9 @@ only matters about configurationChange
    the same mID), so these ViewGroup must override the
    `dispatchSaveInstanceState` method.
 5. view with mID==NO_ID, or with view flag: SAVE_DISABLED_MASK will not be saved
+6. the view `hierarchy`, e.g. the view tree relationship is actually
+   not saved ... when restoring, the view hierarchy is inflated as
+   usual, but the inflated view's state will later be restored by
+   former view's saved state.
    
    

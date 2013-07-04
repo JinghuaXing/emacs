@@ -1,14 +1,11 @@
 #+TITLE: Android WindowManager
 * WindowManager
 ** addView
-2010-11-16
 window.addView() will firstly gen (viewRoot,view,layout_param) tuple, then call ViewRoot.setView() to ask WMS to add the view.
 since ViewRoot has an IWindowSession, and it will send IWindow to WMS (as mClient), it can communicate with WMS back and forth.
 
-2010-11-15
 window.addView() will add [new viewroot,decorView] tuple to
-WindowManagerImpl, when WMS want to dispatch event to window, e.g. key event, it will
-call mClient.dispatchKey() to viewRoot, viewRoot, as a handler, will then dispatch key event to it's looper
+WindowManagerImpl.
 
 Activity and Dialog will generate decorView automatically, then call
 WM.addView(decorView) to window.  but PopupWindow will not generate
@@ -1635,5 +1632,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 窗口的组织方式。在接下来的一篇文章中，我们就将继续分析WindowManagerService服务是如何组织系统中的窗口的。敬请关注！
 #+END_QUOTE
 
-** Application Transition
+** App Transition
 *** overridePendingTransition
+** Starting Window
+** Input Event Dispatching
+see also [[Android Event Dispatching]]
+
+** performTraversals

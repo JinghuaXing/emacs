@@ -197,7 +197,9 @@ CLOSED: [2013-04-03 Wed 11:08]
 :ID:       8c4e40f6-22e2-42c8-ade1-4a9d6b4ae3b1
 :END:
 [2013-04-10 Wed 11:52]
-* TODO proguard                                                        :todo:
+* DONE proguard                                                        :todo:
+CLOSED: [2013-07-09 Tue 13:57]
+- State "DONE"       from "TODO"       [2013-07-09 Tue 13:57]
 :PROPERTIES:
 :ID:       d521ec01-0670-43ea-9e72-9f3eafb9c1af
 :END:
@@ -219,11 +221,6 @@ CLOSED: [2013-06-20 Thu 15:56]
 :ID:       9d22c209-2353-4b7c-a345-887bf602e8d0
 :END:
 [2013-04-18 Thu 17:15]
-* TODO android bitmap                                                  :todo:
-:PROPERTIES:
-:ID:       674906fa-dd51-4596-8a2a-6367e76786bd
-:END:
-[2013-04-19 Fri 10:36]
 * TODO android memory                                                  :todo:
 [2013-04-19 Fri 13:56]
 * TODO ptmalloc                                                        :todo:
@@ -327,9 +324,13 @@ CLOSED: [2013-06-20 Thu 14:51]
 CLOSED: [2013-07-03 Wed 13:37]
 - State "DONE"       from "TODO"       [2013-07-03 Wed 13:37]
 [2013-06-24 Mon 14:23]
-* TODO Message.setAsynchronous ? (see performTraversals)                        :todo:
+* DONE Message.setAsynchronous ? (see performTraversals)               :todo:
+CLOSED: [2013-07-09 Tue 13:56]
+- State "DONE"       from "TODO"       [2013-07-09 Tue 13:56]
 [2013-06-24 Mon 18:17]
-* TODO learn tintin++                                                  :todo:
+* DONE learn tintin++                                                  :todo:
+CLOSED: [2013-07-05 Fri 10:15]
+- State "DONE"       from "TODO"       [2013-07-05 Fri 10:15]
 [2013-06-26 Wed 13:41]
 * TODO android resource: how to do with resources in static jar lib    :todo:
 e.g. frameworks/ex/chips 
@@ -338,5 +339,19 @@ e.g. frameworks/ex/chips
 CLOSED: [2013-07-02 Tue 12:11]
 - State "CANCELLED"  from "TODO"       [2013-07-02 Tue 12:11]
 [2013-06-28 Fri 18:07]
-* TODO Looper.pollOnce                                                 :todo:
+* DONE Looper.pollOnce                                                 :todo:
+CLOSED: [2013-07-04 Thu 11:58]
+- State "DONE"       from "TODO"       [2013-07-04 Thu 11:58]
 [2013-07-02 Tue 12:11]
+* TODO listview fling 时有后退的错觉? 这是抽样定理在作怪么?            :todo:
+[2013-07-04 Thu 15:45]
+* DONE how menu and overflow menu is saved and restored during configurationChange? :todo:
+CLOSED: [2013-07-05 Fri 11:46]
+- State "DONE"       from "TODO"       [2013-07-05 Fri 11:46]
+[2013-07-05 Fri 11:00]
+* TODO access provider in binder thread is slow?                       :todo:
+[2013-07-09 Tue 16:51]
+* TODO android bitmap                                                  :todo:
+[2013-07-09 Tue 17:28]
+* TODO installd                                                        :todo:
+[2013-07-12 Fri 13:55]

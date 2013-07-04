@@ -1532,7 +1532,7 @@ onRestoreInstanceState,onPostCreate,onResume.
 **** Properties
 ***** FINISH_ON_TASK_LAUNCH  [launch related]
 ***** CLEAR_TASK_ON_LAUNCH  [launch related]
-       activity must be taks's root activity
+activity must be taks's root activity
 ***** ALLOW_TASK_REPARENTING
 ***** ALWAYS_RETAIN_TASK_STATE
 **** moveTaskToBack

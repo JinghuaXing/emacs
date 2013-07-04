@@ -115,7 +115,7 @@ by viewRoot, will call viewRoot's dispatch() directory
 
 1. InputReader 使用 epoll 监听 EventHub 维护的多个输入设备.
 
-2. InputDispatcher, InputChannel 都使用了 Looper 进行高效的事件驱动.
+2. InputDispatcher, InputChannel 都使用了 Looper 进行高效的事件通知.
 
    1. C++ Looper 的实现十分高效 (通过 epoll, pipe, ..., 而不是通过线程同
       步原语)
@@ -169,16 +169,46 @@ by viewRoot, will call viewRoot's dispatch() directory
 - interceptKeyBeforeDispatching
 **** InputManagerService
 **** InputEventReceiver
-- Looper
+
 *** Java
 **** InputManagerService
-**** InputEventReceiver
+**** InputEventReceiver & InputChannel
+InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点. 
 **** InputMonitor
-**** InputChannel
 **** InputFilter
+
+*** InputChannel 的注册过程
+1. ViewRootImpl.setView 时, 会先生成一个 InputChannel, 并使用这个
+   InputChannel 生成一个 InputEventReceiver
+
+   1. InputEventReceiver 初始化时会调用到 NativeInputEventReceiver 的相关
+      代码, 最终会通过 Looper.addFd 将 InputChannel 对应的 fd 添加到
+      looper, 并且其对应的 callback 就是 NativeInputEventReceiver.handleEvent
+
+2. ViewRootImpl.setView 会再调用 WMS.addView (InputChannel)
+
+3. WMS.addView 会先生成一对 InputChannel (即一个管道), 然后将
+   ViewRootImpl 传来的 InputChannel transferTo 到
+   InputChannelPair[1], 然后将 InputChannelPair[0] 注册到 InputManagerService.
+
+4. 最终, 当 InputManagerService 一侧的 InputChannel 被 write 时,
+   ViewRootImpl 一侧的 InputChannel 就会有反应, 其 InputEventReceiver
+   中的相关函数 (如 onInputEvent 就会被调用), 这个过程是
+   InputManagerService 直接通过 Looper 通知 ViewRoot 的.
+
+*** To summarize
+- InputReader, InputDispatcher, InputEventReceiver, InputChannel 以及
+  Looper 是整个 event dispatching 中比较重要的部分.
+
+- 以一次 event dispatching 为例, 会涉及到三次 pollOnce, 两个 looper
+  1. InputReader 通过 pollOnce 在 EventHub 上监听事件
+  2. InputReader 和 InputDispatcher 通过一个 looper 进行生产/消费的通知
+  3. ViewRootImpl 一侧通过 InputEventReceiver 注册的本进程的 looper 来
+     响应 InputChannel 的通知, 处理事件. 
+
 ** Event Dispatching ANR
 ** 再看 Looper
-*** Java looper vs. C++ looper
+*** Java Looper vs. C++ Looper
 
 #+BEGIN_EXAMPLE
                                                                  |
@@ -212,5 +242,219 @@ by viewRoot, will call viewRoot's dispatch() directory
   NativeMessageQueue, 但 Java MessageQueue 与 NativeMessageQueue 的功
   能也很有限, 只是借用了 C++ looper 高效的 pollOnce 和 wake 机制. 
 
-*** Looper.sendMessage
-*** Looper.pollOnce & wake
+*** C++ Looper
+**** Looper.sendMessage
+**** Looper.pollOnce & wake
+***** pollOnce
+#+BEGIN_SRC java
+  int Looper::pollOnce(int timeoutMillis, int* outFd, int* outEvents, void** outData) {
+      int result = 0;
+      for (;;) {
+          // 首先, 先返回上一次 for (;;) 循环 处理过的其他通过 addFd() 添加的 fd
+          // 上的事件, 一次返回一件. 
+          while (mResponseIndex < mResponses.size()) {
+              const Response& response = mResponses.itemAt(mResponseIndex++);
+              int ident = response.request.ident;
+              if (ident >= 0) {
+                  int fd = response.request.fd;
+                  int events = response.events;
+                  void* data = response.request.data;
+                  #if DEBUG_POLL_AND_WAKE
+                      ALOGD("%p ~ pollOnce - returning signalled identifier %d: "
+                            "fd=%d, events=0x%x, data=%p",
+                            this, ident, fd, events, data);
+                  #endif
+                      if (outFd != NULL) *outFd = fd;
+                  if (outEvents != NULL) *outEvents = events;
+                  if (outData != NULL) *outData = data;
+                  return ident;
+              }
+          }
+          
+          // result != 0 的判断可以使用 pollInner 执行且只执行一次
+          if (result != 0) {
+              // 这里表示所有 addFd 添加的 fd 上的事件都报告完毕, 现在报
+              // 告的是 waitPipeFd 上的 message 事件
+              #if DEBUG_POLL_AND_WAKE
+                  ALOGD("%p ~ pollOnce - returning result %d", this, result);
+              #endif
+                  if (outFd != NULL) *outFd = 0;
+              if (outEvents != NULL) *outEvents = 0;
+              if (outData != NULL) *outData = NULL;
+              return result;
+          }
+  
+          // 上面的代码都只是向上层已处理的事件. pollInner 才是真正处理
+          // 事件
+          result = pollInner(timeoutMillis);
+      }
+  }
+  
+  int Looper::pollInner(int timeoutMillis) {
+      // Adjust the timeout based on when the next message is due.
+      // pollOnce 被调用时通常会指定一个很大的 timeout (例如
+      // LONG_LONG_MAX), 此时会根据 mNextMessageUptime (最近的一个
+      // message 的 uptime)调整一下 timeout, 以便通过 epoll 超时来及时的
+      // 处理 pending message
+      
+      if (timeoutMillis != 0 && mNextMessageUptime != LLONG_MAX) {
+          nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+          int messageTimeoutMillis = toMillisecondTimeoutDelay(now, mNextMessageUptime);
+          if (messageTimeoutMillis >= 0
+              && (timeoutMillis < 0 || messageTimeoutMillis < timeoutMillis)) {
+              timeoutMillis = messageTimeoutMillis;
+          }
+      }
+  
+      // Poll.
+      int result = ALOOPER_POLL_WAKE;
+      mResponses.clear();
+      mResponseIndex = 0;
+  
+      struct epoll_event eventItems[EPOLL_MAX_EVENTS];
+      int eventCount = epoll_wait(mEpollFd, eventItems, EPOLL_MAX_EVENTS, timeoutMillis);
+  
+      // Acquire lock.
+      mLock.lock();
+  
+      // Check for poll timeout. 超时
+      if (eventCount == 0) {
+          result = ALOOPER_POLL_TIMEOUT;
+          goto Done;
+      }
+  
+      for (int i = 0; i < eventCount; i++) {
+          int fd = eventItems[i].data.fd;
+          uint32_t epollEvents = eventItems[i].events;
+              if (fd == mWakeReadPipeFd) {
+                  // 是被 pipe 唤醒的, 则调用 awoken 消耗掉 fd 中的所有内容. 然后转到 Done
+                  if (epollEvents & EPOLLIN) {
+                      awoken();
+                  } else {
+                      ALOGW("Ignoring unexpected epoll events 0x%x on wake read pipe.", epollEvents);
+                  }
+              } else {
+                  // 是被 addFd 中 fd 唤醒的, 则构造一个 response 放到
+                  // mResponse 中, Done 时会处理.  
+                  ssize_t requestIndex = mRequests.indexOfKey(fd);
+                  if (requestIndex >= 0) {
+                      int events = 0;
+                      if (epollEvents & EPOLLIN) events |= ALOOPER_EVENT_INPUT;
+                      if (epollEvents & EPOLLOUT) events |= ALOOPER_EVENT_OUTPUT;
+                      if (epollEvents & EPOLLERR) events |= ALOOPER_EVENT_ERROR;
+                      if (epollEvents & EPOLLHUP) events |= ALOOPER_EVENT_HANGUP;
+                      pushResponse(events, mRequests.valueAt(requestIndex));
+                  } else {
+                      ALOGW("Ignoring unexpected epoll events 0x%x on fd %d that is "
+                            "no longer registered.", epollEvents, fd);
+                  }
+              }
+          }
+  Done: ;
+  
+      // Invoke pending message callbacks.
+      // 先处理所有 pending message
+      mNextMessageUptime = LLONG_MAX;
+      while (mMessageEnvelopes.size() != 0) {
+          nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+          const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(0);
+          // mMessageEnvelopes 是一个 vector, 但是是按照 uptime 来排序的.
+          // 所有uptime 小于 now 的会被处理 (handleMessage), 
+          if (messageEnvelope.uptime <= now) {
+              // Remove the envelope from the list.
+              // We keep a strong reference to the handler until the call to handleMessage
+              // finishes.  Then we drop it so that the handler can be deleted *before*
+              // we reacquire our lock.
+              { // obtain handler
+                  sp<MessageHandler> handler = messageEnvelope.handler;
+                  Message message = messageEnvelope.message;
+                  mMessageEnvelopes.removeAt(0);
+                  mSendingMessage = true;
+                  mLock.unlock();
+  
+                  #if DEBUG_POLL_AND_WAKE || DEBUG_CALLBACKS
+                                                 ALOGD("%p ~ pollOnce - sending message: handler=%p, what=%d",
+                                                       this, handler.get(), message.what);
+                  #endif
+                      handler->handleMessage(message);
+              } // release handler
+  
+              mLock.lock();
+              mSendingMessage = false;
+              result = ALOOPER_POLL_CALLBACK;
+          } else {
+              // The last message left at the head of the queue
+              // determines the next wakeup time.
+              // 设置 mNextMessageUptime
+              mNextMessageUptime = messageEnvelope.uptime;
+              break;
+          }
+      }
+  
+      // Release lock.
+      mLock.unlock();
+  
+      // 处理所有 reponse (handleEvent)
+      // Invoke all response callbacks.
+      for (size_t i = 0; i < mResponses.size(); i++) {
+          Response& response = mResponses.editItemAt(i);
+          if (response.request.ident == ALOOPER_POLL_CALLBACK) {
+              int fd = response.request.fd;
+              int events = response.events;
+              void* data = response.request.data;
+              #if DEBUG_POLL_AND_WAKE || DEBUG_CALLBACKS
+                                             ALOGD("%p ~ pollOnce - invoking fd event callback %p: fd=%d, events=0x%x, data=%p",
+                                                   this, response.request.callback.get(), fd, events, data);
+              #endif
+                  int callbackResult = response.request.callback->handleEvent(fd, events, data);
+              if (callbackResult == 0) {
+                  removeFd(fd);
+              }
+              // Clear the callback reference in the response structure promptly because we
+              // will not clear the response vector itself until the next poll.
+              response.request.callback.clear();
+              result = ALOOPER_POLL_CALLBACK;
+          }
+      }
+      return result;
+  }
+  
+#+END_SRC
+***** wake
+#+BEGIN_SRC java
+  void Looper::wake() {
+      ssize_t nWrite;
+      do {
+          nWrite = write(mWakeWritePipeFd, "W", 1);
+      } while (nWrite == -1 && errno == EINTR);
+  
+      if (nWrite != 1) {
+          if (errno != EAGAIN) {
+              ALOGW("Could not write wake signal, errno=%d", errno);
+          }
+      }
+  }
+#+END_SRC
+***** To summarize
+
+- pollOnce 运行一次会处理一批的 response (epoll_wait 返回的所有
+  reponse) 和 message (根据各 message的 uptime 选择的 message)
+
+- response 和 message 的处理过程不太一样:
+  1. response 通过 epoll_wait 返回, 并且返回后一次性处理完.
+  2. message 通过 SendMessageAtTime 可以暂存在 MessageEnvelope 中, 等
+     epoll_wait 返回或超时时根据 uptime 选择性的处理
+  3. sendMessageAtTime 通常不需要 wake poll, 除非是插到队头, 这里为了
+     及时响应这个 message, 会强制 wake poll.
+
+*** Java Looper
+**** Looper.postSyncBarrier
+***** MessageQueue.enqueueSyncBarrier
+syncBarrier 实际上就是一种特殊的 Message: 它的 tagetHandler 为 null,
+当 MessageQueue 处理到这种 Message 时, 会停顿下来, 直到该 Message 被
+removeSyncBarrier 移除. 但 asynchronous 的 Message 不受 syncBarrier 的
+限制. 
+**** Message.setAsynchronous
+Asynchronous Message 和 通信系统的 OOB 消息类似, 可以通知一些紧急情况,
+因为它不受 syncBarrier 的限制, 可以保证在指定的时间一定会被处理. 但与
+OOB 不同的是, 它并没有单独的通道, 即它要和其他 Message 一起排队. 

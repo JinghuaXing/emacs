@@ -526,11 +526,10 @@ will run with proper uid/gid/groups
 ** LowMemoryKiller
 *** oom adj
 ** misc
-*** DONE [#A] bitmap recycle
-    SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 11:46]
-    - State "DONE"       [2011-02-10 Thu 11:46]
-    Bitmap.recycle() will call nativeRecycle() to release native memory used by Skia. But, we don't need call it directly, since Bitmap.finalize()
-    will call it.
+*** bitmap recycle
+Bitmap.recycle() will call nativeRecycle() to release native memory
+used by Skia. But, we don't need call it directly, since
+Bitmap.finalize() will call it.
 *** android 尺寸单位 (px,pt,dp,sp..)
 - px 即像素
 - dip 是传统的屏幕分辩率的度量, 即一英寸宽度上像素点的个数
@@ -567,8 +566,9 @@ will run with proper uid/gid/groups
    :PROPERTIES:
    :CUSTOM_ID: Notification
    :END:
-   Notification intent will use FLAG_NEW_TASK implicitly, and the target activity *should* use blank string ("") as affinity, to reduce the risk that
-   startActivity from notification falls into an existing task;
+Notification intent will use FLAG_NEW_TASK implicitly, and the target
+activity *should* use blank string ("") as affinity, to reduce the
+risk that startActivity from notification falls into an existing task;
 
 *** "" as taskAffinity
     see `startActivityUnchecked`
