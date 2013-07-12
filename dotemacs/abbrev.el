@@ -27,7 +27,7 @@
 
 (define-skeleton skeleton-log-func
   "generate int main(int argc, char * argc[]) automatic" nil
-  >"Log.e (\"sunway\","_");")
+  >"Log.e (\"sunway\",\"" (buffer-name) ":" (int-to-string (line-number-at-pos)) ":\"" _");")
 
 (define-abbrev-table 'java-mode-abbrev-table '(
     ("log" "" skeleton-log-func 1)
