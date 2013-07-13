@@ -322,3 +322,10 @@
 
 (require 'tintin-mode)
 (add-to-list 'auto-mode-alist '("\\.tin$" . tintin-mode))
+
+(require 'git-gutter)
+(global-git-gutter-mode t)
+(setq git-gutter:update-threshold 5)
+(setq git-gutter:modified-sign "*") 
+(setq git-gutter:added-sign "+")  
+(setq git-gutter:deleted-sign "-")
