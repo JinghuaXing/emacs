@@ -85,4 +85,5 @@
 MemoryFile 的 public 接口中并没有包含 getParcelFileDescriptor, 这从根
 本上限制了 MemoryFile 无法提供共享内存的功能, 虽然底层的 ashmem 是支持
 的...
-** CursorWindow and ashmem
+** CursorWindow and ashmem (using MemoryFile)
+** Bitmap and ashmem (using Parcel.Blob)

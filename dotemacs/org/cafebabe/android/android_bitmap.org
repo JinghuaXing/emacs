@@ -1,5 +1,6 @@
 #+TITLE: Android Bitmap
 * Android Bitmap
+see also [[Android Skia]]
 ** Tips
 - use LrcCache as memroy cache, and use disk cache to avoid bitmap decoding
   http://developer.android.com/training/displaying-bitmaps/cache-bitmap.html
@@ -13,6 +14,15 @@
 - about ARGB_8888, ARGB_4444 and RGB_565
   http://www.curious-creature.org/2010/12/08/bitmap-quality-banding-and-dithering/
 
+** Terminology
+*** pixel
+*** color table
+*** stride
+*** dither
+*** RGB vs. YUV
+*** alpha channel
+*** ARGB_8888, ARGB_4444 and RGB_565
+*** gray (灰度值)
 ** Java
 *** BitmapFactory
 **** BitmapFactory.options
@@ -26,7 +36,10 @@
   - outHeight
   - outWidth
 
-
+*** Bitmap.createBitmap
+*** Bitmap.getPixels
+http://blog.csdn.net/sunboy_2050/article/details/7308805
+*** Bitmap.setPixels
 ** C++
 *** SkBitmap
 *** Allocator
@@ -35,4 +48,69 @@
 *** SkPixelRef
 **** SkMallocPixelRef
 ***** AndroidPixelRef
+**** lock/unlock
+**** ref/unref
+** Overall
+*** create
+#+BEGIN_SRC text
+  // Bitmap.java
+  Bitmap.createBitmap()
+    Bitmap bm = nativeCreate();
+      // Bitmap.cpp
+      Bitmap_creator();
+        SkBitmap bitmap;
+        jbyteArray buff = GraphicsJNI::allocateJavaPixelRef(env,&bitmap, NULL);
+          jbyteArray arrayObj = env->NewByteArray(size);
+          SkPixelRef* pr = new AndroidPixelRef(env, (void*) addr, size, arrayObj, ctable);
+          bitmap->setPixelRef(pr)->unref();
+        return env->NewObject(...,bitmap,...);     
+          
+        
+#+END_SRC
 
+*** finalize
+#+BEGIN_SRC text
+  BitmapFinalizer.finalize()
+    // Bitmap.cpp
+    nativeDestructor(mNativeBitmap);
+      delete skBitmap;
+        ~SkBitmap
+          this->freePixels();
+            fPixelRef->unref();
+              // SkRefCnt.h
+              if (sk_atomic_dec(&fRefCnt) == 1):
+                SkDELETE(this); // delete (this)
+                  ~AndroidPixelRef()
+                    env->DeleteGlobalRef(fStorageObj);
+#+END_SRC
+
+*** copy
+*** recycle
+*** parcel
+**** Parcel.Blob
+*** mutability
+*** Summaries
+
+- Bitmap use Parcel.WritableBlob (which is a simple wrapper of ashmem)
+  to write bitmap pixels large than 1MB through binder.
+
+- Why there is a SkPixelRef to trace the ref count of the storageObj?
+
+  SkRefCnt (or SkPixelRef) is the base class for objects that may be
+  shared by multiple objects. When a new owner wants a reference, it
+  calls ref(). When an owner wants to release its reference, it calls
+  unref().  When the shared object's reference count goes to zero as
+  the result of an unref() call, its (virtual) destructor is
+  called. It is an error for the destructor to be called explicitly
+  (or via the object going out of scope on the stack or calling
+  delete) if getRefCnt() > 1.
+
+  AndroidPixelRef is a SkRefCnt for the fStorageObj, that is,
+  `SkBitmap.setPixelRef(ref)' means `this bitmap refs the fStorageObj'
+
+  But currently I don't see many use of the SkRefCnt ...,
+  SkBitmap.setPixelRef is invoked only in a few cases, e.g. by
+  SkGpuDevice.drawBitmap(SkBitmap, SkIRect), which will draw a
+  part of the origin SkBitmap, instead of copy the origin SkBitmap,
+  it will use SkBitmap.extractSubset, which will create a SkBitmap
+  referring to the origin SkBitmap.
