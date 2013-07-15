@@ -10,6 +10,7 @@
 (add-to-list 'load-path "~/.elisp/smartparens/")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
+(require 's)
 (load custom-file)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
@@ -322,3 +323,6 @@
 
 (require 'tintin-mode)
 (add-to-list 'auto-mode-alist '("\\.tin$" . tintin-mode))
+
+(require 'diff-hl)
+(global-diff-hl-mode)

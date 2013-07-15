@@ -1,8 +1,8 @@
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(LaTeX-command "xelatex")
  '(TeX-command-list (quote (("TeX" "%(PDF)%(tex) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil (plain-tex-mode texinfo-mode ams-tex-mode) :help "Run plain TeX") ("LaTeX" "xelatex%(mode) %t" TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX") ("Makeinfo" "makeinfo %t" TeX-run-compile nil (texinfo-mode) :help "Run Makeinfo with Info output") ("Makeinfo HTML" "makeinfo --html %t" TeX-run-compile nil (texinfo-mode) :help "Run Makeinfo with HTML output") ("AmSTeX" "%(PDF)amstex %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil (ams-tex-mode) :help "Run AMSTeX") ("ConTeXt" "texexec --once --texutil %(execopts)%t" TeX-run-TeX nil (context-mode) :help "Run ConTeXt once") ("ConTeXt Full" "texexec %(execopts)%t" TeX-run-TeX nil (context-mode) :help "Run ConTeXt until completion") ("BibTeX" "bibtex %s" TeX-run-BibTeX nil t :help "Run BibTeX") ("View" "%V" TeX-run-discard-or-function t t :help "Run Viewer") ("Print" "%p" TeX-run-command t t :help "Print the file") ("Queue" "%q" TeX-run-background nil t :help "View the printer queue" :visible TeX-queue-command) ("File" "%(o?)dvips %d -o %f " TeX-run-command t t :help "Generate PostScript file") ("Index" "makeindex %s" TeX-run-command nil t :help "Create index file") ("Check" "lacheck %s" TeX-run-compile nil (latex-mode) :help "Check LaTeX file for correctness") ("Spell" "(TeX-ispell-document \"\")" TeX-run-function nil t :help "Spell-check the document") ("Clean" "TeX-clean" TeX-run-function nil t :help "Delete generated intermediate files") ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files") ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
  '(TeX-file-extensions (quote ("tex" "sty" "cls" "ltx" "texi" "texinfo" "dtx" "bmer")))
@@ -15,6 +15,7 @@
  '(ac-use-fuzzy t)
  '(ahs-case-fold-search nil)
  '(anything-command-map-prefix-key "s-SPC")
+ '(auto-coding-alist (quote (("\\.\\(arc\\|zip\\|lzh\\|lha\\|zoo\\|[jew]ar\\|xpi\\|rar\\|7z\\|ARC\\|ZIP\\|LZH\\|LHA\\|ZOO\\|[JEW]AR\\|XPI\\|RAR\\|7Z\\)\\'" . no-conversion-multibyte) ("\\.\\(exe\\|EXE\\)\\'" . no-conversion) ("\\.\\(sx[dmicw]\\|odt\\|tar\\|t[bg]z\\)\\'" . no-conversion) ("\\.\\(gz\\|Z\\|bz\\|bz2\\|xz\\|gpg\\)\\'" . no-conversion) ("\\.\\(jpe?g\\|png\\|gif\\|tiff?\\|p[bpgn]m\\)\\'" . no-conversion) ("\\.pdf\\'" . no-conversion) ("/#[^/]+#\\'" . emacs-mule) ("\\.tin\\'" . gbk))))
  '(auto-indent-next-pair-timer-geo-mean (quote ((default 0.0005 0))))
  '(auto-indent-next-pair-timer-interval (quote ((emacs-lisp-mode 1.5) (java-mode 1.5) (default 0.0005))))
  '(back-button-index-timeout 0)
@@ -57,6 +58,7 @@
  '(deft-text-mode (quote org-mode))
  '(desktop-lazy-idle-delay 2)
  '(desktop-load-locked-desktop t)
+ '(diff-hl-draw-borders t)
  '(dired-backup-overwrite t)
  '(dired-find-subdir nil)
  '(display-time-24hr-format t)
@@ -190,10 +192,10 @@
  '(xgtags-show-paths (quote expanded)))
 
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#0b0f23" :foreground "#f8f8f2" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 105 :width normal :foundry "unknown" :family "DejaVu Sans Mono"))))
  '(bm-face ((((class color) (background dark)) (:background "SkyBlue1" :foreground "Black"))))
  '(diff-added ((((background dark)) (:foreground "#FFFF9B9BFFFF")) (t (:foreground "DarkGreen"))))
@@ -201,12 +203,16 @@
  '(diff-context ((((background dark)) (:foreground "White")) (t (:foreground "Black"))))
  '(diff-file-header ((((background dark)) (:foreground "Cyan" :background "Black")) (t (:foreground "Red" :background "White"))))
  '(diff-header ((((background dark)) (:foreground "Cyan")) (t (:foreground "Red"))))
+ '(diff-hl-change ((t (:background "cornflower blue" :foreground "blue"))))
+ '(diff-hl-delete ((t (:background "LightPink1" :foreground "red"))))
+ '(diff-hl-insert ((t (:background "pale green" :foreground "green"))))
  '(diff-hunk-header ((((background dark)) (:foreground "Black" :background "#05057F7F8D8D")) (t (:foreground "White" :background "Salmon"))))
  '(diff-index ((((background dark)) (:foreground "Magenta")) (t (:foreground "Green"))))
  '(diff-nonexistent ((((background dark)) (:foreground "#FFFFFFFF7474")) (t (:foreground "DarkBlue"))))
  '(diff-removed ((((background dark)) (:foreground "#7474FFFF7474")) (t (:foreground "DarkMagenta"))))
  '(ecb-default-highlight-face ((t (:background "olivedrab" :foreground "white"))))
  '(ecb-tag-header-face ((t (:background "olivedrab" :foreground "white"))))
+ '(ediff-fine-diff-B ((t (:background "dark violet"))))
  '(font-latex-sectioning-2-face ((t (:foreground "green" :height 1.5))))
  '(font-latex-sectioning-3-face ((t (:inherit font-latex-sectioning-4-face :foreground "yellow" :height 1.3))))
  '(font-latex-sectioning-4-face ((t (:inherit font-latex-sectioning-5-face :foreground "cyan" :height 1.1))))

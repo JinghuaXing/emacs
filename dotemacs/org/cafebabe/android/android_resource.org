@@ -1201,8 +1201,14 @@ Manifest, Asset, Resource
 
   生成 apk (不包含 classes.dex)
 
+- aapt package -S res/ -c mdpi,en -A ./asset -M AndroidManifest.xml -I android.jar -F
+  ./1.apk
+
+  生成 apk (不包含 classes.dex), 但只包含 mdpi 和 en 的资源 (对应于
+  Android.mk 中的 LOCAL_AAPT_FLAG)
+
 - aapt package -S res/ -A ./asset -M AndroidManifest.xml -I
-  android.jar -F ./1.apk -c zh,mdpi
+  android.jar -F ./1.apk -c zh -c mdpi
 
   生成的 apk 只包含 resource qualifiers 为 zh 或 mdpi 的资源
 

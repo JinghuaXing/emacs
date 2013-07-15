@@ -1,19 +1,6 @@
 #+TITLE: Android Bitmap
 * Android Bitmap
 see also [[Android Skia]]
-** Tips
-- use LrcCache as memroy cache, and use disk cache to avoid bitmap decoding
-  http://developer.android.com/training/displaying-bitmaps/cache-bitmap.html
-
-- resize the bitmap to save memory
-  http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
-
-- use `inBitmap' to reuse memory
-  http://developer.android.com/training/displaying-bitmaps/manage-memory.html
-
-- about ARGB_8888, ARGB_4444 and RGB_565
-  http://www.curious-creature.org/2010/12/08/bitmap-quality-banding-and-dithering/
-
 ** Terminology
 *** pixel
 *** color table
@@ -22,7 +9,9 @@ see also [[Android Skia]]
 *** RGB vs. YUV
 *** alpha channel
 *** ARGB_8888, ARGB_4444 and RGB_565
-*** gray (灰度值)
+*** gray
+*** matrix
+*** scale
 ** Java
 *** BitmapFactory
 **** BitmapFactory.options
@@ -50,7 +39,7 @@ http://blog.csdn.net/sunboy_2050/article/details/7308805
 ***** AndroidPixelRef
 **** lock/unlock
 **** ref/unref
-** Overall
+** Topics
 *** create
 #+BEGIN_SRC text
   // Bitmap.java
@@ -87,8 +76,66 @@ http://blog.csdn.net/sunboy_2050/article/details/7308805
 *** copy
 *** recycle
 *** parcel
+see also [[asheme]]
 **** Parcel.Blob
 *** mutability
+*** density and scale
+Bitmap 本身并没所谓的 density 的概念, Bitmap 主要存储的是 pixel 数组,
+表示一共有多少个像素, 每个像素的 ARGB 值, 并不会存储该图片的物理尺寸,
+也就不会有什么 density 的概念. 所以, 同一张图片, 在不同 density 的屏幕
+上显示的大小是不同的. 
+
+- inDensity vs. inTargetDensity
+  inDensity 是指 bitmap 本身的 density, 
+
+  #+BEGIN_QUOTE
+   <p>If this is 0,
+   {@link BitmapFactory#decodeResource(Resources, int)}, 
+   {@link BitmapFactory#decodeResource(Resources, int, android.graphics.BitmapFactory.Options)},
+   and {@link BitmapFactory#decodeResourceStream}
+   will fill in the density associated with the resource.  The other
+   functions will leave it as-is and no density will be applied.
+  #+END_QUOTE
+  
+  即若 bitmap 是通过 resource 获得,则 resource 会负责将 bitmap 的
+  inDensity 填充为相应的值(根据图片资源的 config), 同样
+  inTargetDensity 也会被 resource 自动填充.
+
+- scaled width
+  
+  对于一个图片来说, 其 width 和 height 对应的是它的 pixel 数, 在任何设
+  备上其 width 和 height 都是固定的. 但如果通过 java 给 bitmap 设置一个
+  density 的属性, 则这个 density 的意义是什么? 实际上, bitmap (或者
+  dib) 文件本身并没有所谓的 density 属性. 
+
+  若给一个 bitmap 指定了一个 density (通过 decodeResource 或者
+  setDensity), 其意义在于:
+  
+  #+BEGIN_CENTER
+  指定了该图片期望的物理显示大小 (inch, 或 dp), 例如, 该图片有100
+  pixel, 若指定 density 为 100, 则期望的物理大小为 1 inch, 即 160 dp
+  #+END_CENTER
+ 
+  此时, 若设备的 density 为 200, 则若 100 pixel 的图片直接显示的话,
+  其物理大小为 100/200 = 0.5 inch = 80 dp, 因为需要对原图进行 scale
+  up, 最终 100 pixel 的图片 scale up 成 200 pixel. 200 pixel 即为
+  scaledWidth. 
+
+  bitmap.getWidth 返回的是 scaledWidth, 而不是原始图片的 width. 同样,
+  因为 scale 会导致 bitmap pixel 的变多或变少, 所以相应的 bitmap 大小
+  也会变化. 
+
+- How to scale a bitmap
+  #+BEGIN_SRC text
+    Bitmap.createScaledBitmap  
+      ...
+  #+END_SRC
+  使用
+
+  #+BEGIN_EXAMPLE
+  Canvas.setMatrix -> Canvas.setBitmap(scaledBitmap) ->  Canvas.drawBitmap() 
+  #+END_EXAMPLE
+
 *** Summaries
 
 - Bitmap use Parcel.WritableBlob (which is a simple wrapper of ashmem)
@@ -114,3 +161,17 @@ http://blog.csdn.net/sunboy_2050/article/details/7308805
   part of the origin SkBitmap, instead of copy the origin SkBitmap,
   it will use SkBitmap.extractSubset, which will create a SkBitmap
   referring to the origin SkBitmap.
+
+** References
+- use LrcCache as memroy cache, and use disk cache to avoid bitmap decoding
+  http://developer.android.com/training/displaying-bitmaps/cache-bitmap.html
+
+- resize the bitmap to save memory
+  http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
+
+- use `inBitmap' to reuse memory
+  http://developer.android.com/training/displaying-bitmaps/manage-memory.html
+
+- about ARGB_8888, ARGB_4444 and RGB_565
+  http://www.curious-creature.org/2010/12/08/bitmap-quality-banding-and-dithering/
+
