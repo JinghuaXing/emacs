@@ -88,14 +88,14 @@ Bitmap 本身并没所谓的 density 的概念, Bitmap 主要存储的是 pixel 
 - inDensity vs. inTargetDensity
   inDensity 是指 bitmap 本身的 density, 
 
-  #+BEGIN_QUOTE
+  #+BEGIN_EXAMPLE
    <p>If this is 0,
    {@link BitmapFactory#decodeResource(Resources, int)}, 
    {@link BitmapFactory#decodeResource(Resources, int, android.graphics.BitmapFactory.Options)},
    and {@link BitmapFactory#decodeResourceStream}
    will fill in the density associated with the resource.  The other
    functions will leave it as-is and no density will be applied.
-  #+END_QUOTE
+  #+END_EXAMPLE
   
   即若 bitmap 是通过 resource 获得,则 resource 会负责将 bitmap 的
   inDensity 填充为相应的值(根据图片资源的 config), 同样
