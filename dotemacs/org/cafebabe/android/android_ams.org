@@ -104,51 +104,54 @@ just as startService, priority are considered, and a list of all candidates are 
 ** Activity                                                       :activity:
 *** AMS side
 **** finishedActivityLocked
-      finishCurrentActivity eventually will not stop and destroy activity at once, it will pose it in an array, when idle, it will call activityIdle to purge the activities.
-      When is idle? There are 2 scen:
-      1) thread.scheduleResumeActivity will pose one 'Idler' in the msg queue after onResume is finished. Idler will invoke AMS.activityIdle
-	 2)AMS is smart enough to pose on one delayed IDLE_TIMEOUT_MSG to the handler in case there is no Idler since onResume hangs. The delayed timeout is 10s.
+finishCurrentActivity eventually will not stop and destroy activity at
+once, it will pose it in an array, when idle, it will call
+activityIdle to purge the activities.
 
-	 That is, onStop and onDestroy may be delayed for 10s after another activity's onResume is called.
-	 11/23/10 11:40 am
-	 finishActivityLocked
-	 startPausing
+When is idle? There are 2 scen:
+ 1) thread.scheduleResumeActivity will pose one 'Idler' in the msg queue after onResume is finished. Idler will invoke AMS.activityIdle
+ 2)AMS is smart enough to pose on one delayed IDLE_TIMEOUT_MSG to the handler in case there is no Idler since onResume hangs. The delayed timeout is 10s.
 
-	 ...
+ That is, onStop and onDestroy may be delayed for 10s after another activity's onResume is called.
+ 11/23/10 11:40 am
+ finishActivityLocked
+ startPausing
 
-	 activityPaused
-	 finishCurrentActivity --> mark the activity for destroy
-	 resumeTopActivity
-	 ...
-	 activity resumed --> pose idler timer to destroy activity marked befored
+ ...
 
-	 11/17/10 6:46 pm
-	 assume that when A is finished and B will be resumed: first, A is paused, then B is resumed, and A is stopped and destroyed at last
+ activityPaused
+ finishCurrentActivity --> mark the activity for destroy
+ resumeTopActivity
+ ...
+ activity resumed --> pose idler timer to destroy activity marked befored
 
-
-	 11/17/10 6:37 pm
-	 To prevent if activity.onPause doesn't return in a period of time(500ms), AMS will call sendMessageDelayed() in startPausingLocked() to send itself one PAUSE_TIMEOUT msg to force itself call activityPaused().
-         
-	 That is, although activity.onPause() may block, AMS is assured to resume	next activity in 500ms.
+ 11/17/10 6:46 pm
+ assume that when A is finished and B will be resumed: first, A is paused, then B is resumed, and A is stopped and destroyed at last
 
 
-      1. activity.finish() will call AMS's finishActivity() through
-         AIDL, providing activity's IBinder as parameter so that AMS
-         can recognize the corresponding HistoryRecord in AMS.
+ 11/17/10 6:37 pm
+ To prevent if activity.onPause doesn't return in a period of time(500ms), AMS will call sendMessageDelayed() in startPausingLocked() to send itself one PAUSE_TIMEOUT msg to force itself call activityPaused().
+    
+ That is, although activity.onPause() may block, AMS is assured to resume	next activity in 500ms.
 
-      2. AMS calls
-	 finishActivityLocked()
-	 startPausingLocked()
-	 thread.schedulePauseActivity()
 
-      3. thread.schedulePauseActivity() will call activity.onPause(),
-         then notify AMS that activity is paused through
-         AMS.activityPaused()
+ 1. activity.finish() will call AMS's finishActivity() through
+    AIDL, providing activity's IBinder as parameter so that AMS
+    can recognize the corresponding HistoryRecord in AMS.
 
-      4. activityPaused()
-	 completePauseActivity()
-	 mark activity for stop when idle
-	 resumeTopActivity()
+ 2. AMS calls
+ finishActivityLocked()
+ startPausingLocked()
+ thread.schedulePauseActivity()
+
+ 3. thread.schedulePauseActivity() will call activity.onPause(),
+    then notify AMS that activity is paused through
+    AMS.activityPaused()
+
+ 4. activityPaused()
+ completePauseActivity()
+ mark activity for stop when idle
+ resumeTopActivity()
 
 **** attachApplication
 

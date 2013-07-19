@@ -351,9 +351,13 @@ CLOSED: [2013-07-05 Fri 11:46]
 [2013-07-05 Fri 11:00]
 * TODO access provider in binder thread is slow?                       :todo:
 [2013-07-09 Tue 16:51]
-* TODO android bitmap                                                  :todo:
+* DONE android bitmap                                                  :todo:
+CLOSED: [2013-07-19 Fri 10:37]
+- State "DONE"       from "TODO"       [2013-07-19 Fri 10:37]
 [2013-07-09 Tue 17:28]
 * TODO installd                                                        :todo:
 [2013-07-12 Fri 13:55]
-* TODO mat                                                             :todo:
+* DONE mat                                                             :todo:
+CLOSED: [2013-07-19 Fri 10:37]
+- State "DONE"       from "TODO"       [2013-07-19 Fri 10:37]
 [2013-07-16 Tue 19:58]

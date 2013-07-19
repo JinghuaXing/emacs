@@ -139,6 +139,58 @@ adj 只有两种:
   对应 system 进程
 
 *** trimApplications
+**** activityIdle
+当 resumeActivity 完成后, 新启动的 activity 会在自己的 MessageQueue 上
+注册一个 idler, 该 idler 会执行 ams.activityIdle, 以便 finish 之前的
+activity, 并做一些清理的动作. 
+
+#+BEGIN_SRC text
+  activityIdleInternal()
+    // 调用之前的 activity 的 onStop
+    for (i=0; i<NS; i++):
+        ActivityRecord r = (ActivityRecord)stops.get(i);
+        stopActivityLocked(r);
+    // 调用之前 activity 的 onDestroy      
+    for (i=0; i<NF; i++):
+        ActivityRecord r = (ActivityRecord)finishes.get(i);
+        destroyActivityLocked(r, true, false, "finish-idle");
+    mService.trimApplications();
+      // First remove any unused application processes whose package 
+      // has been removed. 
+      for (i=mRemovedProcesses.size()-1; i>=0; i--):
+        // kill process;
+        // mRemovedProcesses 是之前通过 handleAppCrashLocked, 或者
+        // killAllBackgroundProcesses, 或者 killPackageProcessesLocked
+        // 等被标记为 kill 的进程.
+        Process.killPackageProcessesLocked()
+        cleanUpApplicationRecordLocked()
+  
+      // Now update the oom adj for all processes.
+      // 最关键的代码, 包括计算 oom adj, trim memory, 关闭过多的后台
+      // 进程等 ...
+      updateOomAdjLocked();
+       foreach process:
+         updateOomAdjLocked();
+           computeOomAdjLocked();
+         if (!app.killedBackground):
+           // 若当前进程的 adj 为后台, 则台台进程过多, 则 kill 该进程
+           // 其中 MAX_HIDDEN_APPS 定义为 15
+            if (app.curAdj >= ProcessList.HIDDEN_APP_MIN_ADJ) {
+                numHidden++;
+                if (numHidden > MAX_HIDDEN_APPS):
+             app.killedBackground = true;
+             Process.killProcessQuiet(app.pid);
+         // fi app.killedBackground  
+        // foreach end
+        // 然后根据 numHidden 计算一个 trim level, 然后根据 adj, trim level
+        // 等决定向哪些 app 发送 onTrimMemory(level) 调用.
+        // TODO: how to calculate trim level
+#+END_SRC
+**** To summaries
+在适当的时候, updateOomAdj 会被调用, 主要作用是:
+1. 修改所有进程的 adj, 并通知 kernel
+2. 根据 MAX_HIDDEN_APPS kill 某些后台应用
+3. 对剩下来的某些应用调用 onTrimMemory, 并指定不同的 trim level
 *** low memory killer
 
 ** misc
