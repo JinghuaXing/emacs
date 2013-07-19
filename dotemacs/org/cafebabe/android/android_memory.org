@@ -49,6 +49,41 @@
 ** recycle
 [[http://www.ibm.com/developerworks/cn/opensource/os-cn-android-mmry-rcycl/index.html][Android 操作系统的内存回收机制]]
 *** oom adj
+java 层定义的 oom adj 和 low memory killer 及 oom killer 使用的 oom
+adj 是对应的, framework 会通过 /proc 将上层设定的 oom adj 传递给
+kernel.
+
+low memory killer 会维护一个 oom adj 与 系统最低内存的 threshold 的关系,
+当系统内存少于此 threshold 时, 所有高于该 oom adj 的进程都会成为可能
+的 victim, low memory killer 会从这些 victim 中选择一个杀掉
+
+#+BEGIN_SRC c
+  static int lowmem_adj[6] = { 
+      0, 
+      1, 
+      6, 
+      12, 
+  }; 
+  static int lowmem_adj_size = 4; 
+  static size_t lowmem_minfree[6] = { 
+      3 * 512,      /* 6MB */ 
+      2 * 1024,     /* 8MB */ 
+      4 * 1024,     /* 16MB */ 
+      16 * 1024,    /* 64MB */ 
+  }; 
+  static int lowmem_minfree_size = 4; 
+#+END_SRC
+
+可见, 进程的 oom adj 小于 0 的话, 是不可能被 lmk 杀掉的, 这类的 oom
+adj 只有两种:
+
+- PERSISTENT_PROC_ADJ = -12;
+  对应 persist 进程
+
+- SYSTEM_ADJ = -16;
+  对应 system 进程
+
+**** ProcessRecord adj
 #+BEGIN_SRC java
   static int HIDDEN_APP_MAX_ADJ = 15;
   static int HIDDEN_APP_MIN_ADJ = 9;
@@ -104,39 +139,19 @@
   static final int SYSTEM_ADJ = -16;
   
 #+END_SRC
-java 层定义的 oom adj 和 low memory killer 及 oom killer 使用的 oom
-adj 是对应的, framework 会通过 /proc 将上层设定的 oom adj 传递给
-kernel.
 
-low memory killer 会维护一个 oom adj 与 系统最低内存的 threshold 的关系,
-当系统内存少于此 threshold 时, 所有高于该 oom adj 的进程都会成为可能
-的 victim, low memory killer 会从这些 victim 中选择一个杀掉
-
-#+BEGIN_SRC c
-  static int lowmem_adj[6] = { 
-      0, 
-      1, 
-      6, 
-      12, 
-  }; 
-  static int lowmem_adj_size = 4; 
-  static size_t lowmem_minfree[6] = { 
-      3 * 512,      /* 6MB */ 
-      2 * 1024,     /* 8MB */ 
-      4 * 1024,     /* 16MB */ 
-      16 * 1024,    /* 64MB */ 
-  }; 
-  static int lowmem_minfree_size = 4; 
+#+BEGIN_SRC java
+  int maxAdj;                 // Maximum OOM adjustment for this process
+  int hiddenAdj;              // If hidden, this is the adjustment to use
+  int curRawAdj;              // Current OOM unlimited adjustment for this process
+  int setRawAdj;              // Last set OOM unlimited adjustment for this process
+  int nonStoppingAdj;         // Adjustment not counting any stopping activities
+  int curAdj;                 // Current OOM adjustment for this process
+  int setAdj;                 // Last set OOM adjustment for this process
+  static final int TMP_CUR_ADJ_DEFAULT = 100;
+  int tmpCurRawAdj = TMP_CUR_ADJ_DEFAULT; // Set by application to change it's oom_adj tempropraly
+  int tmpCurAdj = TMP_CUR_ADJ_DEFAULT;    // Set by application to change it's oom_adj tempropraly
 #+END_SRC
-
-可见, 进程的 oom adj 小于 0 的话, 是不可能被 lmk 杀掉的, 这类的 oom
-adj 只有两种:
-
-- PERSISTENT_PROC_ADJ = -12;
-  对应 persist 进程
-
-- SYSTEM_ADJ = -16;
-  对应 system 进程
 
 *** trimApplications
 **** activityIdle

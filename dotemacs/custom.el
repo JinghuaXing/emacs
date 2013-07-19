@@ -122,6 +122,8 @@
  '(org-icalendar-include-todo t)
  '(org-icalendar-use-deadline (quote (event-if-not-todo event-if-todo todo-due)))
  '(org-icalendar-use-scheduled (quote (event-if-not-todo event-if-todo todo-start)))
+ '(org-latex-pdf-process (quote ("xelatex -interaction nonstopmode %f" "xelatex -interaction nonstopmode %f" "xelatex -interaction nonstopmode %f")))
+ '(org-latex-to-pdf-process (quote ("xelatex -interaction nonstopmode %f" "xelatex -interaction nonstopmode %f")))
  '(org-publish-list-skipped-files t)
  '(org-publish-sitemap-sort-files (quote anti-chronologically))
  '(org-publish-use-timestamps-flag t)

@@ -66,11 +66,11 @@
 	"xelatex -interaction nonstopmode %f"))
 
 
-(add-to-list 'org-export-latex-default-packages-alist
+(add-to-list 'org-latex-default-packages-alist
 	     '("" "xeCJK" nil)
 	     t
 	     )
-(add-to-list 'org-export-latex-default-packages-alist
+(add-to-list 'org-latex-default-packages-alist
 	     "\\setCJKmainfont{WenQuanYi Zen Hei}
 \\setmainfont{Droid Serif}"
 	     t
