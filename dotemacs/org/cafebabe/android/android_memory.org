@@ -45,6 +45,127 @@
 
 注意看 uss 的差别. 
 
-** appendix
+** allocation
+** recycle
+[[http://www.ibm.com/developerworks/cn/opensource/os-cn-android-mmry-rcycl/index.html][Android 操作系统的内存回收机制]]
+*** oom adj
+#+BEGIN_SRC java
+  static int HIDDEN_APP_MAX_ADJ = 15;
+  static int HIDDEN_APP_MIN_ADJ = 9;
+  
+  // The B list of SERVICE_ADJ -- these are the old and decrepit
+  // services that aren't as shiny and interesting as the ones in the A list.
+  static int SERVICE_B_ADJ = 8;
+  
+  // This is the process of the previous application that the user was in.
+  // This process is kept above other things, because it is very common to
+  // switch back to the previous app.  This is important both for recent
+  // task switch (toggling between the two top recent apps) as well as normal
+  // UI flow such as clicking on a URI in the e-mail app to view in the browser,
+  // and then pressing back to return to e-mail.
+  static int PREVIOUS_APP_ADJ = 7;
+  
+  // This is a process holding the home application -- we want to try
+  // avoiding killing it, even if it would normally be in the background,
+  // because the user interacts with it so much.
+  static int HOME_APP_ADJ = 6;
+  
+  // This is a process holding an application service -- killing it will not
+  // have much of an impact as far as the user is concerned.
+  static int SERVICE_ADJ = 5;
+  
+  // This is a process currently hosting a backup operation.  Killing it
+  // is not entirely fatal but is generally a bad idea.
+  static int BACKUP_APP_ADJ = 4;
+  
+  // This is a process with a heavy-weight application.  It is in the
+  // background, but we want to try to avoid killing it.  Value set in
+  // system/rootdir/init.rc on startup.
+  static int HEAVY_WEIGHT_APP_ADJ = 3;
+  
+  // This is a process only hosting components that are perceptible to the
+  // user, and we really want to avoid killing them, but they are not
+  // immediately visible. An example is background music playback.
+  static int PERCEPTIBLE_APP_ADJ = 2;
+  
+  // This is a process only hosting activities that are visible to the
+  // user, so we'd prefer they don't disappear.
+  static int VISIBLE_APP_ADJ = 1;
+  
+  // This is the process running the current foreground app.  We'd really
+  // rather not kill it!
+  static int FOREGROUND_APP_ADJ = 0;
+  
+  // This is a system persistent process, such as telephony.  Definitely
+  // don't want to kill it, but doing so is not completely fatal.
+  static final int PERSISTENT_PROC_ADJ = -12;
+  
+  // The system process runs at the default adjustment.
+  static final int SYSTEM_ADJ = -16;
+  
+#+END_SRC
+java 层定义的 oom adj 和 low memory killer 及 oom killer 使用的 oom
+adj 是对应的, framework 会通过 /proc 将上层设定的 oom adj 传递给
+kernel.
+
+low memory killer 会维护一个 oom adj 与 系统最低内存的 threshold 的关系,
+当系统内存少于此 threshold 时, 所有高于该 oom adj 的进程都会成为可能
+的 victim, low memory killer 会从这些 victim 中选择一个杀掉
+
+#+BEGIN_SRC c
+  static int lowmem_adj[6] = { 
+      0, 
+      1, 
+      6, 
+      12, 
+  }; 
+  static int lowmem_adj_size = 4; 
+  static size_t lowmem_minfree[6] = { 
+      3 * 512,      /* 6MB */ 
+      2 * 1024,     /* 8MB */ 
+      4 * 1024,     /* 16MB */ 
+      16 * 1024,    /* 64MB */ 
+  }; 
+  static int lowmem_minfree_size = 4; 
+#+END_SRC
+
+可见, 进程的 oom adj 小于 0 的话, 是不可能被 lmk 杀掉的, 这类的 oom
+adj 只有两种:
+
+- PERSISTENT_PROC_ADJ = -12;
+  对应 persist 进程
+
+- SYSTEM_ADJ = -16;
+  对应 system 进程
+
+*** trimApplications
+*** low memory killer
+
+** misc
+*** bionic optimization for malloc ?
+#+BEGIN_SRC c
+  char * buffer = (char *) malloc(1024*1024*50);
+  int i=0;
+  for (i=0;i<1024*1024*50; ++i) {
+      buffer[i]=1;
+  }
+#+END_SRC
+
+above code in linux will consume 50MB rss as expected, but under
+androd, rss is not consumed at all? Seems there is a kind of
+optimization ? 
+
+#+BEGIN_SRC c
+  char * buffer = (char *) malloc(1024*1024*50);
+  int i=0;
+  for (i=0;i<1024*1024*50; ++i) {
+      buffer[i]=random();
+  }
+#+END_SRC
+
+But if we fill the memory will `random', both linux and android will
+consume 50MB rss.
+
+** Reference
 - [[http://stackoverflow.com/questions/2298208/how-to-discover-memory-usage-of-my-application-in-android][how-to-discover-memory-usage-of-my-application-in-android]]
 - [[http://stackoverflow.com/questions/131303/linux-how-to-measure-actual-memory-usage-of-an-application-or-process][linux-how-to-measure-actual-memory-usage-of-an-application-or-process]]

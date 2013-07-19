@@ -174,7 +174,7 @@ Android Security Executable Cache
 *** DexClassLoader
 *** PathClassLoader
 *** Context.getClassLoader
-    see also [[Context.getClassLoader]]
+see also [[Context.getClassLoader]]
 ** ContentObserver
 ** DONE [#A] Context
    SCHEDULED: <2011-06-02 Thu> CLOSED: [2011-06-13 Mon 16:57]
