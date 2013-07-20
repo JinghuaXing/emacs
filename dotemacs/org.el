@@ -42,7 +42,7 @@
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-todo-ignore-scheduled t)
 (setq org-agenda-todo-ignore-deadlines t)
-(setq org-agenda-todo-ignore-with-date t)
+ (setq org-agenda-todo-ignore-with-date t)
 (setq org-deadline-warning-days 3)
 ;; (define-key org-mode-map (kbd "C-c a") 'org-toggle-archive-tag)
 (define-key org-mode-map (kbd "C-c t") 'org-todo)
@@ -52,6 +52,7 @@
 
 (define-key org-agenda-mode-map (kbd "C-c C-c") 'org-agenda-set-tags)
 (define-key org-agenda-mode-map (kbd "C-c /") 'org-agenda-filter-by-tag)
+(define-key org-agenda-mode-map (kbd "/") 'org-agenda-filter-by-tag)
 (setq org-agenda-sorting-strategy '((agenda time-up priority-down category-keep)
 				    (todo todo-state-down priority-down category-keep)
 				    (tags priority-down category-keep)
@@ -128,16 +129,16 @@
 
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
-      (quote (("t" "todo" entry (file "~/.elisp/dotemacs/org/gtd/todo.org")
-               "* TODO %?  :todo:\n%U\n\n")
-	      ("p" "project" entry (file "~/.elisp/dotemacs/org/gtd/project.org")
-               "* TODO %? :project:\n%U\n\n")
+      (quote (("w" "work" entry (file "~/.elisp/dotemacs/org/gtd/work.org")
+               "* TODO %?  :work:\n%U\n\n")
+	      ("l" "life" entry (file "~/.elisp/dotemacs/org/gtd/life.org")
+               "* TODO %? :life:\n%U\n\n")
               ("j" "joke" entry (file "~/.elisp/dotemacs/org/joke.org")
-               "* %? \n%U\n\n")
+               "* %? :joke:\n%U\n\n")
 	      ("n" "note" entry (file "~/.elisp/dotemacs/org/note.org")
-               "* %? \n%U\n\n")
-              ("h" "habit" entry (file "~/.elisp/dotemacs/org/gtd/habit.org")
-               "* TODO %? :habit:\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
+               "* %? :note:\n%U\n\n")
+              ("h" "life habit" entry (file "~/.elisp/dotemacs/org/gtd/life.org")
+               "* TODO %? :life:habit:\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
 
 (setq org-agenda-start-with-log-mode t)
 
@@ -161,20 +162,8 @@
 	 :publishing-function org-publish-org-to-html
 	 :headline-levels 4             ; Just the default for this project.
 	 :auto-preamble t
-	 :exclude ".*_secret.org"
+	 :exclude ".*password.org"
 	 :auto-sitemap t
-	 :sitemap-sort-folders nil    
-	 )
-	("gtd"
-	 :base-directory "~/.elisp/dotemacs/org/gtd/"
-	 :base-extension "org"
-	 :publishing-directory "~/.github.pages/gtd"
-	 :recursive t
-	 :publishing-function org-publish-org-to-html
-	 :headline-levels 4             ; Just the default for this project.
-	 :auto-preamble t
-	 :auto-sitemap t
-	 :exclude ".*_secret.org"
 	 :sitemap-sort-folders nil    
 	 )
 	))

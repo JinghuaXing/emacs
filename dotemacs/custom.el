@@ -110,7 +110,7 @@
  '(mo-git-blame-use-ido (quote always))
  '(newsticker-url-list-defaults nil)
  '(nxml-slash-auto-complete-flag t)
- '(org-agenda-custom-commands (quote (("n" "Agenda and all TODO's" ((agenda "" ((org-agenda-ndays 7))) (alltodo))))))
+ '(org-agenda-custom-commands (quote (("a" "Agenda and all work TODO's" ((agenda "" ((org-agenda-ndays 7))) (alltodo))) ("l" "Agenda and all life TODO's" ((agenda "" ((org-agenda-ndays 7) (org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd/life.org"))))) (tags-todo "+life-habit"))) ("w" "Agenda and all work TODO's" ((agenda "" ((org-agenda-ndays 7) (org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd/work.org"))))) (tags-todo "+work"))))))
  '(org-agenda-persistent-filter t)
  '(org-babel-load-languages (quote ((emacs-lisp . t) (dot . t) (ditaa . t) (R . t) (python . t) (ruby . t) (gnuplot . t) (clojure . t) (sh . t) (ledger . t) (org . t) (plantuml . t) (latex . t))))
  '(org-capture-bookmark nil)

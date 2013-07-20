@@ -1,25 +1,26 @@
-* TODO Android eng-mode vs. user-mode                                  :todo:
+* TODO Android eng-mode vs. user-mode                                  :work:
 :PROPERTIES:
 :ID:       e929f022-e18c-4dbf-aa92-7701bbd40931
 :END:
-* DONE write git tips                                                
+* DONE write git tips                                                  :work:
 CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
   
-* DONE android SparseIntArray                                        
+* DONE android SparseIntArray                                          :work:
 CLOSED: [2012-04-27 周五 00:14]
-* DONE AsyncQueryHandler && loader                                   
+* DONE AsyncQueryHandler && loader                                     :work:
 CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
-* TODO 文学编程 与 org-babel                                           :todo:
+* WAITING 文学编程 与 org-babel                                        :work:
+- State "WAITING"    from "TODO"       [2013-07-19 Fri 15:45]
 :PROPERTIES:
 :ID:       89f342d8-f1a3-47d3-9c55-8f97f58f492c
 :END:
 http://www.jstatsoft.org/v46/i03/paper
-* DONE sticky broadcast                                              
+* DONE sticky broadcast                                                :work:
 CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
-* DONE android killed-app detection                                  
+* DONE android killed-app detection                                    :work:
 CLOSED: [2012-07-09 Mon 09:33]
 maybe using Watchdog? Nop! STICKY service should be one of the solutions
-* DONE [#A] provider, sqlite, cursor                                   :todo:
+* DONE [#A] provider, sqlite, cursor                                   :work:
 CLOSED: [2013-02-20 Wed 20:07] SCHEDULED: <2013-01-30 Wed>
 - State "DONE"       from "TODO"       [2013-02-20 Wed 20:07]
 :PROPERTIES:
@@ -29,36 +30,36 @@ CLOSED: [2013-02-20 Wed 20:07] SCHEDULED: <2013-01-30 Wed>
   - statement
   - program
   - cursor
-* DONE android resource arch                                      
+* DONE android resource arch                                           :work:
 CLOSED: [2012-10-26 Fri 15:40] SCHEDULED: <2012-09-19 Wed>
 - State "DONE"       from "TODO"       [2012-10-26 Fri 15:40]
 
-* DONE static synchronized vs. synchronized(Test.class) 是否是一回事? 
+* DONE static synchronized vs. synchronized(Test.class) 是否是一回事?  :work:
 CLOSED: [2012-09-14 Fri 13:13] SCHEDULED: <2012-09-13 Thu>
 according to JLS, YES
-* DONE unciode, java utf-16, surrogate pair                          
+* DONE unciode, java utf-16, surrogate pair                            :work:
 CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
-* TODO how to deltect GC reason                                        :todo:
+* TODO how to deltect GC reason                                        :work:
 :PROPERTIES:
 :ID:       1588189a-9e3a-420a-90c9-49e2079575a3
 :END:
-* TODO scala actor pattern                                             :todo:
+* TODO scala actor pattern                                             :work:
 - State "TODO"       from "WAITING"    [2013-01-29 Tue 21:53]
 - State "WAITING"    from "TODO"       [2012-11-17 周六 22:12]
 :PROPERTIES:
 :ID:       d4730067-ec50-4cfc-b00b-b88c82c665ba
 :END:
-* DONE gerrit                                                       
+* DONE gerrit                                                          :work:
 CLOSED: [2012-09-18 Tue 16:02] SCHEDULED: <2012-09-14 Fri>
 CLOCK: [2012-09-18 Tue 14:54]--[2012-09-18 Tue 16:01] =>  1:07
 CLOCK: [2012-09-18 Tue 13:18]--[2012-09-18 Tue 13:32] =>  0:14
 CLOCK: [2012-09-18 Tue 11:36]--[2012-09-18 Tue 12:12] =>  0:36
 CLOCK: [2012-09-18 Tue 10:30]--[2012-09-18 Tue 11:07] =>  0:37
-* TODO SICP                                                            :todo:
+* TODO SICP                                                            :work:
 :PROPERTIES:
 :ID:       e149f5ab-bdde-4ff3-bfe3-561bf601ede4
 :END:
-* DONE modify adapter in background while notifyDataSetChanged?
+* DONE modify adapter in background while notifyDataSetChanged?        :work:
 CLOSED: [2012-10-16 Tue 14:54]
 - State "DONE"       from "TODO"       [2012-10-16 Tue 14:54]
 CLOCK: [2012-10-16 Tue 12:16]--[2012-10-16 Tue 12:17] =>  0:01
@@ -73,73 +74,73 @@ since:
 thus adapter should NEVER be modified directly in background
 thread. e.g. Android Loader assured that Loader.onLoadFinished is invoked in UI
 thread, which will typically alter adapter data.
-* DONE android resource: +id/xxx vs. id/xxx ?
+* DONE android resource: +id/xxx vs. id/xxx ?                          :work:
 CLOSED: [2012-10-23 Tue 19:15]
 - State "DONE"       from "TODO"       [2012-10-23 Tue 19:15]
 [2012-10-17 Wed 19:07]
-* TODO write note about android ActionBar                              :todo:
+* TODO write note about android ActionBar                              :work:
 :PROPERTIES:
 :ID:       d7416216-0060-40d2-b7be-7fc31b429430
 :END:
 [2012-10-18 Thu 14:58]
-* TODO 9-patch PNG                                                     :todo:
+* TODO 9-patch PNG                                                     :work:
 :PROPERTIES:
 :ID:       b7d7beef-c310-484d-b7c9-8e509ee3359d
 :END:
 [2012-10-23 Tue 10:35]
-* DONE various Drawable
+* DONE various Drawable                                                :work:
 CLOSED: [2012-10-23 Tue 19:15]
 - State "DONE"       from "TODO"       [2012-10-23 Tue 19:15]
 [2012-10-23 Tue 11:32]
-* TODO how does ImageView scale it's drawable? how is the background scaled? :todo:
+* TODO how does ImageView scale it's drawable? how is the background scaled? :work:
 :PROPERTIES:
 :ID:       383b8a6d-7a5a-4156-9dcf-9b68780c9313
 :END:
-* TODO ImageView                                                       :todo:
+* TODO ImageView                                                       :work:
 :PROPERTIES:
 :ID:       265a902d-d7e3-4b5f-be6f-c7d7856ca354
 :END:
 [2012-10-23 Tue 20:15]
-* DONE attr, style, theme, defStyle, ? , @
+* DONE attr, style, theme, defStyle, ? , @                             :work:
 CLOSED: [2012-10-26 Fri 15:40]
 - State "DONE"       from "TODO"       [2012-10-26 Fri 15:40]
 [2012-10-25 Thu 19:02]
-* TODO WindowManagerService                                            :todo:
+* TODO WindowManagerService                                            :work:
 :PROPERTIES:
 :ID:       c0e6a3fa-a77d-4426-99e4-a3b8d057b94a
 :END:
 [2012-11-14 Wed 11:32]
-* TODO Android GDI                                                     :todo:
+* TODO Android GDI                                                     :work:
 :PROPERTIES:
 :ID:       d6e4c39c-bc79-49b6-b6af-1db49ef924ff
 :END:
 http://blog.csdn.net/column/details/androidcore.html
 [2012-11-16 Fri 20:41]
-* DONE how is `sp` scaled in TextView                                  :todo:
+* DONE how is `sp` scaled in TextView                                  :work:
 CLOSED: [2012-12-05 三 13:19]
 - State "DONE"       from "TODO"       [2012-12-05 三 13:19]
 [2012-12-04 二 13:26]
-* TODO zram swap                                                       :todo:
+* TODO zram swap                                                       :work:
 :PROPERTIES:
 :ID:       60f6e8ba-34c1-4bb1-8d26-ef890b47bb0a
 :END:
 [2012-12-15 Sat 17:35]
-* TODO power management                                                :todo:
+* TODO power management                                                :work:
 :PROPERTIES:
 :ID:       c314af44-4db6-4378-b6e6-42ca5d6670cd
 :END:
 [2012-12-15 Sat 17:36]
-* TODO oom killer and low memory killer                                :todo:
+* TODO oom killer and low memory killer                                :work:
 :PROPERTIES:
 :ID:       e7f22e72-6ca9-4c45-8387-74d45d7adaba
 :END:
 [2012-12-20 Thu 10:02]
-* TODO write a program to consume arbitrary cpu and memory             :todo:
+* TODO write a program to consume arbitrary cpu and memory             :work:
 :PROPERTIES:
 :ID:       feec2123-12fa-4f6d-b5ba-c88624298143
 :END:
 [2012-12-21 Fri 10:43]
-* DONE saveInstanceState and restoreInstanceState                      :todo:
+* DONE saveInstanceState and restoreInstanceState                      :work:
 CLOSED: [2013-01-22 Tue 10:06]
 - State "DONE"       from "TODO"       [2013-01-22 Tue 10:06]
 if the view hierarchy contains views of the SAME mId,
@@ -147,140 +148,140 @@ saveInstanceState/restoreInstanceState will FAIL, because the parcelable data
 is put in a SparseArray which taken mId as the KEY ... so views, especially ViewGroup must take
 care of it: the PARENT_SAVE_DISABLED_MASK
 [2013-01-21 Mon 15:38]
-* DONE sqlite 权威指南                                                 :todo:
+* DONE sqlite 权威指南                                                 :work:
 CLOSED: [2013-02-25 Mon 15:25]
 - State "DONE"       from "TODO"       [2013-02-25 Mon 15:25]
 [2013-02-05 Tue 19:41]
-* TODO android networking                                              :todo:
+* TODO android networking                                              :work:
 :PROPERTIES:
 :ID:       24fdef08-d1c4-4211-9cbc-3993a62694e0
 :END:
 [2013-02-20 Wed 20:06]
-* TODO keytool and openssl                                             :todo:
+* TODO keytool and openssl                                             :work:
 :PROPERTIES:
 :ID:       f576c81b-e600-4b06-bb0a-7e252dfd42ed
 :END:
 [2013-02-25 Mon 15:25]
-* TODO android BLCR                                                    :todo:
+* TODO android BLCR                                                    :work:
 :PROPERTIES:
 :ID:       35622024-a6b3-471e-ae27-e98e44a31d3b
 :END:
 [2013-03-20 Wed 15:31]
-* TODO adnroid.os.Debug                                                :todo:
+* TODO adnroid.os.Debug                                                :work:
 :PROPERTIES:
 :ID:       f9d79ead-1b97-44a2-8013-6e9c694e089d
 :END:
 [2013-03-20 Wed 17:37]
-* TODO Android Root Howto                                              :todo:
+* TODO Android Root Howto                                              :work:
 :PROPERTIES:
 :ID:       28a99153-cfc8-4fc5-849b-9e2663191cfc
 :END:
 [2013-04-02 Tue 12:35]
-* DONE android pm grant permission                                     :todo:
+* DONE android pm grant permission                                     :work:
 CLOSED: [2013-06-20 Thu 17:13]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 17:13]
 :PROPERTIES:
 :ID:       2d8d0a83-d9ec-469f-87e0-fa1d2d21b585
 :END:
 [2013-04-02 Tue 12:36]
-* DONE Runtime UID & GID                                               :todo:
+* DONE Runtime UID & GID                                               :work:
 CLOSED: [2013-04-03 Wed 11:08]
 - State "DONE"       from "TODO"       [2013-04-03 Wed 11:08]
 [2013-04-02 Tue 21:22]
-* TODO init.rc                                                         :todo:
+* TODO init.rc                                                         :work:
 :PROPERTIES:
 :ID:       6a0b7d95-a3d7-4fb2-9b13-926f925fbd97
 :END:
 [2013-04-02 Tue 21:24]
-* TODO android ui patterns  :todo:
+* TODO android ui patterns  :work:
 :PROPERTIES:
 :ID:       8c4e40f6-22e2-42c8-ade1-4a9d6b4ae3b1
 :END:
 [2013-04-10 Wed 11:52]
-* DONE proguard                                                        :todo:
+* DONE proguard                                                        :work:
 CLOSED: [2013-07-09 Tue 13:57]
 - State "DONE"       from "TODO"       [2013-07-09 Tue 13:57]
 :PROPERTIES:
 :ID:       d521ec01-0670-43ea-9e72-9f3eafb9c1af
 :END:
 [2013-04-10 Wed 17:47]
-* TODO cypher                                                          :todo:
+* TODO cypher                                                          :work:
 :PROPERTIES:
 :ID:       3793198a-cba1-4cc3-b07f-1ee201e3aaba
 :END:
 [2013-04-11 Thu 19:16]
-* DONE vss,rss,pss,uss                                                 :todo:
+* DONE vss,rss,pss,uss                                                 :work:
 CLOSED: [2013-06-20 Thu 15:56]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 15:56]
 :PROPERTIES:
 :ID:       e4eebba4-e455-4318-9a2f-feebf86a5525
 :END:
 [2013-04-17 Wed 21:35]
-* TODO 透明代理,反向代理                                               :todo:
+* TODO 透明代理,反向代理                                               :work:
 :PROPERTIES:
 :ID:       9d22c209-2353-4b7c-a345-887bf602e8d0
 :END:
 [2013-04-18 Thu 17:15]
-* TODO android memory                                                  :todo:
+* TODO android memory                                                  :work:
 [2013-04-19 Fri 13:56]
-* TODO ptmalloc                                                        :todo:
+* TODO ptmalloc                                                        :work:
 [2013-04-19 Fri 16:52]
-* DONE usbmount                                                        :todo:
+* DONE usbmount                                                        :work:
 CLOSED: [2013-04-28 Sun 16:54]
 - State "DONE"       from "TODO"       [2013-04-28 Sun 16:54]
 [2013-04-20 Sat 21:55]
-* TODO RenderScript & opengl                                           :todo:
+* TODO RenderScript & opengl                                           :work:
 [2013-04-25 Thu 12:43]
-* DONE uri permission                                                  :todo:
+* DONE uri permission                                                  :work:
 CLOSED: [2013-06-20 Thu 17:05]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 17:05]
 [2013-04-25 Thu 18:54]
-* DONE git branch model                                                :todo:
+* DONE git branch model                                                :work:
 CLOSED: [2013-05-20 Mon 18:40]
 - State "DONE"       from "TODO"       [2013-05-20 Mon 18:40]
 [2013-04-26 Fri 19:46]
-* TODO socks 代理原理                                                  :todo:
+* TODO socks 代理原理                                                  :work:
 [2013-05-02 Thu 16:39]
-* DONE how loader is notified                                          :todo:
+* DONE how loader is notified                                          :work:
 CLOSED: [2013-06-19 Wed 17:37]
 - State "DONE"       from "TODO"       [2013-06-19 Wed 17:37]
 CursorLoader.loadInBackground register the listener
 [2013-05-03 Fri 11:48]
-* TODO tail recursion 尾递归                                           :todo:
+* TODO tail recursion 尾递归                                           :work:
 [2013-05-03 Fri 16:32]
-* TODO git merge 算法                                                  :todo:
+* TODO git merge 算法                                                  :work:
 [2013-05-06 Mon 14:20]
-* TODO `with-current-buffer` style asynctask in android?               :todo:
+* TODO `with-current-buffer` style asynctask in android?               :work:
 [2013-05-08 Wed 20:16]
-* TODO TouchInterceptor in music                                       :todo:
+* TODO TouchInterceptor in music                                       :work:
 [2013-05-09 Thu 18:13]
-* TODO android 坐标                                                    :todo:
+* TODO android 坐标                                                    :work:
 [2013-05-10 Fri 18:07]
-* CANCELLED exchange auto_discovery                                    :todo:
+* CANCELLED exchange auto_discovery                                    :work:
 CLOSED: [2013-06-17 Mon 16:54]
 - State "CANCELLED"  from "TODO"       [2013-06-17 Mon 16:54]
 [2013-05-13 Mon 19:51]
-* TODO TextChangedListener                                             :todo:
+* TODO TextChangedListener                                             :work:
 [2013-05-14 Tue 11:22]
-* TODO Http the definitive guide                               :todo:reading:
+* TODO Http the definitive guide                               :work:reading:
 [2013-05-14 Tue 13:31]
-* TODO WMS:starting window                                             :todo:
+* TODO WMS:starting window                                             :work:
 [2013-05-15 Wed 15:05]
-* TODO android animation                                                     :todo:
+* TODO android animation                                                     :work:
 [2013-05-16 Thu 11:33]
-* TODO SurfaceView & GLSurfaceView                                             :todo:
+* TODO SurfaceView & GLSurfaceView                                             :work:
 [2013-05-16 Thu 16:00]
-* DONE content provider                                                :todo:
+* DONE content provider                                                :work:
 CLOSED: [2013-06-17 Mon 16:54]
 - State "DONE"       from "TODO"       [2013-06-17 Mon 16:54]
 [2013-05-20 Mon 22:09]
-* TODO try AndEngine && Box2d                                          :todo:
+* TODO try AndEngine && Box2d                                          :work:
 [2013-05-27 Mon 16:59]
-* DONE odex                                                            :todo:
+* DONE odex                                                            :work:
 CLOSED: [2013-06-17 Mon 16:53]
 - State "DONE"       from "TODO"       [2013-06-17 Mon 16:53]
 [2013-05-30 Thu 17:07]
-* TODO sqlite optimization                                                     :todo:
+* TODO sqlite optimization                                                     :work:
 
 - enable WAL
   - set synchronous to NORMAL in WAL
@@ -299,7 +300,7 @@ CLOSED: [2013-06-17 Mon 16:53]
 
 
 [2013-06-04 Tue 20:07]
-* DONE cursor window 的 fillwindow 是否有问题                          :todo:
+* DONE cursor window 的 fillwindow 是否有问题                          :work:
 CLOSED: [2013-06-14 Fri 15:39]
 - State "DONE"       from "TODO"       [2013-06-14 Fri 15:39]
 1. 查询返回 cursor
@@ -310,54 +311,56 @@ CLOSED: [2013-06-14 Fri 15:39]
 Q: A B 是否可能不同?
 A: yes...
 [2013-06-07 Fri 19:01]
-* DONE android backup                                                  :todo:
+* DONE android backup                                                  :work:
 CLOSED: [2013-07-01 Mon 11:24]
 - State "DONE"       from "TODO"       [2013-07-01 Mon 11:24]
 [2013-06-17 Mon 20:57]
-* DONE Android resource: match, isBetterThan and isMoreSpecificThan    :todo:
+* DONE Android resource: match, isBetterThan and isMoreSpecificThan    :work:
 CLOSED: [2013-06-20 Thu 14:51]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 14:51]
 [2013-06-18 Tue 16:00]
-* TODO InputDispatcher & InputManagerService & InputFilter             :todo:
+* TODO InputDispatcher & InputManagerService & InputFilter             :work:
 [2013-06-21 Fri 14:00]
-* DONE xmlpullparser                                                   :todo:
+* DONE xmlpullparser                                                   :work:
 CLOSED: [2013-07-03 Wed 13:37]
 - State "DONE"       from "TODO"       [2013-07-03 Wed 13:37]
 [2013-06-24 Mon 14:23]
-* DONE Message.setAsynchronous ? (see performTraversals)               :todo:
+* DONE Message.setAsynchronous ? (see performTraversals)               :work:
 CLOSED: [2013-07-09 Tue 13:56]
 - State "DONE"       from "TODO"       [2013-07-09 Tue 13:56]
 [2013-06-24 Mon 18:17]
-* DONE learn tintin++                                                  :todo:
+* DONE learn tintin++                                                  :work:
 CLOSED: [2013-07-05 Fri 10:15]
 - State "DONE"       from "TODO"       [2013-07-05 Fri 10:15]
 [2013-06-26 Wed 13:41]
-* TODO android resource: how to do with resources in static jar lib    :todo:
+* TODO android resource: how to do with resources in static jar lib    :work:
 e.g. frameworks/ex/chips 
 [2013-06-26 Wed 14:04]
-* CANCELLED mipmap drawable can't be replaced in Calculator            :todo:
+* CANCELLED mipmap drawable can't be replaced in Calculator            :work:
 CLOSED: [2013-07-02 Tue 12:11]
 - State "CANCELLED"  from "TODO"       [2013-07-02 Tue 12:11]
 [2013-06-28 Fri 18:07]
-* DONE Looper.pollOnce                                                 :todo:
+* DONE Looper.pollOnce                                                 :work:
 CLOSED: [2013-07-04 Thu 11:58]
 - State "DONE"       from "TODO"       [2013-07-04 Thu 11:58]
 [2013-07-02 Tue 12:11]
-* TODO listview fling 时有后退的错觉? 这是抽样定理在作怪么?            :todo:
+* TODO listview fling 时有后退的错觉? 这是抽样定理在作怪么?            :work:
 [2013-07-04 Thu 15:45]
-* DONE how menu and overflow menu is saved and restored during configurationChange? :todo:
+* DONE how menu and overflow menu is saved and restored during configurationChange? :work:
 CLOSED: [2013-07-05 Fri 11:46]
 - State "DONE"       from "TODO"       [2013-07-05 Fri 11:46]
 [2013-07-05 Fri 11:00]
-* TODO access provider in binder thread is slow?                       :todo:
+* TODO access provider in binder thread is slow?                       :work:
 [2013-07-09 Tue 16:51]
-* DONE android bitmap                                                  :todo:
+* DONE android bitmap                                                  :work:
 CLOSED: [2013-07-19 Fri 10:37]
 - State "DONE"       from "TODO"       [2013-07-19 Fri 10:37]
 [2013-07-09 Tue 17:28]
-* TODO installd                                                        :todo:
+* TODO installd                                                        :work:
 [2013-07-12 Fri 13:55]
-* DONE mat                                                             :todo:
+* DONE mat                                                             :work:
 CLOSED: [2013-07-19 Fri 10:37]
 - State "DONE"       from "TODO"       [2013-07-19 Fri 10:37]
 [2013-07-16 Tue 19:58]
+* TODO skia & surface                                                  :work:
+[2013-07-19 Fri 18:52]

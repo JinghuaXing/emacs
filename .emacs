@@ -243,7 +243,7 @@
 (global-unset-key (kbd "<C-wheel-down>"))
 
 ;; (prefer-coding-system 'gb18030)
-;; (prefer-coding-system 'utf-8-unix)
+(prefer-coding-system 'utf-8-unix)
 ;; (setq coding-system-for-read 'utf-8-unix)
 ;; (setq coding-system-for-write 'utf-8-unix)
 
@@ -291,13 +291,6 @@
 
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
-
-(require 'smartparens)
-
-(require 'smartparens-config)
-(smartparens-global-mode)
-;; (sp-use-smartparens-bindings)
-
 
 ;; (require 'auto-async-byte-compile)
 ;; (setq auto-async-byte-compile-exclude-files-regexp "/etc/")
