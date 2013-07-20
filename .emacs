@@ -7,7 +7,6 @@
 (add-to-list 'load-path "~/.elisp/cc-mode")
 (add-to-list 'load-path "~/.elisp/ruby")
 (add-to-list 'load-path "~/.elisp/traverselisp/")
-(add-to-list 'load-path "~/.elisp/smartparens/")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
 
 (require 's)
@@ -326,4 +325,6 @@
 				("\\.gnuplot\\'" . gnuplot-mode)
 				) auto-mode-alist))
 ;;  (global-set-key [(f9)] 'gnuplot-make-buffer)
+
+
 

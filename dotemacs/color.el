@@ -1,3 +1,4 @@
+(add-to-list 'custom-theme-load-path "~/.elisp/themes/")
 (add-to-list 'load-path "~/.elisp/color-theme-6.6.0/")
 (add-to-list 'load-path "~/.elisp/themes/")
 
@@ -19,4 +20,8 @@
 
 (require 'color-theme)
 (require 'color-theme-solarized)
-(color-theme-solarized-dark)
+(require 'color-theme-tangotango)
+(require 'color-theme-molokai)
+;; (color-theme-solarized-dark)
+;; (color-theme-tangotango)
+(color-theme-molokai)
