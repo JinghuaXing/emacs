@@ -22,6 +22,6 @@
 (require 'color-theme-solarized)
 (require 'color-theme-tangotango)
 (require 'color-theme-molokai)
-;; (color-theme-solarized-dark)
+(color-theme-solarized-dark)
 ;; (color-theme-tangotango)
-(color-theme-molokai)
+;;(color-theme-molokai)
