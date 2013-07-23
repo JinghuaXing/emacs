@@ -263,7 +263,7 @@ CLOSED: [2013-06-17 Mon 16:54]
 [2013-05-13 Mon 19:51]
 * TODO TextChangedListener                                             :work:
 [2013-05-14 Tue 11:22]
-* TODO Http the definitive guide                               :work:reading:
+* TODO Http the definitive guide                                       :work:
 [2013-05-14 Tue 13:31]
 * TODO WMS:starting window                                             :work:
 [2013-05-15 Wed 15:05]

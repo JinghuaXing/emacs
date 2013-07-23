@@ -62,3 +62,5 @@ SCHEDULED: <2013-07-20 Sat>
 CLOSED: [2013-07-23 Tue 15:01]
 - State "CANCELLED"  from "TODO"       [2013-07-23 Tue 15:01]
 [2013-07-19 Fri 15:32]
+* TODO tintin++-mode syntax table                                      :life:
+[2013-07-23 Tue 20:15]

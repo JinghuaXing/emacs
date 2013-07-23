@@ -192,6 +192,7 @@ for their position.
 	  vice-versa
 
 **** draw
+see also [[android graphics]]
 **** focus switching
 when press 'left' key, how the focus is changed?
 

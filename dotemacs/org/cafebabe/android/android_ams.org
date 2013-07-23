@@ -1753,20 +1753,69 @@ To summarize:
 see also [[binder's death]]
 see also [[Android Process Crash and Restart]]
 ** ActivityThread
-    :PROPERTIES:
-    :CUSTOM_ID: @ActivityThread
-    :END:
-    ActivityThread stands for the client (contract to AMS) side *process*.
-    Actually, the class itself is not a Thread at all. It is a normal java class, and has ONE main(), which act as the entry point of a java process.
-    ActivityThread.main()
+ActivityThread stands for the client (contract to AMS) side *process*.
+
+Actually, the class itself is not a Thread at all. It is a normal java
+class, and has ONE main(), which act as the entry point of a java
+process. ActivityThread.main()
+
 #+BEGIN_EXAMPLE
     Looper.prepare()
     ActivityThread thread = new ActivityThread();
     thread.attach(false);
     Looper.loop();
 #+END_EXAMPLE
-    that is ,
-    - ActivityThread.main() will start loop in the main thread, the looper is the so-call `mainLooper`
-    - thread.attach() will establish reverse connection (AMS --> ActivityThread) with AMS, (set IApplicationThread IBinder to AMS.app.thread),
-      so that AMS can use the IApplicationThread to interact with ActivityThread, e.g. scheduleResumeaCtivity, scheduleLaunchActivity.
-      AMS use [[@AppDeathRecipient]] to reset app.thread to null, which means the process has gone.
+
+that is ,
+  - ActivityThread.main() will start loop in the main thread, the
+    looper is the so-call `mainLooper`
+
+  - thread.attach() will:
+
+    - establish reverse connection (AMS --> ActivityThread) with AMS,
+      (set IApplicationThread IBinder to AMS.app.thread), so that AMS
+      can use the IApplicationThread to interact with ActivityThread,
+      e.g. scheduleResumeaCtivity, scheduleLaunchActivity. AMS use
+      [[@AppDeathRecipient]] to reset app.thread to null, which means the
+      process has gone.
+
+    - set the underlying `thread` to sThreadLocal, thus `bind` to the looper.
+** What's the `system` process?
+
+简单的说:
+1. system 进程是 system_server 所在的进程
+2. system 进程是 zygote 启动的第一 个 java 进程
+3. system 进程的 ServerThread 负责启动各种 service, 并且是 system 进程
+   的 main looper (或 system 进程对应的 activity thread 的looper) 所在
+   的线程.
+4. system 进程的 oom adj 为 SYSTEM_ADJ, 并且为 persistent, 其在 AMS 登
+   记的进程名为 `system`: system 是一个 java 进程, 但它的进程名却有两
+   个: ps 显示的是 `system_server`, AMS 里登记的是 `system`
+   
+
+*** system 进程及 ActivityThread 的初始化
+1. system_server 通过 app_process 被启动 (参考 zygote init)
+2. system_server 的一个单独的线程 ServerThread 负责启动各个 service,
+   其中包含 AMS
+3. AMS.main 会初始化一个 ActivityThread 做为 mSystemThread
+   #+BEGIN_SRC text
+     AMS.main
+       ActivityThread.systemMain()
+         ActivityThread thread = new ActivityThread();
+         thread.attach(true);
+   #+END_SRC
+   由于 mSystemThread 初始化在 ServerThread 线程, 所以它使用的 Looper
+   就是 ServerThread 的 Looper.
+4. ServerThread 启动完 AMS 后会调用 AMS.setSystemProcess 方法, 将
+   system_server 进程注册到 AMS, 并做为 `system` 进程
+
+   #+BEGIN_SRC text
+     ProcessRecord app = mSelf.newProcessRecordLocked(
+                           mSystemThread.getApplicationThread(), info,
+                           info.processName, false);
+     app.persistent = true;
+     app.pid = MY_PID; // system_server 的 pid, 1000
+     app.maxAdj = ProcessList.SYSTEM_ADJ;
+     // app.processName 为 "system" !
+     mSelf.mProcessNames.put(app.processName, app.uid, app);
+   #+END_SRC

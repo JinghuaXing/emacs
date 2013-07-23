@@ -49,7 +49,11 @@
   }
   
 #+END_SRC
-** Surface
+** Surface & SurfaceFlinger
+*** ComposerService
+*** SurfaceComposerClient
+*** SurfaceSession
+*** Surface
 ** onDraw
 #+BEGIN_SRC text
   ViewRootImpl.performTraversals

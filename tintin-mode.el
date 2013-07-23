@@ -119,13 +119,52 @@
   (kill-all-local-variables)
   (set-syntax-table tintin-mode-syntax-table)
   (use-local-map tintin-mode-map)
-
+  (set (make-local-variable 'tab-width) 4)
+  (set (make-local-variable 'comment-start) "#nop")
+  (set (make-local-variable 'comment-start-skip) "#nop")
   (set (make-local-variable 'font-lock-defaults) '(tintin-font-lock-keywords))
+  (set (make-local-variable 'indent-line-function) 'tintin-indent-line)
 
   (setq major-mode 'tintin-mode)
   (setq mode-name "tintin++")
   (run-hooks 'tintin-mode-hook)
 )
+
+(defun tintin-indent-line ()
+  "Indent current line as WPDL code"
+  (interactive)
+  (beginning-of-line)
+  (if (bobp)  ; Check for rule 1
+      (indent-line-to 0)
+    (let ((not-indented t) cur-indent)
+      
+      (if (looking-at "^[ \t]*}[ ]*\\({[0-9]+}\\)*;?$"); Check for rule 2
+	  (progn
+	    (save-excursion
+	      (forward-line -1)
+	      (if (looking-at "^[ \t]*.*?{$")
+		  (setq cur-indent (current-indentation))
+		  (setq cur-indent (- (current-indentation) tab-width)))
+	      )
+	    (if (< cur-indent 0)
+		(setq cur-indent 0)))
+	(save-excursion 
+          (while not-indented
+            (forward-line -1)
+            (if (looking-at "^[ \t]*}[ ]*\\({[0-9]+}\\)*;?$") ; Check for rule 3
+                (progn
+                  (setq cur-indent (current-indentation))
+                  (setq not-indented nil))
+					; Check for rule 4
+              (if (looking-at "^[ \t]*.*?{$")
+                  (progn
+                    (setq cur-indent (+ (current-indentation) tab-width))
+                    (setq not-indented nil))
+                (if (bobp) ; Check for rule 5
+                    (setq not-indented nil)))))))
+      (if cur-indent
+          (indent-line-to cur-indent)
+	(indent-line-to 0)))))
 
 (provide 'tintin-mode)
 
