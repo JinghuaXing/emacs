@@ -1,8 +1,104 @@
 #+TITLE: Android WindowManager
 * WindowManager
-** addView
-window.addView() will firstly gen (viewRoot,view,layout_param) tuple, then call ViewRoot.setView() to ask WMS to add the view.
-since ViewRoot has an IWindowSession, and it will send IWindow to WMS (as mClient), it can communicate with WMS back and forth.
+** Client side
+*** View
+**** padding vs. margin
+padding = 内边距
+margin =  外边距
+内,外是相对于容器(盒子)的边界而言, 以Button为例,Button可以看作一个盒子,设置button.padding会影响Button里的文字或图片与Button边界的距离,例如:
+
+Button
+#+BEGIN_EXAMPLE
+       -+---------------+
+       	|[padding] click|
+       -+---------------+
+#+END_EXAMPLE
+
+而button.margin会影响button与其更外层盒子(如layout)的边界
+
+LinearLayout
+#+BEGIN_EXAMPLE
+       -+-------------------+
+       	| [top margin] 	    |
+       	|+-------------+    |
+       	|| button      |    |
+       	|+-------------+    |
+       -+-------------------+
+#+END_EXAMPLE
+
+需要注意的一点是,android中view是没有margin属性的,只有 ViewGroup 才有margin属性, 所以,如果想达到上图的效果,不可能直接设置button的margin,而是需在将button
+放在一个 ViewGroup 中,然后设置该 ViewGroup 的margin.
+
+**** DecorView
+**** drawing cache
+*** ViewGroup
+*** Window
+对于ViewRoot来说,顶层的`Window`就是一个普通的View, 但有些和`Window`有关
+的操作,如:
+
+ - 如何处理一些通用的按键事件, 如Volume, ContextMenu,Camera,Call,Search...,
+ - 如何在顶层View之上再显示一个ContextMenu
+ - 从WMS来的一些事件如何通知给Activity,Dialog, 例如onBackPressed()
+
+因为, 提供了一个Window类, 用来处理这些和`Window`有关的操作, 但从WMS及
+ViewRoot的角度看,并没有`Window`的概念.
+
+只有DecorView能和Window关联,来处理`Window`相关操作 (因为DecorView是
+Window的inner class), 所以只有Activity,Dialog有window的概念
+
+**** PhoneWindow
+*** ViewRoot
+
+ViewRoot 的几点功能:
+
+1. 通过 IWindowSession 与 WMS 联系
+2. WMS 通过 ViewrRoot 提共的 IWindow 与 ViewRoot 通信.
+3. ViewRoot 维护了一个 Surface, 可以供各个 view 进行 draw
+4. ViewRoot 维护一个 InputChannel, 进行 event dispatching.
+
+总之, ViewRoot 是应用进程中除 ActivityThread 外最重要的一个东西, 它负
+责与 WMS 交互, 并维护 Surface 和 InputChannel. 
+
+*** WindowManagerImpl
+*** To summarize
+**** ViewRoot, View (DecorView) and Window
+- 与WMS直接打交道的是ViewRoot,WMS能直接看到的只有ViewRoot (通过ViewRoot注册到WMS的IWindow mClient)
+
+- ViewRoot直接管理其顶层View (对于Actity,Dialog, 即DecorView. 对于
+
+  PopupWindow及手动通过WindowManagerImpl.addView添加的view, 其顶层view只是普
+  通的view), 所以一个进程可以有多个ViewRoot
+
+- Window是和DecorView一一对应的. 
+
+  因为Activity, Dialog项层view是DecorView, 所以有window的概念, 可以通
+  过Window来控制ContextMenu, 调用Window.Callback等;
+
+- Window与Activity,Dialog对应
+    
+  通过Window.Callback, 可以和Activity和Dialog联系起来,因为它们都实际了
+  Window.Callback接口.而PopupWindow顶层只是普通view,所以没有Window的概念
+
+综上:
+  - WMS<-->ViewRoot
+  - ViewRoot<-->DecorView
+  - DecorView<-->Window<-->Activity,Dialog
+** Server side
+*** WindowManagerService
+**** WindowState
+***** mClient
+IWindow as the mClient
+**** WindowToken
+**** AppWindowToken
+*** WindowManagerPolicy
+**** PhoneWindowManager
+** Topics
+*** View
+**** init (addView)
+window.addView() will firstly gen (viewRoot,view,layout_param) tuple,
+then call ViewRoot.setView() to ask WMS to add the view. since
+ViewRoot has an IWindowSession, and it will send IWindow to WMS (as
+mClient), it can communicate with WMS back and forth.
 
 window.addView() will add [new viewroot,decorView] tuple to
 WindowManagerImpl.
@@ -10,23 +106,17 @@ WindowManagerImpl.
 Activity and Dialog will generate decorView automatically, then call
 WM.addView(decorView) to window.  but PopupWindow will not generate
 decorView since PopupWindow need not to be `decorated`.
-** View
-*** View life cycle
 **** requestLayout
-see [[@onMeasure]] [[@onLayout]]
-requestLayout() is actually implemented in ViewRoot
-View defined it's own requestLayout by:
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC text
   View.requestLayout()
     mParent.requestLayout() ;; for a view, mParent is the upper ViewGroup
       mParent.requestLayout() ;; ViewGroup implements View, thus recursive again to the parent
         ...
           top_view.requestLayout()
             ViewRoot.requestLayout() ;; top view's mParent is the ViewRoot
-#+END_EXAMPLE
+#+END_SRC
 
-Call stack:
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC text
   ViewRoot.requestLayout()
     ViewRoot.scheduleTraversals()
       ViewRoot.performTraversals() handles the msg
@@ -44,15 +134,23 @@ Call stack:
             view.layout() ;; it seems that view.layout && view.onLayout doesn't do something meaningful?  it mainly stores the child's x,y,width,height
                           ;; so that we can, when touch the screen, tell which view is touched
               view.onLayout() ;; see [[onLayout][onLayout]],
-#+END_EXAMPLE
+#+END_SRC
+**** invalidate
 
-**** addView
-**** removeView
-**** onAttachedToWindow
-      see [[@requestLayout]]
-**** onDetachedFromWindow
-**** onLayout
-see [[@requestLayout]]
+invalidate 不会导致 measure 和 layout, 虽然它也会导致
+performTraversals, 但在 traversal 过程中因为 layoutRequested 为false,
+导致 measure, layout 都不执行, 只执行最后一步 draw 操作.
+
+另外, invalidate 可以指定一个 dirty rect (不指定时 dirty rect 为整个
+window), 这样 canvas 在 draw 的过程中可以忽略那个不在这个 dirty rect
+中的那些 view (通过 canvas.quickReject), 实现局部刷新. 
+
+- invalidate 与 requestLayout 的不同
+  invalidate 只会导致 draw (可能只是 dirty 部分的 draw), 但
+  requestLayout 会导致整个 windows 的 measure, layout, draw
+
+**** measure
+**** layout
 ***** android:layout_gravity & android:gravity
 during onMeasure, view's size is fixed, after-wards, ViewGroup.onLayout will re-position children views and invoke child.onLayout to notify children
 for their position.
@@ -60,7 +158,7 @@ for their position.
 - similar with android:height, only a few views or ViewGroup has the android:gravity property.
   e.g. TextView has the android:gravity property, so that the inner text can be positioned to top/bottom/left/right
   LinearLayout also has the android:gravity, which control Linear Layout's children's gravity as a whole.
-****** How does LinearLayout make use of gravity.
+******* How does LinearLayout make use of gravity.
 - for *Vertical* LinearLayout with layout_height= *fill_parent* :
   vertical LinearLayout can only set it's android:gravity to `top,bottom,center_vertical`, which can move the children as a whole in
   vertical direction.
@@ -93,107 +191,22 @@ for their position.
 - for horizontal LinearLayout:
 	  vice-versa
 
-**** invalidate
-*** view padding and margin
-padding = 内边距
-margin =  外边距
-内,外是相对于容器(盒子)的边界而言, 以Button为例,Button可以看作一个盒子,设置button.padding会影响Button里的文字或图片与Button边界的距离,例如:
+**** draw
+**** focus switching
+when press 'left' key, how the focus is changed?
 
-Button
-#+BEGIN_EXAMPLE
-       -+---------------+
-       	|[padding] click|
-       -+---------------+
-#+END_EXAMPLE
+1. when viewRoot got the key event, it will firstly call
+   'dispatchKeyEventToViewHierachy' to dispatch the key event to it's
+   correspondingg top level viw (i.e. DecorView)
+2. If the key event is not handled by the view hierachy, viewRoot will
+   call 'findFocus' to find next focus in 'handleFinishedEvent'
+3. If the current focused view has set 'focus:right...' properties,
+   viewRoot will call view.findViewById to find the next focus, or
+   find the nearest focusable view in a specified rectangle area.
 
-而button.margin会影响button与其更外层盒子(如layout)的边界
-
-LinearLayout
-#+BEGIN_EXAMPLE
-       -+-------------------+
-       	| [top margin] 	    |
-       	|+-------------+    |
-       	|| button      |    |
-       	|+-------------+    |
-       -+-------------------+
-#+END_EXAMPLE
-
-需要注意的一点是,android中view是没有margin属性的,只有 ViewGroup 才有margin属性, 所以,如果想达到上图的效果,不可能直接设置button的margin,而是需在将button
-放在一个 ViewGroup 中,然后设置该 ViewGroup 的margin.
-
-*** DecorView
-*** findViewById
-*** Switch focus
-Q:when press 'left' key, how the focus is changed?
-A:
- 1. when viewRoot got the key event, it will firstly call 'dispatchKeyEventToViewHierachy' to dispatch the key event to it's correspondingg top level viw (i.e. DecorView)
- 2. If the key event is not handled by the view hierachy, viewRoot will call 'findFocus' to find next focus in 'handleFinishedEvent'
- 3. If the current focused view has set 'focus:right...' properties, viewRoot will call view.findViewById to find the next focus, or find the nearest focusable view in a specified rectangle area.
-
-*** getDrawingCache
-*** ViewGroup
-** ViewRoot, View (DecorView) and Window
-- 与WMS直接打交道的是ViewRoot,WMS能直接看到的只有ViewRoot (通过ViewRoot注册到WMS的IWindow mClient)
-
-- ViewRoot直接管理其顶层View (对于Actity,Dialog, 即DecorView. 对于
-
-  PopupWindow及手动通过WindowManagerImpl.addView添加的view, 其顶层view只是普
-  通的view), 所以一个进程可以有多个ViewRoot
-
-- Window是和DecorView一一对应的. 
-
-  因为Activity, Dialog项层view是DecorView, 所以有window的概念, 可以通
-  过Window来控制ContextMenu, 调用Window.Callback等;
-
-- Window与Activity,Dialog对应
-    
-  通过Window.Callback, 可以和Activity和Dialog联系起来,因为它们都实际了
-  Window.Callback接口.而PopupWindow顶层只是普通view,所以没有Window的概念
-
-综上:
-  - WMS<-->ViewRoot
-  - ViewRoot<-->DecorView
-  - DecorView<-->Window<-->Activity,Dialog
-** Window
-对于ViewRoot来说,顶层的`Window`就是一个普通的View, 但有些和`Window`有关的操
-作,如:
- - 如何处理一些通用的按键事件, 如Volume, ContextMenu,Camera,Call,Search...,
- - 如何在顶层View之上再显示一个ContextMenu
- - 从WMS来的一些事件如何通知给Activity,Dialog, 例如onBackPressed()
-因为, 提供了一个Window类, 用来处理这些和`Window`有关的操作, 但从WMS及
-ViewRoot的角度看,并没有`Window`的概念. 
-
-只有DecorView能和Window关联,来处理`Window`相关操作 (因为DecorView是Window的
-inner class), 所以只有Activity,Dialog有window的概念
-*** PhoneWindow
-** ViewRoot
-ViewRoot is the bridge between WMS and View, It is basically a handler of
-activityThread's mainLooper.  So WMS can use this handler to dispatch event to
-top view of the activity or dialog.  What more, viewRoot is also equiped with an
-IWindowSession, through which can communicate with WMS, e.g, tell WMS to add
-view in ViewRoot.setView()
-*** IWindowSession: the sWindowSession
-when viewRoot is constructred, it will open session to WMS (IWindowSession) to communicate with WMS (e.g. For add, remove view)
-*** IWindow: the mWindow
-when viewRoot is constructed, it will create IWindow, and register the AIDL
-interface to WMS, WMS will save the IWindow as 'mClient' in WindowState arrays,
-through which WMS can communite with ViewRoot for event
-dispatching. IWindow.dispatch() will call viewRoot.dispatch() directly.
-*** AttachInfo: the mAttachInfo
-*** InputChannel: the mInputChannel
-*** Rect: the mWinFrame
-*** Rect: the mPendingContentInsets and mPendingVisibleInsets
-
-** WindowManagerImpl
-** WindowManagerPolicy
-*** PhoneWindowManager
-** WindowManagerService
-*** WindowState
-**** mClient
-IWindow as the mClient
-*** WindowToken
-*** AppWindowToken
-** Android窗口管理服务WindowManagerService计算Activity窗口大小的过程分析
+*** ViewRoot
+**** init
+*** Activity window size
 #+BEGIN_QUOTE
 Location: http://blog.csdn.net/luoshengyang/article/details/8479101
 
@@ -1632,10 +1645,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 窗口的组织方式。在接下来的一篇文章中，我们就将继续分析WindowManagerService服务是如何组织系统中的窗口的。敬请关注！
 #+END_QUOTE
 
-** App Transition
-*** overridePendingTransition
-** Starting Window
-** Input Event Dispatching
+*** App Transition
+**** overridePendingTransition
+*** Starting Window
+*** Event Dispatching
 see also [[Android Event Dispatching]]
-
-** performTraversals

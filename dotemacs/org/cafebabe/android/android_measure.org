@@ -67,9 +67,13 @@
    i.e. if Button1 or Button2 has specified a `weight`, when measure Button2, it's spec will be AT_MOST: 483, instead of 383!
 
 *** Layout.Weight
-    只有LinearLayout的子节点才支持Layout.Weight. 不同的子节点可以有不同的weight, 表示其权重. LinearLayout 在第一次measure过程结束后, 会根据各个子节点的weight
-    重新进行一次measure, 其目的是:将空闲的空间按weight重新分配给各子节点, 或将"按weight将超出的空间从各子节点里除去"
-    对第一种情况:
+
+只有LinearLayout的子节点才支持Layout.Weight. 不同的子节点可以有不同的
+weight, 表示其权重. LinearLayout 在第一次measure过程结束后, 会根据各个
+子节点的weight重新进行一次measure, 其目的是:将空闲的空间按weight重新分
+配给各子节点, 或将"按weight将超出的空间从各子节点里除去"
+
+对第一种情况:
     第一次measure后的情况:            再次measure后的情况:
 
     #+BEGIN_EXAMPLE

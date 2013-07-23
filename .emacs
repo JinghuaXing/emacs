@@ -4,7 +4,7 @@
 (add-to-list 'load-path "~/.elisp/org-8.0.6/contrib/lisp/")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/expand-region/")
-(add-to-list 'load-path "~/.elisp/cc-mode")
+;; (add-to-list 'load-path "~/.elisp/cc-mode")
 (add-to-list 'load-path "~/.elisp/ruby")
 (add-to-list 'load-path "~/.elisp/traverselisp/")
 (setq custom-file "~/.elisp/dotemacs/custom.el")
@@ -325,6 +325,8 @@
 				("\\.gnuplot\\'" . gnuplot-mode)
 				) auto-mode-alist))
 ;;  (global-set-key [(f9)] 'gnuplot-make-buffer)
+(require 'evil-numbers)
+(global-set-key (kbd "C-c +") 'evil-numbers/inc-at-pt)
+(global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt)
 
-
-
+(electric-pair-mode t)

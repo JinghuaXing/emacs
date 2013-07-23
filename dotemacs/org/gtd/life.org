@@ -18,7 +18,8 @@ DEADLINE:  <2013-08-03 Sat +1m -10d>
 :LAST_REPEAT: [2013-07-01 Mon 10:17]
 :END:
 * TODO 招行信用卡还款日                                          :life:habit:
-DEADLINE: <2013-07-23 Tue +1m -6d>
+DEADLINE: <2013-08-23 Fri +1m -6d>
+- State "DONE"       from "TODO"       [2013-07-23 Tue 15:00]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 14:55]
 - State "DONE"       from "TODO"       [2013-05-23 Thu 09:56]
 - State "DONE"       from "TODO"       [2013-04-26 Fri 19:45]
@@ -32,7 +33,7 @@ DEADLINE: <2013-07-23 Tue +1m -6d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-06-20 Thu 14:55]
+:LAST_REPEAT: [2013-07-23 Tue 15:00]
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                            :life:habit:
@@ -57,5 +58,7 @@ SCHEDULED: <2013-07-20 Sat>
 * TODO 办产权证明                                                      :life:
 SCHEDULED: <2013-07-20 Sat>
 [2013-07-19 Fri 15:07]
-* TODO [#B] 修自行车                                                   :life:
+* CANCELLED [#B] 修自行车                                              :life:
+CLOSED: [2013-07-23 Tue 15:01]
+- State "CANCELLED"  from "TODO"       [2013-07-23 Tue 15:01]
 [2013-07-19 Fri 15:32]
