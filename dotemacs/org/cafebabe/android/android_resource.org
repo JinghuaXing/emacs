@@ -105,6 +105,7 @@ axml 指通过 aapt 转换后的一种格式, 类似于 WBXML. 另外, axml 生�
 REFERENCE 的项其内容被提前解析为对应的 resID
 
 ** Get Resource
+*** 资源文件 (arsc) 如何被加载到内存
 *** Context.getResources
 #+BEGIN_SRC java
   ContextImpl.getResources
@@ -177,7 +178,7 @@ sort of `Assets`
             // 所以 mPackageMap 是一个 256 长度的数组, 一般情况下, 似乎只有 1 和 7f 是有值的, 因为
             // 一般的 app 只会使用 default assets (resID 均为 01xxxxxx) 和 本 package 的 asset (resID 均为 7fxxxxxx)
             return mPackageMap[Res_GETPACKAGE(resID)+1]-1;
-
+  
           // Look through all resource packages, starting with the MOST
           // RECENTLY ADDED.
           PackageGroup*  grp = mPackageGroups[p];

@@ -337,7 +337,38 @@ that is, /mnt/asec/ is actually mounted from a tmpfs, it's content
 **** /data/misc/systemkeys/AppsOnSD.sks
 the *AES* key to encrypt pkg.apk and decrypt xxx.asec, all the secure container share the same key.
 
-*** device mapper (dm_crypt)
+*** device mapper ( & dm-crypt)
+device mapper (dm)  是 linux 2.6 提供的一种块设备映射机制, 可以将一个
+设备映射为另一个 target device, 目前提供的 target device 主要有:
+
+1. linear
+2. mirror
+3. multipath
+4. snapshot
+5. raid
+6. crypt
+
+等, 例如, 通过将设备映射为 target device , 可以提供原设备不具备的功能,
+比如IO负载均衡, 加密等....
+
+dm-crypt 就是用来实现设备加密的 target device. 理论上, 所有块设备都可以
+通过 dm 映射为 dm-crypt 从而具备加密功能, 但实际上一般把 dm-crypt 用作
+loop device (也就是文件) 加密的居多, 比如 android ASEC
+
+**** 在 linux 下使用 dm-crypt 加密文件
+
+1. dd if=/dev/zero of=secret.img bs=1024 count=1024
+2. losetup /dev/loop0 secret.img
+3. cryptsetup -y create dm /dev/loop0
+4. mkfs.ext4 /dev/mapper/dm
+5. mount /dev/mapper/dm ~/mp
+
+取消 dm 映射方法为:
+
+1. umount /dev/mapper/dm
+2. cryptsetup remove dm
+3. losetup -d /dev/loop0
+
 *** To summarize:
 secure container is analogous to the `encrypt file system`.
 ** Signature & Certificate

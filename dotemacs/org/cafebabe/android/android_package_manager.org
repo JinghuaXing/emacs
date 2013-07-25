@@ -1,20 +1,73 @@
 #+TITLE: Android PackageManager
-* PackageManager
-** installd
-installd is a system binary running as `root` and listening on `installd` socket.
-see [[@dalvik-cache]]
-- when installing and uninstalling package, PMS need to mkdir/rmdir /data/data/xxx, but those data dirs is not accessable by PMS (PMS running with
-  `system` uid, while data dirs is owned by package uids like `app_1`), so PMS need to use `installd` to access those data dir.
-- after package is installed / deleted, PMS need invoke dex_opt / rm_dex to do the dirty work like optimize dex to dalvik-cache or remove dalvik-cache,
-  those works are also delegated to installd.
-** forward_lock
-    adb install -l xxx.apk ( -l means `forward_lock` install )
+* PackageManagerService
+** PMS
+** MountService
+** Vold
+** Installd
+installd is a system binary running as `root` and listening on
+`installd` socket. see [[@dalvik-cache]]
 
-    when xxx.apk is `forward_lock` installed
-    - it's orig .apk is deleted
-    - it's res/, manifest.xml is put to /data/app/xxx.zip
-      (note that .dex is cached in dalvik-cache)
-** install Package
+- when installing and uninstalling package, PMS need to mkdir/rmdir
+  /data/data/xxx, but those data dirs is not accessable by PMS (PMS
+  running with `system` uid, while data dirs is owned by package uids
+  like `app_1`), so PMS need to use `installd` to access those data
+  dir.
+- after package is installed / deleted, PMS need invoke dex_opt /
+  rm_dex to do the dirty work like optimize dex to dalvik-cache or
+  remove dalvik-cache, those works are also delegated to installd.
+
+** ASEC
+** Topics
+*** scanPackage
+**** internal package
+**** external package
+1. MountService init NativeDaemonConnector to connect to the vold
+#+BEGIN_SRC text
+  MountService.init
+    mConnector = new NativeDaemonConnector(this, "vold", ...)
+#+END_SRC
+2. mConnector.onDaemonConnected()
+#+BEGIN_SRC text
+  onDaemonConnected())
+    // PMS.java
+    mPms.scanAvailableAsecs();
+      updateExternalMediaStatusInner(true, false, false);
+      list = PackageHelper.getSecureContainerList();
+        getMountService().getSecureContainerList();
+          // MountService.java
+          mConnector.executeForList("asec", "list")
+            // CommandListener.cpp
+            listAsecsInDirectory(cli, Volume::SEC_ASECDIR_EXT);
+            listAsecsInDirectory(cli, Volume::SEC_ASECDIR_INT);
+      foreach (cid:list):
+        // cid 格式为: com.xx.xx.xx-1, 其 package name 为 com.xx.xx.xx
+        pkgName = getAsecPackageName(cid);
+        ps = mSettings.mPackages.get(pkgName);
+        if (ps == null):
+          // mSettings 中没有登记这个 cid? 可以这个 sd 卡是从别处拿的吧
+          removeCids.add(cid);
+        AsecInstallArgs args = new AsecInstallArgs(cid,isForwardLocked(ps));
+        processCids.put(args, ps.codePathString);
+      // foreach ends here
+      loadMediaPackages(processCids, uidArr, removeCids);
+        for (AsecInstallArgs args : keys):
+          args.doPreInstall();
+            String newCachePath = PackageHelper.mountSdDir(cid, getEncryptKey(),Process.SYSTEM_UID);
+              getMountService().mountSecureContainer(cid, key,ownerUid);
+                mConnector.execute("asec", "mount", id, key, ownerUid);
+            setCachePath(newCachePath);                      
+          PackageParser.Package pkg = scanPackageLI(new File(codePath),  parseFlags);
+          // 注意, scanPackageLI 对于 external
+          //  package, 会负责在 data/data/xxx/ 下生成到
+          //  /mnt/asec/xxx/lib 的 symlink
+          args.doPostInstall()
+        updatePermissionsLP()
+        mSettings.writeLPr();      
+    
+#+END_SRC
+
+*** installPackage
+
 - there are 2 ways to install package:
    1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
    2. use PackageInstaller or adb install (which will invoke PM.installPackage())
@@ -28,34 +81,35 @@ see [[@dalvik-cache]]
   - if apk is pushed to /system/app & /system/framework, then it is `system` application
   - if apk is replacing an existing old system application, then it is.
   - ...
-*** adb push
+
+**** internal package
+***** adb push
 #+BEGIN_SRC java
-     FileObserver.onEvent()
-       isApk=isPackageFilename():
-         name.endsWith(".apk");
-       if !isApk:return;
-       if ignoreCodePath(fullPathStr):   ;; if apk name is like "xxx-1.apk", it will be ignored!
-                                         ;; this is because PM.installPackage will also put installed package to /data/app, PM.installPackage use the
-					 ;; special naming rule to prevent FileObserver from installing the apk again.
-         return
-       if ADD_EVENTS:
-         scanPackageLI(mIsRom?PARSE_IS_SYSTEM:0) ;; if apk is in /system/app or /system/framework, mIsRom is true
-	                                         ;; package with PARSE_IS_SYSTEM flag will be marked as `system` application
-	 updatePermissionsLP()
-       if REMOVE_EVENTS:
-         removePackageLI()
-       if addedPackage!=null:
-         sendPackageBroadcast(ACTION_PACKAGE_ADDED)
-       if removedPackage!=null:
-         sendPackageBroadcast(ACTION_PACKAGE_REMOVED)
+  FileObserver.onEvent()
+    isApk=isPackageFilename():
+      name.endsWith(".apk");
+    if !isApk:return;
+    if ignoreCodePath(fullPathStr):   ;; if apk name is like "xxx-1.apk", it will be ignored!
+                                      ;; this is because PM.installPackage will also put installed package to /data/app, PM.installPackage use the
+                                      ;; special naming rule to prevent FileObserver from installing the apk again.
+      return
+    if ADD_EVENTS:
+      scanPackageLI(mIsRom?PARSE_IS_SYSTEM:0) ;; if apk is in /system/app or /system/framework, mIsRom is true
+                                              ;; package with PARSE_IS_SYSTEM flag will be marked as `system` application
+      updatePermissionsLP()
+    if REMOVE_EVENTS:
+      removePackageLI()
+    if addedPackage!=null:
+      sendPackageBroadcast(ACTION_PACKAGE_ADDED)
+    if removedPackage!=null:
+      sendPackageBroadcast(ACTION_PACKAGE_REMOVED)
 #+END_SRC
-*** PM.installPackage
-**** PackageInstaller
-**** install location (src & dest)
-***** src apk location
+***** installPackage
+****** install location (src & dest)
+******* src apk location
  - from DownloadManager through ContentProvider
  - from file though MediaContainerService
-***** app install location
+******* app install location
 the apk's install location can be internal flash / sdcard.
 1. The apk's manifest may declares it's `install location`, including:
   - auto
@@ -75,13 +129,12 @@ To summurize:
    - system setting for `default install location`
    - internal/external storage status
          
-**** MediaContainerService / DefaultContainerService
-SCHEDULED: <2011-03-02 Wed> CLOSED: [2011-03-02 Wed 16:42]
-- State "DONE"       [2011-03-02 Wed 16:42]
-  see [[@MountService]]
-  see [[@secure_container]]
-MediaContainerService is mainly used by app with `system' uid to access sdcard,
-because `system' process can't access sdcard, because:
+****** MediaContainerService / DefaultContainerService
+see [[@MountService]]
+see [[@secure_container]]
+
+MediaContainerService is mainly used by app with `system' uid to
+access sdcard, because `system' process can't access sdcard, because:
 
 #+BEGIN_SRC fundamental
 $ ls sdcard
@@ -92,17 +145,19 @@ d---rwxr-x system sdcard_rw 2010-07-26 12:56 sdcard
 
 http://stackoverflow.com/questions/5617797/android-shared-user-id-and-reading-writing-a-file
 
-The system user can not access the SD card, because if the SD card gets
-unmounted it may need to kill any processes that have files open on it and we
-don't want system processes being killed like that. If you want to access the SD
-card, you need to not use the system shared user ID.
+The system user can not access the SD card, because if the SD card
+gets unmounted it may need to kill any processes that have files open
+on it and we don't want system processes being killed like that. If
+you want to access the SD card, you need to not use the system shared
+user ID.
 
 #+END_QUOTE
-**** calling stack
-** Replace Package
-** Uninstall package
-*** Intent.ACTION_PACKAGE_REMOVED
-** resolveActivity
+
+**** external package
+*** replacePackage
+*** uninstallPackage
+**** Intent.ACTION_PACKAGE_REMOVED
+*** resolveActivity
 as shown in [[IntentFilter matching][IntentFilter matching]], startActivity will call
 PM.resolveIntent to resolve the intent, and get one best ResolveInfo;
 
@@ -110,15 +165,24 @@ PM.resolveActivity() will also call PM.resolveIntent() to resolve the
 intent, but there is ONE difference, PM.resolveActivity will not force
 the DEFAULT_ONLY flag set when calling resolveIntent(). but
 startActivity will.
+*** forward_lock
 
-** android package vs. java package vs. android application
-** UID & GID
+adb install -l xxx.apk ( -l means `forward_lock` install )
+
+when xxx.apk is `forward_lock` installed
+
+- it's orig .apk is deleted
+- it's res/, manifest.xml is put to /data/app/xxx.zip (note that .dex
+  is cached in dalvik-cache)
+
+*** app2sd
+*** uid & gid
 see also [[Java Process Creation]], [[Zygote]], [[System Init]] to distinguish
 `process uid' against `file uid'
 
 UID (including sharedUserId) is maintained by pm.Settings
 
-*** pre-defined UID
+**** pre-defined UID
 see system/core/include/private/android_filesystem_config.h
 
 #+BEGIN_SRC c
@@ -157,7 +221,7 @@ see system/core/include/private/android_filesystem_config.h
   };
 #+END_SRC
 
-*** app UID
+**** uid generation
 during scanPackageLI, but before mInstaller.install(), app UID is
 generate by the mSettings.
 #+BEGIN_SRC text
@@ -183,8 +247,8 @@ generate by the mSettings.
           return Process.FIRST_APPLICATION_UID + N;
     pkg.applicationInfo.uid = pkgSetting.appId;
 #+END_SRC
-*** sharedUserId
-**** sharedUserId pre-defined by the PMS
+**** sharedUserId
+***** sharedUserId pre-defined by the PMS
 #+BEGIN_SRC java
 PackageManagerService.<init>
   mSettings.addSharedUserLPw("android.uid.system", Process.SYSTEM_UID, ApplicationInfo.FLAG_SYSTEM);
@@ -200,21 +264,20 @@ That is,
 - android.uid.nfc
 
 these 4 sharedUserId is defined statically in PMS, and they
-  corresponds to the static UID (SYSTEM_UID, RADIO_UID, ...)
+corresponds to the static UID (SYSTEM_UID, RADIO_UID, ...)
 
-**** sharedUserId defined by app
+***** sharedUserId defined by app
 App can define `sharedUserId' freely, PMS will use `Setings' to
 maintain the dynamic `sharedUserId' -> `uid' mapping during `scanPackageLI'
 
 The most well-known app `sharedUserId' is `android.uid.shared', which
 is defined by `Contacts' and `ContactsProvider'
 
+*** multi-user
 
-
-
-** Multi-User support
 android 4.1 use UserManager to support multi-user, in-short, uid
-stored in pm.Setting is encoded as a mixer of multi-user-id and app_id,
-e.g. u0_a33, or u1_a33. 
+stored in pm.Setting is encoded as a mixer of multi-user-id and
+app_id, e.g. u0_a33, or u1_a33.
 
 As against android pre 4.1, app_id is taken as uid.
+

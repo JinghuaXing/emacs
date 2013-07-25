@@ -330,3 +330,11 @@
 (global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt)
 
 (electric-pair-mode t)
+(global-subword-mode t)
+(global-auto-revert-mode 1)
+
+(require 'smart-operator)
+
+(require 'etags-stack)
+(require 'idomenu)
+(global-set-key (kbd "<M-return>") 'idomenu)
