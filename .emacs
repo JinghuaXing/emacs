@@ -333,8 +333,7 @@
 (global-subword-mode t)
 (global-auto-revert-mode 1)
 
-(require 'smart-operator)
-
 (require 'etags-stack)
 (require 'idomenu)
 (global-set-key (kbd "<M-return>") 'idomenu)
+
