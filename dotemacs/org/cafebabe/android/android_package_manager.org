@@ -55,15 +55,15 @@ installd is a system binary running as `root` and listening on
             String newCachePath = PackageHelper.mountSdDir(cid, getEncryptKey(),Process.SYSTEM_UID);
               getMountService().mountSecureContainer(cid, key,ownerUid);
                 mConnector.execute("asec", "mount", id, key, ownerUid);
-            setCachePath(newCachePath);                      
+            setCachePath(newCachePath);
           PackageParser.Package pkg = scanPackageLI(new File(codePath),  parseFlags);
           // 注意, scanPackageLI 对于 external
           //  package, 会负责在 data/data/xxx/ 下生成到
           //  /mnt/asec/xxx/lib 的 symlink
           args.doPostInstall()
         updatePermissionsLP()
-        mSettings.writeLPr();      
-    
+        mSettings.writeLPr();
+
 #+END_SRC
 
 *** installPackage
@@ -71,12 +71,12 @@ installd is a system binary running as `root` and listening on
 - there are 2 ways to install package:
    1. push xxx.apk to any folder of /data/app, /system/app, /system/framework
    2. use PackageInstaller or adb install (which will invoke PM.installPackage())
-          
+
 - `system` application & 3rd application
   `system` is a property of ApplicationInfo after installation.
   `system` application are applications not listed in `downloaded` category in Settings, while 3rd applications are applications listed in `downloaded`
   category.
-      
+
   PackageManager will decide whether a newly installed application is a `system` application:
   - if apk is pushed to /system/app & /system/framework, then it is `system` application
   - if apk is replacing an existing old system application, then it is.
@@ -128,13 +128,15 @@ To summurize:
    - manifest's `install location`
    - system setting for `default install location`
    - internal/external storage status
-         
+
 ****** MediaContainerService / DefaultContainerService
 see [[@MountService]]
 see [[@secure_container]]
 
 MediaContainerService is mainly used by app with `system' uid to
 access sdcard, because `system' process can't access sdcard, because:
+
+******* `system` process can't access sdcard
 
 #+BEGIN_SRC fundamental
 $ ls sdcard
@@ -152,6 +154,26 @@ you want to access the SD card, you need to not use the system shared
 user ID.
 
 #+END_QUOTE
+
+即, 因为 sdcard 的权限对 `system` 用户是 000, 所以 `system` 用户无法访
+问.即 sharedUserId 为 `system` 的 java 进行无法访问. 而 sdcard 对
+system 权限之所以为 000, 是 vold 在 mount 时使用了如下命令:
+
+#+BEGIN_SRC java
+  Fat::doMount(devicePath, getMountpoint(), false, false, false,AID_SYSTEM, gid, 0702, true)
+#+END_SRC
+
+即使用702做掩码, 使 system 无法访问 sdcard.
+
+
+之所以这样做, 是因为 sharedUserId 为 `system` 的 app 可以将其 process
+设置为 `system`, 这样的话一旦该 app 访问了 sdcard, 当 sdcard 被
+umount 时, vold 会将该进程 (也就是 system 进程) kill
+
+#+BEGIN_SRC text
+  Volume::doUnmount(const char *path, bool force)
+    Process::killProcessesWithOpenFiles(path, action);
+#+END_SRC
 
 **** external package
 *** replacePackage
@@ -257,7 +279,7 @@ PackageManagerService.<init>
   mSettings.addSharedUserLPw("android.uid.nfc", NFC_UID, ApplicationInfo.FLAG_SYSTEM);
 #+END_SRC
 
-That is, 
+That is,
 - android.uid.system
 - android.uid.phone
 - android.uid.log
@@ -280,4 +302,3 @@ stored in pm.Setting is encoded as a mixer of multi-user-id and
 app_id, e.g. u0_a33, or u1_a33.
 
 As against android pre 4.1, app_id is taken as uid.
-

@@ -156,6 +156,8 @@ The document was typeset with
  '(bm-priority 2)
  '(bm-recenter t)
  '(bookmark-default-file "~/.elisp/emacs.bmk")
+ '(browse-kill-ring-display-duplicates nil)
+ '(browse-kill-ring-no-duplicates t)
  '(browse-url-browser-function (quote browse-url-w3))
  '(browse-url-generic-args (quote ("-newpage")))
  '(browse-url-generic-program "google-chrome")
@@ -366,5 +368,3 @@ The document was typeset with
  '(tabbar-separator-face ((t (:foreground "black" :background "black"))) t)
  '(tabbar-unselected-face ((t (:foreground "grey60" :background "black" :height 1.1))) t)
  '(which-func ((((class color) (background dark)) nil))))
-
-

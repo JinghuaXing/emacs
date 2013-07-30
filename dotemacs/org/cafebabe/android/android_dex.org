@@ -213,7 +213,15 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
 3. On the host during a build for preoptimization. This behaves almost
    the same as (2), except it takes file names instead of file
    descriptors.
-*** odex 如何被加载
+*** dex 何时被 dexopt
+1. PMS.performBootDexOpt
+   PMS 启动时
+2. AMS.ensurePackageDexOpt
+   AMS启动应用之前
+3. dvmRawDexFileOpen
+   ClassLoader 初始化时
+*** odex 如何被 ClassLoader 加载
+**** context class loader
 当 PathClassLoader 初始化时, 会初始化 DexFile, 相当的会设置对应的 odex 的路
 径.
 
@@ -264,7 +272,31 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
            return DexFile.loadDex(file.getPath(), optimizedPath, 0);
 
    #+END_SRC
+**** boot class loader
+#+BEGIN_SRC text
+  app_process.main()
+    AndroidRuntime::start
+      AndroidRuntime::startVM
+        JNI_CreateJavaVM
+          dvmStartup
+            dvmClassStartup()
+              // bootClassPathStr 包括 core.jar, bouncycastle.jar ...
+              processClassPath(gDvm.bootClassPathStr, true);
+                foreach entry in bootClassPathStr:
+                  prepareCpe(&entry, isBootstrap);
+                    dvmRawDexFileOpen(cpe->fileName, NULL, &pRawDexFile, isBootstrap);
+#+END_SRC
+*** ClassLoader 如何从 odex 加载类
 
-*** dex 何时被 dexopt
-- PMS.performBootDexOpt
-- AMS.ensurePackageDexOpt
+#+BEGIN_EXAMPLE
+ClassLoader -> DexPathList -> DexFile -> RawDexFile -> DvmDex
+#+END_EXAMPLE
+
+#+BEGIN_SRC text
+  BaseDexClassLoader.findClass
+    DexPathList.findClass
+      DexFile.loadClassBinaryName
+        Dalvik_dalvik_system_DexFile_defineClass()
+          DvmDex* pDvmDex = dvmGetRawDexFileDex(pDexOrJar->pRawDexFile);
+          clazz = dvmDefineClass(pDvmDex, descriptor, loader);
+#+END_SRC

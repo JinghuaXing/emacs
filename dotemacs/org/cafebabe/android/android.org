@@ -198,7 +198,7 @@ see also [[Context.getClassLoader]]
 				    |	     			      |
 				    |		       	       	      |
 	    		     ContextWrapper    	                 ContextImpl
-                              |		    		      ^    	       	       	       	    
+                              |		    		      ^
 	    -+------------------+---+---------+-		      |
 	     |			| 	      |		 	      |
 	     |			| 	      |		 	      | composition
@@ -266,7 +266,7 @@ see also [[Context.getClassLoader]]
     - We can inherit the `Application` class and set it to the `Application` field in AndroidManifest.xml, so that getApplicationContext() can return our own `Application` instance.
     - since `Application` extends ContextWrapper and has been init with a ContextImpl, it is a context of the full functionality.
       You can use it as a `persistent` Context.
-    
+
     *Note:*
     getApplicationContext() return a context:
     - with full functionality
@@ -304,7 +304,7 @@ see also [[Context.getClassLoader]]
     $ chmod 777 /data/misc -R
     $ ps # 找到进程号
     $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
-    $ ls /data/misc/*.hprof 
+    $ ls /data/misc/*.hprof
 #+END_EXAMPLE
     - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
 *** traceview
@@ -364,13 +364,14 @@ ServerThread and start some java service like AMS, WMS.
 
 system_server is setuid to `system` uid.
 
-Note: 
+Note:
 zygote will keep running with `root` uid, so that zygote can
 setuid/gid/groups on newly forked progress, so that new java progress
 will run with proper uid/gid/groups
 *** Zygote init
-    app_process --> app_main.cpp: framework/base/cads/app_process
-    ZygoteInit.java: framework/base/core/java/com/android/internal/os
+app_process --> app_main.cpp: framework/base/cads/app_process
+ZygoteInit.java: framework/base/core/java/com/android/internal/os
+
 #+BEGIN_EXAMPLE
     app_process::main()
       runtime.start("com.android.internal.os.ZygoteInit", startSystemServer);
@@ -756,7 +757,7 @@ The Android toolbox provides two applets: setprop and getprop to get
 and set properties. The usage is:
 
 getprop <property name>
-setprop <property name> <property value> 
+setprop <property name> <property value>
 
 Java
 The java application can use the System.getProperty() and System.setProperty() function to Get and Set the property.

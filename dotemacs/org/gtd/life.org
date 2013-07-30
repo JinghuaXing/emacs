@@ -6,7 +6,8 @@ DEADLINE: <2013-08-03 Sat +7d -1d>
 :LAST_REPEAT: [2013-07-27 Sat 09:30]
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
-DEADLINE:  <2013-08-03 Sat +1m -10d>
+DEADLINE:  <2013-09-03 Tue +1m -10d>
+- State "DONE"       from "TODO"       [2013-07-31 Wed 10:47]
 - State "DONE"       from "TODO"       [2013-07-01 Mon 10:17]
 - State "DONE"       from "TODO"       [2013-05-29 Wed 11:40]
 - State "DONE"       from "TODO"       [2013-04-28 Sun 16:54]
@@ -20,7 +21,7 @@ DEADLINE:  <2013-08-03 Sat +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-07-01 Mon 10:17]
+:LAST_REPEAT: [2013-07-31 Wed 10:47]
 :END:
 * TODO 招行信用卡还款日                                          :life:habit:
 DEADLINE: <2013-08-23 Fri +1m -6d>
@@ -57,8 +58,9 @@ DEADLINE:  <2013-08-14 Wed +1m -10d>
 :LAST_REPEAT: [2013-07-14 Sun 23:07]
 :END:
 
-* TODO 理发                                                            :life:
-SCHEDULED: <2013-07-20 Sat>
+* DONE 理发                                                            :life:
+CLOSED: [2013-08-01 Thu 10:58] SCHEDULED: <2013-07-20 Sat>
+- State "DONE"       from "TODO"       [2013-08-01 Thu 10:58]
 [2013-07-19 Fri 15:05]
 * DONE 办产权证明                                                      :life:
 CLOSED: [2013-07-27 Sat 09:30] SCHEDULED: <2013-07-20 Sat>
@@ -72,3 +74,6 @@ CLOSED: [2013-07-23 Tue 15:01]
 CLOSED: [2013-07-29 Mon 10:46]
 - State "DONE"       from "TODO"       [2013-07-29 Mon 10:46]
 [2013-07-23 Tue 20:15]
+* TODO 修车                                                            :life:
+SCHEDULED: <2013-08-02 Fri>
+[2013-07-31 Wed 17:27]

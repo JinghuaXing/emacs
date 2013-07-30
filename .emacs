@@ -335,3 +335,6 @@
 (require 'pdftools)
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+(require 'xclip)
+;; (turn-on-xclip)
