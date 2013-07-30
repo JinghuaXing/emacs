@@ -1,5 +1,5 @@
-# name: cursor
-# key: cursor
+# name: icursor
+# key: icursor
 # --
 try {
     if (${1:cursor}!=null && $1.moveToFirst()) {

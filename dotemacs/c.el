@@ -5,7 +5,6 @@
 ;;  (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
   (c-set-style "k&r")
   (dtrt-indent-mode t)
-  (smart-operator-mode t)
   (c-toggle-auto-state -1)
   (c-toggle-hungry-state t)
   (c-toggle-electric-state t)

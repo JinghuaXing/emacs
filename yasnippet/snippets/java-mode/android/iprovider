@@ -1,5 +1,5 @@
 # name: FILE *fp = fopen(..., ...);
-# key: provider
+# key: iprovider
 # --
 
 package ${1:package_name};

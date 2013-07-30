@@ -3,7 +3,7 @@
 ** Tools
 *** dexdump
 *** dx [class->dex]
-- class 转换为 dex 
+- class 转换为 dex
   dx --dex HelloWorld.class  --output=classes.dex
 *** dex2jar [dex->class]
 将 dex 转换为 class/jar
@@ -28,7 +28,7 @@ java -jar smali.jar classes.dex
 
 #+BEGIN_EXAMPLE
   .class public LHelloWorld;
-  
+
   #Ye olde hello world application
   #To assemble and run this on a phone or emulator:
   #
@@ -40,18 +40,18 @@ java -jar smali.jar classes.dex
   #if you get out of memory type errors when running smali.jar, try
   #java -Xmx512m -jar smali.jar HelloWorld.smali
   #instead
-  
+
   .super Ljava/lang/Object;
-  
+
   .method public static main([Ljava/lang/String;)V
       .registers 2
-  
+
       sget-object v0, Ljava/lang/System;->out:Ljava/io/PrintStream;
-  
+
       const-string        v1, "Hello World!"
-  
+
       invoke-virtual {v0, v1}, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
-  
+
       return-void
   .end method
 #+END_EXAMPLE
@@ -83,10 +83,10 @@ Class #0            -
 00017c: 7010 0500 0000                         |0000: invoke-direct {v0}, Ljava/lang/Object;.<init>:()V // method@0005
 000182: 0e00                                   |0003: return-void
       catches       : (none)
-      positions     : 
+      positions     :
         0x0000 line=2
-      locals        : 
-        0x0000 - 0x0004 reg=0 this LHelloWorld2; 
+      locals        :
+        0x0000 - 0x0004 reg=0 this LHelloWorld2;
 
     #1              : (in LHelloWorld2;)
       name          : 'main'
@@ -103,10 +103,10 @@ Class #0            -
 00019c: 6e20 0400 1000                         |0004: invoke-virtual {v0, v1}, Ljava/io/PrintStream;.println:(Ljava/lang/String;)V // method@0004
 0001a2: 0e00                                   |0007: return-void
       catches       : (none)
-      positions     : 
+      positions     :
         0x0000 line=4
         0x0007 line=5
-      locals        : 
+      locals        :
 
   Virtual methods   -
   source_file_idx   : 2 (HelloWorld2.java)
@@ -132,10 +132,10 @@ Class #1            -
 0001b4: 7010 0500 0000                         |0000: invoke-direct {v0}, Ljava/lang/Object;.<init>:()V // method@0005
 0001ba: 0e00                                   |0003: return-void
       catches       : (none)
-      positions     : 
+      positions     :
         0x0000 line=2
-      locals        : 
-        0x0000 - 0x0004 reg=0 this LHelloWorld; 
+      locals        :
+        0x0000 - 0x0004 reg=0 this LHelloWorld;
 
     #1              : (in LHelloWorld;)
       name          : 'main'
@@ -152,10 +152,10 @@ Class #1            -
 0001d4: 6e20 0400 1000                         |0004: invoke-virtual {v0, v1}, Ljava/io/PrintStream;.println:(Ljava/lang/String;)V // method@0004
 0001da: 0e00                                   |0007: return-void
       catches       : (none)
-      positions     : 
+      positions     :
         0x0000 line=4
         0x0007 line=5
-      locals        : 
+      locals        :
 
   Virtual methods   -
   source_file_idx   : 1 (HelloWorld.java)
@@ -163,15 +163,13 @@ Class #1            -
 
 #+END_EXAMPLE
 
-可见, `hello` 这个字符串在两个 class 中引用的是同一个常量池中的值. 
+可见, `hello` 这个字符串在两个 class 中引用的是同一个常量池中的值.
 
 ** odex
 http://blog.sina.com.cn/s/blog_77d0785c0100vp8j.html
 http://www.addictivetips.com/mobile/what-is-odex-and-deodex-in-android-complete-guide/
-
 *** dexopt
 dexopt is located in dalvik/dexopt/OptMain.cpp
-
 **** dexopt 的作用
 - verification
 
@@ -179,7 +177,7 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
   /dalvik/vm/analysis/Optimize.cpp::optimizeMethod
 
   1. quick替换 与 符号解析
-     
+
      将本来 java 在类加载时完成的符号解析的工作拿出来,提前将符号解析出
      来, 并且使用相应的 `quick' 指令代替原来的基于常量池符号引用的指令,
      例如: 将之前的
@@ -215,13 +213,58 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
 3. On the host during a build for preoptimization. This behaves almost
    the same as (2), except it takes file names instead of file
    descriptors.
+*** odex 如何被加载
+当 PathClassLoader 初始化时, 会初始化 DexFile, 相当的会设置对应的 odex 的路
+径.
 
+1. ContextImpl.getClassLoader 最终返回的是一个 PathClassLoader
 
+2. PathClassLoader的构造函数
+   #+BEGIN_SRC java
+     public PathClassLoader(String dexPath, ClassLoader parent) {
+         super(dexPath, null, null, parent);
+     }
+   #+END_SRC
 
-*** Why `dalvik-cache' need to be rebuild for all apps when framework.jar (or services.jar ...) is changed?
+   其中, 基类的第一个参数表示 apk/jar, 第二个参数表示
+   optimizedDirectory, 表示 odex 放置在哪里, 以后查找和生成 odex 时会使用
+   该目录, 若该参数为 null, 则表示使用默认的 `/data/dalvik-cache/`
 
-since framework.jar (and services.jar, android.policy.jar ...) is
-`dynamic' linked to app (actually java doesn't have the concept of
-`dynamic link' and `static link', `dynamic' here means the jar is not
-packed into the apk), when the jar is changed, apps using the jar
-must be re-resolved according to the jar.
+3. PathClassLoader 的基类: BaseDexClassLoader 的构造函数
+   #+BEGIN_SRC java
+     public BaseDexClassLoader(String dexPath, File optimizedDirectory,
+                               String libraryPath, ClassLoader parent) {
+         super(parent);
+         this.originalPath = dexPath;
+         this.pathList =
+             new DexPathList(this, dexPath, libraryPath, optimizedDirectory);
+     }
+
+   #+END_SRC
+
+   其中 optimizedDirectory 为 null, 表示使用默认的 `/data/dalvik-cache/`
+
+4. DexPathList 构造函数
+
+   #+BEGIN_SRC text
+     this.dexElements = makeDexElements(splitDexPath(dexPath), optimizedDirectory);
+       dex = loadDexFile(file, optimizedDirectory);
+         if (optimizedDirectory == null):
+           return new DexFile(file);
+             mCookie = openDexFile(sourceName, outputName, flags);
+               Dalvik_dalvik_system_DexFile_openDexFile(const u4* args,)
+                 dvmRawDexFileOpen(sourceName, outputName, &pRawDexFile,)
+                   if (odexOutputName == NULL):
+                     // 生成 odex 对应的文件名.
+                     cachedName = dexOptGenerateCacheFileName(fileName,  NULL);
+                   optFd = dvmOpenCachedDexFile(fileName, cachedName, modTime,);
+                   ...
+         else:
+           String optimizedPath = optimizedPathFor(file, optimizedDirectory);
+           return DexFile.loadDex(file.getPath(), optimizedPath, 0);
+
+   #+END_SRC
+
+*** dex 何时被 dexopt
+- PMS.performBootDexOpt
+- AMS.ensurePackageDexOpt

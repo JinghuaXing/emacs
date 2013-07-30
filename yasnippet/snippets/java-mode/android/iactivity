@@ -1,0 +1,11 @@
+# name: iactivity
+# key: iactivity
+# --
+public class ${1:`(s-upper-camel-case (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))`} extends Activity {
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+ 	setContentView(R.layout.main);
+	$0
+    }
+}

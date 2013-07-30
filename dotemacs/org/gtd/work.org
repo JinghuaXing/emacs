@@ -110,7 +110,9 @@ CLOSED: [2012-10-26 Fri 15:40]
 :ID:       c0e6a3fa-a77d-4426-99e4-a3b8d057b94a
 :END:
 [2012-11-14 Wed 11:32]
-* TODO Android GDI                                                     :work:
+* CANCELLED Android GDI                                                :work:
+CLOSED: [2013-07-29 Mon 10:44]
+- State "CANCELLED"  from "TODO"       [2013-07-29 Mon 10:44]
 :PROPERTIES:
 :ID:       d6e4c39c-bc79-49b6-b6af-1db49ef924ff
 :END:
@@ -130,7 +132,9 @@ CLOSED: [2012-12-05 三 13:19]
 :ID:       c314af44-4db6-4378-b6e6-42ca5d6670cd
 :END:
 [2012-12-15 Sat 17:36]
-* TODO oom killer and low memory killer                                :work:
+* DONE oom killer and low memory killer                                :work:
+CLOSED: [2013-07-29 Mon 10:44]
+- State "DONE"       from "TODO"       [2013-07-29 Mon 10:44]
 :PROPERTIES:
 :ID:       e7f22e72-6ca9-4c45-8387-74d45d7adaba
 :END:
@@ -157,7 +161,9 @@ CLOSED: [2013-02-25 Mon 15:25]
 :ID:       24fdef08-d1c4-4211-9cbc-3993a62694e0
 :END:
 [2013-02-20 Wed 20:06]
-* TODO keytool and openssl                                             :work:
+* DONE keytool and openssl                                             :work:
+CLOSED: [2013-07-29 Mon 10:42]
+- State "DONE"       from "TODO"       [2013-07-29 Mon 10:42]
 :PROPERTIES:
 :ID:       f576c81b-e600-4b06-bb0a-7e252dfd42ed
 :END:
@@ -217,7 +223,9 @@ CLOSED: [2013-06-20 Thu 15:56]
 :ID:       e4eebba4-e455-4318-9a2f-feebf86a5525
 :END:
 [2013-04-17 Wed 21:35]
-* TODO 透明代理,反向代理                                               :work:
+* DONE 透明代理,反向代理                                               :work:
+CLOSED: [2013-07-29 Mon 10:42]
+- State "DONE"       from "TODO"       [2013-07-29 Mon 10:42]
 :PROPERTIES:
 :ID:       9d22c209-2353-4b7c-a345-887bf602e8d0
 :END:
@@ -275,13 +283,17 @@ CLOSED: [2013-06-17 Mon 16:54]
 CLOSED: [2013-06-17 Mon 16:54]
 - State "DONE"       from "TODO"       [2013-06-17 Mon 16:54]
 [2013-05-20 Mon 22:09]
-* TODO try AndEngine && Box2d                                          :work:
+* DONE try AndEngine && Box2d                                          :work:
+CLOSED: [2013-07-29 Mon 10:42]
+- State "DONE"       from "TODO"       [2013-07-29 Mon 10:42]
 [2013-05-27 Mon 16:59]
 * DONE odex                                                            :work:
 CLOSED: [2013-06-17 Mon 16:53]
 - State "DONE"       from "TODO"       [2013-06-17 Mon 16:53]
 [2013-05-30 Thu 17:07]
-* TODO sqlite optimization                                                     :work:
+* DONE sqlite optimization                                             :work:
+CLOSED: [2013-07-29 Mon 10:42]
+- State "DONE"       from "TODO"       [2013-07-29 Mon 10:42]
 
 - enable WAL
   - set synchronous to NORMAL in WAL

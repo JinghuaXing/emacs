@@ -1,19 +1,15 @@
 # name: iservice
 # key: iservice
 # --
-public class ${1:`(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`} extends IntentService {
-
-    @Override
-    public $1 (String name) {
-        super(name);
-    }
-
-    public $1 () {
-        super("${1:$(downcase text)}");
+public class ${1:`(s-upper-camel-case (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))`} extends Service {
+    @Override    
+    public IBinder onBind(Intent intent) {
+	return null;
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public int onStartCommand(Intent intent, int flag, int startId) {
 	$0
+	return START_NOT_STICKY;
     }
 }

@@ -1,5 +1,5 @@
-# name: IntentService
-# key: IntentService
+# name: iintentservice
+# key: iintentservice
 # --
 public class ${1:`(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`} extends IntentService {
 
