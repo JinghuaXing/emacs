@@ -74,6 +74,7 @@ CLOSED: [2013-07-23 Tue 15:01]
 CLOSED: [2013-07-29 Mon 10:46]
 - State "DONE"       from "TODO"       [2013-07-29 Mon 10:46]
 [2013-07-23 Tue 20:15]
-* TODO 修车                                                            :life:
-SCHEDULED: <2013-08-02 Fri>
+* DONE 修车                                                            :life:
+CLOSED: [2013-08-02 Fri 08:40] SCHEDULED: <2013-08-02 Fri>
+- State "DONE"       from "TODO"       [2013-08-02 Fri 08:40]
 [2013-07-31 Wed 17:27]

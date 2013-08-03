@@ -378,3 +378,8 @@ CLOSED: [2013-07-19 Fri 10:37]
 [2013-07-19 Fri 18:52]
 * TODO IME and IME keyboard                                            :work:
 [2013-08-01 Thu 14:35]
+* TODO wakelock & alarm                                                :work:
+[2013-08-03 Sat 09:37]
+* TODO if app A createPackageContext of app B, while B is on sdcard,   :work:
+when umounting sdcard, will process A be killed?
+[2013-08-03 Sat 18:02]
