@@ -325,7 +325,7 @@
 (global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt)
 
 (electric-pair-mode t)
-(global-subword-mode t)
+;; (global-subword-mode t)
 (global-auto-revert-mode 1)
 
 (require 'etags-stack)
@@ -338,3 +338,6 @@
 
 (require 'xclip)
 ;; (turn-on-xclip)
+
+(add-to-list 'load-path "~/.elisp/helm")
+(require 'helm-config)

@@ -9,6 +9,7 @@
   (c-toggle-hungry-state t)
   (c-toggle-electric-state t)
   (setq c-basic-offset 4)
+  (subword-mode t)
   (glasses-mode t)
   (if (< buffer-saved-size 1024000)
       (auto-highlight-symbol-mode t)
@@ -239,8 +240,5 @@
 
 (add-hook 'c-mode-common-hook
 	  (function (lambda ()
-		      (add-hook 'local-write-file-hooks 
+		      (add-hook 'local-write-file-hooks
 				'check-parens))))
-
-
-
