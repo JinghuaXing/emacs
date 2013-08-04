@@ -24,7 +24,6 @@
 (load-file "~/.elisp/dotemacs/droid.el")
 (load-file "~/.elisp/dotemacs/c.el")
 (load-file "~/.elisp/dotemacs/key.el")
-(load-file "~/.elisp/dotemacs/escreen.el")
 (load-file "~/.elisp/dotemacs/org.el")
 (load-file "~/.elisp/dotemacs/ruby.el")
 (load-file "~/.elisp/dotemacs/scala.el")
@@ -219,8 +218,8 @@
 (require 'popup-ruler)
 (defalias 'ruler 'popup-ruler)
 
-(require 'browse-kill-ring)
-(global-set-key (kbd "M-y") 'browse-kill-ring)
+;; (require 'browse-kill-ring)
+;; (global-set-key (kbd "M-y") 'browse-kill-ring)
 
 (autoload 'xmsi-mode "xmsi-math-symbols-input" "Load xmsi minor mode for inputting math (Unicode) symbols." t)
 (xmsi-mode 1)
@@ -339,5 +338,14 @@
 (require 'xclip)
 ;; (turn-on-xclip)
 
+(require 'elscreen)
+(elscreen-start)
+
 (add-to-list 'load-path "~/.elisp/helm")
 (require 'helm-config)
+(helm-mode t)
+
+(global-set-key (kbd "C-x b") 'helm-for-files)
+(global-set-key (kbd "C-x TAB") 'helm-imenu)
+(global-set-key (kbd "M-y") 'helm-show-kill-ring)
+(define-key org-mode-map (kbd "C-x TAB") 'helm-org-headlines)

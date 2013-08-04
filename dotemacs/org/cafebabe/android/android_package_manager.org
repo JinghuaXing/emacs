@@ -168,12 +168,26 @@ system 权限之所以为 000, 是 vold 在 mount 时使用了如下命令:
 
 之所以这样做, 是因为 sharedUserId 为 `system` 的 app 可以将其 process
 设置为 `system`, 这样的话一旦该 app 访问了 sdcard, 当 sdcard 被
-umount 时, vold 会将该进程 (也就是 system 进程) kill
+umount 时, vold (可能)会将该进程 (也就是 system 进程) kill
 
 #+BEGIN_SRC text
-  Volume::doUnmount(const char *path, bool force)
-    Process::killProcessesWithOpenFiles(path, action);
+  VolumeManager::unmountLoopImage
+    for (i = 1; i <= UNMOUNT_RETRIES; i++):
+      rc = umount(mountPoint);
+      if succ:
+        break;
+      else:
+        int action = 0; // default is to just complain
+        if (i > (UNMOUNT_RETRIES - 2))
+            action = 2; // SIGKILL
+        else if (i > (UNMOUNT_RETRIES - 3))
+            action = 1; // SIGHUP
+        Process::killProcessesWithOpenFiles(path, action);
+        usleep(UNMOUNT_SLEEP_BETWEEN_RETRY_MS); // 1s
 #+END_SRC
+
+可见, 在 umount 时系统会尝试多次, 若一直失败, 则 kill 相关的进程, 否则
+只是 complain 一下, 并不会 kill 进程.
 
 **** external package
 *** replacePackage
