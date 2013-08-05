@@ -254,7 +254,7 @@ arg METHOD can be one of buffer, buffer-other-window, buffer-other-frame."
   (helm-m-occur-action
    candidate 'buffer (or current-prefix-arg         ; persistent.
                          helm-current-prefix-arg))) ; exit.
-                         
+
 (defun helm-m-occur-goto-line-ow (candidate)
   "Go to CANDIDATE line in other window.
 Same as `helm-m-occur-goto-line' but go in other window."
@@ -449,6 +449,18 @@ the center of window, otherwise at the top of window.")
         :buffer "*helm occur*"
         :history 'helm-grep-history))
 
+(defun helm-occur-from-input (input)
+  "Invoke `helm-occur' from isearch."
+  (interactive)
+  (let ()
+    (isearch-exit)
+    (setq helm-multi-occur-buffer-list (list (buffer-name (current-buffer))))
+    (helm-occur-init-source)
+    (helm-attrset 'name "Occur" helm-source-occur)
+    (helm :sources 'helm-source-occur
+          :buffer "*helm occur*"
+          :history 'helm-grep-history
+          :input input)))
 ;;;###autoload
 (defun helm-occur-from-isearch ()
   "Invoke `helm-occur' from isearch."

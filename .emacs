@@ -340,12 +340,3 @@
 
 (require 'elscreen)
 (elscreen-start)
-
-(add-to-list 'load-path "~/.elisp/helm")
-(require 'helm-config)
-(helm-mode t)
-
-(global-set-key (kbd "C-x b") 'helm-for-files)
-(global-set-key (kbd "C-x TAB") 'helm-imenu)
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-(define-key org-mode-map (kbd "C-x TAB") 'helm-org-headlines)

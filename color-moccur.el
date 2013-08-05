@@ -889,8 +889,8 @@ automatic display of the corresponding source code location."
      t
      buffers)))
 
-(define-key isearch-mode-map (kbd "M-o") 'isearch-moccur)
-(define-key isearch-mode-map (kbd "M-O") 'isearch-moccur-all)
+;; (define-key isearch-mode-map (kbd "M-o") 'isearch-moccur)
+;; (define-key isearch-mode-map (kbd "M-O") 'isearch-moccur-all)
 
 ;;;; occur
 (defun occur-by-moccur (regexp arg)

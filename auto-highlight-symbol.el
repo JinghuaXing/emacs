@@ -934,8 +934,8 @@ You can do these operations at One Key!
     (moccur-search
      region-string
      t
-     (list (current-buffer)))))
-
+     (list (current-buffer)))
+    ))
 
 (defun ahs-copy-hl ()
   (interactive)

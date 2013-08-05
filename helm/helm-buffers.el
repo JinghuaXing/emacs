@@ -96,6 +96,7 @@ When nil use the longest buffer-name length found."
     (define-key map (kbd "C-=")       'helm-buffer-diff-persistent)
     (define-key map (kbd "M-U")       'helm-buffer-revert-persistent)
     (define-key map (kbd "M-D")       'helm-buffer-run-kill-buffers)
+    (define-key map (kbd "C-K")       'helm-buffer-run-kill-buffers)
     (define-key map (kbd "C-x C-s")   'helm-buffer-save-persistent)
     (define-key map (kbd "C-M-%")     'helm-buffer-run-query-replace-regexp)
     (define-key map (kbd "M-%")       'helm-buffer-run-query-replace)
