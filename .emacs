@@ -17,6 +17,7 @@
 
 ;;(load-file "~/.elisp/dotemacs/eshell.el")
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
+(load-file "~/.elisp/dotemacs/mew.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
