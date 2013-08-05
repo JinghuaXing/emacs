@@ -380,6 +380,13 @@ CLOSED: [2013-07-19 Fri 10:37]
 [2013-08-01 Thu 14:35]
 * TODO wakelock & alarm                                                :work:
 [2013-08-03 Sat 09:37]
-* TODO if app A createPackageContext of app B, while B is on sdcard,   :work:
+* DONE if app A createPackageContext of app B, while B is on sdcard,   :work:
+CLOSED: [2013-08-05 Mon 17:25]
+- State "DONE"       from "TODO"       [2013-08-05 Mon 17:25]
 when umounting sdcard, will process A be killed?
+
+It depends... sd 卡有文件被进程打开并不能阻止 umount, 若 umount 时文件
+正在被读写, umount 才会失败, 当 umount 连续失败几次后,  vold 才会
+kill 进程.
+
 [2013-08-03 Sat 18:02]
