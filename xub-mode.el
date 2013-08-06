@@ -194,11 +194,11 @@ You need emacs 23.x to enjoy this mode. Because emacs 22's
 `describe-char' does not provide full unicode info."
   (interactive)
 ;  (kill-all-local-variables)
-  
+
   (setq major-mode 'xub-mode)
   (setq mode-name "XUB Unicode Browser")
   (use-local-map xub-map)
-  
+
   (run-mode-hooks 'xub-hook))
 
 (provide 'xub-mode)
