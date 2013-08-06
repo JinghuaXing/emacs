@@ -1408,7 +1408,7 @@ Use \\[toggle-read-only] to permit editing."
            (tab-width
             (round (- (/ available-width number-of-screens)
                       (if elscreen-tab-display-kill-screen 5.5 1.5)))))
-      (max (min tab-width 16) 1))))
+      (max (min tab-width 30) 1))))
 
 (defun elscreen-e21-tab-escape-% (string)
   (if (string-match "%" string)

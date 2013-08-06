@@ -1,7 +1,6 @@
 (add-to-list 'load-path "~/.elisp/mew")
 
 (require 'mew)
-;;(require 'mew-w3m)
 
 (if (boundp 'read-mail-command)
     (setq read-mail-command 'mew))

@@ -1,2 +1,71 @@
 #+TITLE: Android Power Management
 * Android Power Management
+** files
+- kernel/power/main.c
+  + state_store()
+
+- kernel/power/earlysuspend.c
+  + request_suspend_state()
+  + wake_unlock()
+
+- kernel/power/wakelock.c
+  + suspend()
+
+** early-suspend
+** late-resume
+** wake-lock
+** alarm
+*** alarm 如何唤醒已经休眠的进程
+** misc
+*** /sys
+- /sys/power/state
+*** suspend 后 wifi 如何唤醒进程
+#+BEGIN_SRC java
+  new Thread() {
+      public void run() {
+          while (true) {
+              counter++;
+              try {
+                  Thread.sleep(5000);
+              } catch (Exception e) {
+              }
+          }
+      }
+  }.start();
+
+  new Thread() {
+      public void run() {
+          try {
+              ServerSocket serverSocket = new ServerSocket(1234);
+              Socket socket = serverSocket.accept();
+              BufferedReader is=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+              BufferedWriter os=new BufferedWriter(new FileWriter("/storage/sdcard1/test_socket.txt"));
+              String line=is.readLine();
+              while (line!=null) {
+                  Log.e("sunway","got line: "+line);
+                  os.write (Long.toString(System.currentTimeMillis()/1000)+" : counter: "+counter+" / ");
+                  os.write(line);
+                  os.newLine();
+                  os.flush();
+                  try {
+                      // Thread.sleep(20000);
+                      line=is.readLine();
+                  } catch (Exception e) {
+                  }
+              }
+              Log.e("sunway","conn close");
+              is.close();
+              os.close();
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }
+  }.start();
+
+#+END_SRC
+
+使用上面的测试程序可以得出结论:
+1. ingress 数据可以唤醒整个系统.
+2. 保持 ingress 数据不处理可以阻止系统休眠. (去掉 Thread.sleep 试试)
+** references
+[[https://community.freescale.com/thread/261901][Linux Kernel and Android Suspend/Resume -blog archive]]

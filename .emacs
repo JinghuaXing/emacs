@@ -219,8 +219,8 @@
 (require 'popup-ruler)
 (defalias 'ruler 'popup-ruler)
 
-;; (require 'browse-kill-ring)
-;; (global-set-key (kbd "M-y") 'browse-kill-ring)
+(require 'browse-kill-ring)
+(global-set-key (kbd "M-y") 'browse-kill-ring)
 
 (autoload 'xmsi-mode "xmsi-math-symbols-input" "Load xmsi minor mode for inputting math (Unicode) symbols." t)
 (xmsi-mode 1)
@@ -337,7 +337,7 @@
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (require 'xclip)
-;; (turn-on-xclip)
+(turn-on-xclip)
 
 (require 'elscreen)
 (elscreen-start)
