@@ -341,3 +341,5 @@
 
 (require 'elscreen)
 (elscreen-start)
+
+(defalias 'perl-mode 'cperl-mode)

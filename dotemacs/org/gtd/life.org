@@ -1,9 +1,11 @@
 * TODO 给父母打电话                                              :life:habit:
-DEADLINE: <2013-08-03 Sat +7d -1d>
+DEADLINE: <2013-08-17 Sat +7d -1d>
+- State "DONE"       from "TODO"       [2013-08-12 Mon 16:07]
+- State "DONE"       from "TODO"       [2013-08-12 Mon 16:07]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 :PROPERTIES:
-:LAST_REPEAT: [2013-07-27 Sat 09:30]
+:LAST_REPEAT: [2013-08-12 Mon 16:07]
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
 DEADLINE:  <2013-09-03 Tue +1m -10d>

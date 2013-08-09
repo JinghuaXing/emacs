@@ -26,7 +26,7 @@ installd is a system binary running as `root` and listening on
   MountService.init
     mConnector = new NativeDaemonConnector(this, "vold", ...)
 #+END_SRC
-2. mConnector.onDaemonConnected()
+2. mConnector.onDaemonConnected() or mConnector.onEvent()
 #+BEGIN_SRC text
   onDaemonConnected())
     // PMS.java
@@ -66,9 +66,49 @@ installd is a system binary running as `root` and listening on
 
 #+END_SRC
 
-*** umount sdcard
+*** sdcard
+**** mount sdcard
+***** 主动
 #+BEGIN_SRC text
-  MountService.onDaemonConnected();
+  MountService.mountVolume()
+    doMountVolume(path);
+    // doMountVolume 直接调用 volume mount 命令, 因为 mount 成功后
+    // onEvent 会收到状态的变化, 然后会做其他的例如 mount asec 的动作.
+#+END_SRC
+
+***** 被动
+#+BEGIN_SRC text
+  onEvent()
+    if (code == VoldResponseCode.VolumeStateChange):
+      notifyVolumeStateChange;
+    else if (code == VoldResponseCode.VolumeDiskInserted):
+      doMountVolume(path)
+      // 与手动 mount 如出一辙
+#+END_SRC
+
+
+***** To summaries
+
+mount 过程比较简单, 先调用 volume mount, 然后等 onEvent 状态变化后
+mount asec.
+
+umount 却不能这样, 先 umount 再等 event, 而要先把 asec 等处理完, 再
+umount, 因为 asec 没 umount 前, umount sdcard 是不可能成功的.
+
+**** umount sdcard
+***** COMMENT 主动
+#+BEGIN_SRC text
+  MountService.unMountVolume()
+    UnmountCallBack ucb = new UnmountCallBack(path, force, removeEncryption);
+    mHandler.sendMessage(mHandler.obtainMessage(H_UNMOUNT_PM_UPDATE, ucb));
+      mPms.updateExternalMediaStatus(false, true);
+        ucb.handleFinished
+          doUnmountVolume(path, true, removeEncryption);
+#+END_SRC
+
+***** 被动
+#+BEGIN_SRC text
+  MountService.onEvent();
     updatePublicVolumeState(path, state);
       mPms.updateExternalMediaStatus(false, false); // false for umount
         sendMsg (UPDATED_MEDIA_STATUS)
@@ -92,24 +132,25 @@ installd is a system binary running as `root` and listening on
 
 #+END_SRC
 
-**** To summaries
+***** To summaries
 
-1. umount 消息最初由 MountService 从 vold 获取
-2. MountService 通过 PMS 先 umount 所有的 ASEC 设备, 并在完成后通知 MountService
-3. 同时 MountService 会通过 deletePackageLI 删除 ASEC 上的程序, 但保留
+不管主动被动的 umount:
+
+1. MountService 通过 PMS 先 umount 所有的 ASEC 设备, 并在完成后通知 MountService
+2. 同时 MountService 会通过 deletePackageLI 删除 ASEC 上的程序, 但保留
    数据.
-4. MountService 获得通知后调用 vold 的 `volume unmount`, 真正 umount
+3. MountService 获得通知后调用 vold 的 `volume unmount`, 真正 umount
    sdcard.
    1) vold 的 volumn umount 也不是简单的 umount sdcard, 它会 umount
       /mnt/secure, /mnt/sdcard/.android_secure 等. 并 kill 打开 sdcard 的
       进程.
 
-*** usb mass storage mode (UMS 模式)
+**** usb mass storage mode (UMS 模式)
 sdcard 除了 mounted, umounted 状态外, 还有一个状态是 shared,  当 usb
 切换为 mass storage mode 时, sdcard 卡变为 shared 状态, 此时对于 PMS
 来说, 相当于 umounted 状态.
 
-*** 进入 UMS 模式
+***** 进入 UMS 模式
 
 进入 UMS 模式只有一种方法: 通过 MountService.setUsbMassStorageEnabled()
 
@@ -132,7 +173,7 @@ sdcard 除了 mounted, umounted 状态外, 还有一个状态是 shared,  当 us
       // 重新 mount
 #+END_SRC
 
-*** 退出 UMS 模式
+***** 退出 UMS 模式
 
 退出 UMS 模式有两种方法,
 1. 主动调用上面提到的 setUsbMassStorageEnabled,

@@ -16,9 +16,14 @@
 ** wake-lock
 ** alarm
 *** alarm 如何唤醒已经休眠的进程
+中断. 不仅是 RTC 中断, 网络, power key 等都是通过中断将系统唤醒.
 ** misc
-*** /sys
+*** /sys 文件系统接口
 - /sys/power/state
+
+echo "mem" > /sys/power/state
+echo "on" > /sys/power/state
+
 *** suspend 后 wifi 如何唤醒进程
 #+BEGIN_SRC java
   new Thread() {
@@ -67,5 +72,8 @@
 使用上面的测试程序可以得出结论:
 1. ingress 数据可以唤醒整个系统.
 2. 保持 ingress 数据不处理可以阻止系统休眠. (去掉 Thread.sleep 试试)
+*** 插入 usb 线会阻止 suspend ?
+因为 usb 会持有一个 wakelock.
+
 ** references
 [[https://community.freescale.com/thread/261901][Linux Kernel and Android Suspend/Resume -blog archive]]
