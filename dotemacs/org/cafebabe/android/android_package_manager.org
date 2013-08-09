@@ -66,6 +66,95 @@ installd is a system binary running as `root` and listening on
 
 #+END_SRC
 
+*** umount sdcard
+#+BEGIN_SRC text
+  MountService.onDaemonConnected();
+    updatePublicVolumeState(path, state);
+      mPms.updateExternalMediaStatus(false, false); // false for umount
+        sendMsg (UPDATED_MEDIA_STATUS)
+          mPms.unloadAllContainers(all_asecinstallargs);
+            for (AsecInstallArgs arg : cidArgs):
+              PackageHelper.unMountSdDir(cid);
+          PackageHelper.getMountService().finishMediaUpdate();
+          // MountService
+            ucb.handleFinished();
+              doUnmountVolume(path, true, removeEncryption);
+                //vold: volumn unmount
+        updateExternalMediaStatusInner();
+          if (isMounted):
+              loadMediaPackages(processCids, uidArr, removeCids);
+              startCleaningPackages();
+          else:
+              unloadMediaPackages(processCids, uidArr, reportStatus);
+                for (AsecInstallArgs args : cids):
+                  deletePackageLI(..., PackageManager.DONT_DELETE_DATA,...);
+                  // DONT_DELETE_DATA !
+
+#+END_SRC
+
+**** To summaries
+
+1. umount 消息最初由 MountService 从 vold 获取
+2. MountService 通过 PMS 先 umount 所有的 ASEC 设备, 并在完成后通知 MountService
+3. 同时 MountService 会通过 deletePackageLI 删除 ASEC 上的程序, 但保留
+   数据.
+4. MountService 获得通知后调用 vold 的 `volume unmount`, 真正 umount
+   sdcard.
+   1) vold 的 volumn umount 也不是简单的 umount sdcard, 它会 umount
+      /mnt/secure, /mnt/sdcard/.android_secure 等. 并 kill 打开 sdcard 的
+      进程.
+
+*** usb mass storage mode (UMS 模式)
+sdcard 除了 mounted, umounted 状态外, 还有一个状态是 shared,  当 usb
+切换为 mass storage mode 时, sdcard 卡变为 shared 状态, 此时对于 PMS
+来说, 相当于 umounted 状态.
+
+*** 进入 UMS 模式
+
+进入 UMS 模式只有一种方法: 通过 MountService.setUsbMassStorageEnabled()
+
+#+BEGIN_SRC text
+  MountService.setUsbMassStorageEnabled()
+    if (enable
+        && (vs.equals(Environment.MEDIA_MOUNTED))):
+      setUmsEnabling(enable);
+      // 调用 vold: volumne ums 命令
+      UmsEnableCallBack umscb = new UmsEnableCallBack(path, method, true);
+      // umscb 在 updateExternalMediaStatus 在 finish 阶段 (asec umount 完成)
+      // 会调用 doShareUnshareVolume(path, method, true); 以 setup UMS
+      mHandler.sendMessage(mHandler.obtainMessage(H_UNMOUNT_PM_UPDATE, umscb));
+        mPms.updateExternalMediaStatus(false, true); // false 指 umount
+      setUmsEnabling(false); // setUmsEnabling 表示 UMS enabling 状态
+    if (!enable): // UMS 模式取消
+      doShareUnshareVolume(path, method, false);
+      // false 指调用 vold: volume unshare 命令
+      doMountVolume(path);
+      // 重新 mount
+#+END_SRC
+
+*** 退出 UMS 模式
+
+退出 UMS 模式有两种方法,
+1. 主动调用上面提到的 setUsbMassStorageEnabled,
+2. 拔下 USB 线 ... :(
+
+当 USB 线拔掉时, UsbManager 会发相应的 intent, PMS 负责重新 mount
+sdcard, 然后 mount 动作会间接导致 vold 上报 mounted 消息, 从而导致
+updatePublicVolumeState 等, 最终 setup ASEC.
+
+#+BEGIN_SRC text
+  Intent.UsbManager.ACTION_USB_STATE // from UsbManager
+    available = (intent.getBooleanExtra(UsbManager.USB_CONNECTED, false) &&
+                intent.getBooleanExtra(UsbManager.USB_FUNCTION_MASS_STORAGE, false));
+    notifyShareAvailabilityChange(available);
+      // 若 USB 断开, 或者 USB 接着, 但当前 USB 并不是 UMS 模式,
+      // 例如连接 USB 为充电模式
+      if (avail == false
+          && getVolumeState(path).equals(Environment.MEDIA_SHARED)):
+        doShareUnshareVolume(path, "ums", false);
+        doMountVolume(path);
+#+END_SRC
+
 *** installPackage
 
 - there are 2 ways to install package:
@@ -212,7 +301,6 @@ when xxx.apk is `forward_lock` installed
 - it's res/, manifest.xml is put to /data/app/xxx.zip (note that .dex
   is cached in dalvik-cache)
 
-*** app2sd
 *** uid & gid
 see also [[Java Process Creation]], [[Zygote]], [[System Init]] to distinguish
 `process uid' against `file uid'
