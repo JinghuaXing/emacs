@@ -212,6 +212,8 @@ The document was typeset with
  '(eclim-executable "/opt/eclipse/eclim")
  '(eclim-problems-show-pos t)
  '(eclimd-wait-for-process nil)
+ '(ediff-custom-diff-options "-c -b")
+ '(ediff-diff-options "-b")
  '(elscreen-display-screen-number nil)
  '(elscreen-display-tab t)
  '(elscreen-prefix-key "")

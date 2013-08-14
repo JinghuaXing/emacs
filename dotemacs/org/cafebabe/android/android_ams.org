@@ -227,14 +227,14 @@ When mResumedActivity is paused or timeout (500ms), AMS.activityPaused will be c
        Howerer, if B's onResume hangs, a delay IDLE_TIMEOUT_MSG is a must for AMS to make sure A will be finished in 10s.
 
 **** HistoryRecord
-      HistoryRecord is used in two ways:
-      - it is the shadow structure of `Activity` in AMS
-      - it is used as a IBinder token by AMS, e.g. when AMS want to resume activity, it will send the activity's corresponding HistoryRecord as a token to
-	ActivityThread, so that ActivityThread knows which activity to resume.
-	- r.app.thread
-	- r.resultRecord
-	- r.sourceRecord
-	- r.intent
+HistoryRecord is used in two ways:
+- it is the shadow structure of `Activity` in AMS
+- it is used as a IBinder token by AMS, e.g. when AMS want to resume activity, it will send the activity's corresponding HistoryRecord as a token to
+  ActivityThread, so that ActivityThread knows which activity to resume.
+  - r.app.thread
+  - r.resultRecord
+  - r.sourceRecord
+  - r.intent
 ***** AMS.mHistory stores all the HistoryRecord of AMS.
 **** startPausingLocked
 11/22/10 6:43 pm
@@ -1757,9 +1757,10 @@ ActivityThread stands for the client (contract to AMS) side *process*.
 
 Actually, the class itself is not a Thread at all. It is a normal java
 class, and has ONE main(), which act as the entry point of a java
-process. ActivityThread.main()
+process. 
 
 #+BEGIN_EXAMPLE
+  ActivityThread.main()
     Looper.prepare()
     ActivityThread thread = new ActivityThread();
     thread.attach(false);
@@ -1771,7 +1772,6 @@ that is ,
     looper is the so-call `mainLooper`
 
   - thread.attach() will:
-
     - establish reverse connection (AMS --> ActivityThread) with AMS,
       (set IApplicationThread IBinder to AMS.app.thread), so that AMS
       can use the IApplicationThread to interact with ActivityThread,
@@ -1779,7 +1779,6 @@ that is ,
       [[@AppDeathRecipient]] to reset app.thread to null, which means the
       process has gone.
 
-    - set the underlying `thread` to sThreadLocal, thus `bind` to the looper.
 ** What's the `system` process?
 
 简单的说:
@@ -1805,7 +1804,7 @@ that is ,
          thread.attach(true);
    #+END_SRC
    由于 mSystemThread 初始化在 ServerThread 线程, 所以它使用的 Looper
-   就是 ServerThread 的 Looper.
+   就是 ServerThread 的 Looper. (MyLooper 返回一个 ThreadLocal 变量)
 4. ServerThread 启动完 AMS 后会调用 AMS.setSystemProcess 方法, 将
    system_server 进程注册到 AMS, 并做为 `system` 进程
 

@@ -1,11 +1,12 @@
 * TODO 给父母打电话                                              :life:habit:
-DEADLINE: <2013-08-17 Sat +7d -1d>
+DEADLINE: <2013-08-24 Sat +7d -1d>
+- State "DONE"       from "TODO"       [2013-08-19 Mon 13:26]
 - State "DONE"       from "TODO"       [2013-08-12 Mon 16:07]
 - State "DONE"       from "TODO"       [2013-08-12 Mon 16:07]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 :PROPERTIES:
-:LAST_REPEAT: [2013-08-12 Mon 16:07]
+:LAST_REPEAT: [2013-08-19 Mon 13:26]
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
 DEADLINE:  <2013-09-03 Tue +1m -10d>
@@ -26,7 +27,8 @@ DEADLINE:  <2013-09-03 Tue +1m -10d>
 :LAST_REPEAT: [2013-07-31 Wed 10:47]
 :END:
 * TODO 招行信用卡还款日                                          :life:habit:
-DEADLINE: <2013-08-23 Fri +1m -6d>
+DEADLINE: <2013-09-23 Mon +1m -6d>
+- State "DONE"       from "TODO"       [2013-08-21 Wed 13:23]
 - State "DONE"       from "TODO"       [2013-07-23 Tue 15:00]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 14:55]
 - State "DONE"       from "TODO"       [2013-05-23 Thu 09:56]
@@ -41,11 +43,12 @@ DEADLINE: <2013-08-23 Fri +1m -6d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-07-23 Tue 15:00]
+:LAST_REPEAT: [2013-08-21 Wed 13:23]
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                            :life:habit:
-DEADLINE:  <2013-08-14 Wed +1m -10d>
+DEADLINE:  <2013-09-14 Sat +1m -10d>
+- State "DONE"       from "TODO"       [2013-08-13 Tue 19:27]
 - State "DONE"       from "TODO"       [2013-07-14 Sun 23:07]
 - State "DONE"       from "TODO"       [2013-06-14 Fri 15:39]
 - State "DONE"       from "TODO"       [2013-05-13 Mon 19:58]
@@ -57,7 +60,7 @@ DEADLINE:  <2013-08-14 Wed +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-07-14 Sun 23:07]
+:LAST_REPEAT: [2013-08-13 Tue 19:27]
 :END:
 
 * DONE 理发                                                            :life:

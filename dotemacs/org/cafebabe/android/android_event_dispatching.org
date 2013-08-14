@@ -3,10 +3,7 @@
 ** Upper Level (above ViewRoot)
 *** KeyEvent dispatch
 
-WMS first found the focused WindowState, then dispatch event to
-WindowState.mClient (this is a IWindow), IWindow , as an AIDL register
-by viewRoot, will call viewRoot's dispatch() directory
-
+ViewRootImpl:
 #+BEGIN_EXAMPLE
   WindowInputEventReceiver.onInputEvent();
     ViewRoot.deliverKeyEvent()
@@ -48,36 +45,36 @@ by viewRoot, will call viewRoot's dispatch() directory
      - State "DONE"       [2011-01-27 Thu 11:35]
 
 #+BEGIN_EXAMPLE
-     ViewRoot.dispatchPointer()
-       decorView.dispatchTouchEvent() ;; mView is typically a DecorView
-         if DecorView has callbacks like Activity or Dialog
-	   activity.dispatchTouchEvent()
-	     mDecor.superDispatchTouchEvent()
-	     .... ;; same as the `else` branch
-	     activity.onTouchEvent() if not handled before
-	 else
-	   mDecor.superDispatchTouchEvent()
-	     ViewGroup.dispatchTouchEvent() ; DecorView is a FrameLayout
-               if (action == MotionEvent.ACTION_DOWN):
-                 if (disallowIntercept || !onInterceptTouchEvent(Ev)):
-                   foreach mView of ViewGroup: ;; for each child of the ViewGroup whose rect contains pointer(x,y), note that view's rect is set during view.layout()
-                     if (mView.dispatchTouchEvent()):
-                       mMotionTarget=mView;
-                       return true;
-               if mMotionTarget==null: // DOWN is not handled by any child; or event is up/move, but there is no mMotionTarget,
-                                       // which means last DOWN is handled by ourselves.
-                 return super.dispatchTouchEvent()
-	           mView.onTouchListener().on Touch()
-	           mView.onTouchEvent() ;; if not handled before
-	             mView.onClickListener()
-               // ACTION is up/move, and mMotionTarget is not null, which means we should delegate the up/move to the mMotionTarget,
-               // There is no need to go through child hierarchy to handle it.
-               if (!disallowIntercept && onInterceptTouchEvent(ev)): // touchEvent is intercepted
-                 ev.setAction(MotionEvent.ACTION_CANCEL);
-                 mMotionTarget.dispatchTouchEvent(ev)
-                 return true;
-               // touchEvent is not intercepted
-               return mMotionTarget.dispatchTouchEvent(ev);
+  ViewRoot.dispatchPointer()
+    decorView.dispatchTouchEvent() ;; mView is typically a DecorView
+      if DecorView has callbacks like Activity or Dialog
+        activity.dispatchTouchEvent()
+          mDecor.superDispatchTouchEvent()
+          .... ;; same as the `else` branch
+          activity.onTouchEvent() if not handled before
+      else
+        mDecor.superDispatchTouchEvent()
+          ViewGroup.dispatchTouchEvent() ; DecorView is a FrameLayout
+            if (action == MotionEvent.ACTION_DOWN):
+              if (disallowIntercept || !onInterceptTouchEvent(Ev)):
+                foreach mView of ViewGroup: ;; for each child of the ViewGroup whose rect contains pointer(x,y), note that view's rect is set during view.layout()
+                  if (mView.dispatchTouchEvent()):
+                    mMotionTarget=mView;
+                    return true;
+            if mMotionTarget==null: // DOWN is not handled by any child; or event is up/move, but there is no mMotionTarget,
+                                    // which means last DOWN is handled by ourselves.
+              return super.dispatchTouchEvent()
+                mView.onTouchListener().on Touch()
+                mView.onTouchEvent() ;; if not handled before
+                  mView.onClickListener()
+            // ACTION is up/move, and mMotionTarget is not null, which means we should delegate the up/move to the mMotionTarget,
+            // There is no need to go through child hierarchy to handle it.
+            if (!disallowIntercept && onInterceptTouchEvent(ev)): // touchEvent is intercepted
+              ev.setAction(MotionEvent.ACTION_CANCEL);
+              mMotionTarget.dispatchTouchEvent(ev)
+              return true;
+            // touchEvent is not intercepted
+            return mMotionTarget.dispatchTouchEvent(ev);
 #+END_EXAMPLE
      To summarize:
      1. TouchEvent dispatching 的过程和 KeyEvent *相反*:
@@ -89,26 +86,24 @@ by viewRoot, will call viewRoot's dispatch() directory
       SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
       - State "DONE"       [2011-02-16 Wed 15:04]
       ListView 首先是一个 ViewGroup, 它使用了
-#+BEGIN_EXAMPLE
-	 ViewGroup.dispatchTouchEvent()
-	   ask_child_to_handle_it()
-	   if not handled:
-	     super(view).dispatchTouchEvent()
-	       AbsListView.onTouchEvent()
-	         if child(list item).hasFocusable(): ;; if the liste_item have any view that is focusable
-		   do_nothing;
-		 else:
-		   onItemClickedListener();
-#+END_EXAMPLE
+      #+BEGIN_EXAMPLE
+        ViewGroup.dispatchTouchEvent()
+          ask_child_to_handle_it()
+          if not handled:
+            super(view).dispatchTouchEvent()
+              AbsListView.onTouchEvent()
+                if child(list item).hasFocusable(): ;; if the liste_item have any view that is focusable
+                  do_nothing;
+                else:
+                  onItemClickedListener();
+      #+END_EXAMPLE
 
       To summarize:
       ListView is just like a common ViewGroup, but:
       1. ListView's onTouchEvent will not invoke `onClickListener`, but `onItemClickedListener`
       2. before invoke onItemClickedListener, onTouchEvent will make sure that child.hasFocusable() is false
 
-**** DONE ViewGroup.onInterceptTouchEvent & mMotionTarget & requestDisallowInterceptTouchEvent
-      SCHEDULED: <2011-07-19 Tue> CLOSED: [2011-07-19 Tue 16:55]
-      - State "DONE"       from "DOING"      [2011-07-19 Tue 16:55]
+**** ViewGroup.onInterceptTouchEvent & mMotionTarget & requestDisallowInterceptTouchEvent
 
 ** Lower Level (below ViewRoot)
 
@@ -123,7 +118,7 @@ by viewRoot, will call viewRoot's dispatch() directory
 
 3. InputEvent 是通过 ViewRoot 提供的 InputChannel 直接由 InputDispatcher 传
    递给当前有焦点的进程的 ViewRoot, 并没有通过 WMS 中转, 以便提高效率.
-   不过 WMS 会负责通知 InputDispatcher 当前哪个 InputChannel 获得焦点.
+   不过 WMS 会负责通知 InputDispatcher 当前哪个 InputChannel 获得焦点.[fn:1]
 
 4. 在 dispatch 给 ViewRoot 之前, PhoneWindowManager 有机会通过.
    InputDispatcher.interceptKeyBeforeQueueing/Dispatching 来处理系统硬
@@ -153,7 +148,8 @@ by viewRoot, will call viewRoot's dispatch() directory
                                              +-------+---------------------------------------------------+
                                              | PhoneWindowManager.interceptKeyBeforeQueueing/Dispatching |
                                              +-------+---------------------------------------------------+
-                                                     | 1. find the InputChannel that has focus.
+                                                     | 1. find the InputChannel that has focus or touched
+                                                     |    (findTouchedWindowAtLocked | findFocusedWindowTargetsLocked)
                                                      | 2. wake up the related looper
                                                      | 3. Looper.handleEvent will notify the InputEventReceiver
                                             +--------+------------------------+
@@ -458,4 +454,24 @@ removeSyncBarrier 移除. 但 asynchronous 的 Message 不受 syncBarrier 的
 **** Message.setAsynchronous
 Asynchronous Message 和 通信系统的 OOB 消息类似, 可以通知一些紧急情况,
 因为它不受 syncBarrier 的限制, 可以保证在指定的时间一定会被处理. 但与
-OOB 不同的是, 它并没有单独的通道, 即它要和其他 Message 一起排队. 
+OOB 不同的是, 它并没有单独的通道, 即它要和其他 Message 一起排队.
+
+* Footnotes
+[fn:1] 
+
+每次 WMS 的 WindowState 有变化时, 它就会调用:
+
+#+BEGIN_SRC text
+InputMonitor.updateInputWindowsLw ();
+  ...
+  InputDispatcher.setInputWindows();
+#+END_SRC
+
+来设置 InputDispatcher 的 input windows 的状态;
+
+Input windows 被设置后, InputDispatcher 的
+findFocusedWindowTargetsLocked 或 findTouchedWindowAtLocked 会根据
+input windows 的状态, 选择合适的 InputWindowHandle, 最终找到对应的
+InputChannel.
+
+ 

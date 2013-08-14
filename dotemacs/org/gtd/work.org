@@ -368,7 +368,9 @@ CLOSED: [2013-07-05 Fri 11:46]
 CLOSED: [2013-07-19 Fri 10:37]
 - State "DONE"       from "TODO"       [2013-07-19 Fri 10:37]
 [2013-07-09 Tue 17:28]
-* TODO installd                                                        :work:
+* DONE installd                                                        :work:
+CLOSED: [2013-08-14 Wed 15:25]
+- State "DONE"       from "TODO"       [2013-08-14 Wed 15:25]
 [2013-07-12 Fri 13:55]
 * DONE mat                                                             :work:
 CLOSED: [2013-07-19 Fri 10:37]
@@ -378,7 +380,9 @@ CLOSED: [2013-07-19 Fri 10:37]
 [2013-07-19 Fri 18:52]
 * TODO IME and IME keyboard                                            :work:
 [2013-08-01 Thu 14:35]
-* TODO wakelock & alarm                                                :work:
+* DONE wakelock & alarm                                                :work:
+CLOSED: [2013-08-14 Wed 15:25]
+- State "DONE"       from "TODO"       [2013-08-14 Wed 15:25]
 [2013-08-03 Sat 09:37]
 * DONE if app A createPackageContext of app B, while B is on sdcard,   :work:
 CLOSED: [2013-08-05 Mon 17:25]
@@ -390,3 +394,5 @@ It depends... sd 卡有文件被进程打开并不能阻止 umount, 若 umount �
 kill 进程.
 
 [2013-08-03 Sat 18:02]
+* TODO cornerstone                                                     :work:
+[2013-08-19 Mon 19:49]

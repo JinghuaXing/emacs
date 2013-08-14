@@ -85,9 +85,9 @@ mProviderMap' for cache purpose.
 ActivityThread need to maintains the cache because of `multi-process'
 provider , since they can not be cached by AMS because they are process-local. 
 
-** 
 ** Usage
 *** query
+see also [[Cursor]]
 *** openFile
 ** Others
 *** withYieldAllowed
@@ -143,4 +143,7 @@ everything is rolled back at the end, leaving the table empty. I added a call to
 yieldIfContendedSafely(), and afterwards the table was not empty and had data
 from the transaction.
 *** ContentProviderNative
+The binder stub/proxy
+
 *** ContentProvider.Transport
+The binder that extends the binder stub;

@@ -64,25 +64,32 @@ pm.grantPermissions
 *** check
 **** component permission (or binder permission?)
 see also [[Binder.getCallingPid() & Binder.getCallingUid()][getCallingPid]]
-- check `component permission` when access certain component: startService, sendBroadcast, startActivity
-see [[startService][startService]], [[sendBroadcast][sendBroadcast]], [[startActivity][startActivity]]
-note: sendBroadcast will make sure both the sender and the receiver
-has gained the requiredPermission imposed by the counterpart.
+- check `component permission` when access certain component:
+  - startService
+  - startActivity 
+  - sendBroadcast 
+    
+    note that sendBroadcast will make sure both the sender and the
+    receiver has gained the requiredPermission imposed by the
+    counterpart.
 
 - check `application permission` when access application's any component
-#+BEGIN_EXAMPLE
-  <application ... android:permission="xxx">  </application>
-#+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+    <application ... android:permission="xxx">  </application>
+  #+END_EXAMPLE
 
-***** ams.checkPermission
-ams.checkComponentPermission(perm, pid, uid, ...)
-  ams.checkPermission(String permission, int calling_pid, int calling_uid) 
-    ams.enforceCallingPermission(perm)
-    ams.checkCallingPermission(perm)
-***** pms.checkUridPermission
-see also [[grant]]
-***** Other
-Note that component permission may be checked by framework, or by app themselves.
+- ams.checkPermission
+  #+BEGIN_SRC text
+    ams.checkComponentPermission(perm, pid, uid, ...)
+      ams.checkPermission(String permission, int calling_pid, int calling_uid) 
+        ams.enforceCallingPermission(perm)
+        ams.checkCallingPermission(perm)
+  #+END_SRC
+
+- pms.checkUridPermission
+  see also [[grant]]
+
+  Note that component permission may be checked by framework, or by app themselves.
 
 **** api or os permission (e.g. file permission..)
 

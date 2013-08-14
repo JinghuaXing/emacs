@@ -13,10 +13,75 @@
 
 ** early-suspend
 ** late-resume
-** wake-lock
+** wakelock
+- dumpsys power 
+  显示 PowerManagerService 持有的 wakelock
+  #+BEGIN_EXAMPLE
+    mLocks.size=1:
+        PARTIAL_WAKE_LOCK              'sunway' activated (minState=0, uid=10074, pid=2422)
+  #+END_EXAMPLE
+  这里显示的 `sunway` 只是 PMS 持有的 wakelock, 实际上系统还有其他的 wakelock
+- dmesg
+  显示所有的 wakelock
+  #+BEGIN_EXAMPLE
+    <6>0[ 1324.940905] active wake lock pm_message_wakelock
+    <6>0[ 1324.940914] active wake lock PowerManagerService
+    <6>0[ 1324.940924] active wake lock main
+    <6>0[ 1324.940932] active wake lock usb_work
+  #+END_EXAMPLE
+
+- wakelock 的种类:
+  - partial_wake_lock
+
+    这种 wakelock 是最重要的 wakelock: 它可以保证 cpu 一直处于运行状态,
+    (但屏幕不亮), 不论用户是否主动要求 goToSleep (通过 power 键或超时灭
+    屏)
+
+    #+BEGIN_QUOTE
+    If you hold a partial wakelock, the CPU will continue to run, irrespective of any timers 
+    and even after the user presses the power button.  In all other wakelocks, the CPU will run, but
+    the user can still put the device to sleep using the power button.    
+    #+END_QUOTE
+
+  - screen_dim_wake_lock
+  - screen_bright_wake_lock
+  - full_wake_lock
+
+    这三种 wakelock 可以使屏幕dim或常亮, 但当用户 goToSleep 时 cpu 也
+    会休眠. 
+    
 ** alarm
 *** alarm 如何唤醒已经休眠的进程
 中断. 不仅是 RTC 中断, 网络, power key 等都是通过中断将系统唤醒.
+** PowerManagerService
+*** goToSleep
+按 powerkey, 超时自动灭屏等, 最终都会调用 goToSleep, 这个函数本质是就是
+`echo "mem" > /sys/power/state`.
+
+goToSleep 后, 无论当前 wakelock 如何, 屏幕总是被灭掉 (early-suspend),
+但 cpu 不一定:
+- partial wakelock 会阻止 cpu 休眠
+- dim/bright 无法阻止cpu 休眠
+
+*** userActivity
+userActivity 是 PMS 中与 goToSleep 对应的函数, 用来唤醒系统或点亮屏幕. 
+其中, POWER_KEY 实现上是调用 userActivity(BUTTON_EVENT), 可以唤醒系统
+并点亮屏幕, 而 PowerManager 提供的 userActivity 实际上是
+userActivity(OTHER_EVENT), 只能在系统未休眠时点亮屏幕. 
+
+userActivity 本质上调用了 setPowerState
+
+*** newWakeLock
+- ACQUIRE_CAUSES_WAKEUP
+- ON_AFTER_RELEASE
+** KeyGuard
+*** 点亮屏幕并禁用 KeyGuard
+#+BEGIN_SRC java
+  wakeLock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK, "tag");
+  wakeLock.acquire();
+  mKeyguardLock = mKeyguardManager.newKeyguardLock("");  
+  mKeyguardLock.disableKeyguard(); 
+#+END_SRC
 ** misc
 *** /sys 文件系统接口
 - /sys/power/state
@@ -73,7 +138,7 @@ echo "on" > /sys/power/state
 1. ingress 数据可以唤醒整个系统.
 2. 保持 ingress 数据不处理可以阻止系统休眠. (去掉 Thread.sleep 试试)
 *** 插入 usb 线会阻止 suspend ?
-因为 usb 会持有一个 wakelock.
+因为 usb 会持有一个 wakelock. (通过 dmesg 可以看到, 但通过 PMS 看不到)
 
 ** references
 [[https://community.freescale.com/thread/261901][Linux Kernel and Android Suspend/Resume -blog archive]]

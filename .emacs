@@ -15,7 +15,7 @@
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 
-;;(load-file "~/.elisp/dotemacs/eshell.el")
+(load-file "~/.elisp/dotemacs/eshell.el")
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
 (load-file "~/.elisp/dotemacs/mew.el")
 (load-file "~/.elisp/dotemacs/w32.el")
@@ -330,16 +330,18 @@
 
 (require 'etags-stack)
 (require 'idomenu)
-(global-set-key (kbd "<M-return>") 'idomenu)
+(global-set-key (kbd "<s-return>") 'idomenu)
 
 (require 'pdftools)
 
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(require 'xclip)
-(turn-on-xclip)
+;; (require 'xclip)
+;; (turn-on-xclip)
 
 (require 'elscreen)
 (elscreen-start)
 
 (defalias 'perl-mode 'cperl-mode)
+
+
