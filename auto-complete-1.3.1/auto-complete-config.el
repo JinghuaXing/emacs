@@ -465,6 +465,7 @@
 
 (defun ac-ruby-mode-setup ()
   (make-local-variable 'ac-ignores)
+  (setq ac-sources (append '(ac-source-rcodetools) ac-sources))
   (add-to-list 'ac-ignores "end"))
 
 (defun ac-css-mode-setup ()

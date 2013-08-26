@@ -231,14 +231,23 @@ CLOSED: [2013-07-29 Mon 10:42]
 :END:
 [2013-04-18 Thu 17:15]
 * TODO android memory                                                  :work:
+:PROPERTIES:
+:ID:       4e84457a-67a6-47cd-8688-c34b921ca359
+:END:
 [2013-04-19 Fri 13:56]
 * TODO ptmalloc                                                        :work:
+:PROPERTIES:
+:ID:       31ea015e-14bd-4aa1-8ab3-f39c82909bbd
+:END:
 [2013-04-19 Fri 16:52]
 * DONE usbmount                                                        :work:
 CLOSED: [2013-04-28 Sun 16:54]
 - State "DONE"       from "TODO"       [2013-04-28 Sun 16:54]
 [2013-04-20 Sat 21:55]
 * TODO RenderScript & opengl                                           :work:
+:PROPERTIES:
+:ID:       c02701c8-458c-4c80-ac70-9c689bf1e311
+:END:
 [2013-04-25 Thu 12:43]
 * DONE uri permission                                                  :work:
 CLOSED: [2013-06-20 Thu 17:05]
@@ -249,6 +258,9 @@ CLOSED: [2013-05-20 Mon 18:40]
 - State "DONE"       from "TODO"       [2013-05-20 Mon 18:40]
 [2013-04-26 Fri 19:46]
 * TODO socks 代理原理                                                  :work:
+:PROPERTIES:
+:ID:       765d6165-f4e4-4fad-9dc8-60ffefb0d7f7
+:END:
 [2013-05-02 Thu 16:39]
 * DONE how loader is notified                                          :work:
 CLOSED: [2013-06-19 Wed 17:37]
@@ -256,28 +268,58 @@ CLOSED: [2013-06-19 Wed 17:37]
 CursorLoader.loadInBackground register the listener
 [2013-05-03 Fri 11:48]
 * TODO tail recursion 尾递归                                           :work:
+:PROPERTIES:
+:ID:       65173ec2-c2ee-4497-acd8-9550a5d06e3e
+:END:
 [2013-05-03 Fri 16:32]
 * TODO git merge 算法                                                  :work:
+:PROPERTIES:
+:ID:       c77ad6c2-2c65-4dcb-b909-50a21e78f5f5
+:END:
 [2013-05-06 Mon 14:20]
 * TODO `with-current-buffer` style asynctask in android?               :work:
+:PROPERTIES:
+:ID:       1b3a6a79-f221-460c-be00-fc4b262a7285
+:END:
 [2013-05-08 Wed 20:16]
 * TODO TouchInterceptor in music                                       :work:
+:PROPERTIES:
+:ID:       2e78ece3-b8b0-4926-b321-f52d2c9cd2d0
+:END:
 [2013-05-09 Thu 18:13]
 * TODO android 坐标                                                    :work:
+:PROPERTIES:
+:ID:       38f8937a-b4fb-49f2-b71c-01455ca9bda6
+:END:
 [2013-05-10 Fri 18:07]
 * CANCELLED exchange auto_discovery                                    :work:
 CLOSED: [2013-06-17 Mon 16:54]
 - State "CANCELLED"  from "TODO"       [2013-06-17 Mon 16:54]
 [2013-05-13 Mon 19:51]
 * TODO TextChangedListener                                             :work:
+:PROPERTIES:
+:ID:       2c3b9c18-f1b9-4816-aba3-2412420e48ea
+:END:
 [2013-05-14 Tue 11:22]
 * TODO Http the definitive guide                                       :work:
+:PROPERTIES:
+:ID:       d15ad6bd-da89-454b-a4ad-54f63f18e755
+:END:
 [2013-05-14 Tue 13:31]
 * TODO WMS:starting window                                             :work:
+:PROPERTIES:
+:ID:       ffccbe53-ee35-44d6-bbbe-7c6eee5abf02
+:END:
 [2013-05-15 Wed 15:05]
 * TODO android animation                                                     :work:
+:PROPERTIES:
+:ID:       eb311be5-8c68-4cd6-93a1-68556727457f
+:END:
 [2013-05-16 Thu 11:33]
 * TODO SurfaceView & GLSurfaceView                                             :work:
+:PROPERTIES:
+:ID:       cf54dbc4-ddd7-48ac-b795-e94d7543d5b5
+:END:
 [2013-05-16 Thu 16:00]
 * DONE content provider                                                :work:
 CLOSED: [2013-06-17 Mon 16:54]
@@ -332,6 +374,9 @@ CLOSED: [2013-06-20 Thu 14:51]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 14:51]
 [2013-06-18 Tue 16:00]
 * TODO InputDispatcher & InputManagerService & InputFilter             :work:
+:PROPERTIES:
+:ID:       947666fa-6639-481f-b3d9-05f1e1657c32
+:END:
 [2013-06-21 Fri 14:00]
 * DONE xmlpullparser                                                   :work:
 CLOSED: [2013-07-03 Wed 13:37]
@@ -346,6 +391,9 @@ CLOSED: [2013-07-05 Fri 10:15]
 - State "DONE"       from "TODO"       [2013-07-05 Fri 10:15]
 [2013-06-26 Wed 13:41]
 * TODO android resource: how to do with resources in static jar lib    :work:
+:PROPERTIES:
+:ID:       00ff7b9d-43b8-4eb8-8356-8edd258c3206
+:END:
 e.g. frameworks/ex/chips
 [2013-06-26 Wed 14:04]
 * CANCELLED mipmap drawable can't be replaced in Calculator            :work:
@@ -357,12 +405,18 @@ CLOSED: [2013-07-04 Thu 11:58]
 - State "DONE"       from "TODO"       [2013-07-04 Thu 11:58]
 [2013-07-02 Tue 12:11]
 * TODO listview fling 时有后退的错觉? 这是抽样定理在作怪么?            :work:
+:PROPERTIES:
+:ID:       3cc1a22e-2de7-418f-89f5-c5f34f6b9ade
+:END:
 [2013-07-04 Thu 15:45]
 * DONE how menu and overflow menu is saved and restored during configurationChange? :work:
 CLOSED: [2013-07-05 Fri 11:46]
 - State "DONE"       from "TODO"       [2013-07-05 Fri 11:46]
 [2013-07-05 Fri 11:00]
 * TODO access provider in binder thread is slow?                       :work:
+:PROPERTIES:
+:ID:       52f5254c-9f37-44bc-8749-6911d24a9b82
+:END:
 [2013-07-09 Tue 16:51]
 * DONE android bitmap                                                  :work:
 CLOSED: [2013-07-19 Fri 10:37]
@@ -377,8 +431,14 @@ CLOSED: [2013-07-19 Fri 10:37]
 - State "DONE"       from "TODO"       [2013-07-19 Fri 10:37]
 [2013-07-16 Tue 19:58]
 * TODO skia & surface                                                  :work:
+:PROPERTIES:
+:ID:       6d13bae4-93b3-481a-81f0-5b011dbd67b3
+:END:
 [2013-07-19 Fri 18:52]
 * TODO IME and IME keyboard                                            :work:
+:PROPERTIES:
+:ID:       3ac66abf-ee29-41c0-bada-8622dcdd1fdc
+:END:
 [2013-08-01 Thu 14:35]
 * DONE wakelock & alarm                                                :work:
 CLOSED: [2013-08-14 Wed 15:25]
@@ -395,4 +455,24 @@ kill 进程.
 
 [2013-08-03 Sat 18:02]
 * TODO cornerstone                                                     :work:
+:PROPERTIES:
+:ID:       32511f22-7a78-413d-8a7b-a9161e914d4c
+:END:
 [2013-08-19 Mon 19:49]
+* TODO UMS enabler 原理                                                :work:
+:PROPERTIES:
+:ID:       147187a9-5117-45e1-b0f5-7fb556c4addb
+:END:
+[2013-08-26 Mon 15:30]
+* TODO android event log                                               :work:
+:PROPERTIES:
+:ID:       b8bf88e7-5729-4d9b-a436-69050da00b0c
+:END:
+[2013-08-26 Mon 18:11]
+* TODO android 多点触摸                                                :work:
+:PROPERTIES:
+:ID:       f1021209-024b-489a-ac25-90604c0688cf
+:END:
+[2013-08-26 Mon 18:12]
+* TODO android building system                                         :work:
+[2013-09-11 Wed 14:31]

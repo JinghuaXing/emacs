@@ -106,3 +106,10 @@
   (local-set-key [f1] 'yari))
 
 (add-hook 'ruby-mode-hook 'ri-bind-key)
+
+(require 'ruby-block)
+(ruby-block-mode t)
+;; (setq ruby-block-highlight-toggle 'overlay)
+;; (setq ruby-block-highlight-toggle 'minibuffer)
+(setq ruby-block-highlight-toggle t)
+(require 'rcodetools)

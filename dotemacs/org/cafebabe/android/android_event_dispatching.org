@@ -41,10 +41,7 @@ ViewRootImpl:
     But PopupWindow implements neither Window.Callback nor KeyEvent.Callback.
 
 *** TouchEvent dispatch
-     SCHEDULED: <2011-01-27 Thu> CLOSED: [2011-01-27 Thu 11:35]
-     - State "DONE"       [2011-01-27 Thu 11:35]
-
-#+BEGIN_EXAMPLE
+#+BEGIN_SRC text
   ViewRoot.dispatchPointer()
     decorView.dispatchTouchEvent() ;; mView is typically a DecorView
       if DecorView has callbacks like Activity or Dialog
@@ -75,14 +72,15 @@ ViewRootImpl:
               return true;
             // touchEvent is not intercepted
             return mMotionTarget.dispatchTouchEvent(ev);
-#+END_EXAMPLE
-     To summarize:
-     1. TouchEvent dispatching 的过程和 KeyEvent *相反*:
-	- KeyEvent: 先调用 ViewGroup.superDispatchKeyEvent(), 若没处理,再调用 mFocused.dispatchKeyEvent()
+#+END_SRC
+To summarize:
+1. TouchEvent dispatching 的过程和 KeyEvent *相反*:
+  - KeyEvent: 先调用 ViewGroup.superDispatchKeyEvent(), 若没处理,再调用 mFocused.dispatchKeyEvent()
 	- TouchEvent: 先调用 child.dispatchTouchEvent(),若没处理, 再调用 super.dispatchTouchEvent()
-     2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
-     3. onInterceptTouchEvent and mMotionTarget and requestDisallowInterceptTouchEvent
-**** DONE ListView TouchEvent dispatch
+2. dispatchTouchEvent -> onTouchListener -> onTouchEvent -> onClickListener
+3. onInterceptTouchEvent and mMotionTarget and requestDisallowInterceptTouchEvent
+
+**** ListView TouchEvent dispatch
       SCHEDULED: <2011-02-16 Wed> CLOSED: [2011-02-16 Wed 15:04]
       - State "DONE"       [2011-02-16 Wed 15:04]
       ListView 首先是一个 ViewGroup, 它使用了
@@ -104,6 +102,55 @@ ViewRootImpl:
       2. before invoke onItemClickedListener, onTouchEvent will make sure that child.hasFocusable() is false
 
 **** ViewGroup.onInterceptTouchEvent & mMotionTarget & requestDisallowInterceptTouchEvent
+**** Outside Touch
+***** WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+***** MotionEvent.ACTION_OUTSIDE
+***** example
+****** Dialog.setCanceledOnTouchOutside
+****** PopupWindow.isOutsideTouchable
+**** Multiple Touch (多点触摸)
+- ACTION_POINTER_DOWN
+- ACTION_POINTER_UP
+- getPointerId(index)
+- findPointerIndex(pointerId)
+- getPointerCount()
+- getActionMasked
+- ACTION_MASK
+- getActionIndex();
+- ACTION_POINTER_INDEX_MASK
+- ACTION_POINTER_INDEX_SHIFT
+
+
+1. 在任何时候, 一个 MotionEvent 都会包含当前所有 pointer 的信息 (例如
+   x,y, pointer_id)
+
+2. 当多点触摸时, 第一个点之外的其他点会触发 ACTION_POINTER_DOWN/UP, 而
+   不是 ACTION_DOWN/UP, ACTION_POINTER_DOWN/UP 需要用 getActionMasked
+   才能获得, 因为这种 ACTION 实际上是 index|action, 需要把 index mask
+   掉. 另外, 所有点 move 时都触发 ACTION_MOVE, 没有 ACTION_POINTER_MOVE.
+
+***** 情景
+
+- 第一个点 down
+  触发 ACTION_DOWN, pointerCount 为 1.
+
+- 第一个点保持不动, 按下第二个点
+  触发 ACTION_POINTER_DOWN (通过 getActionMasked 获知), 且其
+  getActionIndex 返回 1. pointerCount 为 2.
+
+- 第一个点不动, 移动第二个点
+  触发一次 ACTION_MOVE, pointerCount 为 2, 通过 getX(index) 可以获得两
+  个点的位置.
+
+- 第二个点不动, 抬起第一个点
+  触发一次 ACTION_POINTER_UP, getActionIndex 返回 0, pointerCount 为
+  2, getPointerId(0) 返回 0;
+
+- 抬起第二个点
+
+  触发一次 ACTION_UP, getActionIndex 返回 0, pointerCount 为 1,
+  getPointerId (0) 返回 1;
+
 
 ** Lower Level (below ViewRoot)
 
