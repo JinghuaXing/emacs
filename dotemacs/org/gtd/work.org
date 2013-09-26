@@ -211,7 +211,9 @@ CLOSED: [2013-07-09 Tue 13:57]
 :ID:       d521ec01-0670-43ea-9e72-9f3eafb9c1af
 :END:
 [2013-04-10 Wed 17:47]
-* TODO cypher                                                          :work:
+* CANCELLED cypher                                                     :work:
+CLOSED: [2013-09-25 Wed 16:31]
+- State "CANCELLED"  from "TODO"       [2013-09-25 Wed 16:31]
 :PROPERTIES:
 :ID:       3793198a-cba1-4cc3-b07f-1ee201e3aaba
 :END:
@@ -277,7 +279,9 @@ CursorLoader.loadInBackground register the listener
 :ID:       c77ad6c2-2c65-4dcb-b909-50a21e78f5f5
 :END:
 [2013-05-06 Mon 14:20]
-* TODO `with-current-buffer` style asynctask in android?               :work:
+* DONE `with-current-buffer` style asynctask in android?               :work:
+CLOSED: [2013-09-25 Wed 16:31]
+- State "DONE"       from "TODO"       [2013-09-25 Wed 16:31]
 :PROPERTIES:
 :ID:       1b3a6a79-f221-460c-be00-fc4b262a7285
 :END:
@@ -373,7 +377,9 @@ CLOSED: [2013-07-01 Mon 11:24]
 CLOSED: [2013-06-20 Thu 14:51]
 - State "DONE"       from "TODO"       [2013-06-20 Thu 14:51]
 [2013-06-18 Tue 16:00]
-* TODO InputDispatcher & InputManagerService & InputFilter             :work:
+* DONE InputDispatcher & InputManagerService & InputFilter             :work:
+CLOSED: [2013-09-25 Wed 16:31]
+- State "DONE"       from "TODO"       [2013-09-25 Wed 16:31]
 :PROPERTIES:
 :ID:       947666fa-6639-481f-b3d9-05f1e1657c32
 :END:
@@ -476,3 +482,28 @@ kill 进程.
 [2013-08-26 Mon 18:12]
 * TODO android building system                                         :work:
 [2013-09-11 Wed 14:31]
+* DONE 如何禁止某些软件收到某些 broadcast? 例如 自启管家               :work:
+CLOSED: [2013-09-13 Fri 18:12]
+- State "DONE"       from "TODO"       [2013-09-13 Fri 18:12]
+pm disable xxxx.receiver
+PMS.setComponentEnabledSetting(ComponentName)
+
+this is another reason why PMS maintains the `package settings`
+[2013-09-13 Fri 17:19]
+* CANCELLED verify that `move dex to sdcard` really works?             :work:
+CLOSED: [2013-09-17 Tue 15:18]
+- State "CANCELLED"  from "TODO"       [2013-09-17 Tue 15:18]
+[2013-09-16 Mon 17:01]
+* TODO androud UiAutomator & uiautomatorviewer                         :work:
+[2013-09-17 Tue 10:48]
+* TODO android media framework / play media from console               :work:
+opencore / stagefright
+[2013-09-17 Tue 15:18]
+* TODO android recovery                                                :work:
+[2013-09-25 Wed 16:31]
+* TODO miui patchrom                                                   :work:
+[2013-09-25 Wed 16:31]
+* TODO android: task, activity, process                                :work:
+[2013-09-25 Wed 19:16]
+* TODO 0xlab                                                           :work:
+[2013-09-26 Thu 11:34]

@@ -13,3 +13,6 @@
 (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'slime-repl-mode))
+
+(add-hook 'ruby-mode-hook 'auto-complete-mode)
+(add-hook 'slime-mode-hook 'auto-complete-mode)

@@ -446,3 +446,9 @@ stored in pm.Setting is encoded as a mixer of multi-user-id and
 app_id, e.g. u0_a33, or u1_a33.
 
 As against android pre 4.1, app_id is taken as uid.
+*** enable/disable application or component
+- pm enable/disable
+- PMS.setComponentEnabledSetting(ComponentName)
+
+一些自启动管理的软件会通过这个方法禁用某些 receiver, 以达到禁止应用通过
+receiver 启动的目的. 

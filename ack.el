@@ -350,7 +350,8 @@ Otherwise, interactively choose a directory."
   ;; (cond
   ;;  ((not arg) (ack-guess-project-root default-directory))
   ;;  (t (read-directory-name "In directory: " nil nil t)))
-  (setq dir (ack-guess-project-root default-directory))
+  ;; (setq dir (ack-guess-project-root default-directory))
+  (setq dir nil)
   (if dir
       dir
     (read-directory-name "Ack in directory: " nil nil t)

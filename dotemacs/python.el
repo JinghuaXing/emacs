@@ -17,5 +17,17 @@
   (setq outline-regexp "[ \t]*\\(def\\|class\\) ")
   (setq outline-level 'py-outline-level)
   (outline-minor-mode t)
+  (defalias 'tidy 'pytidy-whole-buffer)
   )
 (add-hook 'python-mode-hook 'my-python-mode-hook)
+
+(add-to-list 'load-path "~/.elisp/elpy/")
+(require 'elpy)
+(package-initialize)
+(elpy-enable)
+
+(defun pytidy-whole-buffer ()
+  (interactive)
+  (let ((a (point)))
+    (shell-command-on-region (point-min) (point-max) "pythontidy.py" t)
+    (goto-char a)))

@@ -32,7 +32,7 @@
 (load-file "~/.elisp/dotemacs/slime.el")
 (load-file "~/.elisp/dotemacs/yasnippet.el")
 (load-file "~/.elisp/dotemacs/eim.el")
-(load-file "~/.elisp/dotemacs/python.el")
+
 ;; (load-file "~/.elisp/dotemacs/openwith.el")
 (load-file "~/.elisp/dotemacs/mark.el")
 (load-file "~/.elisp/dotemacs/sdcv.el")
@@ -45,6 +45,7 @@
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
 (load-file "~/.elisp/dotemacs/ac.el")
+(load-file "~/.elisp/dotemacs/python.el")
 
 (require 'diff-mode-)
 
@@ -330,7 +331,7 @@
 
 (require 'etags-stack)
 (require 'idomenu)
-(global-set-key (kbd "<s-return>") 'idomenu)
+(global-set-key (kbd "C-c C-j") 'idomenu)
 
 (require 'pdftools)
 
