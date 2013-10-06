@@ -45,6 +45,8 @@
  (setq org-agenda-todo-ignore-with-date t)
 (setq org-deadline-warning-days 3)
 ;; (define-key org-mode-map (kbd "C-c a") 'org-toggle-archive-tag)
+(define-key org-mode-map (kbd "C-c p") 'org-property-action)
+(define-key org-mode-map (kbd "C-c b") 'org-beamer-select-environment)
 (define-key org-mode-map (kbd "C-c t") 'org-todo)
 (define-key org-mode-map (kbd "C-c C-x C-a") 'org-toggle-archive-tag)
 ;; (define-key org-mode-map (kbd "C-c C-n") 'outline-forward-same-level)
@@ -57,14 +59,15 @@
 				    (todo todo-state-down priority-down category-keep)
 				    (tags priority-down category-keep)
 				    (search category-keep)))
-(require 'org-latex)
+(require 'ox-latex)
+(require 'ox-beamer)
 (setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")
 (setq org-plantuml-jar-path "~/.elisp/plantuml.jar")
 (setq org-src-fontify-natively t)
 
-(setq org-latex-to-pdf-process 
-      '("xelatex -interaction nonstopmode %f"
-	"xelatex -interaction nonstopmode %f"))
+;; (setq org-latex-to-pdf-process 
+;;       '("xelatex -interaction nonstopmode %f"
+;; 	"xelatex -interaction nonstopmode %f"))
 
 
 (add-to-list 'org-latex-default-packages-alist
@@ -151,7 +154,7 @@
 (setq org-mobile-directory "~/Dropbox/MobileOrg")
 
 
-(require 'org-publish)
+(require 'ox-publish)
 (setq org-publish-project-alist
       '(
 	("cafebabe"

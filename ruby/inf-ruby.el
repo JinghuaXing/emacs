@@ -166,9 +166,9 @@
   (define-key ruby-mode-map "\C-c\M-x" 'ruby-send-definition-and-go)
   (define-key ruby-mode-map "\C-c\C-r" 'ruby-send-region)
   (define-key ruby-mode-map "\C-c\M-r" 'ruby-send-region-and-go)
-  (define-key ruby-mode-map "\C-c\C-z" 'switch-to-ruby)
+  ;; (define-key ruby-mode-map "\C-c\C-z" 'switch-to-ruby)
   (define-key ruby-mode-map "\C-c\C-l" 'ruby-load-file)
-  (define-key ruby-mode-map "\C-c\C-s" 'run-ruby)
+  (define-key ruby-mode-map "\C-c\C-z" 'run-ruby)
 )
 
 (defvar ruby-buffer nil "current ruby (actually irb) process buffer.")

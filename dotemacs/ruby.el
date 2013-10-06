@@ -103,7 +103,7 @@
 
 (require 'yari)
 (defun ri-bind-key ()
-  (local-set-key [f1] 'yari))
+  (local-set-key (kbd "C-c C-d") 'yari))
 
 (add-hook 'ruby-mode-hook 'ri-bind-key)
 

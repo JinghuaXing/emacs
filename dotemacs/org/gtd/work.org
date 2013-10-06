@@ -507,3 +507,5 @@ opencore / stagefright
 [2013-09-25 Wed 19:16]
 * TODO 0xlab                                                           :work:
 [2013-09-26 Thu 11:34]
+* TODO learn about `sikuli`                                            :work:
+[2013-09-26 Thu 18:47]

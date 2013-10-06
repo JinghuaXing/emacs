@@ -57,7 +57,7 @@
 	("\\.tar$"   "tar xvf")
 	("\\(\\.rar$\\)\\|\\(\\.r[0-9]+$\\)" "unrar x")
 	("\\.htm[l]?$\\|.mht$" " firefox")
-	("\\.pdf$" " evince")
+	("\\.pdf$" " acroread")
 	("\\.dvi$" " xdvi")
 	)
       )
