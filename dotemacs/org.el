@@ -46,7 +46,7 @@
 (setq org-deadline-warning-days 3)
 ;; (define-key org-mode-map (kbd "C-c a") 'org-toggle-archive-tag)
 (define-key org-mode-map (kbd "C-c p") 'org-property-action)
-(define-key org-mode-map (kbd "C-c b") 'org-beamer-select-environment)
+(define-key org-mode-map (kbd "<s-return>") 'org-beamer-select-environment)
 (define-key org-mode-map (kbd "C-c t") 'org-todo)
 (define-key org-mode-map (kbd "C-c C-x C-a") 'org-toggle-archive-tag)
 ;; (define-key org-mode-map (kbd "C-c C-n") 'outline-forward-same-level)
@@ -172,3 +172,4 @@
 	))
 
 (add-hook 'after-init-hook 'org-agenda-list)
+

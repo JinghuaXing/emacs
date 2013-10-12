@@ -435,6 +435,24 @@
 
 ;; rcodetools
 
+(defvar ac-source-rcodetools-dot
+  '((init . (lambda ()
+              (require 'rcodetools)
+              (condition-case x
+                  (save-excursion
+                    (rct-exec-and-eval rct-complete-command-name "--completion-emacs-icicles"))
+                (error) (setq rct-method-completion-table nil))))
+    (candidates . (lambda ()
+                    (all-completions
+                     ac-prefix
+                     (mapcar
+                      (lambda (completion)
+                        (replace-regexp-in-string "\t.*$" "" (car completion)))
+                      rct-method-completion-table))))
+    (requires . 0)
+    (prefix . c-dot)
+    ))
+
 (defvar ac-source-rcodetools
   '((init . (lambda ()
               (require 'rcodetools)
@@ -466,6 +484,7 @@
 (defun ac-ruby-mode-setup ()
   (make-local-variable 'ac-ignores)
   (setq ac-sources (append '(ac-source-rcodetools) ac-sources))
+  (setq ac-sources (append '(ac-source-rcodetools-dot) ac-sources))
   (add-to-list 'ac-ignores "end"))
 
 (defun ac-css-mode-setup ()

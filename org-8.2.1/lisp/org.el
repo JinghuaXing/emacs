@@ -7266,6 +7266,8 @@ Optional arguments START and END can be used to limit the range."
 	    (org-defkey map "b" 'outline-backward-same-level)
 	    (org-defkey map "u" 'outline-up-heading))
 	  (org-defkey map "/" 'org-occur)
+	  (org-defkey map "\C-n" 'outline-next-visible-heading)
+	  (org-defkey map "\C-p" 'outline-previous-visible-heading)
 	  (org-defkey map "\C-c\C-n" 'outline-next-visible-heading)
 	  (org-defkey map "\C-c\C-p" 'outline-previous-visible-heading)
 	  (org-defkey map "\C-c\C-f" 'outline-forward-same-level)

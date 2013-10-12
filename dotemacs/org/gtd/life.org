@@ -59,7 +59,8 @@ DEADLINE: <2013-10-23 Wed +1m -6d>
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                            :life:habit:
-DEADLINE:  <2013-10-14 Mon +1m -10d>
+DEADLINE:  <2013-11-14 Thu +1m -10d>
+- State "DONE"       from "TODO"       [2013-10-11 Fri 16:42]
 - State "DONE"       from "TODO"       [2013-09-10 Tue 23:51]
 - State "DONE"       from "TODO"       [2013-08-13 Tue 19:27]
 - State "DONE"       from "TODO"       [2013-07-14 Sun 23:07]
@@ -73,7 +74,7 @@ DEADLINE:  <2013-10-14 Mon +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-09-10 Tue 23:51]
+:LAST_REPEAT: [2013-10-11 Fri 16:42]
 :END:
 
 * DONE 理发                                                            :life:
