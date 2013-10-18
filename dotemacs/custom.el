@@ -19,7 +19,7 @@
  '(auto-coding-alist (quote (("\\.\\(arc\\|zip\\|lzh\\|lha\\|zoo\\|[jew]ar\\|xpi\\|rar\\|7z\\|ARC\\|ZIP\\|LZH\\|LHA\\|ZOO\\|[JEW]AR\\|XPI\\|RAR\\|7Z\\)\\'" . no-conversion-multibyte) ("\\.\\(exe\\|EXE\\)\\'" . no-conversion) ("\\.\\(sx[dmicw]\\|odt\\|tar\\|t[bg]z\\)\\'" . no-conversion) ("\\.\\(gz\\|Z\\|bz\\|bz2\\|xz\\|gpg\\)\\'" . no-conversion) ("\\.\\(jpe?g\\|png\\|gif\\|tiff?\\|p[bpgn]m\\)\\'" . no-conversion) ("\\.pdf\\'" . no-conversion) ("/#[^/]+#\\'" . emacs-mule) ("\\.tin\\'" . gbk))))
  '(auto-indent-next-pair-timer-geo-mean (quote ((default 0.0005 0))))
  '(auto-indent-next-pair-timer-interval (quote ((emacs-lisp-mode 1.5) (java-mode 1.5) (default 0.0005))))
- '(auto-insert-alist (quote ((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") (upcase (concat (file-name-nondirectory (file-name-sans-extension buffer-file-name)) "_" (file-name-extension buffer-file-name))) "#ifndef " str n "#define " str "
+ '(auto-insert-alist (quote (((tintin-mode . "tintin skeleton") . [("Short description: " "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " open" n > _ n "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " close" n) ("Short description: " "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " open" n > _ n "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " close" n)]) ((org-mode . "org skeleton") . [("Short description: " "#+TITLE: " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n "#+AUTHOR: Wei Sun (孙伟)" n "#+EMAIL: wei.sun@spreadtrum.com" n "* " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n > _ n) ("Short description: " "#+TITLE: " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n "#+AUTHOR: Wei Sun (孙伟)" n "#+EMAIL: wei.sun@spreadtrum.com" n "* " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n > _ n)]) (("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") (upcase (concat (file-name-nondirectory (file-name-sans-extension buffer-file-name)) "_" (file-name-extension buffer-file-name))) "#ifndef " str n "#define " str "
 
 " _ "
 
@@ -39,113 +39,6 @@
 .SH BUGS
 .SH AUTHOR
 " (user-full-name) (quote (if (search-backward "&" (line-beginning-position) t) (replace-match (capitalize (user-login-name)) t t))) (quote (end-of-line 1)) " <" (progn user-mail-address) ">
-") (("\\.el\\'" . "Emacs Lisp header") "Short description: " ";;; " (file-name-nondirectory (buffer-file-name)) " --- " str "
-
-;; Copyright (C) " (format-time-string "%Y") "  " (getenv "ORGANIZATION") | (progn user-full-name) "
-
-;; Author: " (user-full-name) (quote (if (search-backward "&" (line-beginning-position) t) (replace-match (capitalize (user-login-name)) t t))) (quote (end-of-line 1)) " <" (progn user-mail-address) ">
-;; Keywords: " (quote (require (quote finder))) (quote (setq v1 (mapcar (lambda (x) (list (symbol-name (car x)))) finder-known-keywords) v2 (mapconcat (lambda (x) (format "%12s:  %s" (car x) (cdr x))) finder-known-keywords "
-"))) ((let ((minibuffer-help-form v2)) (completing-read "Keyword, C-h: " v1 nil t)) str ", ") & -2 "
-
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;;; Commentary:
-
-;; " _ "
-
-;;; Code:
-
-
-
-(provide '" (file-name-base) ")
-;;; " (file-name-nondirectory (buffer-file-name)) " ends here
-") (("\\.texi\\(nfo\\)?\\'" . "Texinfo file skeleton") "Title: " "\\input texinfo   @c -*-texinfo-*-
-@c %**start of header
-@setfilename " (file-name-base) ".info
-" "@settitle " str "
-@c %**end of header
-@copying
-" (setq short-description (read-string "Short description: ")) ".
-
-" "Copyright @copyright{} " (format-time-string "%Y") "  " (getenv "ORGANIZATION") | (progn user-full-name) "
-
-@quotation
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.3
-or any later version published by the Free Software Foundation;
-with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
-A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
-
-A copy of the license is also available from the Free Software
-Foundation Web site at @url{http://www.gnu.org/licenses/fdl.html}.
-
-@end quotation
-
-The document was typeset with
-@uref{http://www.texinfo.org/, GNU Texinfo}.
-
-@end copying
-
-@titlepage
-@title " str "
-@subtitle " short-description "
-@author " (getenv "ORGANIZATION") | (progn user-full-name) " <" (progn user-mail-address) ">
-@page
-@vskip 0pt plus 1filll
-@insertcopying
-@end titlepage
-
-@c Output the table of the contents at the beginning.
-@contents
-
-@ifnottex
-@node Top
-@top " str "
-
-@insertcopying
-@end ifnottex
-
-@c Generate the nodes for this menu with `C-c C-u C-m'.
-@menu
-@end menu
-
-@c Update all node entries with `C-c C-u C-n'.
-@c Insert new nodes with `C-c C-c n'.
-@node Chapter One
-@chapter Chapter One
-
-" _ "
-
-@node Copying This Manual
-@appendix Copying This Manual
-
-@menu
-* GNU Free Documentation License::  License for copying this manual.
-@end menu
-
-@c Get fdl.texi from http://www.gnu.org/licenses/fdl.html
-@include fdl.texi
-
-@node Index
-@unnumbered Index
-
-@printindex cp
-
-@bye
-
-@c " (file-name-nondirectory (buffer-file-name)) " ends here
 "))))
  '(auto-insert-directory "~/.elisp/autoinsert")
  '(auto-insert-query t)
@@ -243,7 +136,6 @@ The document was typeset with
  '(ido-use-url-at-point t)
  '(ispell-personal-dictionary "/home/sunway/.elisp/dict_my")
  '(ispell-query-replace-choices t)
- '(large-file-warning-threshold 60000000)
  '(magit-completing-read-function (quote magit-ido-completing-read))
  '(magit-set-upstream-on-push t)
  '(mail-host-address nil)

@@ -4,6 +4,7 @@
 (add-to-list 'load-path "~/.elisp/org-8.2.1/contrib/lisp/")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/expand-region/")
+(add-to-list 'load-path "~/.elisp/emacs-jabber/")
 ;; (add-to-list 'load-path "~/.elisp/cc-mode")
 (add-to-list 'load-path "~/.elisp/ruby")
 (add-to-list 'load-path "~/.elisp/traverselisp/")
@@ -148,8 +149,7 @@
   (setq linum-format (propertize "%5d " 'face 'fringe)))
 (setq ediff-split-window-function 'split-window-horizontally)
 
-(require 'etags-select)
-(global-set-key "\M-." 'etags-select-find-tag)
+
 (defun set-tags-table (f)
   (interactive "fSet tag file: ")
   (setq tags-table-list nil)
@@ -329,7 +329,6 @@
 ;; (global-subword-mode t)
 (global-auto-revert-mode 1)
 
-(require 'etags-stack)
 (require 'idomenu)
 (global-set-key (kbd "C-c C-j") 'idomenu)
 
@@ -344,4 +343,11 @@
 (elscreen-start)
 
 (defalias 'perl-mode 'cperl-mode)
+
+(autoload 'smali-mode "smali-mode" "Major mode for editing and viewing smali issues" t)
+(add-to-list 'auto-mode-alist '(".smali$" . smali-mode))
+
+(require 'scratch)
+(defalias 's 'scratch)
+
 

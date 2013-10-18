@@ -242,3 +242,8 @@
 	  (function (lambda ()
 		      (add-hook 'local-write-file-hooks
 				'check-parens))))
+
+(require 'etags-select)
+(global-set-key "\M-." 'etags-select-find-tag)
+(require 'etags-stack)
+

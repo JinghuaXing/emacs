@@ -113,3 +113,6 @@
 ;; (setq ruby-block-highlight-toggle 'minibuffer)
 (setq ruby-block-highlight-toggle t)
 (require 'rcodetools)
+
+(require 'ruby-tools)
+
