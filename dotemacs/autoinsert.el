@@ -11,6 +11,7 @@
        > _ \n
        )))
 
+
 (eval-after-load 'autoinsert
   '(define-auto-insert
      '(tintin-mode . "tintin skeleton")
@@ -20,3 +21,25 @@
        "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " close" \n       
        )))
 
+(eval-after-load 'autoinsert
+  '(define-auto-insert
+     '(python-mode . "python skeleton")
+     '("Short description: "
+       "#!/usr/bin/env python" \n
+       > _ \n       
+       )))
+
+(eval-after-load 'autoinsert
+  '(define-auto-insert
+     '(perl-mode . "perl skeleton")
+     '("Short description: "
+       "#!/usr/bin/env perl" \n
+       > _ \n       
+       )))
+(eval-after-load 'autoinsert
+  '(define-auto-insert
+     '(ruby-mode . "ruby skeleton")
+     '("Short description: "
+       "#!/usr/bin/env ruby" \n
+       > _ \n       
+       )))

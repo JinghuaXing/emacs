@@ -501,11 +501,19 @@ opencore / stagefright
 [2013-09-17 Tue 15:18]
 * TODO android recovery                                                :work:
 [2013-09-25 Wed 16:31]
-* TODO miui patchrom                                                   :work:
+* DONE miui patchrom                                                   :work:
+CLOSED: [2013-10-24 Thu 11:39]
+- State "DONE"       from "TODO"       [2013-10-24 Thu 11:39]
 [2013-09-25 Wed 16:31]
 * TODO android: task, activity, process                                :work:
 [2013-09-25 Wed 19:16]
-* TODO 0xlab                                                           :work:
+* CANCELLED 0xlab                                                      :work:
+CLOSED: [2013-10-24 Thu 11:38]
+- State "CANCELLED"  from "TODO"       [2013-10-24 Thu 11:38]
 [2013-09-26 Thu 11:34]
 * TODO learn about `sikuli`                                            :work:
 [2013-09-26 Thu 18:47]
+* TODO try tig: a git client                                           :work:
+[2013-10-23 Wed 14:21]
+* TODO cydia substrate for android, and xposed                         :work:
+[2013-10-30 Wed 14:01]

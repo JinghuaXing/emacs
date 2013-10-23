@@ -4,7 +4,8 @@
 (add-to-list 'load-path "~/.elisp/org-8.2.1/contrib/lisp/")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/expand-region/")
-(add-to-list 'load-path "~/.elisp/emacs-jabber/")
+(add-to-list 'load-path "~/.elisp/smartparens/")
+(add-to-list 'load-path "~/.elisp/flycheck/")
 ;; (add-to-list 'load-path "~/.elisp/cc-mode")
 (add-to-list 'load-path "~/.elisp/ruby")
 (add-to-list 'load-path "~/.elisp/traverselisp/")
@@ -146,7 +147,7 @@
 (setq enable-recursive-minibuffers t)
 ;;(setq next-line-add-newlines t)
 (when (and (locate-library "linum") (facep 'fringe))
-  (setq linum-format (propertize "%5d " 'face 'fringe)))
+  (setq linum-format (propertize "%4d " 'face 'fringe)))
 (setq ediff-split-window-function 'split-window-horizontally)
 
 
@@ -350,4 +351,19 @@
 (require 'scratch)
 (defalias 's 'scratch)
 
+(require 'pretty-mode)
+(global-pretty-mode t)
 
+(global-linum-mode t)
+
+(require 'edit-server)
+(edit-server-start)
+
+(require 'smartparens-config)
+(smartparens-global-mode t)
+
+(require 'golden-ratio)
+(golden-ratio-mode 1)
+
+(require 'flycheck)
+(add-hook 'after-init-hook #'global-flycheck-mode)

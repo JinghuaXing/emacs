@@ -156,6 +156,8 @@
       '(("activity"  "<activity[^;]*?android:name=\"\\(.*\\)\"" 1 )
 	("receiver"  "<receiver[^;]*?android:name=\"\\(.*\\)\"" 1 )
 	("service"  "<service[^;]*?android:name=\"\\(.*\\)\"" 1 )
+	("application"  "<application[^;]*?android:label=\"\\(.*\\)\"" 1 )
+	("permission"  "<uses-permission[^;]*?android:name=\"\\(.*\\)\"" 1 )
         ))
 
 (add-hook 'nxml-mode-hook
@@ -247,3 +249,13 @@
 (global-set-key "\M-." 'etags-select-find-tag)
 (require 'etags-stack)
 
+(font-lock-add-keywords
+ 'c++-mode
+ '(("\\<\\(FIXME\\)" 1 font-lock-warning-face t)))
+(font-lock-add-keywords
+ 'c-mode
+ '(("\\<\\(FIXME\\)" 1 font-lock-warning-face t)))
+(font-lock-add-keywords
+ 'java-mode
+ '(("\\<\\(FIXME\\)" 1 font-lock-warning-face t)))
+(modify-face (quote font-lock-warning-face) "Red" "yellow" nil t nil t nil nil)

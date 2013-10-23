@@ -1,5 +1,6 @@
 * TODO 给父母打电话                                              :life:habit:
-DEADLINE: <2013-10-26 Sat +7d -1d>
+DEADLINE: <2013-11-02 Sat +7d -1d>
+- State "DONE"       from "TODO"       [2013-10-27 Sun 13:23]
 - State "DONE"       from "TODO"       [2013-10-18 Fri 13:26]
 - State "DONE"       from "TODO"       [2013-10-16 Wed 10:26]
 - State "DONE"       from "TODO"       [2013-10-06 Sun 00:47]
@@ -15,11 +16,12 @@ DEADLINE: <2013-10-26 Sat +7d -1d>
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 :PROPERTIES:
-:LAST_REPEAT: [2013-10-18 Fri 13:26]
+:LAST_REPEAT: [2013-10-27 Sun 13:23]
 :ID:       ef1ba461-c0d6-461e-b229-ef4de704ace4
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
-DEADLINE:  <2013-11-03 Sun +1m -10d>
+DEADLINE:  <2013-12-03 Tue +1m -10d>
+- State "DONE"       from "TODO"       [2013-10-30 Wed 12:04]
 - State "DONE"       from "TODO"       [2013-09-26 Thu 18:00]
 - State "DONE"       from "TODO"       [2013-08-29 Thu 08:39]
 - State "DONE"       from "TODO"       [2013-07-31 Wed 10:47]
@@ -36,11 +38,12 @@ DEADLINE:  <2013-11-03 Sun +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-09-26 Thu 18:00]
+:LAST_REPEAT: [2013-10-30 Wed 12:04]
 :ID:       3bc05d4e-7815-452d-a5e7-a8c9a88b7846
 :END:
 * TODO 招行信用卡还款日                                          :life:habit:
-DEADLINE: <2013-10-23 Wed +1m -6d>
+DEADLINE: <2013-11-23 Sat +1m -6d>
+- State "DONE"       from "TODO"       [2013-10-23 Wed 14:03]
 - State "DONE"       from "TODO"       [2013-09-22 Sun 10:15]
 - State "DONE"       from "TODO"       [2013-08-21 Wed 13:23]
 - State "DONE"       from "TODO"       [2013-07-23 Tue 15:00]
@@ -57,7 +60,7 @@ DEADLINE: <2013-10-23 Wed +1m -6d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2013-09-22 Sun 10:15]
+:LAST_REPEAT: [2013-10-23 Wed 14:03]
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                            :life:habit:

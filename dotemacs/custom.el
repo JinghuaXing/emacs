@@ -8,9 +8,9 @@
  '(TeX-file-extensions (quote ("tex" "sty" "cls" "ltx" "texi" "texinfo" "dtx" "bmer")))
  '(TeX-outline-extra (quote (("[:blank:]*\\\\begin{CJK}" 1) ("[:blank:]*\\\\end{CJK}" 1))))
  '(TeX-output-view-style (quote (("^dvi$" ("^landscape$" "^pstricks$\\|^pst-\\|^psfrag$") "%(o?)dvips -t landscape %d -o && gv %f") ("^dvi$" "^pstricks$\\|^pst-\\|^psfrag$" "%(o?)dvips %d -o && gv %f") ("^dvi$" ("^a4\\(?:dutch\\|paper\\|wide\\)\\|sem-a4$" "^landscape$") "%(o?)xdvi %dS -paper a4r -s 0 %d") ("^dvi$" "^a4\\(?:dutch\\|paper\\|wide\\)\\|sem-a4$" "%(o?)xdvi %dS -paper a4 %d") ("^dvi$" ("^a5\\(?:comb\\|paper\\)$" "^landscape$") "%(o?)xdvi %dS -paper a5r -s 0 %d") ("^dvi$" "^a5\\(?:comb\\|paper\\)$" "%(o?)xdvi %dS -paper a5 %d") ("^dvi$" "^b5paper$" "%(o?)xdvi %dS -paper b5 %d") ("^dvi$" "^letterpaper$" "%(o?)xdvi %dS -paper us %d") ("^dvi$" "^legalpaper$" "%(o?)xdvi %dS -paper legal %d") ("^dvi$" "^executivepaper$" "%(o?)xdvi %dS -paper 7.25x10.5in %d") ("^dvi$" "." "%(o?)xdvi %dS %d") ("^pdf$" "." "acroread %o") ("^html?$" "." "firefox %o"))))
- '(ac-auto-show-menu 0.5)
+ '(ac-auto-show-menu 0.8)
  '(ac-auto-start 1)
- '(ac-delay 0.2)
+ '(ac-delay 0.5)
  '(ac-menu-height 20)
  '(ac-modes (quote (lisp-mode slime-repl-mode emacs-lisp-mode lisp-interaction-mode c-mode cc-mode c++-mode java-mode clojure-mode scala-mode scheme-mode ocaml-mode tuareg-mode perl-mode cperl-mode python-mode ruby-mode ecmascript-mode javascript-mode js-mode js2-mode php-mode css-mode makefile-mode sh-mode fortran-mode f90-mode ada-mode xml-mode sgml-mode)))
  '(ac-use-fuzzy t)
@@ -19,29 +19,10 @@
  '(auto-coding-alist (quote (("\\.\\(arc\\|zip\\|lzh\\|lha\\|zoo\\|[jew]ar\\|xpi\\|rar\\|7z\\|ARC\\|ZIP\\|LZH\\|LHA\\|ZOO\\|[JEW]AR\\|XPI\\|RAR\\|7Z\\)\\'" . no-conversion-multibyte) ("\\.\\(exe\\|EXE\\)\\'" . no-conversion) ("\\.\\(sx[dmicw]\\|odt\\|tar\\|t[bg]z\\)\\'" . no-conversion) ("\\.\\(gz\\|Z\\|bz\\|bz2\\|xz\\|gpg\\)\\'" . no-conversion) ("\\.\\(jpe?g\\|png\\|gif\\|tiff?\\|p[bpgn]m\\)\\'" . no-conversion) ("\\.pdf\\'" . no-conversion) ("/#[^/]+#\\'" . emacs-mule) ("\\.tin\\'" . gbk))))
  '(auto-indent-next-pair-timer-geo-mean (quote ((default 0.0005 0))))
  '(auto-indent-next-pair-timer-interval (quote ((emacs-lisp-mode 1.5) (java-mode 1.5) (default 0.0005))))
- '(auto-insert-alist (quote (((tintin-mode . "tintin skeleton") . [("Short description: " "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " open" n > _ n "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " close" n) ("Short description: " "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " open" n > _ n "#class " (file-name-sans-extension (file-name-nondirectory (buffer-file-name))) " close" n)]) ((org-mode . "org skeleton") . [("Short description: " "#+TITLE: " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n "#+AUTHOR: Wei Sun (孙伟)" n "#+EMAIL: wei.sun@spreadtrum.com" n "* " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n > _ n) ("Short description: " "#+TITLE: " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n "#+AUTHOR: Wei Sun (孙伟)" n "#+EMAIL: wei.sun@spreadtrum.com" n "* " (s-titleized-words (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))) n > _ n)]) (("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") (upcase (concat (file-name-nondirectory (file-name-sans-extension buffer-file-name)) "_" (file-name-extension buffer-file-name))) "#ifndef " str n "#define " str "
-
-" _ "
-
-#endif") (("\\.\\([Cc]\\|cc\\|cpp\\)\\'" . "C / C++ program") nil "#include \"" (let ((stem (file-name-sans-extension buffer-file-name))) (cond ((file-exists-p (concat stem ".h")) (file-name-nondirectory (concat stem ".h"))) ((file-exists-p (concat stem ".hh")) (file-name-nondirectory (concat stem ".hh"))))) & 34 | -10) (("[Mm]akefile\\'" . "Makefile") . "makefile.inc") (html-mode lambda nil (sgml-tag "html")) (plain-tex-mode . "tex-insert.tex") (latex-mode . "tex-insert.tex") (("/bin/.*[^/]\\'" . "Shell-Script mode magic number") lambda nil (if (eq major-mode (default-value (quote major-mode))) (sh-mode))) (ada-mode . ada-header) (("\\.[1-9]\\'" . "Man page skeleton") "Short description: " ".\\\" Copyright (C), " (format-time-string "%Y") "  " (getenv "ORGANIZATION") | (progn user-full-name) "
-.\\\" You may distribute this file under the terms of the GNU Free
-.\\\" Documentation License.
-.TH " (file-name-base) " " (file-name-extension (buffer-file-name)) " " (format-time-string "%Y-%m-%d ") "
-.SH NAME
-" (file-name-base) " \\- " str "
-.SH SYNOPSIS
-.B " (file-name-base) "
-" _ "
-.SH DESCRIPTION
-.SH OPTIONS
-.SH FILES
-.SH \"SEE ALSO\"
-.SH BUGS
-.SH AUTHOR
-" (user-full-name) (quote (if (search-backward "&" (line-beginning-position) t) (replace-match (capitalize (user-login-name)) t t))) (quote (end-of-line 1)) " <" (progn user-mail-address) ">
-"))))
+ '(auto-insert-alist nil)
  '(auto-insert-directory "~/.elisp/autoinsert")
- '(auto-insert-query t)
+ '(auto-insert-mode t)
+ '(auto-insert-query nil)
  '(back-button-index-timeout 0)
  '(bm-buffer-persistence t)
  '(bm-cycle-all-buffers t)
@@ -108,6 +89,7 @@
  '(eclimd-wait-for-process nil)
  '(ediff-custom-diff-options "-c -b")
  '(ediff-diff-options "-b")
+ '(edit-server-new-frame nil)
  '(elscreen-display-screen-number nil)
  '(elscreen-display-tab t)
  '(elscreen-prefix-key "")
@@ -117,6 +99,9 @@
  '(evil-emacs-state-modes (quote (archive-mode bbdb-mode bookmark-bmenu-mode bookmark-edit-annotation-mode browse-kill-ring-mode bzr-annotate-mode calc-mode cfw:calendar-mode completion-list-mode Custom-mode debugger-mode delicious-search-mode desktop-menu-blist-mode desktop-menu-mode doc-view-mode dvc-bookmarks-mode dvc-diff-mode dvc-info-buffer-mode dvc-log-buffer-mode dvc-revlist-mode dvc-revlog-mode dvc-status-mode dvc-tips-mode ediff-mode ediff-meta-mode efs-mode Electric-buffer-menu-mode emms-browser-mode emms-mark-mode emms-metaplaylist-mode emms-playlist-mode fj-mode gc-issues-mode gdb-breakpoints-mode gdb-disassembly-mode gdb-frames-mode gdb-locals-mode gdb-memory-mode gdb-registers-mode gdb-threads-mode gist-list-mode gnus-article-mode gnus-browse-mode gnus-group-mode gnus-server-mode gnus-summary-mode google-maps-static-mode ibuffer-mode jde-javadoc-checker-report-mode magit-commit-mode magit-diff-mode magit-key-mode magit-log-mode magit-mode magit-reflog-mode magit-show-branches-mode magit-stash-mode magit-status-mode magit-wazzup-mode mh-folder-mode monky-mode notmuch-hello-mode notmuch-search-mode notmuch-show-mode occur-mode org-agenda-mode package-menu-mode proced-mode rcirc-mode rebase-mode recentf-dialog-mode reftex-select-bib-mode reftex-toc-mode sldb-mode slime-inspector-mode slime-thread-control-mode slime-xref-mode sr-buttons-mode sr-mode sr-tree-mode sr-virtual-mode tar-mode tetris-mode tla-annotate-mode tla-archive-list-mode tla-bconfig-mode tla-bookmarks-mode tla-branch-list-mode tla-browse-mode tla-category-list-mode tla-changelog-mode tla-follow-symlinks-mode tla-inventory-file-mode tla-inventory-mode tla-lint-mode tla-logs-mode tla-revision-list-mode tla-revlog-mode tla-tree-lint-mode tla-version-list-mode twittering-mode urlview-mode vc-annotate-mode vc-dir-mode vc-git-log-view-mode vc-svn-log-view-mode vm-mode vm-summary-mode w3m-mode wab-compilation-mode xgit-annotate-mode xgit-changelog-mode xgit-diff-mode xgit-revlog-mode xhg-annotate-mode xhg-log-mode xhg-mode xhg-mq-mode xhg-mq-sub-mode xhg-status-extra-mode)))
  '(file-cache-filter-regexps (quote ("~$" "\\.o$" "\\.exe$" "\\.a$" "\\.elc$" ",v$" "\\.output$" "\\.$" "#$" "\\.class$" "\\.git")))
  '(find-grep-options "-q  -I -i")
+ '(fixmee-notice-regexp "\\(@@@+\\|\\_<\\(?:XXX:+\\)\\)\\(?:[/:?!. 	
+]+\\|-+\\(?:\\s-\\|[
+]\\)\\|\\_>\\)")
  '(gdb-enable-debug t)
  '(global-auto-complete-mode nil)
  '(global-semantic-stickyfunc-mode t)
@@ -190,7 +175,7 @@
  '(rcirc-startup-channels-alist nil)
  '(rcirc-track-minor-mode t)
  '(read-file-name-completion-ignore-case t)
- '(safe-local-variable-values (quote ((Coding . utf-8) (default-justification . left) (lexical-binding . t) (require-final-newline . t) (mangle-whitespace . t) (ruby-compilation-executable . "ruby") (ruby-compilation-executable . "ruby1.8") (ruby-compilation-executable . "ruby1.9") (ruby-compilation-executable . "rbx") (ruby-compilation-executable . "jruby") (todo-categories "Todo" "Todo") (folded-file . t))))
+ '(safe-local-variable-values (quote ((eval font-lock-add-keywords nil (\` (((\, (concat "(" (regexp-opt (quote ("sp-do-move-op" "sp-do-move-cl" "sp-do-put-op" "sp-do-put-cl" "sp-do-del-op" "sp-do-del-cl")) t) "\\_>")) 1 (quote font-lock-variable-name-face))))) (nxml-heading-element-name-regexp . "activity") (nxml-section-element-name-regexp . "activity") (Coding . utf-8) (default-justification . left) (lexical-binding . t) (require-final-newline . t) (mangle-whitespace . t) (ruby-compilation-executable . "ruby") (ruby-compilation-executable . "ruby1.8") (ruby-compilation-executable . "ruby1.9") (ruby-compilation-executable . "rbx") (ruby-compilation-executable . "jruby") (todo-categories "Todo" "Todo") (folded-file . t))))
  '(savehist-additional-variables (quote (kill-ring compile-command)))
  '(scheme-program-name "racket")
  '(semantic-idle-summary-function (quote semantic-format-tag-summarize))

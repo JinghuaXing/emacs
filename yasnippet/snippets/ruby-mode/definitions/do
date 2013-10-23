@@ -1,6 +1,0 @@
-# name: do
-# key: do
-# --
-do |${i}|
-  $0
-end

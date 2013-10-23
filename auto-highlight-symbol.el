@@ -528,6 +528,7 @@ This variable can be set in three different types.
           (define-key map (kbd "C-x C-'"     ) 'ahs-change-range        )
           (define-key map (kbd "C-x C-a"     ) 'ahs-edit-mode           )
           (define-key map (kbd "M-w"    ) 'ahs-copy-hl)
+          (define-key map (kbd "C-w"    ) 'ahs-kill-hl)
           (define-key map (kbd "M-o"    ) 'ahs-moccur-hl)
           map)))
 
@@ -948,9 +949,9 @@ You can do these operations at One Key!
 (defun ahs-kill-hl ()
   (interactive)
   (if (region-active-p)
-      (call-interactively 'kill-ring-save)
+      (call-interactively 'kill-region)
     (kill-region ahs-begin ahs-end)
-      )
+    )
   )
 
 (defmacro ahs-add-overlay-face (pos face)

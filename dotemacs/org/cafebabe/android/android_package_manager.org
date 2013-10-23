@@ -318,7 +318,7 @@ umount 时, vold (可能)会将该进程 (也就是 system 进程) kill
 
 可见, 在 umount 时系统会尝试多次, 若一直失败, 则 kill 相关的进程, 否则
 只是 complain 一下, 并不会 kill 进程. 而 umount 失败的条件是 umount
-时有文件正在被读写 (或者 page cache 被刷新?), 而不是有 fd 被打开...
+时有文件正在被读写 (或者 page cache 被刷新?)
 
 **** external package
 *** replacePackage
