@@ -229,9 +229,9 @@
 (autoload 'xub-mode "xub-mode" "Load xub-mode for browsing Unicode." t)
 (defalias 'unicode-browser 'xub-mode)
 
-(require 'keyfreq)
-(keyfreq-mode 1)
-(keyfreq-autosave-mode 1)
+;; (require 'keyfreq)
+;; (keyfreq-mode 1)
+;; (keyfreq-autosave-mode 1)
 
 (require 'quack)
 
@@ -367,3 +367,5 @@
 
 (require 'flycheck)
 (add-hook 'after-init-hook #'global-flycheck-mode)
+
+;;; .emacs ends here
