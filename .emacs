@@ -362,8 +362,8 @@
 (require 'smartparens-config)
 (smartparens-global-mode t)
 
-(require 'golden-ratio)
-(golden-ratio-mode 1)
+;; (require 'golden-ratio)
+;; (golden-ratio-mode 1)
 
 (require 'flycheck)
 (add-hook 'after-init-hook #'global-flycheck-mode)
