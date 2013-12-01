@@ -18,7 +18,7 @@
 (tool-bar-mode -1)
 
 (load-file "~/.elisp/dotemacs/eshell.el")
-;; (load-file "~/.elisp/dotemacs/abbrev.el")
+(load-file "~/.elisp/dotemacs/abbrev.el")
 (load-file "~/.elisp/dotemacs/mew.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
@@ -32,10 +32,10 @@
 (load-file "~/.elisp/dotemacs/scala.el")
 (load-file "~/.elisp/dotemacs/magit.el")
 (load-file "~/.elisp/dotemacs/slime.el")
-(load-file "~/.elisp/dotemacs/yasnippet.el")
+;; (load-file "~/.elisp/dotemacs/yasnippet.el")
 (load-file "~/.elisp/dotemacs/eim.el")
 
-;; (load-file "~/.elisp/dotemacs/openwith.el")
+(load-file "~/.elisp/dotemacs/openwith.el")
 (load-file "~/.elisp/dotemacs/mark.el")
 (load-file "~/.elisp/dotemacs/sdcv.el")
 (load-file "~/.elisp/dotemacs/color.el")
@@ -46,7 +46,7 @@
 (load-file "~/.elisp/dotemacs/ido.el")
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
-(load-file "~/.elisp/dotemacs/ac.el")
+;; (load-file "~/.elisp/dotemacs/ac.el")
 (load-file "~/.elisp/dotemacs/python.el")
 
 (require 'diff-mode-)
@@ -354,7 +354,7 @@
 (require 'pretty-mode)
 (global-pretty-mode t)
 
-(global-linum-mode t)
+;; (global-linum-mode t)
 
 (require 'edit-server)
 (edit-server-start)

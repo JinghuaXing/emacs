@@ -1,6 +1,24 @@
 (require 'autoinsert)
 (auto-insert-mode t)
 (eval-after-load 'autoinsert
+  '(define-auto-insert '("\\.cpp\\'" . "C skeleton")
+     '(
+       "Short description:"
+       "#include <"
+       (file-name-sans-extension
+        (file-name-nondirectory (buffer-file-name)))
+       ".hpp>" \n \n
+       > _ \n
+       )))
+
+(eval-after-load 'autoinsert
+  '(define-auto-insert
+     '("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header")
+     '((s-upcase (s-snake-case (file-name-nondirectory buffer-file-name)))
+       "#ifndef " str n "#define " str "\n\n" _ "\n\n#endif  // " str)
+     ))
+
+(eval-after-load 'autoinsert
   '(define-auto-insert
      '(org-mode . "org skeleton")
      '("Short description: "

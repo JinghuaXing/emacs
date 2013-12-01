@@ -1,10 +1,13 @@
 (require 'dtrt-indent)
+(load-file "~/.elisp/sourcepair.el")
+
+
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
-;;  (local-set-key (kbd "C-c C-h") 'ff-find-other-file)
+  (local-set-key (kbd "C-c SPC") 'sourcepair-load)
   (c-set-style "k&r")
-  (dtrt-indent-mode t)
+  ;; (dtrt-indent-mode t)
   (c-toggle-auto-state -1)
   (c-toggle-hungry-state t)
   (c-toggle-electric-state t)
@@ -23,7 +26,6 @@
   (local-set-key (kbd "C-c o o") 'hs-toggle-hiding)
   (local-set-key (kbd "C-c o s") 'hs-show-all)
   (local-set-key (kbd "C-c o h") 'hs-hide-level)
-
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)

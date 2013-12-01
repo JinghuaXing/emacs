@@ -1,13 +1,13 @@
 (add-to-list 'load-path "~/.elisp/magit/")
+(add-to-list 'load-path "~/.elisp/git-modes/")
+(require 'git-rebase-mode)
+(require 'git-commit-mode)
 (require 'magit)
 (require 'magit-svn)
 (require 'magit-topgit)
 (require 'magit-wip)
-(require 'rebase-mode)
 (require 'magit-blame)
-(require 'magit-bisect)
-(require 'magit-push-remote)
-(add-hook 'magit-mode-hook 'turn-on-magit-push-remote)
+
 (add-hook 'magit-mode-hook 'turn-on-magit-svn)
 (add-hook 'magit-mode-hook
 	  'magit-topgit-mode)

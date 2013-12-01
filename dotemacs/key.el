@@ -21,8 +21,6 @@
 ;; 				   (switch-to-buffer "*Beagle*")
 ;; 				 )))
 ;;(global-set-key (kbd "s-.") 'beagle-dired)
-(global-set-key (kbd "C-c SPC") 'point-to-register)
-(global-set-key (kbd "C-c j") 'jump-to-register)
 
 (global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-l") 'recenter)
