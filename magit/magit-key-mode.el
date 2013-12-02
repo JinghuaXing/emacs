@@ -107,9 +107,10 @@
       ("L" "Long" magit-log-long)
       ("h" "Head Reflog" magit-reflog-head)
       ("f" "File log" magit-file-log)
-      ("r" "Ranged short" magit-log-ranged))
-      ;; ("rL" "Ranged long" magit-log-long-ranged)r
-      ;; ("rh" "Reflog" magit-reflog))
+      ("r" "Ranged short" magit-log-ranged)
+      ;; ("rL" "Ranged long" magit-log-long-ranged)
+      ;; ("rh" "Reflog" magit-reflog)
+      )
      (switches
       ("-m" "Only merge commits" "--merges")
       ("-do" "Date Order" "--date-order")

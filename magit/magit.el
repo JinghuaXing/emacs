@@ -6282,7 +6282,9 @@ Other key binding:
 
   (make-local-variable 'magit-ediff-windows)
   (setq-default magit-ediff-windows ())
-
+  (add-hook 'ediff-quit-hook (lambda ()
+                                (set-window-configuration magit-ediff-windows)
+                                ))
   (add-hook 'ediff-cleanup-hook 'magit-ediff-restore 'append 'local))
 
 (defun magit-ediff-restore ()

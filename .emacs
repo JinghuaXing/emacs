@@ -18,7 +18,7 @@
 (tool-bar-mode -1)
 
 (load-file "~/.elisp/dotemacs/eshell.el")
-(load-file "~/.elisp/dotemacs/abbrev.el")
+;; (load-file "~/.elisp/dotemacs/abbrev.el")
 (load-file "~/.elisp/dotemacs/mew.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
@@ -32,7 +32,7 @@
 (load-file "~/.elisp/dotemacs/scala.el")
 (load-file "~/.elisp/dotemacs/magit.el")
 (load-file "~/.elisp/dotemacs/slime.el")
-;; (load-file "~/.elisp/dotemacs/yasnippet.el")
+(load-file "~/.elisp/dotemacs/yasnippet.el")
 (load-file "~/.elisp/dotemacs/eim.el")
 
 (load-file "~/.elisp/dotemacs/openwith.el")
@@ -369,3 +369,5 @@
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;;; .emacs ends here
+
+

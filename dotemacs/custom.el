@@ -192,6 +192,8 @@
  '(slime-kill-without-query-p t)
  '(slime-repl-history-remove-duplicates t)
  '(slime-startup-animation nil)
+ '(sourcepair-header-path (quote ("." "../include")))
+ '(sourcepair-source-path (quote ("." "../src")))
  '(sp-autoescape-string-quote nil)
  '(sql-electric-stuff (quote semicolon))
  '(sql-product (quote sqlite))
