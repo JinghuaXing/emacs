@@ -1,0 +1,6 @@
+# name: inf
+# key: inf
+# --
+for (;;) {
+    $0
+}
