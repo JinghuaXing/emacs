@@ -105,6 +105,7 @@
  '(fixmee-notice-regexp "\\(@@@+\\|\\_<\\(?:XXX:+\\)\\)\\(?:[/:?!. 	
 ]+\\|-+\\(?:\\s-\\|[
 ]\\)\\|\\_>\\)")
+ '(flycheck-checkers (quote (bash c/c++-clang c/c++-cppcheck coffee coffee-coffeelint css-csslint d-dmd elixir erlang go-gofmt go-build go-test haml haskell-hdevtools haskell-ghc haskell-hlint html-tidy javascript-jshint javascript-gjslint json-jsonlint less lua perl php php-phpmd php-phpcs puppet-parser puppet-lint python-flake8 python-pylint rst ruby-rubocop ruby ruby-jruby rust sass scala scss sh-dash sh-bash slim tex-chktex tex-lacheck xml-xmlstarlet xml-xmllint yaml-ruby zsh)))
  '(gdb-enable-debug t)
  '(global-auto-complete-mode nil)
  '(global-semantic-stickyfunc-mode t)

@@ -1,4 +1,8 @@
-(add-to-list 'load-path "~/.elisp/auto-complete-1.3.1/")
+(add-to-list 'load-path "~/.elisp/auto-complete/")
+(add-to-list 'load-path "~/.elisp/auto-complete/lib/fuzzy")
+(add-to-list 'load-path "~/.elisp/auto-complete/lib/popup/")
+
+(require 'auto-complete)
 (require 'auto-complete-config)
 (ac-config-default)
 (ac-flyspell-workaround)
@@ -7,12 +11,5 @@
 (define-key ac-complete-mode-map (kbd "C-p") 'ac-previous)
 (setq ac-fuzzy-enable t)
 
-(require 'auto-complete)
-(require 'ac-slime)
-(add-hook 'slime-mode-hook 'set-up-slime-ac)
-(add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
-(eval-after-load "auto-complete"
-  '(add-to-list 'ac-modes 'slime-repl-mode))
 
-(add-hook 'ruby-mode-hook 'auto-complete-mode)
-(add-hook 'slime-mode-hook 'auto-complete-mode)
+

@@ -359,9 +359,6 @@
 (require 'edit-server)
 (edit-server-start)
 
-(require 'smartparens-config)
-(smartparens-global-mode t)
-
 ;; (require 'golden-ratio)
 ;; (golden-ratio-mode 1)
 
