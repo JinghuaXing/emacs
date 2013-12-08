@@ -26,14 +26,3 @@
 (setq ruby-block-highlight-toggle t)
 
 (require 'ruby-tools)
-
-
-(add-to-list 'load-path "~/.elisp/robe/")
-(require 'robe)
-(require 'robe-ac)
-(add-hook 'ruby-mode-hook 'robe-mode)
-
-(add-hook 'ruby-mode-hook '(lambda()
-			     (push 'ac-source-robe ac-sources)
-			     (auto-complete-mode t)
-			     ))

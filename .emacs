@@ -46,7 +46,7 @@
 (load-file "~/.elisp/dotemacs/ido.el")
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
-(load-file "~/.elisp/dotemacs/ac.el")
+;; (load-file "~/.elisp/dotemacs/ac.el")
 (load-file "~/.elisp/dotemacs/python.el")
 
 (require 'diff-mode-)
@@ -362,8 +362,8 @@
 ;; (require 'golden-ratio)
 ;; (golden-ratio-mode 1)
 
-(require 'flycheck)
-(add-hook 'after-init-hook #'global-flycheck-mode)
+;; (require 'flycheck)
+;; (add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;;; .emacs ends here
 

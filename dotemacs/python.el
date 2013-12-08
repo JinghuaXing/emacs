@@ -21,11 +21,6 @@
   )
 (add-hook 'python-mode-hook 'my-python-mode-hook)
 
-(add-to-list 'load-path "~/.elisp/elpy/")
-(require 'elpy)
-(package-initialize)
-(elpy-enable)
-
 (defun pytidy-whole-buffer ()
   (interactive)
   (let ((a (point)))
