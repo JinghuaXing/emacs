@@ -46,7 +46,7 @@
 (load-file "~/.elisp/dotemacs/ido.el")
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
-;; (load-file "~/.elisp/dotemacs/ac.el")
+(load-file "~/.elisp/dotemacs/ac.el")
 (load-file "~/.elisp/dotemacs/python.el")
 
 (require 'diff-mode-)
@@ -326,7 +326,7 @@
 (global-set-key (kbd "C-c +") 'evil-numbers/inc-at-pt)
 (global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt)
 
-;; (electric-pair-mode t)
+(electric-pair-mode t)
 ;; (global-subword-mode t)
 (global-auto-revert-mode 1)
 

@@ -154,8 +154,6 @@ next one.")
     (define-key map (kbd "C-c M-r") 'ruby-send-region-and-go)
     (define-key map (kbd "C-c C-z") 'ruby-switch-to-inf)
     (define-key map (kbd "C-c C-l") 'ruby-load-file)
-    ;; added by sunway
-    (define-key map (kbd "TAB") 'inf-ruby-complete-or-tab)
     (define-key map (kbd "C-c C-s") 'inf-ruby)
     map))
 
@@ -267,10 +265,7 @@ run)."
   (setq impl (or impl "ruby"))
 
   (let ((command (cdr (assoc impl inf-ruby-implementations))))
-    (run-ruby command impl))
-  ;; added by sunway
-  (pop-to-buffer (setq inf-ruby-buffer (format "*ruby*" )))
-  )
+    (run-ruby command impl)))
 
 ;;;###autoload
 (defun run-ruby (&optional command name)
@@ -291,8 +286,7 @@ If there is a process already running in `*ruby*', switch to that buffer.
         (set-buffer (apply 'make-comint name (car commandlist)
                            nil (cdr commandlist)))
         (inf-ruby-mode)))
-  ;; (pop-to-buffer (setq inf-ruby-buffer (format "*%s*" name)))
-  )
+  (pop-to-buffer (setq inf-ruby-buffer (format "*%s*" name))))
 
 (defun inf-ruby-proc ()
   "Return the current inferior Ruby process.
@@ -301,14 +295,7 @@ See variable `inf-ruby-buffer'."
   (or (get-buffer-process (if (eq major-mode 'inf-ruby-mode)
                               (current-buffer)
                             inf-ruby-buffer))
-     ;; added by sunway
-     (progn
-       (run-ruby)
-       (get-buffer-process (if (eq major-mode 'inf-ruby-mode)
-			       (current-buffer)
-			     inf-ruby-buffer))
-       )
-     ))
+      (error "No current process. See variable inf-ruby-buffer")))
 
 ;; These commands are added to the ruby-mode keymap:
 
@@ -474,15 +461,11 @@ Returns the selected completion or nil."
   (if inf-ruby-at-top-level-prompt-p
       (let* ((expr (inf-ruby-completion-expr-at-point))
              (completions (inf-ruby-completions expr)))
-	;; added by sunway
-	(if (not (= (length expr) 0))
-	    (if completions
-		(if (= (length completions) 1)
-		    (car completions)
-		  (completing-read "possible completions: "
-				   completions nil t expr))))
-	
-	)
+        (if completions
+            (if (= (length completions) 1)
+                (car completions)
+              (completing-read "possible completions: "
+                               completions nil t expr))))
     (message "Completion aborted: Not at a top-level prompt")
     nil))
 
@@ -645,4 +628,3 @@ Gemfile, it should use the `gemspec' instruction."
 ;;;###autoload (dolist (mode ruby-source-modes) (add-hook (intern (format "%s-hook" mode)) 'inf-ruby-minor-mode))
 
 (provide 'inf-ruby)
-;;; inf-ruby.el ends here
