@@ -4,6 +4,10 @@
 *** open
 1. open /dev/ashmem as mFd
 2. allocate asma in kernel and set to file->priv_data
+3. ioctl to set region size
+4. now the fd is ready for mmap (但是在 mmap 之前, read/write 不可用的,
+   因 read/write 实际上需要读写 mmap 对应的 tmpfs 文件)
+
 #+BEGIN_SRC c
   
   truct ashmem_area {
@@ -80,6 +84,15 @@
       vma->vm_flags |= VM_CAN_NONLINEAR;
   }
 #+END_SRC
+*** read/write
+在 mmap 之后, asma->file 有效, read/write 最终会读写 asma->file 这个
+tmpfs 文件
+*** To summarize
+使用 ashmem 需要以后步骤:
+1. fd = ashmem_create_region(size)
+2. address = mmap(fd, size)
+3. read/write fd 或 直接访问 address 对应的内存
+4. 将 fd 传递到其他进程实际共享
 
 ** MemoryFile
 MemoryFile 的 public 接口中并没有包含 getParcelFileDescriptor, 这从根
