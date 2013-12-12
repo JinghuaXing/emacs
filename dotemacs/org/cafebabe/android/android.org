@@ -314,6 +314,7 @@ see also [[Context.getClassLoader]]
 *** Thread.dumpStack()
 *** logcat
 adb shell setprop log.tag.mytag verbose
+*** logwrapper
 *** adb am start
 *** monkey
 *** tombstone

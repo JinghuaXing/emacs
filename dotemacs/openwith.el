@@ -3,7 +3,7 @@
 (when (eq system-type 'gnu/linux)
   (setq openwith-associations
         '(("\\.pdf$" "acroread" (file)) ("\\.mp3$" "mplayer" (file) )
-          ("\\.mov\\|\\.RM$\\|\\.RMVB$\\|\\.avi$\\|\\.AVI$\\|\\.flv$\\|\\.mp4\\|\\.mkv$\\|\\.rmvb$\\|.wmv$" "mplayer" (file) )
+          ("\\.mov\\|\\.RM$\\|\\.RMVB$\\|\\.avi$\\|\\.AVI$\\|\\.flv$\\|\\.mp4\\|\\.mkv$\\|\\.rmvb$\\|.wmv\\|.wav$" "mplayer" (file) )
           ("\\.jpe?g$\\|\\.png$\\|\\.bmp\\|\\.gif$" "display" (file))
 	  ("\\.xlsx?$\\|\\.XLSX?$" "soffice"  (file) )
 	  ("\\.doc?$\\|\\.DOC?$" "soffice"  (file) )

@@ -519,3 +519,5 @@ CLOSED: [2013-10-24 Thu 11:38]
 [2013-10-30 Wed 14:01]
 * TODO how to generate and analyze traces.txt                          :work:
 [2013-11-08 Fri 16:26]
+* TODO callgrind && kcachegrind                                        :work:
+[2013-12-13 Fri 16:01]

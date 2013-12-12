@@ -543,6 +543,7 @@ the key combination highlighted before the description."
     (other-window 1)
     (switch-to-buffer buf)
     (kill-all-local-variables)
+    (set (make-local-variable 'scroll-margin) 0)
     (set (make-local-variable
           'magit-key-mode-current-options)
          original-opts)
@@ -720,4 +721,7 @@ Return the point before the actions part, if any, nil otherwise."
 ;;;###autoload (mapc (lambda (g) (eval `(autoload ',(intern (concat "magit-key-mode-popup-" (symbol-name (car g)))) "magit-key-mode" ,(concat "Key menu for " (symbol-name (car g))) t))) magit-key-mode-groups)
 
 (provide 'magit-key-mode)
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
 ;;; magit-key-mode.el ends here
