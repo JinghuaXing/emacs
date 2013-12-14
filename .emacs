@@ -32,6 +32,11 @@
 (load-file "~/.elisp/dotemacs/scala.el")
 (load-file "~/.elisp/dotemacs/magit.el")
 (load-file "~/.elisp/dotemacs/slime.el")
+
+(setq auto-indent-key-for-end-of-line-then-newline "<M-return>")
+(require 'auto-indent-mode)
+(auto-indent-global-mode t)
+
 (load-file "~/.elisp/dotemacs/yasnippet.el")
 (load-file "~/.elisp/dotemacs/eim.el")
 
@@ -364,7 +369,6 @@
 
 ;; (require 'flycheck)
 ;; (add-hook 'after-init-hook #'global-flycheck-mode)
-
+(require 'awk-it)
 ;;; .emacs ends here
-
 
