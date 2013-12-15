@@ -912,6 +912,7 @@
 
 (eval-when-compile
   (require 'cl))
+(require 'tabify)
 
 (defgroup auto-indent nil
   "Auto Indent Mode Customizations"

@@ -140,7 +140,8 @@
 (setq default-line-spacing 0.2)
 
 (require 'tramp)
-(add-to-list 'tramp-default-user-alist '("ssh" "build_server" "weisun"))
+(add-to-list 'tramp-default-user-alist '("ssh" "bs" "weisun"))
+(add-to-list 'tramp-default-user-alist '("ssh" "yong" "apadmin"))
 (setq shell-prompt-pattern ":")
 
 (global-unset-key (kbd "<insert>"))
@@ -260,10 +261,6 @@
 (when (fboundp 'windmove-default-keybindings)
       (windmove-default-keybindings))
 
-(require 'bm)
-(global-set-key (kbd "<f2>") 'bm-previous)
-(global-set-key (kbd "<C-f2>")   'bm-toggle)
-
 (when (fboundp 'winner-mode)
       (winner-mode 1))
 (windmove-default-keybindings)
@@ -331,7 +328,6 @@
 (global-set-key (kbd "C-c +") 'evil-numbers/inc-at-pt)
 (global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt)
 
-(electric-pair-mode t)
 ;; (global-subword-mode t)
 (global-auto-revert-mode 1)
 
@@ -371,4 +367,10 @@
 ;; (add-hook 'after-init-hook #'global-flycheck-mode)
 (require 'awk-it)
 ;;; .emacs ends here
+
+(require 'ascii)
+
+(require 'smartparens-config)
+(smartparens-global-mode t)
+;; (electric-pair-mode t)
 
