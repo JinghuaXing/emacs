@@ -566,18 +566,18 @@ occurence of CHAR."
 			  )
 		)
 
-;; (dolist (command '(yank yank-pop))
-;;   (eval `(defadvice ,command (after indent-region activate)
-;; 	   (and (not current-prefix-arg)
-;; 		(member major-mode '(emacs-lisp-mode lisp-mode java-mode nxml-mode
-;; 						     clojure-mode    scheme-mode
-;; 						     haskell-mode    ruby-mode
-;; 						     rspec-mode      python-mode
-;; 						     c-mode          c++-mode
-;; 						     objc-mode       latex-mode
-;; 						     plain-tex-mode))
-;; 		(let ((mark-even-if-inactive transient-mark-mode))
-;; 		  (indent-region (region-beginning) (region-end) nil))))))
+(dolist (command '(yank yank-pop))
+  (eval `(defadvice ,command (after indent-region activate)
+	   (and (not current-prefix-arg)
+		;; (member major-mode '(emacs-lisp-mode lisp-mode java-mode nxml-mode
+		;; 				     clojure-mode    scheme-mode
+		;; 				     haskell-mode    ruby-mode
+		;; 				     rspec-mode      python-mode
+		;; 				     c-mode          c++-mode
+		;; 				     objc-mode       latex-mode
+		;; 				     plain-tex-mode))
+		(let ((mark-even-if-inactive transient-mark-mode))
+		  (indent-region (region-beginning) (region-end) nil))))))
 
 
 (defalias 'mbm 'menu-bar-mode)
@@ -647,4 +647,26 @@ occurence of CHAR."
 				       (call-interactively 'nxml-backward-up-element)
 				       (call-interactively 'nxml-forward-element)
 				       )
+  )
+
+(defun gist ()
+  (interactive)
+  (if (get-buffer "*gist*")
+      (kill-buffer "*gist*")
+    )
+  (if current-prefix-arg
+      (progn
+        (setq url (read-from-minibuffer "update: "))
+        (with-current-buffer (compilation-start (concat "gist -P -c -f " (file-name-nondirectory (buffer-file-name)) " -u " url) nil)
+          (rename-buffer "*gist*")
+          )
+        )
+    (progn
+      (with-current-buffer (compilation-start (concat "gist -P -c -f " (file-name-nondirectory (buffer-file-name))) nil)
+        (rename-buffer "*gist*")
+        )
+      )
+    )
+  (switch-to-buffer-other-window "*gist*")
+  (delete-other-windows)
   )

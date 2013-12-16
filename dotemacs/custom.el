@@ -18,6 +18,7 @@
  '(anything-command-map-prefix-key "s-SPC")
  '(auto-coding-alist (quote (("\\.\\(arc\\|zip\\|lzh\\|lha\\|zoo\\|[jew]ar\\|xpi\\|rar\\|7z\\|ARC\\|ZIP\\|LZH\\|LHA\\|ZOO\\|[JEW]AR\\|XPI\\|RAR\\|7Z\\)\\'" . no-conversion-multibyte) ("\\.\\(exe\\|EXE\\)\\'" . no-conversion) ("\\.\\(sx[dmicw]\\|odt\\|tar\\|t[bg]z\\)\\'" . no-conversion) ("\\.\\(gz\\|Z\\|bz\\|bz2\\|xz\\|gpg\\)\\'" . no-conversion) ("\\.\\(jpe?g\\|png\\|gif\\|tiff?\\|p[bpgn]m\\)\\'" . no-conversion) ("\\.pdf\\'" . no-conversion) ("/#[^/]+#\\'" . emacs-mule) ("\\.tin\\'" . gbk))))
  '(auto-indent-blank-lines-on-move nil)
+ '(auto-indent-current-pairs nil)
  '(auto-indent-next-pair-timer-geo-mean (quote ((default 0.0005 0))))
  '(auto-indent-next-pair-timer-interval (quote ((emacs-lisp-mode 1.5) (java-mode 1.5) (default 0.0005))))
  '(auto-insert-alist nil)
