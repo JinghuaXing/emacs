@@ -69,6 +69,7 @@
  '(deft-text-mode (quote org-mode))
  '(desktop-lazy-idle-delay 2)
  '(desktop-load-locked-desktop t)
+ '(desktop-restore-eager 500)
  '(diff-hl-draw-borders t)
  '(dired-backup-overwrite t)
  '(dired-find-subdir nil)
@@ -149,6 +150,7 @@
  '(org-capture-bookmark nil)
  '(org-confirm-babel-evaluate nil)
  '(org-crypt-disable-auto-save t)
+ '(org-export-exclude-tags (quote ("noexport" "crypt")))
  '(org-export-headline-levels 2)
  '(org-export-html-style "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/stylesheets/main.css\" media=\"screen\" />")
  '(org-export-latex-emphasis-alist (quote (("*" "\\textbf{%s}" nil) ("/" "\\emph{%s}" nil) ("_" "\\underline{%s}" nil) ("+" "\\st{%s}" nil) ("=" "\\protectedtexttt" t) ("~" "\\verb" t))))
@@ -234,7 +236,8 @@
  '(wg-use-faces nil)
  '(winner-ring-size 5)
  '(xgtags-goto-tag (quote never))
- '(xgtags-show-paths (quote expanded)))
+ '(xgtags-show-paths (quote expanded))
+ '(yas-snippet-dirs (quote ("/home/sunway/.elisp/yasnippet/snippets")) nil (yasnippet)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

@@ -79,6 +79,7 @@ Use the function by the same name instead of this variable.")
 (require 'epa)
 (require 'format-spec)
 (require 'grep)
+(require 'help-mode)
 (require 'ring)
 (require 'server)
 
@@ -365,10 +366,13 @@ be preferred."
     (const :tag "Use marked commit, if any" marked))
   :package-version '(magit . "1.3.0"))
 
-(defcustom magit-commit-mode-show-buttons t
-  "Whether to show navigation buttons in the *magit-commit* buffer."
+(defcustom magit-show-xref-buttons '(magit-diff-mode magit-commit-mode)
+  "List of modes whose buffers may should contain history buttons.
+Currently only `magit-diff-mode' and `magit-commit-mode' are
+supported."
   :group 'magit
-  :type 'boolean)
+  :type '(repeat (choice (const magit-diff-mode)
+                         (const magit-commit-mode))))
 
 (defcustom magit-merge-warn-dirty-worktree t
   "Whether to issue a warning when attempting to start a merge in a dirty worktree."
@@ -1385,8 +1389,8 @@ Many Magit faces inherit from this one by default."
 (defvar magit-commit-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map magit-mode-map)
-    (define-key map (kbd "C-c C-b") 'magit-show-commit-backward)
-    (define-key map (kbd "C-c C-f") 'magit-show-commit-forward)
+    (define-key map (kbd "C-c C-b") 'magit-go-backward)
+    (define-key map (kbd "C-c C-f") 'magit-go-forward)
     (define-key map (kbd "SPC") 'scroll-up)
     (define-key map (kbd "DEL") 'scroll-down)
     map)
@@ -1435,6 +1439,8 @@ Many Magit faces inherit from this one by default."
 (defvar magit-diff-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map magit-mode-map)
+    (define-key map (kbd "C-c C-b") 'magit-go-backward)
+    (define-key map (kbd "C-c C-f") 'magit-go-forward)
     (define-key map (kbd "SPC") 'scroll-up)
     (define-key map (kbd "DEL") 'scroll-down)
     map)
@@ -2727,11 +2733,10 @@ Expanded: everything is shown."
   "Show section whose level is less than LEVEL, hide the others.
 If ALL is non nil, do this in all sections, otherwise do it only
 on ancestors and descendants of current section."
-  (magit-with-refresh
-    (if all
-        (magit-section-show-level magit-root-section 0 level nil)
-      (let ((path (reverse (magit-section-lineage (magit-current-section)))))
-        (magit-section-show-level (car path) 0 level (cdr path))))))
+  (if all
+      (magit-section-show-level magit-root-section 0 level nil)
+    (let ((path (reverse (magit-section-lineage (magit-current-section)))))
+      (magit-section-show-level (car path) 0 level (cdr path)))))
 
 (defun magit-show-only-files ()
   "Show section that are files, but not their subsection.
@@ -3255,6 +3260,13 @@ REFRESH-FUNC and that of `magit-refresh-args' to REFRESH-ARGS and
 finally \"refresh\" a first time.
 
 Also see `magit-mode-setup', a more convenient variant."
+  (cl-case mode
+    (magit-commit-mode
+     (magit-setup-xref (cons #'magit-show-commit refresh-args))
+     (goto-char (point-min)))
+    (magit-diff-mode
+     (magit-setup-xref (cons #'magit-diff refresh-args))
+     (goto-char (point-min))))
   (setq default-directory dir
         magit-refresh-function refresh-func
         magit-refresh-args refresh-args)
@@ -3422,6 +3434,60 @@ before the last command."
                      (magit-invisible-region-start (point))
                    end))))
   (setq disable-point-adjustment t))
+
+;;;; Buffer History
+
+(defun magit-go-backward ()
+  "Move backward in current buffer's history."
+  (interactive)
+  (if help-xref-stack
+      (help-xref-go-back (current-buffer))
+    (error "No previous entry in buffer's history")))
+
+(defun magit-go-forward ()
+  "Move forward in current buffer's history."
+  (interactive)
+  (if help-xref-forward-stack
+      (help-xref-go-forward (current-buffer))
+    (error "No next entry in buffer's history")))
+
+(defun magit-xref-insert-buttons ()
+  (when (and (or (eq magit-show-xref-buttons t)
+                 (apply 'derived-mode-p magit-show-xref-buttons))
+	     (or help-xref-stack help-xref-forward-stack))
+    (insert "\n")
+    (when help-xref-stack
+      (magit-xref-insert-button help-back-label
+                                'magit-xref-backward))
+    (when help-xref-forward-stack
+      (when help-xref-stack
+	(insert " "))
+      (magit-xref-insert-button help-forward-label
+                                'magit-xref-forward))))
+
+(defun magit-xref-insert-button (label type)
+  (magit-with-section (section button label)
+    (insert-text-button label 'type type
+                        'help-args (list (current-buffer)))))
+
+(define-button-type 'magit-xref-backward
+  :supertype 'help-back
+  'mouse-face magit-item-highlight-face
+  'help-echo (purecopy "mouse-2, RET: go back to previous history entry"))
+
+(define-button-type 'magit-xref-forward
+  :supertype 'help-forward
+  'mouse-face magit-item-highlight-face
+  'help-echo (purecopy "mouse-2, RET: go back to next history entry"))
+
+(defun magit-setup-xref (item)
+  (when help-xref-stack-item
+    (push (cons (point) help-xref-stack-item) help-xref-stack)
+    (setq help-xref-forward-stack nil))
+  (when (called-interactively-p 'interactive)
+    (let ((tail (nthcdr 10 help-xref-stack)))
+      (if tail (setcdr tail nil))))
+  (setq help-xref-stack-item item))
 
 ;;; Refresh Machinery
 
@@ -3603,7 +3669,9 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
   (magit-wash-diffstats)
   (and (re-search-forward "^diff" nil t)
        (goto-char (line-beginning-position)))
-  (magit-wash-sequence #'magit-wash-diff))
+  (magit-wash-sequence #'magit-wash-diff)
+  (goto-char (point-max))
+  (magit-xref-insert-buttons))
 
 (defun magit-wash-diff ()
   (magit-with-section (section diff (buffer-substring-no-properties
@@ -4098,20 +4166,7 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
          (propertize " " 'face 'fringe))))))
 
 ;;; Commit Mode
-;;__ FIXME The parens indicate preliminary subsections.
-;;;; (variables, TODO make unnecessary)
-
-(defvar magit-currently-shown-commit nil)
-
-(defvar-local magit-back-navigation-history nil
-  "History items that will be visited by successively going \"back\".")
-(put 'magit-back-navigation-history 'permanent-local t)
-
-(defvar-local magit-forward-navigation-history nil
-  "History items that will be visited by successively going \"forward\".")
-(put 'magit-forward-navigation-history 'permanent-local t)
-
-;;;; (core)
+;;;; Commit Core
 
 (define-derived-mode magit-commit-mode magit-mode "Magit"
   "Mode for looking at a git commit.
@@ -4132,20 +4187,12 @@ from the parent keymap `magit-mode-map' are also available."
   "Name of buffer used to display a commit.")
 
 ;;;###autoload
-(defun magit-show-commit (commit &optional noselect inhibit-history)
+(defun magit-show-commit (commit &optional noselect)
   "Show information about COMMIT."
   (interactive (list (magit-read-rev-with-default
                       "Show commit (hash or ref)")))
   (unless (magit-git-success "cat-file" "commit" commit)
     (error "%s is not a commit" commit))
-  (with-current-buffer (magit-mode-get-buffer-create
-                        magit-commit-buffer-name
-                        'magit-commit-mode)
-    (unless inhibit-history
-      (push (cons default-directory magit-currently-shown-commit)
-            magit-back-navigation-history)
-      (setq magit-forward-navigation-history nil))
-    (goto-char (point-min)))
   (magit-mode-setup magit-commit-buffer-name
                     (if noselect 'display-buffer 'pop-to-buffer)
                     #'magit-commit-mode
@@ -4153,10 +4200,24 @@ from the parent keymap `magit-mode-map' are also available."
                     commit))
 
 (defun magit-show-item-or-scroll-up ()
+  "Update commit or status buffer for item at point.
+
+Either show the commit or stash at point in another buffer,
+or if that buffer is already displayed in the current frame
+and contains information about that commit or stash, then
+instead scroll the buffer up.  If there is no commit or
+stash at point, then prompt for a commit."
   (interactive)
   (magit-show-item-or-scroll 'scroll-up))
 
 (defun magit-show-item-or-scroll-down ()
+  "Update commit or status buffer for item at point.
+
+Either show the commit or stash at point in another buffer,
+or if that buffer is already displayed in the current frame
+and contains information about that commit or stash, then
+instead scroll the buffer down.  If there is no commit or
+stash at point, then prompt for a commit."
   (interactive)
   (magit-show-item-or-scroll 'scroll-down))
 
@@ -4192,113 +4253,57 @@ from the parent keymap `magit-mode-map' are also available."
     "--cc" "-p" (and magit-show-diffstat "--stat")
     magit-diff-options commit))
 
-;;;; (washing)
+;;;; Commit Washing
 
 (defun magit-wash-commit ()
-  (let ((magit-current-diff-range (buffer-substring-no-properties 8 48))
-        (merge-commit))
-    (put-text-property 8 48 'face 'magit-log-sha1)
-    (when (re-search-forward "\\((.+)\\)$" (line-end-position) t)
-      (replace-match (magit-format-ref-labels (match-string 1))) t t nil 1)
-    (cond
-     ((re-search-forward
-       "^Merge: \\([0-9a-fA-F]+\\) \\([0-9a-fA-F]+\\)$" nil t)
-      (setq magit-current-diff-range (cons (cons (match-string 1)
-                                                 (match-string 2))
-                                           magit-current-diff-range))
-      (setq merge-commit t)
-      (magit-make-commit-button (match-beginning 1) (match-end 1))
-      (magit-make-commit-button (match-beginning 2) (match-end 2)))
-     (t
-      (setq magit-current-diff-range
-            (cons (concat magit-current-diff-range "^")
-                  magit-current-diff-range))
-      (setq merge-commit nil)))
-    (re-search-forward "^$")
-    (when magit-show-diffstat
-      (let ((pos (point)))
-        (save-excursion
-          (forward-char)
-          (when (re-search-forward (if merge-commit "^$" "^---$") nil t)
-            (delete-region (match-beginning 0)
-                           (+ (match-end 0) 1))
-            (insert "\n")
-            (magit-wash-diffstats)))))
-    (while (and
-            (re-search-forward
-             "\\(\\b[0-9a-fA-F]\\{4,40\\}\\b\\)\\|\\(^diff\\)" nil 'noerror)
-            (not (match-string 2)))
-      (when (string-equal (magit-git-string "cat-file" "-t" (match-string 1))
-                          "commit")
-        (magit-make-commit-button (match-beginning 1) (match-end 1))))
-    (beginning-of-line)
-    (when (looking-at "^diff")
-      (magit-wash-diffs))
-    (goto-char (point-max))
-    (when magit-commit-mode-show-buttons
-      (insert "\n")
-      (when magit-back-navigation-history
-        (magit-insert-commit-navigation-button
-         "[back]" "Previous commit" 'magit-show-commit-backward))
-      (when magit-forward-navigation-history
-        (when magit-back-navigation-history
-          (insert " "))
-        (magit-insert-commit-navigation-button
-         "[forward]"  "Next commit" 'magit-show-commit-forward)))))
+  (looking-at "^commit \\([a-z0-9]+\\)\\(?: \\(.+\\)\\)?$")
+  (let ((rev  (match-string 1))
+        (refs (match-string 2)))
+    (delete-region (point) (1+ (line-end-position)))
+    (magit-with-section
+        (section headers 'headers
+         (concat (propertize rev 'face 'magit-log-sha1)
+                 (and refs (concat " "(magit-format-ref-labels refs)))
+                 "\n"))
+      (while (re-search-forward "^\\([a-z]+\\): +\\(.+\\)$" nil t)
+        (when (string-match-p (match-string 1) "Merge")
+          (let ((revs (match-string 2)))
+            (delete-region (match-beginning 2) (match-end 2))
+            (dolist (rev (split-string revs))
+              (magit-insert-commit-button rev)
+              (insert ?\s)))))
+      (forward-line)))
+  (forward-line)
+  (let ((bound (save-excursion
+                 (when (re-search-forward "^diff" nil t)
+                   (copy-marker (match-beginning 0)))))
+        (summary (buffer-substring-no-properties
+                  (point) (line-end-position))))
+    (delete-region (point) (1+ (line-end-position)))
+    (magit-with-section (section message 'message (concat summary "\n"))
+      (cond ((re-search-forward "^---" bound t)
+             (goto-char (match-beginning 0))
+             (delete-region (match-beginning 0) (match-end 0)))
+            ((re-search-forward "^.[^ ]" bound t)
+             (goto-char (1- (match-beginning 0)))))))
+  (forward-line)
+  (when magit-show-diffstat
+    (magit-wash-diffstats))
+  (forward-line)
+  (magit-wash-diffs))
 
-(defun magit-make-commit-button (start end)
-  (let ((hash (buffer-substring-no-properties start end)))
-    (delete-region start end)
-    (goto-char start)
-    (magit-with-section (section commit hash)
-      (setf (magit-section-info section) hash)
-      (insert-text-button hash
-                          'help-echo "Visit commit"
-                          'action (lambda (button)
-                                    (save-excursion
-                                      (goto-char button)
-                                      (magit-visit-item)))
-                          'follow-link t
-                          'mouse-face magit-item-highlight-face
-                          'face 'magit-log-sha1))))
-
-;;;; (history)
-
-(defun magit-insert-commit-navigation-button (label help-echo action)
-  (magit-with-section (section button label)
-    (insert-text-button label
-                        'help-echo help-echo
-                        'action action
+(defun magit-insert-commit-button (hash)
+  (magit-with-section (section commit hash)
+    (setf (magit-section-info section) hash)
+    (insert-text-button hash
+                        'help-echo "Visit commit"
+                        'action (lambda (button)
+                                  (save-excursion
+                                    (goto-char button)
+                                    (magit-visit-item)))
                         'follow-link t
-                        'mouse-face magit-item-highlight-face)))
-
-(defun magit-show-commit-backward (&optional ignored)
-  ;; Ignore argument passed by push-button
-  "Show the commit at the head of `magit-back-navigation-history'
-in `magit-commit-buffer-name'."
-  (interactive)
-  (with-current-buffer magit-commit-buffer-name
-    (unless magit-back-navigation-history
-      (error "No previous commit"))
-    (let ((histitem (pop magit-back-navigation-history)))
-      (push (cons default-directory magit-currently-shown-commit)
-            magit-forward-navigation-history)
-      (setq default-directory (car histitem))
-      (magit-show-commit (cdr histitem) nil 'inhibit-history))))
-
-(defun magit-show-commit-forward (&optional ignored)
-  ;; Ignore argument passed by push-button
-  "Show the commit at the head of `magit-forward-navigation-history'
-in `magit-commit-buffer-name'."
-  (interactive)
-  (with-current-buffer magit-commit-buffer-name
-    (unless magit-forward-navigation-history
-      (error "No next commit"))
-    (let ((histitem (pop magit-forward-navigation-history)))
-      (push (cons default-directory magit-currently-shown-commit)
-            magit-back-navigation-history)
-      (setq default-directory (car histitem))
-      (magit-show-commit (cdr histitem) nil 'inhibit-history))))
+                        'mouse-face magit-item-highlight-face
+                        'face 'magit-log-sha1)))
 
 ;;; Commit Mark
 
@@ -5118,6 +5123,7 @@ Return nil if there is no rebase in progress."
        t)))))
 
 (defun magit-rebase-step ()
+  "Initiate or continue a rebase."
   (interactive)
   (let ((rebase (magit-rebase-info)))
     (if rebase
@@ -5155,6 +5161,7 @@ Return nil if there is no rebase in progress."
 ;;;; AM
 
 (defun magit-apply-mailbox (&optional file-or-dir)
+  "Apply a series of patches from a mailbox."
   (interactive "fmbox or Maildir file or directory: ")
   (magit-with-emacsclient magit-server-window-for-rebase
     (magit-run-git-async "am" file-or-dir))
@@ -5797,16 +5804,34 @@ With prefix argument, changes in staging area are kept.
   "Create new stash of working tree and staging area; keep changes in place.
 \('git stash save \"Snapshot...\"; git stash apply stash@{0}')"
   (interactive)
-  (magit-with-refresh
-    (apply 'magit-run-git "stash" "save"
-           `(,@magit-custom-options
-             ,(format-time-string "Snapshot taken at %Y-%m-%d %H:%M:%S"
-                                  (current-time))))
-    (magit-run-git "stash" "apply" "stash@{0}")))
+  (apply 'magit-run-git*
+         `(("stash" "save" ,@magit-custom-options
+            ,(format-time-string "Snapshot taken at %Y-%m-%d %H:%M:%S"
+                                 (current-time)))))
+  (magit-run-git "stash" "apply" "stash@{0}"))
+
+(defun magit-stash-apply (stash)
+  "Apply a stash on top of the current working tree state.
+\('git stash apply stash@{N}')"
+  (interactive (list (magit-read-stash "Apply stash (number): ")))
+  (magit-run-git "stash" "apply" stash))
+
+(defun magit-stash-pop (stash)
+  "Apply a stash on top of working tree state and remove from stash list.
+\('git stash pop stash@{N}')"
+  (interactive (list (magit-read-stash "Pop stash (number): ")))
+  (magit-run-git "stash" "pop" stash))
+
+(defun magit-stash-drop (stash)
+  "Remove a stash from the stash list.
+\('git stash drop stash@{N}')"
+  (interactive (list (magit-read-stash "Drop stash (number): ")))
+  (magit-run-git "stash" "drop" stash))
 
 ;;;; Apply
 
 (defun magit-apply-item ()
+  "Apply the item at point to the current working tree."
   (interactive)
   (magit-section-action (item info "apply")
     ((pending commit)
@@ -5823,7 +5848,7 @@ With prefix argument, changes in staging area are kept.
     ((diff)
      (magit-apply-diff-item item))
     ((stash)
-     (magit-run-git "stash" "apply" info))))
+     (magit-stash-apply info))))
 
 (defun magit-apply-commit (commit)
   (magit-assert-one-parent commit "cherry-pick")
@@ -5866,6 +5891,7 @@ member of ARGS, or to the working file otherwise."
 ;;;; Cherry-Pick
 
 (defun magit-cherry-pick-item ()
+  "Cherry-pick them item at point."
   (interactive)
   (magit-section-action (item info "cherry-pick")
     ((pending commit)
@@ -5874,7 +5900,7 @@ member of ARGS, or to the working file otherwise."
     ((commit)
      (magit-cherry-pick-commit info))
     ((stash)
-     (magit-run-git "stash" "pop" info))))
+     (magit-stash-pop info))))
 
 (defun magit-cherry-pick-commit (commit)
   (magit-assert-one-parent commit "cherry-pick")
@@ -5883,6 +5909,9 @@ member of ARGS, or to the working file otherwise."
 ;;;; Revert
 
 (defun magit-revert-item ()
+  "Revert the item at point.
+The change introduced by the item is reversed in the current
+working tree."
   (interactive)
   (let ((confirm
          (lambda ()
@@ -5946,6 +5975,13 @@ With a prefix arg, do a submodule update --init."
 
 ;;;###autoload
 (defun magit-bisect-start (bad good)
+  "Start a bisect session.
+
+Bisecting a bug means to find the commit that introduced it.
+This command starts such a bisect session by asking for a know
+good and a bad commit.  To move the session forward use the
+other actions from the bisect popup (\
+\\<magit-status-mode-map>\\[magit-key-mode-popup-bisecting])."
   (interactive
    (if (magit-bisecting-p)
        (error "Already bisecting")
@@ -5955,6 +5991,7 @@ With a prefix arg, do a submodule update --init."
 
 ;;;###autoload
 (defun magit-bisect-reset ()
+  "After bisecting cleanup bisection state and return to original HEAD."
   (interactive)
   (when (yes-or-no-p "Reset bisect?")
     (magit-run-git "bisect" "reset")
@@ -5962,16 +5999,25 @@ With a prefix arg, do a submodule update --init."
 
 ;;;###autoload
 (defun magit-bisect-good ()
+  "While bisecting, mark the current commit as good.
+Use this after you have asserted that the commit does not contain
+the bug in question."
   (interactive)
   (magit-run-git-bisect "good"))
 
 ;;;###autoload
 (defun magit-bisect-bad ()
+  "While bisecting, mark the current commit as bad.
+Use this after you have asserted that the commit does contain the
+bug in question."
   (interactive)
   (magit-run-git-bisect "bad"))
 
 ;;;###autoload
 (defun magit-bisect-skip ()
+  "While bisecting, skip the current commit.
+Use this if for some reason the current commit is not a good one
+to test.  This command lets Git choose a different one."
   (interactive)
   (magit-run-git-bisect "skip"))
 
@@ -6049,19 +6095,25 @@ With a prefix argument show the log graph."
                     #'magit-refresh-log-buffer
                     'oneline "HEAD"
                     `(,@(and use-graph (list "--graph"))
-                      ,@magit-custom-options)
+                      ,@magit-custom-options
+                      "--follow")
                     file))
 
 ;;;###autoload
 (defun magit-reflog (ref)
-  (interactive (list (magit-read-rev "Reflog of"
-                                     (or (magit-guess-branch) "HEAD"))))
+  "Display the reflog of the current branch.
+With a prefix argument another branch can be chosen."
+  (interactive (let ((branch (magit-get-current-branch)))
+                 (if (and branch (not current-prefix-arg))
+                     (list branch)
+                   (list (magit-read-rev "Reflog of" branch)))))
   (magit-mode-setup magit-reflog-buffer-name nil
                     #'magit-reflog-mode
                     #'magit-refresh-reflog-buffer ref))
 
 ;;;###autoload
 (defun magit-reflog-head ()
+  "Display the HEAD reflog."
   (interactive)
   (magit-reflog "HEAD"))
 
@@ -6184,6 +6236,7 @@ Other key binding:
 
 ;;;###autoload
 (defun magit-cherry (head upstream)
+  "Show commits in a branch that are not merged in the upstream branch."
   (interactive
    (let  ((head (magit-read-rev "Cherry head" (magit-get-current-branch))))
      (list head (magit-read-rev "Cherry upstream"
@@ -6317,7 +6370,7 @@ Other key binding:
     (let* ((status (magit-section-diff-status diff))
            (file1  (magit-section-info diff))
            (file2  (magit-section-diff-file2 diff))
-           (range  (magit-section-diff-range diff)))
+           (range  (magit-diff-range diff)))
       (cond
        ((memq status '(new deleted typechange))
         (message "Why ediff a %s file?" status))
@@ -6341,6 +6394,15 @@ Other key binding:
   (setq magit-ediff-buffers (list a b c))
   (setq magit-ediff-windows (current-window-configuration))
   (ediff-buffers3 a b c '(magit-ediff-add-cleanup)))
+
+(defun magit-diff-range (diff)
+  (if (eq major-mode 'magit-commit-mode)
+      (let ((revs (split-string
+                   (magit-git-string "rev-list" "-1" "--parents"
+                                     (car (last magit-refresh-args))))))
+        (when (<= (length revs) 3)
+          revs))
+    (magit-section-diff-range diff)))
 
 (defun magit-ediff-add-cleanup ()
   (make-local-variable 'magit-ediff-buffers)
@@ -6391,6 +6453,7 @@ restore the window state that was saved before ediff was called."
 
 ;;;###autoload
 (defun magit-interactive-resolve (file)
+  "Resolve a merge conflict using Ediff."
   (interactive (list (magit-section-case (item info)
                        ((diff) (cadr info)))))
   (require 'ediff)
@@ -6460,6 +6523,9 @@ More information can be found in Info node `(magit)Diffing'
 
 ;;;###autoload
 (defun magit-diff (range &optional working args)
+  "Show differences between in a range.
+You can also show the changes in a single commit by omitting the
+range end, but for that `magit-show-commit' is a better option."
   (interactive (list (magit-read-rev-range "Diff")))
   (magit-mode-setup magit-diff-buffer-name
                     #'pop-to-buffer
@@ -6468,28 +6534,29 @@ More information can be found in Info node `(magit)Diffing'
 
 ;;;###autoload
 (defun magit-diff-working-tree (rev)
+  "Show differences between a commit and the current working tree."
   (interactive (list (magit-read-rev-with-default "Diff working tree with")))
   (magit-diff (or rev "HEAD") t))
 
 ;;;###autoload
 (defun magit-diff-staged ()
-  "Show differences between index and HEAD."
+  "Show differences between the index and the HEAD commit."
   (interactive)
   (magit-diff nil nil (list "--cached")))
 
 ;;;###autoload
 (defun magit-diff-unstaged ()
-  "Show differences between working tree and index."
+  "Show differences between the current working tree and index."
   (interactive)
   (magit-diff nil))
 
 ;;;###autoload
 (defun magit-diff-stash (stash &optional noselect)
+  "Show changes in a stash.
+A Stash consist of more than just one commit.  This command uses
+a special diff range so that the stashed changes actually were a
+single commit."
   (interactive (list (magit-read-stash "Show stash (number): ")))
-  (with-current-buffer (magit-mode-get-buffer-create
-                        magit-commit-buffer-name
-                        'magit-commit-mode)
-    (goto-char (point-min)))
   (magit-mode-setup magit-commit-buffer-name
                     (if noselect 'display-buffer 'pop-to-buffer)
                     #'magit-diff-mode
@@ -6497,6 +6564,8 @@ More information can be found in Info node `(magit)Diffing'
                     (concat stash "^2^.." stash)))
 
 (defun magit-diff-with-mark (range)
+  "Show difference between the marked commit and the one at point.
+If there is no commit at point, then prompt for one."
   (interactive
    (let* ((marked (or magit-marked-commit (error "No commit marked")))
           (current (magit-get-current-branch))
@@ -6560,6 +6629,10 @@ More information can be found in Info node `(magit)Wazzup'
 
 ;;;###autoload
 (defun magit-wazzup (branch)
+  "Show a list of branches in a dedicated buffer.
+Unlike in the buffer created by `magit-branch-manager' each
+branch can be expanded to show a list of commits not merged
+into the selected branch."
   (interactive
    (let ((branch (magit-get-current-branch)))
      (list (if current-prefix-arg
@@ -6644,22 +6717,22 @@ except if LOCAL is non-nil in which case they are written to
       (unless (bolp)
         (insert "\n"))
       (insert file "\n")
-      (write-region nil nil ignore-file))
-    (magit-need-refresh)))
+      (write-region nil nil ignore-file))))
 
 (defun magit-ignore-item (edit &optional local)
   "Ignore the item at point.
 With a prefix argument edit the ignore string."
   (interactive "P")
-  (magit-section-action (item info "ignore")
+  (magit-section-action (item info "ignore" t)
     ((untracked file)
-     (magit-ignore-file (concat "/" info) edit local))
+     (magit-ignore-file (concat "/" info) edit local)
+     (magit-refresh))
     ((diff)
      (let ((file (magit-section-info item)))
        (when (yes-or-no-p
               (format "%s is tracked.  Untrack and ignore? " file))
-         (magit-run-git "rm" "--cached" file)
-         (magit-ignore-file (concat "/" file) edit local))))))
+         (magit-ignore-file (concat "/" file) edit local)
+         (magit-run-git "rm" "--cached" file))))))
 
 (defun magit-ignore-item-locally (edit)
   "Ignore the item at point locally only.
@@ -6687,6 +6760,7 @@ With a prefix argument edit the ignore string."
            (magit-run-git "checkout" "--" file)))))))
 
 (defun magit-discard-item ()
+  "Remove the change introduced by the item at point."
   (interactive)
   (magit-section-action (item info "discard")
     ((untracked file)
@@ -6695,7 +6769,7 @@ With a prefix argument edit the ignore string."
                 (not (file-symlink-p info)))
            (delete-directory info 'recursive)
          (delete-file info))
-       (magit-mode-refresh-buffer)))
+       (magit-refresh)))
     ((untracked)
      (when (yes-or-no-p "Delete all untracked files and directories? ")
        (magit-run-git "clean" "-df")))
@@ -6734,7 +6808,7 @@ With a prefix argument edit the ignore string."
      (error "Can't discard this diff"))
     ((stash)
      (when (yes-or-no-p "Discard stash? ")
-       (magit-run-git "stash" "drop" info)))
+       (magit-stash-drop info)))
     ((branch)
      (when (yes-or-no-p (if current-prefix-arg
                             (concat "Force delete branch [" info "]? ")
@@ -6747,6 +6821,7 @@ With a prefix argument edit the ignore string."
 ;;;; Rename
 
 (defun magit-rename-item ()
+  "Rename the item at point."
   (interactive)
   (magit-section-action (item info "rename")
     ((branch)
@@ -6766,7 +6841,7 @@ a position in a file-visiting buffer."
 		     (prompt-for-change-log-name)))
   (let (buf pos)
     (save-window-excursion
-      (magit-visit-file-item)
+      (magit-visit-item)
       (setq buf (current-buffer)
             pos (point)))
     (save-excursion
@@ -6776,6 +6851,10 @@ a position in a file-visiting buffer."
 
 ;;;###autoload
 (defun magit-add-change-log-entry-other-window (&optional whoami file-name)
+  "Find change log file in other window and add entry and item.
+This differs from `add-change-log-entry-other-window' (which see)
+in that it acts on the current hunk in a Magit buffer instead of
+on a position in a file-visiting buffer."
   (interactive (and current-prefix-arg
                     (list current-prefix-arg
                           (prompt-for-change-log-name))))
@@ -6788,40 +6867,35 @@ a position in a file-visiting buffer."
 With a prefix argument, visit in other window."
   (interactive "P")
   (magit-section-action (item info "visit" t)
-    ((untracked file) (magit-visit-file-item other-window))
-    ((diff)           (magit-visit-file-item other-window))
-    ((diffstat)       (magit-visit-file-item other-window))
-    ((hunk)           (magit-visit-file-item other-window))
+    ((untracked file) (magit-visit-file-item info other-window))
+    ((diff)           (magit-visit-file-item info other-window))
+    ((diffstat)       (magit-visit-file-item info other-window))
+    ((hunk)           (magit-visit-file-item
+                       (magit-section-info (magit-section-parent item))
+                       other-window
+                       (magit-hunk-item-target-line item)
+                       (current-column)))
     ((commit)         (magit-show-commit info))
     ((stash)          (magit-diff-stash info))))
 
-(defun magit-visit-file-item (&optional other-window)
-  (let (file line column)
-    (setq file (magit-section-action (item info "visit-file" t)
-                 ((untracked file) info)
-                 ((diff)           (magit-section-info item))
-                 ((diffstat)       (magit-section-info item))
-                 ((hunk)
-                  (setq line (magit-hunk-item-target-line item)
-                        column (current-column))
-                  (magit-section-info (magit-section-parent item)))))
-    (unless file
-      (error "Can't get pathname for this file"))
-    (unless (file-exists-p file)
-      (error "Can't visit deleted file: %s" file))
-    (if (file-directory-p file)
-        (if (equal (magit-get-top-dir file)
-                   (magit-get-top-dir))
-            (magit-dired-jump other-window)
-          (magit-status file (not other-window)))
-      (if other-window
-          (find-file-other-window file)
-        (find-file file))
-      (when line
-        (goto-char (point-min))
-        (forward-line (1- line))
-        (when (> column 0)
-          (move-to-column (1- column)))))))
+(defun magit-visit-file-item (file &optional other-window line column)
+  (unless file
+    (error "Can't get pathname for this file"))
+  (unless (file-exists-p file)
+    (error "Can't visit deleted file: %s" file))
+  (if (file-directory-p file)
+      (if (equal (magit-get-top-dir file)
+                 (magit-get-top-dir))
+          (magit-dired-jump other-window)
+        (magit-status file (not other-window)))
+    (if other-window
+        (find-file-other-window file)
+      (find-file file))
+    (when line
+      (goto-char (point-min))
+      (forward-line (1- line))
+      (when (> column 0)
+        (move-to-column (1- column))))))
 
 (defun magit-hunk-item-target-line (hunk)
   (save-excursion
@@ -6873,7 +6947,7 @@ return the buffer, without displaying it."
        ((hunk)   (setq section (magit-section-parent item)))
        ((diff)   (setq section item)))
      (if section
-         (setq rev  (cdr (magit-section-diff-range section))
+         (setq rev  (cdr (magit-diff-range section))
                file (magit-section-info section))
        (unless rev
          (setq rev (magit-get-current-branch))))
@@ -6922,6 +6996,9 @@ return the buffer, without displaying it."
 ;;;; Mark
 
 (defun magit-mark-item (&optional unmark)
+  "Mark the commit at point.
+Some commands act on the marked commit by default or use it as
+default when prompting for a commit."
   (interactive "P")
   (if unmark
       (setq magit-marked-commit nil)
@@ -6966,6 +7043,7 @@ from the parent keymap `magit-mode-map' are also available.")
 
 ;;;###autoload
 (defun magit-branch-manager ()
+  "Show a list of branches in a dedicated buffer."
   (interactive)
   (magit-mode-setup magit-branches-buffer-name nil
                     #'magit-branch-manager-mode
@@ -7215,6 +7293,8 @@ blame to center around the line point is on."
 ;;;; Maintenance Tools
 
 (defun magit-describe-item ()
+  "Show information about the section at point.
+This command is intended for debugging purposes."
   (interactive)
   (let* ((section (magit-current-section))
          (head-beg (magit-section-beginning section))

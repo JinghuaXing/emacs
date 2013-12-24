@@ -222,6 +222,8 @@
     (cancel-timer save-timer)
     ))
 
+(add-to-list 'desktop-modes-not-to-save 'dired-mode)
+
 (defun insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)
 (defalias 'ss 'switch-session)
 (provide 'my-desktop)

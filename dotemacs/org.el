@@ -98,9 +98,9 @@
 
 (require 'org-crypt)
 (org-crypt-use-before-save-magic)
-(add-hook 'org-mode-hook
-   (lambda ()
-     (org-decrypt-entries)))
+;; (add-hook 'org-mode-hook
+;;    (lambda ()
+;;      (org-decrypt-entries)))
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 ;; (setq org-crypt-key "wei.sun")
 ;; (setq org-crypt-key nil)
@@ -154,7 +154,7 @@
 ;; Set to <your Dropbox root directory>/MobileOrg.
 (setq org-mobile-directory "~/Dropbox/MobileOrg")
 
-
+(require 'ox-html)
 (require 'ox-publish)
 (setq org-publish-project-alist
       '(
@@ -163,10 +163,9 @@
 	 :base-extension "org"
 	 :publishing-directory "~/.github.pages/cafebabe"
 	 :recursive t
-	 :publishing-function org-publish-org-to-html
+	 :publishing-function org-html-publish-to-html
 	 :headline-levels 4             ; Just the default for this project.
 	 :auto-preamble t
-	 :exclude ".*password.org"
 	 :auto-sitemap t
 	 :sitemap-sort-folders nil    
 	 )

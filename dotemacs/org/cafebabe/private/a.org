@@ -1,0 +1,16 @@
+* A                                                          :crypt:
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+jA0EAwMCkd02i7bx9rpgycEGni2TXy3BZEorAoeFMA4PIZ9wLdMYe2Y3PckQIUuh
+C4PQusg2WYAFQBvMoMcUTGDdZ4B/1Ldep79tzhdkDWCHlm8GE2/O95HDCnV6f7HT
+wIc8k0xbCvroGfe0RLIE3OHYIWfSm68evuIF8upFNINnmCE9FyTSVs5QfQoGRFCS
+mo9/S84KMv/wbwW+G7XLslJ6W8tAwaaGUBS5qpYrPpFgSLX76t7VzNxmkJ5INaTX
+7W8kCJX9rIaYyi54GsaNj4qIkZuhjUqCGYAFNqSVf4cccNNSkIlKvLjkZsvfBCOv
+gbaV216H2BDTLow4WSsMDd+QrhyHCX+4ExPJeNFV+5gC1BxfGxpMcnjaTytUSwIf
+v9tmSRNw8Isfyng6eiuVf8U+dov+dsWF7ukd9bQ9sBhekHVeAZ6Tvt4FdaZxQu6Y
+e/jiETve04EtCb1OITiBLprmtvagLhPD+U75tI28q4kCkgfGfJqiDNWdBvhjWo/I
+etelCXn300ljl9AvyFAGk/jbEu5UOHbYvYXCr3Zn2A+n4TGDu3z019Sc8MBu3VQK
+XHwa1TkOat1UkpVD5ZiFDCB+D8Ki5WpShkNXIO+lYwGbOz0tpWCwAA==
+=AOh6
+-----END PGP MESSAGE-----

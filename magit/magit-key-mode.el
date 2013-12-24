@@ -87,6 +87,7 @@
       ("P" "Pushing"         magit-key-mode-popup-pushing)
       ("o" "Submoduling"     magit-key-mode-popup-submodule)
       ("r" "Rewriting"       magit-key-mode-popup-rewriting)
+      ("R" "Rebasing"        magit-rebase-step)
       ("s" "Show Status"     magit-status)
       ("S" "Stage all"       magit-stage-all)
       ("t" "Tagging"         magit-key-mode-popup-tagging)
@@ -209,8 +210,12 @@
     (stashing
      (man-page "git-stash")
      (actions
+      ("v" "View" magit-diff-stash)
       ("z" "Save" magit-stash)
-      ("s" "Snapshot" magit-stash-snapshot))
+      ("s" "Snapshot" magit-stash-snapshot)
+      ("a" "Apply" magit-stash-apply)
+      ("p" "Pop" magit-stash-pop)
+      ("k" "Drop" magit-stash-drop))
      (switches
       ("-k" "Keep index" "--keep-index")
       ("-u" "Include untracked files" "--include-untracked")
