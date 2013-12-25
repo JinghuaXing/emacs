@@ -98,9 +98,9 @@
 
 (require 'org-crypt)
 (org-crypt-use-before-save-magic)
-;; (add-hook 'org-mode-hook
-;;    (lambda ()
-;;      (org-decrypt-entries)))
+(add-hook 'org-mode-hook
+   (lambda ()
+     (org-decrypt-entries)))
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 ;; (setq org-crypt-key "wei.sun")
 ;; (setq org-crypt-key nil)

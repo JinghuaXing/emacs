@@ -1,5 +1,5 @@
 #+TITLE: JVM
-* Java VM Specification 
+* Java VM
 ** String.intern()
 see also [[constant pool]]
 
@@ -272,3 +272,67 @@ similar with c++'s call-by-reference and call-by-value; that is, `invokespecial`
 direct addressing
 *** invokeinterface
 contant-pool would be iterated to find the interface method, since an object can inhereit multiply interface;
+** GC
+*** 分代 GC
+**** young gen
+***** eden
+***** survior
+**** old gen
+大对象直接进入 old gen
+**** perm gen
+*** GC 算法
+**** mark and sweep
+young gen 通常使用 copy 算法
+**** copy
+old gen 通常使用 mark and sweep 算法
+*** Finalizer And Reference
+**** finalize() 导致两次 GC
+http://www.fasterj.com/articles/finalizer1.shtml
+
+1. 对于有 finalize() 的类, jvm 会给每个类生成一个 FinalizerReference
+2. GC 时, 每个 FinalizerReference 会被检查, 若 referent 已经被
+   unmarked, 则
+   1. 将 referent 重新置为 marked
+   2. 将 referent enqueue 到 FinalizerQueue 中, 后面 Finalizer Thread
+      会负责调用 finalize(), 并再次 unmark 该 referent
+   3. 再次 GC 时, referent 才会真正被 GC
+
+Finalizer 的具体实现和使用 PhantomReference 避免 finalizer 非常类似, 只
+不过是由 jvm 维护着一个 FinalizerReference 以及一个 FinalizerQueue,并且
+调度 Finalizer Thread 在 FinalizerQueue 上阻塞(通过 remove) 以便调用
+finalizer
+
+***** FinalizerReference
+***** Finalizer Thread
+**** 使用 PhantomReference 避免 finalize()
+http://java.dzone.com/articles/finalization-and-phantom
+
+***** 使用 WeakReference 是否也可以?
+好像不行, dvm 里 GC 时处理各处 reference 的代码:
+#+BEGIN_SRC java
+  // clearWhiteReferences 是将 references 数组中每个 reference
+  // 进行如下处理: 若 referent 为 unmarked, 则将 reference enqueue 到
+  // 相应的 queue 中
+  clearWhiteReferences(softReferences);
+  clearWhiteReferences(weakReferences);
+  
+  // enqueueFinalizerReferences 会负责将 finalizerReferences 中 unmarked
+  // 的 reference 置于 FinalizerQueue 中, 以调度 finalize()
+  enqueueFinalizerReferences(finalizerReferences);
+  
+  // 由于 enqueueFinalizerReferences 会调用 referent 被 mark, 进而
+  // 导致可能有新的 weak, soft, phantom reference 对象变为 marked, 所以
+  // 重新调用一个 clearWhiteXxx
+  clearWhiteReferences(softReferences);
+  clearWhiteReferences(weakReferences);
+  
+  // 清理 phantomReferences
+  clearWhiteReferences(phantomReferences);
+    
+#+END_SRC
+由以上代码可知, weakReferences, softReferences 在 enqueue 时, 后续的
+enqueueFinalizerReferences 有可能导致 weakReferences 的 referent 重新
+变为 marked, 结果就是 weakReferences 的 queue 读取出来的
+weakReferences 有可能其 referent 并没有被 finalize .... 不过, 若
+referent 本身并不是 finalizable, 则 enqueueFinalizerReferences 并不能
+对其产生影响, 所以这时 weakReferences, phantomReferences 应该是一样的

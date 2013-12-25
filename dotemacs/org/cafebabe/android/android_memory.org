@@ -207,7 +207,10 @@ activity, 并做一些清理的动作.
 2. 根据 MAX_HIDDEN_APPS kill 某些后台应用
 3. 对剩下来的某些应用调用 onTrimMemory, 并指定不同的 trim level
 *** low memory killer
-
+** java memory
+*** GC
+android GC 不使用逐代回收(即不区分 young, old, perm gen), 默认情况下使
+用 mark and sweep 算法, 可以在编译时选择使用 copying 算法.
 ** misc
 *** bionic optimization for malloc ?
 #+BEGIN_SRC c

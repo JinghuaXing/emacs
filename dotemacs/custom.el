@@ -237,7 +237,7 @@
  '(winner-ring-size 5)
  '(xgtags-goto-tag (quote never))
  '(xgtags-show-paths (quote expanded))
- '(yas-snippet-dirs (quote ("/home/sunway/.elisp/yasnippet/snippets")) nil (yasnippet)))
+ )
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
