@@ -264,8 +264,8 @@
 (setq-default ispell-program-name "aspell")
 (ispell-change-dictionary "american" t)
 
-(require 'smooth-scroll)
-(smooth-scroll-mode t)
+;; (require 'smooth-scroll)
+;; (smooth-scroll-mode t)
 (global-set-key (kbd "C-S-n")  'scroll-up-1)
 (global-set-key (kbd "C-S-p")  'scroll-down-1)
 

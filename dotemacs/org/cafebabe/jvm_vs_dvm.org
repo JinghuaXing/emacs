@@ -1,0 +1,20 @@
+#+TITLE: JVM Vs DVM
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* JVM Vs DVM
+** GC
+- JVM 使用逐代 GC, 并支持各种 GC 算法如 serial (mark & sweep), copying,
+  parallel (parnew, parold), cms 等,
+- DVM 不使用逐代 GC, 默认只支持 mark & sweep, 通过编译开发可以支持 copying
+- JVM 使用对象头的 mark work 有标记是否 mark
+- DVM 使用 markbits 内存位图来保存 mark 信, 节省内存.
+
+** 常量池
+** 文件格式
+- dex vs. class
+** 执行
+- DVM 通过 odex 在编译时进行 class 的解析 (解析符号引用, 指令替换等)
+- DVM 通过 zygote 加快 java 进程的创建, 并节省内存.
+** 字节码
+*** JVM 基于栈
+*** DVM 基于寄存器

@@ -296,7 +296,7 @@ Server initiate one BBinder, and deliver it to the client using Intent.
 		       Kernel mode	 +------------------------------------+----------------------+-------------+
 					 |				      V		  	     |		   |
 					 |     +----------------+          +--+-------------+	     |		   |
-				       	 |     | binder_proc B 	|   +----->+ binder_buffer  +--------+		   |
+				       	 |     | binder_proc A 	 |   +----->+ binder_buffer  +--------+		   |
  	       	       	       	       	 |     +----------------+   |  	   +----------------+	mmap to B process  |
 					 |     |  allocated_buf	+---+  	   |  parcel data   |			   |
 					 |     |     	       	|      	   |  from A   	    |			   |
