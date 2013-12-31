@@ -528,7 +528,9 @@ adb shell dumpstate
 CLOSED: [2013-12-17 Tue 13:37]
 - State "DONE"       from "TODO"       [2013-12-17 Tue 13:37]
 [2013-12-13 Fri 16:01]
-* TODO use PhantomReference as cleanup                                 :work:
+* DONE use PhantomReference as cleanup                                 :work:
+CLOSED: [2013-12-31 Tue 18:12]
+- State "DONE"       from "TODO"       [2013-12-31 Tue 18:12]
 1. why not use WeakReference as cleanup function? 
    - weak-reachable and phantom-reachable
 2. Reference.clear()?
