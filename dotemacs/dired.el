@@ -103,22 +103,11 @@
 ;; 					     (kill-buffer (current-buffer))
 ;; 					     ))
 
-(define-key dired-mode-map (kbd "f") (lambda (wildcard)
-				       (interactive "MWildcard: ")
-				       (find-dired "./" (concat "-iname " "\"*" wildcard "*\"" ))
-				       ))
-
-;; (define-key dired-mode-map (kbd "F") (lambda (reg)
-;; 				       (interactive "MReg: ")
-;; 				       (kill-new reg)
-;; 				       (find-grep-dired "./" reg)
-;; 				       )
-;;   )
-(define-key dired-mode-map (kbd "F") (lambda ()
-				       (interactive)
-				       (call-interactively 'ack)
-				       )
-  )
+;; (define-key dired-mode-map (kbd "f") (lambda (wildcard)
+;; 				       (interactive "MWildcard: ")
+;; 				       (find-dired "./" (concat "-iname " "\"*" wildcard "*\"" ))
+;; 				       ))
+(define-key dired-mode-map (kbd "F") 'dired-do-find-marked-files)
 
 
 ;;(define-key dired-mode-map (kbd "h") 'dired-hide-subdir)
@@ -152,9 +141,6 @@
     (previous-line 1)
     )
   )
-;;(global-unset-key (kbd "C-x C-j"))
-;;(define-key dired-mode-map (kbd "RET") nil)
-;;(define-key dired-mode-map (kbd "i") nil)
 
 (defun sunway/dired-sort ()
   "Dired sort hook to list directories first."

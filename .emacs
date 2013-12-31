@@ -366,7 +366,5 @@
 
 (require 'ascii)
 
-(require 'smartparens-config)
-(smartparens-global-mode t)
-;; (electric-pair-mode t)
+(electric-pair-mode t)
 

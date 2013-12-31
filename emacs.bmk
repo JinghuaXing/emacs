@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("snippet"
+(("yong"
+ (filename . "/ssh:apadmin@yong:/home/apadmin/code/")
+ (front-context-string . "2.3.5_lc_dev\n  d")
+ (rear-context-string . " 4 Sep  9 12:27 ")
+ (position . 99))
+("snippet"
  (filename . "~/.elisp/yasnippet/snippets/")
  (front-context-string . "java-mode\n  drwx")
  (rear-context-string . " 4 Mar 27 16:31 ")
