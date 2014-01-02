@@ -19,7 +19,6 @@
 
 (load-file "~/.elisp/dotemacs/eshell.el")
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
-(load-file "~/.elisp/dotemacs/mew.el")
 (load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
@@ -104,6 +103,10 @@
 (setq calendar-mark-diary-entries-flag t)
 (setq calendar-mark-holidays-flag t)
 (setq calendar-week-start-day 1)
+(require 'cal-china-x)
+(setq mark-holidays-in-calendar t)
+(setq cal-china-x-important-holidays cal-china-x-chinese-holidays)
+(setq calendar-holidays cal-china-x-important-holidays)
 
 ;; (setq calendar-latitude +39.92)
 ;; (setq calendar-longitude +116.46)
@@ -353,9 +356,6 @@
 
 ;; (global-linum-mode t)
 
-(require 'edit-server)
-(edit-server-start)
-
 ;; (require 'golden-ratio)
 ;; (golden-ratio-mode 1)
 
@@ -366,5 +366,7 @@
 
 (require 'ascii)
 
-(electric-pair-mode t)
+(require 'autopair)
+(autopair-global-mode)
 
+(setq default-mode-line-format (append default-mode-line-format '((:eval (luna-date (calendar-current-date))))))

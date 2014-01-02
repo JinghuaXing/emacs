@@ -535,3 +535,5 @@ CLOSED: [2013-12-31 Tue 18:12]
    - weak-reachable and phantom-reachable
 2. Reference.clear()?
 [2013-12-24 Tue 18:33]
+* TODO how to put a process in a specific group                        :work:
+[2014-01-03 Fri 18:02]

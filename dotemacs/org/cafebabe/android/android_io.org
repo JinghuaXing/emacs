@@ -1,0 +1,190 @@
+#+TITLE: Android IO
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Android IO
+** IO 其实很快
+
+#+BEGIN_EXAMPLE
+/dev/sdc3 是 PC 上的一个 HDD (普通硬盘)
+~/source/android@sunway-x230> sudo hdparm -t /dev/sdc3
+
+/dev/sdc3:
+ Timing buffered disk reads: 116 MB in  3.04 seconds =  38.21 MB/sec
+
+/dev/sda2 是 PC 上的一个 SSD (固态硬盘)
+~/source/android@sunway-x230> sudo hdparm -t /dev/sda2
+
+/dev/sda2:
+ Timing buffered disk reads: 1034 MB in  3.00 seconds = 344.39 MB/sec
+#+END_EXAMPLE
+
+Linux 系统下 IO 其实很快, 因为:
+
+1. page cache
+
+   kernel 中有一个 page cache 机制, 读取一个文件时, 会有许多内存被用来
+   做 cache, 称为 page cache (free 命令中 buffer/cache 一项指得就是
+   page cache), page cache 的 page 指固定大小的页, 例如 4KB, 一个文件
+   被读取时,  kernel 中会有一棵 radix tree 与文件的 inode 对应, 叶节点
+   就是一个一个的 page
+
+   - 当反复读一个文件时, 会因为 page cache 命中而节省很多时间.
+   - 每次读一个字节时, 会因为 page cache 使得不必
+     那么频繁的调度磁盘, 因为4K数据都已经读到 page cache 里了. 
+
+   
+1. IO 预读
+
+   顺序读取文件时, kernel 会知道 (猜的或者上层提供一些 advise) 下一次
+   要读取哪些数据, 它会帮应用提前读到 page cache 中
+
+2. DMA
+
+   磁盘控制器可以直接把磁盘数据写以指定的内存, 不需要消耗 CPU
+
+** mmap 使 IO 更快
+
+mmap 是 linux 的一个系统调用, 简单的说, 它可以把一个文件的全部或部分内
+容映射到虚拟内存中, 然后函数对这段内存的读写会反映到对应的文件上. 
+
+复杂的说, mmap 是 linux 的一个基础性的系统调用, 实际上, 可执行文件的加
+载, 内存的分配, 共享库的加载等, 统统都信赖 mmap. 
+
+当 mmap 用来替代显式的 IO 时, page cache, 预读等还是可以一样的起作用.
+但有一点不同的是, mmap 可以节省一次内存 copy
+
+使用显式的 IO 读取 1K 数据:
+#+BEGIN_SRC c
+  char buffer[1024] = {0};
+  read(fd, buffer, 1024);
+#+END_SRC
+
+
+使用 mmap 读取 1k 数据:
+#+BEGIN_SRC c
+  char* base = mmap(file, ...);
+  /* base -> base+1K 即是文件前 1K 的内容 */
+#+END_SRC
+
+之所以说 mmap 节省一次 copy, 是因为 mmap 返回的指针指向的虚拟内存所对
+应的物理内存直接就是 page cache, 而 显式的 IO 读取内容到 buffer 时相当
+把 page cache 的内存复制到了 buffer.
+
+打个比方, 显式 IO 相当于
+#+BEGIN_SRC c
+memcpy(*buffer, page_cache, 1024)
+#+END_SRC
+
+而 mmap 相当于
+#+BEGIN_SRC c
+char* buffer = page_cache
+#+END_SRC
+
+** mmap 不仅更快
+
+mmap 不仅更快, 而且因为 `char* buffer = page_cache` 这种关系, 还会更省
+内存, 因为对同一个文件, page_cache 只有一份, 任何使用 mmap 访问这个文
+件的进程都是共享的这一份 page_cache.
+
+另外, 因为 `char* buffer = xxx` 这种关系, 它可以用来做进程间通信, 此时
+xxx 可能就不是 page_cache 了, 而是 kernel分配的一个物理内存. 实际上,
+android 中的 binder, ashmem 这些进程间通信机制都是靠 mmap 实现的.
+
+** Zero Copy
+
+zero copy 就更高级了, 可以避免许多 kernel 与 kernel, kernel 与 user 之
+间的 copy, 比如, cp 命令的实现的一般是:
+
+#+BEGIN_SRC c
+  int src_fd = open (src, O_RDONLY);
+  int dst_fd = open(dst, O_WRONLY|O_CREAT, 777);
+  char buffer [1024] = {0};
+  int i = 0;
+  while (i = read(src_fd, buffer, 1024)) {
+      write(dst_fd, buffer, i);
+  }
+  close(dst_fd);
+  close(src_fd);
+#+END_SRC
+
+这个程序的问题在于, src 文件的内容首先被读到 page_cache, 然后 copy 到
+用户态的 buffer, 然后又被写到 dst 对应的 page_cache 中, 然后才被 flush
+到磁盘. 
+
+使用 zero copy 技术, page_cache 与用户态的 buffer 之间的 copy 是可以避
+免的. 例如通过 sendfile/splice syscall
+
+zero copy 一般程序是用不上的, 因为 CPU 闲着也是闲着, 不过, 对于 Gbit以
+太网 这种高速设备, CPU 可能不用 zero copy 的话会忙死 ...
+
+** 使用 IO 缓冲
+
+虽然 IO 其实很快, 但 IO 缓冲不当会极大的影响 IO 性能.
+
+#+BEGIN_SRC c
+  char buffer [1] = {0};
+  while (read(fd, buffer, 1)) {
+      
+  }
+  
+#+END_SRC
+以上代码会很慢, 倒不是因为 page cache 或预读不好使, 唯一的原因是: 
+
+*read 作为一个 syscall, 被调用的次数太多...*
+
+相比之下, 下面这段代码会快得多:
+
+#+BEGIN_SRC c
+  char buffer [1024] = {0};
+  while (read(fd, buffer, 1024)) {
+      
+  }
+  
+#+END_SRC
+
+
+虽然 Java 以慢注称, 但 Java IO 并不是特别慢 (和 c 大致相当) 但 IO 类使用不当时也可能
+会导致 IO 很慢
+
+#+BEGIN_SRC java
+  FileInputStream fis = new FileInputStream("xxx");
+  int i = 0;
+  while ((i = fis.read()) != -1) {
+      
+  }
+#+END_SRC
+
+以上代码会慢死, 原因同前面接到的 c 的例子.
+
+你应该使用如下的代码:
+
+#+BEGIN_SRC java
+  FileInputStream fis = new FileInputStream("xxx");
+  int i = 0;
+  byte[] buffer = new byte[1024];
+  while ((i = fis.read(buffer, 0, 1024)) != -1) {
+        
+  }
+#+END_SRC
+
+如果你不得不一个字节一个字节的读取, 应该自己做缓冲或使用
+BufferedInputStream
+
+#+BEGIN_SRC java
+  BufferedInputStream fis = new BufferedInputStream(new FileInputStream("xxx"));
+  int i = 0;
+  while ((i = fis.read()) != -1) {
+          
+  }
+#+END_SRC
+
+另外, 由于 open syscall 的 O_DIRECT 选项会禁用 page_cache 缓冲, 所以
+direct IO 也会导致 IO 变慢.
+
+** Android BlockGuard
+
+Android BlockGuard 可以被配置成每次 IO 调用时都做一些检查, 会极大的影
+响 Java 层 IO 的性能, 如果必要, 禁用 BlockGuard 可以给 Java IO 带来数
+十倍的性能提升. 
+
+ps. 据说在 user 版本中 BlockGuard 会被禁用, 待验证...
