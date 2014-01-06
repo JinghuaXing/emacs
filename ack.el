@@ -390,7 +390,7 @@ minibuffer:
                             (or directory default-directory))))
     ;; Change to the compilation buffer so that `ack-buffer-name-function' can
     ;; make use of `compilation-arguments'.
-    (with-current-buffer (compilation-start (concat "ack -i '" command-args "'")  'ack-mode)
+    (with-current-buffer (compilation-start (concat ack-command " -i '" command-args "'")  'ack-mode)
       (when ack-buffer-name-function
         (rename-buffer (funcall ack-buffer-name-function "ack")))))
   (switch-to-buffer-other-window "*ack*")

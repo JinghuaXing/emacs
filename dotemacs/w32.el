@@ -7,5 +7,6 @@
 					(interactive)
 ;;					(w32-send-sys-command #xf030)
 					) )
+      (setq ack-command "perl C:/MinGW/msys/1.0/bin/ack")
       )
   )
