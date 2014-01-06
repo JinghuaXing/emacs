@@ -1,6 +1,6 @@
 ;;; smart-operator.el --- Insert operators with surrounding spaces smartly
 
-;; Copyright (C) 2004, 2005, 2007-2012 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012 William Xu
 
 ;; Author: William Xu <william.xwl@gmail.com>
 ;; Version: 4.0
@@ -23,12 +23,15 @@
 
 ;;; Commentary:
 
-;; Smart Operator mode is a minor mode which automatically inserts
-;; surrounding spaces around operator symbols.  For example, `='
-;; becomes ` = ', `+=' becomes ` += '.  This is most handy for writing
-;; C-style source code.
+;; This extension tries to insert operators with surrounding spaces smartly.
+;; e.g., `=' becomes ` = ', `+=' becomes ` += '.  This is handy for writing
+;; C-style sources.
+
+;; To use, put this file to your load-path and the following to your
+;; ~/.emacs:
+;;             (require 'smart-operator)
 ;;
-;; Type `M-x smart-operator-mode' to toggle this minor mode.
+;; Then `M-x smart-operator-mode' for toggling this minor mode.
 
 ;;; Acknowledgements
 
@@ -44,7 +47,7 @@
 
 (defvar smart-operator-mode-map
   (let ((keymap (make-sparse-keymap)))
-    (define-key keymap "=" 'smart-operator-self-insert-command)
+    (define-key keymap "=" 'smart-operator-=)
     (define-key keymap "<" 'smart-operator-<)
     (define-key keymap ">" 'smart-operator->)
     (define-key keymap "%" 'smart-operator-%)
@@ -54,7 +57,7 @@
     (define-key keymap "/" 'smart-operator-/)
     (define-key keymap "&" 'smart-operator-&)
     (define-key keymap "|" 'smart-operator-self-insert-command)
-    ;; (define-key keymap "!" 'smart-operator-self-insert-command)
+    (define-key keymap "!" 'smart-operator-self-insert-command)
     (define-key keymap ":" 'smart-operator-:)
     (define-key keymap "?" 'smart-operator-?)
     (define-key keymap "," 'smart-operator-\,)
@@ -66,7 +69,7 @@
 (defvar smart-operator-double-space-docs t
   "Enable double spacing of . in document lines - e,g, type '.' => get '.  '")
 
-(defvar smart-operator-docs t
+(defvar smart-operator-docs nil
   "Enable smart-operator in strings and comments")
 
 ;;;###autoload
@@ -88,16 +91,19 @@
 (defvar smart-operator-list
   '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":" "?" "," "."))
 
-(defun smart-operator-insert (op &optional only-where)
+(defun smart-operator-insert (op &optional only-where newline-&-indent)
   "See `smart-operator-insert-1'."
   (delete-horizontal-space)
   (cond ((and (smart-operator-lispy-mode?)
-           (not (smart-operator-document-line?)))
+              (not (smart-operator-document-line?)))
          (smart-operator-lispy op))
-        ((not smart-operator-docs)
+        ((and
+          (not smart-operator-docs)
+          (smart-operator-document-line?))
          (smart-operator-insert-1 op 'middle))
         (t
-         (smart-operator-insert-1 op only-where))))
+         (smart-operator-insert-1 op only-where)))
+  (if newline-&-indent (newline-and-indent)))
 
 (defun smart-operator-insert-1 (op &optional only-where)
   "Insert operator OP with surrounding spaces.
@@ -160,11 +166,11 @@ so let's not get too insert-happy."
               (concat "\\("
                       (regexp-opt
                        '("#include" "vector" "deque" "list" "map" "stack"
-                          "multimap" "set" "hash_map" "iterator" "template"
-                          "pair" "auto_ptr" "static_cast"
-                          "dynmaic_cast" "const_cast" "reintepret_cast"
+			 "multimap" "set" "hash_map" "iterator" "template"
+			 "pair" "auto_ptr" "static_cast"
+			 "dynmaic_cast" "const_cast" "reintepret_cast"
 
-                          "#import"))
+			 "#import"))
                       "\\)\\ *")
               (line-beginning-position)))
         (eq major-mode 'sgml-mode))
@@ -182,6 +188,13 @@ so let's not get too insert-happy."
            (smart-operator-insert ":" 'middle)))
         ((memq major-mode '(haskell-mode))
          (smart-operator-insert ":"))
+        ((memq major-mode '(clojure-mode))
+         (smart-operator-insert ":" 'before))
+        ((and (memq major-mode '(python-mode))
+              (looking-back "\\(if\\|while\\|def\\|class\\|except\\|for\\|try\\|else\\).*"))
+         (smart-operator-insert ":" 'middle t))
+        ((memq major-mode '(ruby-mode erlang-mode))
+         (insert ":"))
         (t
          (smart-operator-insert ":" 'after))))
 
@@ -194,7 +207,7 @@ so let's not get too insert-happy."
   "See `smart-operator-insert'."
   (interactive)
   (cond ((and smart-operator-double-space-docs
-          (smart-operator-document-line?))
+	      (smart-operator-document-line?))
          (smart-operator-insert "." 'after)
          (insert " "))
         ((or (looking-back "[0-9]")
@@ -205,12 +218,12 @@ so let's not get too insert-happy."
                   (looking-back "[a-z\)]"))
                  (and
                   (memq major-mode '(js-mode js2-mode))
-                  (looking-back "[a-z\)$]"))))
-             (insert "."))
+                  (looking-back "[a-z\)$_]"))))
+	 (insert "."))
         ((memq major-mode '(cperl-mode perl-mode ruby-mode))
          ;; Check for the .. range operator
          (if (looking-back ".")
-               (insert ".")
+	     (insert ".")
            (insert " . ")))
         (t
          (smart-operator-insert "." 'after)
@@ -259,6 +272,16 @@ so let's not get too insert-happy."
                 (smart-operator-insert "*" 'before))
                (t
                 (smart-operator-insert "*"))))
+	((memq major-mode '(python-mode))
+	 ;; handling unpacking tuple and list.
+	 (cond 
+	  ((looking-back "[:,\\[=] *")
+	   (insert "*"))
+	  ((looking-back "\*")
+	   (insert "*"))
+	  ((looking-back "[a-zA-Z0-9]+\(")
+	   (insert "*"))
+	  (t (smart-operator-insert "*"))))
         (t
          (smart-operator-insert "*"))))
 
@@ -320,8 +343,8 @@ so let's not get too insert-happy."
         ;; If this is a comment or string, we most likely
         ;; want no spaces - probably string formatting
         ((and (memq major-mode '(python-mode))
-                    (smart-operator-document-line?))
-               (insert "%"))
+	      (smart-operator-document-line?))
+	 (insert "%"))
         (t
          (smart-operator-insert "%"))))
 
@@ -350,17 +373,16 @@ so let's not get too insert-happy."
         (t
          (smart-operator-insert "/"))))
 
-;;;; ChangeLog:
-
-;; 2012-10-08  Chong Yidong  <cyd@gnu.org>
-;; 
-;; 	Fix copyright header and commentary for smart-operator.el
-;; 
-;; 2012-10-06  Stefan Monnier  <monnier@iro.umontreal.ca>
-;; 
-;; 	Add smart-operator.
-;; 
-
+(defun smart-operator-= ()
+  "See `smart-operator-insert'."
+  (interactive)
+  ;; PEP 8 dictates that KW args or default parameters
+  ;; get entered as foo(baz=bar)
+  (cond ((and (memq major-mode '(python-mode))
+              (looking-back "\([\*a-zA-Z0-9, =]+"))
+         (insert "="))
+        (t
+         (smart-operator-insert "="))))
 
 (provide 'smart-operator)
 

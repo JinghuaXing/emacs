@@ -322,10 +322,7 @@
 (setq auto-mode-alist (append '(("\\.gp\\'" . gnuplot-mode)
 				("\\.gnuplot\\'" . gnuplot-mode)
 				) auto-mode-alist))
-;;  (global-set-key [(f9)] 'gnuplot-make-buffer)
-(require 'evil-numbers)
-(global-set-key (kbd "C-c +") 'evil-numbers/inc-at-pt)
-(global-set-key (kbd "C-c -") 'evil-numbers/dec-at-pt)
+;;  (global-set-key [(f11)] 'gnuplot-make-buffer)
 
 ;; (global-subword-mode t)
 (global-auto-revert-mode 1)

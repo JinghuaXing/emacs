@@ -1,9 +1,10 @@
 (require 'dtrt-indent)
 (load-file "~/.elisp/sourcepair.el")
-
+(require 'smart-operator)
 
 (defun my-c-common-hook()
   (interactive)
+  (smart-operator-mode t)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
   (local-set-key (kbd "C-h C-h") 'sourcepair-load)
   (c-set-style "k&r")
