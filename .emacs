@@ -4,7 +4,6 @@
 (add-to-list 'load-path "~/.elisp/org-8.2.4/contrib/lisp/")
 (add-to-list 'load-path "~/.elisp/auctex-11.86")
 (add-to-list 'load-path "~/.elisp/expand-region/")
-(add-to-list 'load-path "~/.elisp/smartparens/")
 (add-to-list 'load-path "~/.elisp/flycheck/")
 ;; (add-to-list 'load-path "~/.elisp/cc-mode")
 (add-to-list 'load-path "~/.elisp/ruby")
