@@ -173,4 +173,4 @@
 
 (add-hook 'after-init-hook 'org-agenda-list)
 
-(setq org-agenda-include-diary t)
+;; (setq org-agenda-include-diary t)
