@@ -39,13 +39,11 @@
 (load-file "~/.elisp/dotemacs/sdcv.el")
 (load-file "~/.elisp/dotemacs/color.el")
 (load-file "~/.elisp/graphviz.el")
-(load-file "~/.elisp/dotemacs/w3m.el")
 (load-file "~/.elisp/dotemacs/font.el")
 (load-file "~/.elisp/dotemacs/tex.el")
 (load-file "~/.elisp/dotemacs/ido.el")
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
-;; (load-file "~/.elisp/dotemacs/ac.el")
 (load-file "~/.elisp/dotemacs/python.el")
 
 (require 'diff-mode-)
