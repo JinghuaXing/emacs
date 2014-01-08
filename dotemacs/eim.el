@@ -17,4 +17,4 @@
 (set-input-method "eim-wb")             ; use Pinyin input method
 (setq activate-input-method t)          ; active input method
 (toggle-input-method nil)          ; default is turn off
-(global-set-key ";" 'eim-insert-ascii)
+

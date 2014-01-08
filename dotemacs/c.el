@@ -4,7 +4,6 @@
 (defun my-c-common-hook()
   (interactive)
   (make-variable-buffer-local 'hippie-expand-try-functions-list)
-  (local-set-key (kbd "C-h C-h") 'sourcepair-load)
   (c-set-style "k&r")
   ;; (dtrt-indent-mode t)
   (c-toggle-auto-state -1)
@@ -19,12 +18,10 @@
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
   (which-function-mode 1)
+  (loca-set-key (kbd "C-h C-h") 'sourcepair-load)
   ;; (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)
   (hs-hide-initial-comment-block)
-  (local-set-key (kbd "C-c o o") 'hs-toggle-hiding)
-  (local-set-key (kbd "C-c o s") 'hs-show-all)
-  (local-set-key (kbd "C-c o h") 'hs-hide-level)
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)
@@ -148,11 +145,6 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 ;;(add-hook 'find-file-hook 'hs-hide-initial-comment-block)
 
-;; (require 'idomenu)
-;; (global-set-key (kbd "M-,") 'idomenu)
-;; (global-set-key (kbd "M-,") 'imenu-tree)
-
-
 (setq xml-imenu-generic-expression
       '(("activity"  "<activity[^;]*?android:name=\"\\(.*\\)\"" 1 )
 	("receiver"  "<receiver[^;]*?android:name=\"\\(.*\\)\"" 1 )
@@ -247,7 +239,6 @@
 				'check-parens))))
 
 (require 'etags-select)
-(global-set-key "\M-." 'etags-select-find-tag)
 (require 'etags-stack)
 
 (font-lock-add-keywords

@@ -1,10 +1,6 @@
 (add-to-list 'load-path "~/.elisp/back-button/")
 (require 'back-button)
 (back-button-mode 1)
-(global-set-key (kbd "M-n") 'back-button-local-forward)
-(global-set-key (kbd "M-p") 'back-button-local-backward)
-(global-set-key (kbd "M-N") 'back-button-global-forward)
-(global-set-key (kbd "M-P") 'back-button-global-backward)
 
 ;; (load-file "~/.elisp/dotemacs/pulse.el")
 (require 'auto-mark)

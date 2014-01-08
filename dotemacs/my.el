@@ -69,7 +69,7 @@
   (list locate-command "-i" search-string))
 (setq locate-make-command-line 'my-locate-command-line)
 
-(defun my-bookmark-jump (bookmark)
+(defun sw/bookmark-jump (bookmark)
   (interactive
    (progn
      (require 'bookmark)
@@ -81,7 +81,7 @@
       )
   (bookmark-jump bookmark))
 
-(defun my-bookmark-set (bookmark)
+(defun sw/bookmark-set (bookmark)
   (interactive
    (progn
      (require 'bookmark)
@@ -90,8 +90,6 @@
 				(mapcar 'car bookmark-alist)))))
   (bookmark-set bookmark))
 
-(global-set-key (kbd "C-x r b") 'my-bookmark-jump)
-(global-set-key (kbd "C-x r m") 'my-bookmark-set)
 
 (add-hook 'diary-mode-hook
 	  '(lambda ()
@@ -102,43 +100,6 @@
 					       (exit-calendar)
 					       )
 			    )
-	     )
-	  )
-(add-hook 'calendar-mode-hook
-	  '(lambda ()
-	     (local-set-key (kbd "q") '(lambda()
-					 (interactive)
-					 (setq foo (get-buffer ".diary"))
-					 (if foo
-					     (progn
-					       (set-buffer foo)
-					       (save-buffer)
-					       (kill-buffer foo)
-					       )
-					   )
-					 (exit-calendar)
-					 (if (get-buffer "\*Calendar\*")
-					     (kill-buffer "\*Calendar\*")
-					   )
-					 )
-			    )
-	     (local-set-key (kbd "<f12>") '(lambda()
-					     (interactive)
-					     (setq foo (get-buffer ".diary"))
-					     (if foo
-						 (progn
-						   (set-buffer foo)
-						   (save-buffer)
-						   (kill-buffer foo)
-						   )
-					       )
-					     (exit-calendar)
-					     (if (get-buffer "\*Calendar\*")
-						 (kill-buffer "\*Calendar\*")
-					       )
-					     )
-			    )
-
 	     )
 	  )
 
@@ -177,7 +138,6 @@
       (setq find-file-root-history file-name-history)
       ;; allow some user customization
       (run-hooks 'find-file-root-hook))))
-;; (global-set-key [(control x) (control r)] 'find-file-root)
 
 (setq my-shebang-patterns
       (list "^#!/usr/.*/perl\\(\\( \\)\\|\\( .+ \\)\\)-w *.*"
@@ -219,7 +179,7 @@
     )
 
 
-(defun move-line (n)
+(defun sw/move-line (n)
   "Move the current line up or down by N lines."
   (interactive "p")
   (let ((col (current-column))
@@ -237,7 +197,7 @@
       (forward-line -1)
       (forward-char col))))
 
-(defun move-line-down ()
+(defun sw/move-line-down ()
   (interactive)
   (let ((col (current-column)))
     (forward-line 1)
@@ -245,16 +205,15 @@
     (previous-line 1)
     (forward-char col)
     ))
-(defun move-line-up ()
+(defun sw/move-line-up ()
   (interactive)
   (let ((col (current-column)))
     (transpose-lines 1)
     (previous-line 2)
     (forward-char col)
     ))
-(global-set-key (kbd "<M-up>") 'move-line-up)
-(global-set-key (kbd "<M-down>") 'move-line-down)
-(defun reverse-sentence-region (&optional separator)
+
+(defun sw/transporse-region (&optional separator)
   (interactive "P")
   (let ((beg (point))
 	(sentence)
@@ -272,68 +231,31 @@
 				  separator
 				" ")))
     (insert sentence)))
-(global-set-key (kbd "M-^")
-		(lambda ()
-		  (interactive)
-		  (delete-indentation 1)
-		  (delete-char 1)
-		  )
-		)
 
-(defun sacha/increase-font-size ()
+(defun sw/join-line ()
+  (interactive)
+  (save-excursion
+    (let ((start (point-at-eol))
+          (end (progn
+                (next-line)
+                (back-to-indentation)
+                (point))))
+         (delete-region start end))))
+
+(defun sw/increase-font-size ()
   (interactive)
   (set-face-attribute 'default
                       nil
                       :height
                       (ceiling (* 1.10
                                   (face-attribute 'default :height)))))
-(defun sacha/decrease-font-size ()
+(defun sw/decrease-font-size ()
   (interactive)
   (set-face-attribute 'default
                       nil
                       :height
                       (floor (* 0.9
 				(face-attribute 'default :height)))))
-(global-set-key (kbd "<C-mouse-4>") 'sacha/increase-font-size)
-(global-set-key (kbd "<C-mouse-5>") 'sacha/decrease-font-size)
-
-;;#+BEGIN_EXAMPLE
-;;#+END_EXAMPLE
-(defun org-enclose-region-example (beg end)
-  "Count Chinese and English words in marked region."
-  (interactive "r")
-  (kill-region beg end)
-  (beginning-of-line)
-  (insert "#+BEGIN_EXAMPLE\n")
-  (yank)
-  (insert "\n")
-  (beginning-of-line)
-  (insert "#+END_EXAMPLE")
-  )
-
-(defun org-enclose-code (beg end code)
-  "Count Chinese and English words in marked region."
-  (interactive "r\nMCode: ")
-  (kill-region beg end)
-  (beginning-of-line)
-  (insert (concat "#+BEGIN_HTML\n<pre lang=\"" code "\" line=\"1\">\n"))
-  (yank)
-  (insert "\n")
-  (beginning-of-line)
-  (insert "</pre>\n#+END_HTML")
-  )
-
-(defun org-enclose-code (beg end code)
-   "Count Chinese and English words in marked region."
-  (interactive "r\nMCode: ")
-  (kill-region beg end)
-  (beginning-of-line)
-  (insert (concat "#+begin_src " code "\n") )
-  (yank)
-  (insert "\n")
-  (beginning-of-line)
-  (insert "#+end_src")
-  )
 
 (setq last_buffer nil)
 (defun toggle-eshell ()
@@ -349,103 +271,13 @@
     )
   )
 
-(defun open-next-line (arg)
-  "Move to the next line and then opens a line.
-    See also `newline-and-indent'."
-  (interactive "p")
-  (end-of-line)
-  (open-line arg)
-  (next-line 1)
-  (indent-according-to-mode))
-
-;;(global-unset-key (kbd "C-o"))
-;; Behave like vi's O command
-
-(defun beginning-of-string(&optional arg)
-  "  "
-  (re-search-backward "[ \t(]" (line-beginning-position) 3 1)
-  (if (looking-at "[\t (]")  (goto-char (+ (point) 1)) )
-  )
-(defun end-of-string(&optional arg)
-  " "
-  (re-search-forward "[ \t()]" (line-end-position) 3 arg)
-  (if (looking-back "[\t ()]") (goto-char (- (point) 1)) )
-  )
-
-(defun thing-kil-string-to-mark(&optional arg)
-  " Try to copy a string and paste it to the mark
-     When used in shell-mode, it will paste string on shell prompt by default "
-  (interactive "P")
-  (beginning-of-string)
-  (setq a (point))
-  (end-of-string)
-  (setq b (point))
-  (kill-region a b)
-  )
-
-(defun thing-copy-string-to-mark(&optional arg)
-  " Try to copy a string and paste it to the mark
-     When used in shell-mode, it will paste string on shell prompt by default "
-  (interactive "P")
-  (copy-thing 'beginning-of-string 'end-of-string arg)
-  )
-
-(global-set-key (kbd "<M-S-backspace>") (quote thing-kil-string-to-mark))
-(global-set-key (kbd "C-c s") (quote thing-copy-string-to-mark))
-(defun beginning-of-parenthesis(&optional arg)
-  "  "
-  (re-search-backward "[[<(?\"]" (line-beginning-position) 3 1)
-  (if (looking-at "[[<(?\"]")  (goto-char (+ (point) 1)) )
-  )
-
-(defun end-of-parenthesis(&optional arg)
-  " "
-  (re-search-forward "[]>)?\"]" (line-end-position) 3 arg)
-  (if (looking-back "[]>)?\"]") (goto-char (- (point) 1)) )
-  )
-
-(defun thing-copy-parenthesis-to-mark(&optional arg)
-  " Try to copy a parenthesis and paste it to the mark
-     When used in shell-mode, it will paste parenthesis on shell prompt by default "
-  (interactive "P")
-  (copy-thing 'beginning-of-parenthesis 'end-of-parenthesis arg)
-  )
-
-(global-set-key (kbd "C-c a")         (quote thing-copy-parenthesis-to-mark))
-
-(defun get-point (symbol &optional arg)
-  "get the point"
-  (funcall symbol arg)
-  (point)
-  )
-
-(defun copy-thing (begin-of-thing end-of-thing &optional arg)
-  "copy thing between beg & end into kill ring"
-  (let ((beg (get-point begin-of-thing 1))
-	(end (get-point end-of-thing arg)))
-    (copy-region-as-kill beg end))
-  )
-
-(defun uniquify-all-lines-region (start end)
-  "Find duplicate lines in region START to END keeping first occurrence."
-  (interactive "*r")
-  (save-excursion
-    (let ((end (copy-marker end)))
-      (while
-	  (progn
-	    (goto-char start)
-	    (re-search-forward "^\\(.*\\)\n\\(\\(.*\n\\)*\\)\\1\n" end t))
-	(replace-match "\\1\n\\2")))))
-
-(defun isearch-save-and-exit ()
+(defun sw/isearch-save-and-exit ()
   "Exit search normally. and save the `search-string' on kill-ring."
   (interactive)
   (isearch-done)
   (isearch-clean-overlays)
   (kill-new isearch-string))
 
-(define-key isearch-mode-map    "\M-w" 'isearch-save-and-exit)
-(define-key isearch-mode-map    "\C-y" 'isearch-yank-kill)
 
 (add-hook 'isearch-mode-end-hook 'my-goto-match-beginning)
 (defun my-goto-match-beginning ()
@@ -519,7 +351,7 @@
       (set-selective-display
        (if selective-display nil (or col 1))))))
 
-(defun beagrep ()
+(defun sw/beagrep ()
   (interactive)
   (let ((symbol (thing-at-point 'symbol))
 	(for-file "")
@@ -546,12 +378,6 @@
     (setq compile-command orig-command)
     )
   )
-
-(global-set-key [(M /)] (lambda ()
-			  (interactive)
-			  (beagrep)
-			  )
-		)
 
 (dolist (command '(yank yank-pop))
   (eval `(defadvice ,command (after indent-region activate)
@@ -589,53 +415,6 @@
   (goto-char (point-min))
   (while (search-forward "\n" nil t) (replace-match "\r\n")))
 
-
-(defun my-move-begin-of-line ()
-  (interactive)
-  (let ((current_point (point)))
-    (back-to-indentation)
-    (if (= current_point (point))
-	(beginning-of-line)
-	)
-    )
-  )
-
-(defun my-move-end-of-line ()
-  (interactive)
-  (let ((current_point (point)))
-    (when (comment-search-forward (line-end-position) t)
-      (goto-char (match-beginning 0))
-      (skip-syntax-backward " " (line-beginning-position))
-      (if (= current_point (point))
-	  (move-end-of-line nil)
-	)
-      )
-    )
-  )
-;; (global-set-key (kbd "C-a") (lambda()
-;; 			      (interactive)
-;; 			      (my-move-begin-of-line)
-;; 			      ))
-;; (global-set-key (kbd "C-e") (lambda()
-;; 			      (interactive)
-;; 			      (my-move-end-of-line)
-;; 			      ))
-
-
-(require 'nxml-mode)
-(define-key nxml-mode-map "\M-\C-a" '(lambda ()
-				       (interactive)
-				       (beginning-of-line)
-				       (call-interactively 'nxml-backward-up-element))
-  )
-(define-key nxml-mode-map "\M-\C-e" '(lambda ()
-				       (interactive)
-				       (end-of-line)
-				       (call-interactively 'nxml-backward-up-element)
-				       (call-interactively 'nxml-forward-element)
-				       )
-  )
-
 (defun gist ()
   (interactive)
   (if (get-buffer "*gist*")
@@ -658,28 +437,22 @@
   (delete-other-windows)
   )
 
-(defun grep-live-buffer (l)
+(defun sw/buffers-live-p (l)
   (let ((buffer (car l)))
     (if buffer
 	(progn
 	  (if (get-buffer buffer)
 	      (cons buffer (grep-live-buffer (cdr l)))
-	    (grep-live-buffer (cdr l)) 
-	    )
-	  )
+	    (grep-live-buffer (cdr l)))))))
+
+(defun sw/switch-to-query ()
+  (interactive)
+  (setq search_candidates (sw/buffers-live-p '("*beagrep*" "*ack*" "*Find*" "*Moccur*" "*etags-select*")))
+  (when search_candidates
+    (if (not (cdr search_candidates))
+	(setq select_name (car search_candidates))
+      (setq select_name (ido-completing-read "Switch to query: " search_candidates))
       )
+    (switch-to-buffer select_name)
     )
   )
-
-(global-set-key (kbd "C-x C-x") '(lambda ()
-				   (interactive)
-				   (setq search_candidates (grep-live-buffer '("*beagrep*" "*ack*" "*Find*" "*Moccur*" "*etags-select*")))
-				   (when search_candidates
-				     (if (not (cdr search_candidates))
-					 (setq select_name (car search_candidates))
-				       (setq select_name (ido-completing-read "Switch to query: " search_candidates))
-				       )
-				     (switch-to-buffer select_name)
-				     )
-				   )
-		)

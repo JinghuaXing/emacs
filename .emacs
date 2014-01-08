@@ -224,19 +224,11 @@
 (defalias 'ruler 'popup-ruler)
 
 (require 'browse-kill-ring)
-(global-set-key (kbd "M-y") 'browse-kill-ring)
 
 (autoload 'xmsi-mode "xmsi-math-symbols-input" "Load xmsi minor mode for inputting math (Unicode) symbols." t)
 (xmsi-mode 1)
 
-;; (require 'keyfreq)
-;; (keyfreq-mode 1)
-;; (keyfreq-autosave-mode 1)
-
 (require 'quack)
-
-(global-unset-key (kbd "<C-wheel-up>"))
-(global-unset-key (kbd "<C-wheel-down>"))
 
 ;; (prefer-coding-system 'gb18030)
 (prefer-coding-system 'utf-8-unix)
@@ -366,8 +358,3 @@
 (require 'diff-hl-dired)
 (global-diff-hl-mode)
 (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
-
-(define-key diff-hl-mode-map (kbd "C-x v n") 'diff-hl-next-hunk)
-(define-key diff-hl-mode-map (kbd "C-x v p") 'diff-hl-previous-hunk)
-(define-key diff-hl-mode-map (kbd "C-x v u") 'diff-hl-revert-hunk)
-(define-key diff-hl-mode-map (kbd "C-x v =") 'diff-hl-diff-goto-hunk)

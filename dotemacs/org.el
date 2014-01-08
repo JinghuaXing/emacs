@@ -1,8 +1,6 @@
 (require 'deft)
 (setq deft-directory "~/.elisp/dotemacs/org/cafebabe")
 
-(global-set-key (kbd "<f12>") 'deft)
-(define-key deft-mode-map (kbd "<f12>") 'quit-window)
 
 (require 'org-install)
 (require 'org-agenda)
@@ -125,13 +123,6 @@
 (add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
 (add-to-list 'org-src-lang-modes (quote ("dot" . dot)))
 
-
-;; I use C-M-r to start capture mode
-(global-set-key (kbd "C-c k") 'org-capture)
-(global-set-key (kbd "C-c a") 'agenda)
-(global-set-key (kbd "C-c l") 'org-store-link)
-
-;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
       (quote (("w" "work" entry (file "~/.elisp/dotemacs/org/gtd/work.org")
                "* TODO %?  :work:\n%U\n\n")

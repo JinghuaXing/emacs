@@ -34,6 +34,5 @@ directory, select directory. Lastly the file is opened."
 	   (setq ido-temp-list choices))))
     (ido-read-buffer prompt)))
 
-(global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
 (defalias 'fcc 'file-cache-clear-cache)
 (defalias 'fca 'file-cache-add-directory-recursively)
