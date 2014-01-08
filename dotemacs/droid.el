@@ -7,9 +7,7 @@
      ((string= command "log") (call-interactively 'droid-log))
      ((string= command "reboot") (call-interactively 'droid-reboot))
      ((string= command "kill") (call-interactively 'droid-kill))
-     )
-    )
-  )
+     )))
 
 (defun droid-kill()
   (interactive)
@@ -27,10 +25,7 @@
 					     (when target
 					       (start-process "nil" nil "droid" "kill" target)
 					       )
-    					     )
-    					   ))
-    )
-  )
+    					     )))))
 
 (defun droid-log ()
   (interactive)
@@ -45,8 +40,7 @@
     (switch-to-buffer-other-window "*droid-log*")
     (delete-other-windows)
     (setq compile-command orig-command)
-    )
-  )
+    ))
 
 (defun droid-reboot()
   (interactive)

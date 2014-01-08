@@ -90,19 +90,6 @@
 				(mapcar 'car bookmark-alist)))))
   (bookmark-set bookmark))
 
-
-(add-hook 'diary-mode-hook
-	  '(lambda ()
-	     (local-set-key (kbd "C-x C-s") '(lambda()
-					       (interactive)
-					       (save-buffer)
-					       (kill-buffer-and-window)
-					       (exit-calendar)
-					       )
-			    )
-	     )
-	  )
-
 (defvar find-file-root-prefix (if (featurep 'xemacs) "/[sudo/root@localhost]" "/sudo:root@localhost:" )
   "*The filename prefix used to open a file with `find-file-root'.")
 

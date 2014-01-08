@@ -30,12 +30,10 @@
 
 (defun my-find-dired ()
   (interactive)
-  (let ((dir (read-directory-name "Find files in directory: " nil nil t))
-	)
+  (let ((dir (read-directory-name "Find files in directory: " nil nil t)))
     (setq wildcard (read-string (concat "Find files in `" (file-name-nondirectory (directory-file-name dir))  "': ") ))
     (find-dired dir (concat "-iname " "\"*" wildcard "*\"" ))
-    )
-  )
+    ))
 
 (global-set-key (kbd "M-,") (lambda ()
 			      (interactive)
