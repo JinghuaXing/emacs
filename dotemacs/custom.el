@@ -214,7 +214,7 @@
  '(sr-show-file-attributes nil)
  '(sr-use-commander-keys nil)
  '(sr-virtual-listing-switches " -aldpgG")
- '(switch-window-increase 15)
+ '(switch-window-shortcut-style (quote alphabet))
  '(tabbar-home-button (quote (("") "")))
  '(tabbar-scroll-left-button (quote (("") "")))
  '(tabbar-scroll-right-button (quote (("") "")))
@@ -236,8 +236,7 @@
  '(wg-query-for-save-on-workgroups-mode-exit nil)
  '(wg-use-faces nil)
  '(winner-ring-size 5)
- '(xgtags-goto-tag (quote never))
- '(xgtags-show-paths (quote expanded)))
+ )
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

@@ -65,17 +65,6 @@
                (other-window 1))
       (find-tag default))))
 
-(defun wy-go-to-char (n char)
-  "Move forward to Nth occurence of CHAR.
-Typing `wy-go-to-char-key' again will move forwad to the next Nth
-occurence of CHAR."
-  (interactive "p\ncGo to char: ")
-  (search-forward (string char) nil nil n)
-  (while (char-equal (read-char)
-		     char)
-    (search-forward (string char) nil nil n))
-  (setq unread-command-events (list last-input-event)))
-
 (defun my-locate-command-line (search-string)
   (list locate-command "-i" search-string))
 (setq locate-make-command-line 'my-locate-command-line)
@@ -529,8 +518,6 @@ occurence of CHAR."
       (setq col (+ 1 (current-column)))
       (set-selective-display
        (if selective-display nil (or col 1))))))
-(global-set-key [(M I)] 'aj-toggle-fold)
-
 
 (defun beagrep ()
   (interactive)
@@ -670,3 +657,29 @@ occurence of CHAR."
   (switch-to-buffer-other-window "*gist*")
   (delete-other-windows)
   )
+
+(defun grep-live-buffer (l)
+  (let ((buffer (car l)))
+    (if buffer
+	(progn
+	  (if (get-buffer buffer)
+	      (cons buffer (grep-live-buffer (cdr l)))
+	    (grep-live-buffer (cdr l)) 
+	    )
+	  )
+      )
+    )
+  )
+
+(global-set-key (kbd "C-x C-x") '(lambda ()
+				   (interactive)
+				   (setq search_candidates (grep-live-buffer '("*beagrep*" "*ack*" "*Find*" "*Moccur*" "*etags-select*")))
+				   (when search_candidates
+				     (if (not (cdr search_candidates))
+					 (setq select_name (car search_candidates))
+				       (setq select_name (ido-completing-read "Switch to query: " search_candidates))
+				       )
+				     (switch-to-buffer select_name)
+				     )
+				   )
+		)

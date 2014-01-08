@@ -228,8 +228,6 @@
 
 (autoload 'xmsi-mode "xmsi-math-symbols-input" "Load xmsi minor mode for inputting math (Unicode) symbols." t)
 (xmsi-mode 1)
-(autoload 'xub-mode "xub-mode" "Load xub-mode for browsing Unicode." t)
-(defalias 'unicode-browser 'xub-mode)
 
 ;; (require 'keyfreq)
 ;; (keyfreq-mode 1)
@@ -311,8 +309,6 @@
 (require 'tintin-mode)
 (add-to-list 'auto-mode-alist '("\\.tin$" . tintin-mode))
 
-(require 'diff-hl)
-(global-diff-hl-mode)
 
 (autoload 'gnuplot-mode "gnuplot" "gnuplot major mode" t)
 (autoload 'gnuplot-make-buffer "gnuplot" "open a buffer in gnuplot mode" t)
@@ -325,7 +321,6 @@
 (global-auto-revert-mode 1)
 
 (require 'idomenu)
-(global-set-key (kbd "C-c C-j") 'idomenu)
 
 (require 'pdftools)
 
@@ -364,3 +359,15 @@
 (autopair-global-mode)
 
 (setq default-mode-line-format (append default-mode-line-format '((:eval (luna-date (calendar-current-date))))))
+
+(require 'switch-window)
+
+(require 'diff-hl)
+(require 'diff-hl-dired)
+(global-diff-hl-mode)
+(add-hook 'dired-mode-hook 'diff-hl-dired-mode)
+
+(define-key diff-hl-mode-map (kbd "C-x v n") 'diff-hl-next-hunk)
+(define-key diff-hl-mode-map (kbd "C-x v p") 'diff-hl-previous-hunk)
+(define-key diff-hl-mode-map (kbd "C-x v u") 'diff-hl-revert-hunk)
+(define-key diff-hl-mode-map (kbd "C-x v =") 'diff-hl-diff-goto-hunk)

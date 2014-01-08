@@ -44,4 +44,14 @@
 ;;      (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)))
 
 
+(defun diff-hl-update-each-buffer ()
+  (interactive)
+  (mapc (lambda (buffer)
+          (condition-case nil
+              (with-current-buffer buffer
+                (diff-hl-update))
+            (buffer-read-only nil)))
+        (buffer-list)))
+(defadvice magit-update-vc-modeline (after my-magit-update-vc-modeline activate)
+  (progn (diff-hl-update-each-buffer)))
 
