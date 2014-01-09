@@ -102,9 +102,7 @@
      )
   )
 
-(eval-after-load 'file-cache
-  '(global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
-  )
+(global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
 
 (global-set-key (kbd "C-x r b") 'sw/bookmark-jump)
 (global-set-key (kbd "C-x r m") 'sw/bookmark-set)

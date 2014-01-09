@@ -1,0 +1,6 @@
+# name: cond
+# key: cond
+# --
+(cond ($0)
+      (t nil)
+)
