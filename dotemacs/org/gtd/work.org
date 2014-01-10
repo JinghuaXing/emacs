@@ -537,3 +537,5 @@ CLOSED: [2013-12-31 Tue 18:12]
 [2013-12-24 Tue 18:33]
 * TODO how to put a process in a specific group                        :work:
 [2014-01-03 Fri 18:02]
+* TODO write a command line to generate trace file                     :work:
+[2014-01-09 Thu 18:54]

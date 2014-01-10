@@ -429,8 +429,8 @@
     (if buffer
 	(progn
 	  (if (get-buffer buffer)
-	      (cons buffer (grep-live-buffer (cdr l)))
-	    (grep-live-buffer (cdr l)))))))
+	      (cons buffer (sw/buffers-live-p (cdr l)))
+	    (sw/buffers-live-p (cdr l)))))))
 
 (defun sw/switch-to-query ()
   (interactive)

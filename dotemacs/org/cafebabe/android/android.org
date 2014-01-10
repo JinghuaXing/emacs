@@ -295,30 +295,6 @@ see also [[Context.getClassLoader]]
 :END:
 /data/dalvik-cache
 ** dbus
-** Debug related
-*** hprof & MAT
-    - 在代码中生成
-      Debug.dumpHprofData()
-    - 使用信号on-demand生成
-#+BEGIN_EXAMPLE
-    $ chmod 777 /data/misc -R
-    $ ps # 找到进程号
-    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
-    $ ls /data/misc/*.hprof
-#+END_EXAMPLE
-    - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
-*** traceview
-**** dmtracedump
-     dmtracedump -g out.png -t 30% test.trace
-*** hierachyviewer
-*** Thread.dumpStack()
-*** logcat
-adb shell setprop log.tag.mytag verbose
-*** logwrapper
-*** adb am start
-*** monkey
-*** tombstone
-
 ** DONE [#C] FileObserver
    SCHEDULED: <2011-02-10 Thu> CLOSED: [2011-02-10 Thu 14:55]
    - State "DONE"       [2011-02-10 Thu 14:55]

@@ -1,0 +1,48 @@
+#+TITLE: Android Debug
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Android Debug Internals
+** hierachyviewer
+hierachyviewer 在 host 端通过 socket 与手机端的 ViewServer 通信.
+ViewServer 并非开机启动, 而是需要由 host 端的 hierachyviewer 的
+startViewServer 通过 "adb shell service call window 1 i32 port" 调用
+WMS 的 startViewServer 来启动,
+
+ViewServer 会负责调用 ViewDebug 的相关方法来 DUMP 或 CAPTURE 等
+** ddms
+ddms 通过 jdwp 控制 java 进程
+*** method tracing
+*** hprof
+- 在代码中生成
+  Debug.dumpHprofData()
+- 使用信号on-demand生成
+  #+BEGIN_EXAMPLE
+    $ chmod 777 /data/misc -R
+    $ ps # 找到进程号
+    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
+    $ ls /data/misc/*.hprof
+  #+END_EXAMPLE
+- 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
+*** gc
+** adb
+adb 通过 host 上的 adb 与手机端的 adbd 通信
+*** logcat
+adb shell setprop log.tag.mytag verbose
+**** event log
+*** logwrapper
+*** am
+*** pm
+*** dumpsys
+*** input
+*** procrank
+*** procmem
+*** getprop
+*** dumpstate
+*** setprop
+*** service
+例如 hierachyviewer 启动 ViewServer 就是使用 "service call window 1
+i32 port" 命令
+** monkey
+** tombstone
+** uiautomator
+
