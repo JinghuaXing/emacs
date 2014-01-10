@@ -358,3 +358,5 @@
 (require 'diff-hl-dired)
 (global-diff-hl-mode)
 (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
+
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
