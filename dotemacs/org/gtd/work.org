@@ -539,3 +539,5 @@ CLOSED: [2013-12-31 Tue 18:12]
 [2014-01-03 Fri 18:02]
 * TODO write a command line to generate trace file                     :work:
 [2014-01-09 Thu 18:54]
+* TODO try zeal for offline documentation browsing                     :work:
+[2014-01-11 星期六 23:27]
