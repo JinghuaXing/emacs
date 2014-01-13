@@ -236,7 +236,9 @@
  '(wg-query-for-save-on-workgroups-mode-exit nil)
  '(wg-use-faces nil)
  '(winner-ring-size 5)
- )
+ '(wl-draft-sendlog nil)
+ '(wl-interactive-exit nil)
+ '(wl-interactive-save-folders nil))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
