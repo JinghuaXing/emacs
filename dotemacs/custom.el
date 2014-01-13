@@ -194,6 +194,7 @@
  '(scheme-program-name "racket")
  '(semantic-idle-summary-function (quote semantic-format-tag-summarize))
  '(senator-minor-mode-hook nil)
+ '(send-mail-function (quote mailclient-send-it))
  '(show-paren-mode t)
  '(show-paren-style (quote mixed))
  '(slime-auto-connect (quote always))

@@ -1,3 +1,30 @@
+(add-to-list 'load-path "~/.elisp/w3m")
+(require 'w3m)
+
+(add-to-list 'load-path "~/.elisp/wanderlust/flim")
+(add-to-list 'load-path "~/.elisp/wanderlust/apel/")
+(add-to-list 'load-path "~/.elisp/wanderlust/semi/")
+(add-to-list 'load-path "~/.elisp/wanderlust/wl/wl")
+(add-to-list 'load-path "~/.elisp/wanderlust/wl/elmo")
+(add-to-list 'load-path "~/.elisp/wanderlust/wl/utils/")
+
+(autoload 'wl "wl" "Wanderlust" t)
+;; (setq wl-init-file "~/.elisp/wanderlust/wl.el")
+(setq wl-folders-file "~/.elisp/wanderlust/folders")
+
+(autoload 'wl-user-agent-compose "wl-draft" nil t)
+(if (boundp 'mail-user-agent)
+    (setq mail-user-agent 'wl-user-agent))
+(if (fboundp 'define-mail-user-agent)
+    (define-mail-user-agent
+      'wl-user-agent
+      'wl-user-agent-compose
+      'wl-draft-send
+      'wl-draft-kill
+      'mail-send-hook))
+
+(setq wl-biff-check-folder-list '("%inbox"))
+
 (require 'w3m)
 (require 'mime-w3m)
 

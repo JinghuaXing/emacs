@@ -45,7 +45,7 @@
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
 (load-file "~/.elisp/dotemacs/python.el")
-
+(load-file "~/.elisp/dotemacs/wl.el")
 (require 'diff-mode-)
 
 (add-hook 'write-file-hooks 'time-stamp)
@@ -360,18 +360,4 @@
 (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-
-(add-to-list 'load-path "~/.elisp/w3m")
-(require 'w3m)
-
-(add-to-list 'load-path "~/.elisp/wanderlust/flim")
-(add-to-list 'load-path "~/.elisp/wanderlust/apel/")
-(add-to-list 'load-path "~/.elisp/wanderlust/semi/")
-(add-to-list 'load-path "~/.elisp/wanderlust/wl/wl")
-(add-to-list 'load-path "~/.elisp/wanderlust/wl/elmo")
-(add-to-list 'load-path "~/.elisp/wanderlust/wl/utils/")
-
-(autoload 'wl "wl" "Wanderlust" t)
-(setq wl-init-file "~/.elisp/wanderlust/wl.el")
-(setq wl-folders-file "~/.elisp/wanderlust/folders")
 
