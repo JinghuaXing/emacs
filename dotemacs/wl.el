@@ -1,5 +1,10 @@
-(add-to-list 'load-path "~/.elisp/w3m")
-(require 'w3m)
+(if (executable-find "w3m")
+    (progn
+      (add-to-list 'load-path "~/.elisp/w3m")
+      (require 'w3m)
+      (require 'mime-w3m)
+      )
+  )
 
 (add-to-list 'load-path "~/.elisp/wanderlust/flim")
 (add-to-list 'load-path "~/.elisp/wanderlust/apel/")
@@ -24,9 +29,6 @@
       'mail-send-hook))
 
 (setq wl-biff-check-folder-list '("%inbox"))
-
-(require 'w3m)
-(require 'mime-w3m)
 
 (setq elmo-imap4-default-server "imap.gmail.com"
       elmo-imap4-default-user "sunwayforever@gmail.com"
