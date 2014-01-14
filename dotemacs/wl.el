@@ -1,3 +1,5 @@
+(setq wl-summary-width 150)
+
 (if (executable-find "w3m")
     (progn
       (add-to-list 'load-path "~/.elisp/w3m")
@@ -87,8 +89,6 @@
 
 (setq wl-news-news-alist nil)
 
-(setq wl-summary-width 150)
-
 (eval-after-load "wl-folder.el"
   '(progn
     (define-key wl-folder-mode-map "q"    'wl-folder-suspend)
@@ -101,3 +101,20 @@
 (eval-after-load "wl-e21.el"
   '(define-key wl-draft-mode-map (kbd "C-c TAB") 'mime-edit-insert-file)
   )
+
+(defun insert-signature()
+  (insert-string "
+
+------
+wei.sun(孙伟)
+分机: 589-653
+手机: 18630859306
+Email:wei.sun@spreadtrum.com
+展讯通信(天津)"
+		 )
+  )
+(add-hook 'wl-mail-setup-hook
+	  '(lambda ()
+	     (save-excursion
+	       (end-of-buffer)
+	       (wl-draft-insert-signature))))

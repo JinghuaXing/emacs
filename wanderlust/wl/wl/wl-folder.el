@@ -165,9 +165,9 @@
   (define-key wl-folder-mode-map "\C-c\C-p" 'wl-folder-jump-to-previous-summary)
   (define-key wl-folder-mode-map "\C-c\C-n" 'wl-folder-jump-to-next-summary)
   (define-key wl-folder-mode-map "rS"   'wl-folder-sync-region)
-  (define-key wl-folder-mode-map "S"    'wl-folder-sync-current-entity)
+  (define-key wl-folder-mode-map "s"    'wl-folder-sync-current-entity)
   (define-key wl-folder-mode-map "rs"   'wl-folder-check-region)
-  (define-key wl-folder-mode-map "s"    'wl-folder-check-current-entity)
+  (define-key wl-folder-mode-map "S"    'wl-folder-check-current-entity)
   (define-key wl-folder-mode-map "I"    'wl-folder-prefetch-current-entity)
 ;;;  (define-key wl-folder-mode-map "D"    'wl-folder-drop-unsync-current-entity)
   (define-key wl-folder-mode-map "p"    'wl-folder-prev-entity)
@@ -821,7 +821,8 @@ Optional argument ARG is repeart count."
     (run-hooks 'wl-folder-check-entity-pre-hook)
     (if (and (consp entity)		;; group entity
 	     wl-folder-check-async)	;; very fast
-	(setq ret-val (wl-folder-check-entity-async entity auto))
+	;; (setq ret-val (wl-folder-check-entity-async entity auto))
+	nil				;; sunway
       (save-excursion
 	(cond
 	 ((consp entity)
@@ -845,7 +846,7 @@ Optional argument ARG is repeart count."
 	 ((stringp entity)
 	  (message "Checking \"%s\"" entity)
 	  (setq ret-val (wl-folder-check-one-entity
-			 entity))
+	  		 entity))
 	  (goto-char start-pos)
 	  (sit-for 0))
 	 (t
@@ -943,12 +944,13 @@ Optional argument ARG is repeart count."
     (while (setq folder (pop sync-folder-list))
       (if (not (elmo-folder-plugged-p folder))
 	  (message "Uncheck \"%s\"" (elmo-folder-name-internal folder))
-	(message "Checking \"%s\"" (elmo-folder-name-internal folder))
+	(message "CChecking \"%s\"" (elmo-folder-name-internal folder))
 	(setq ret-val
 	      (wl-folder-add-folder-info
 	       ret-val
 	       (wl-folder-check-one-entity (elmo-folder-name-internal
-					    folder))))
+	       				    folder))
+	       ))
 ;;;	(sit-for 0)
 	))
     ;; check network entity at last
@@ -1075,7 +1077,7 @@ If current line is group folder, check all subfolders."
     (let ((entity-name (wl-folder-get-entity-from-buffer))
 	  (group (wl-folder-buffer-group-p)))
       (when (and entity-name
-		 (y-or-n-p (format "Sync %s? " entity-name)))
+	       t)
 	(wl-folder-sync-entity
 	 (if group
 	     (wl-folder-search-group-entity-by-name entity-name
