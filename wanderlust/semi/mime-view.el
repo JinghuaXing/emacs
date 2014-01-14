@@ -1286,6 +1286,10 @@ Score is integer or function which receives entity and returns integer."
       "\e\t"     (function mime-preview-move-to-previous))
     (define-key mime-view-mode-map
       "\t"       (function mime-preview-move-to-next))
+    ;; >>> sunway
+    (define-key mime-view-mode-map
+      (kbd "S-SPC")        (function mime-preview-scroll-down-entity))
+    ;; <<< sunway
     (define-key mime-view-mode-map
       " "        (function mime-preview-scroll-up-entity))
     (define-key mime-view-mode-map

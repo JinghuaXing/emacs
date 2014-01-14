@@ -290,4 +290,7 @@
  '(tabbar-selected-face ((t (:foreground "cyan" :background "black" :height 1.5))) t)
  '(tabbar-separator-face ((t (:foreground "black" :background "black"))) t)
  '(tabbar-unselected-face ((t (:foreground "grey60" :background "black" :height 1.1))) t)
- '(which-func ((((class color) (background dark)) nil))))
+ '(which-func ((((class color) (background dark)) nil)))
+ '(wl-highlight-folder-zero-face ((t (:foreground "dark gray"))))
+ '(wl-highlight-summary-normal-face ((t (:foreground "gray60"))))
+ '(wl-highlight-summary-thread-top-face ((t (:foreground "yellow green")))))

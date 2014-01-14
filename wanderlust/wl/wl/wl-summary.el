@@ -388,13 +388,17 @@ See also variable `wl-use-petname'."
 			     wl-summary-mode-map
 			     global-map)
   ;; basic commands
+  ;; >>> sunway
   (define-key wl-summary-mode-map " "    'wl-summary-read)
+  (define-key wl-summary-mode-map (kbd "S-SPC") 'wl-message-prev-page)
+  ;; <<< sunway
   (define-key wl-summary-mode-map "."    'wl-summary-redisplay)
   (define-key wl-summary-mode-map ","    'wl-summary-display-raw)
   (define-key wl-summary-mode-map "<"    'wl-summary-display-top)
   (define-key wl-summary-mode-map ">"    'wl-summary-display-bottom)
   (define-key wl-summary-mode-map "\177" 'wl-summary-prev-page)
   (define-key wl-summary-mode-map [backspace] 'wl-summary-prev-page)
+  
   (define-key wl-summary-mode-map "\r"   'wl-summary-enter-handler)
   (define-key wl-summary-mode-map "\C-m" 'wl-summary-enter-handler)
   (define-key wl-summary-mode-map "/"    'wl-thread-open-close)
@@ -441,8 +445,10 @@ See also variable `wl-use-petname'."
   (define-key wl-summary-mode-map "q"    'wl-summary-exit)
   (define-key wl-summary-mode-map "Q"    'wl-summary-force-exit)
 
-  (define-key wl-summary-mode-map "j"    'wl-summary-jump-to-current-message)
-  (define-key wl-summary-mode-map "J"    'wl-thread-jump-to-msg)
+  ;; >>> sunway
+  ;; (define-key wl-summary-mode-map "j"    'wl-summary-jump-to-current-message)
+  ;; (define-key wl-summary-mode-map "J"    'wl-thread-jump-to-msg)
+  ;; <<< sunway
   (define-key wl-summary-mode-map "I"    'wl-summary-incorporate)
   (define-key wl-summary-mode-map "\M-j" 'wl-summary-jump-to-msg-by-message-id)
   (define-key wl-summary-mode-map "^"    'wl-summary-jump-to-parent-message)
@@ -4327,8 +4333,12 @@ Use function list is `wl-summary-write-current-folder-functions'."
     (wl-summary-toggle-disp-msg 'on)
     (when (wl-summary-set-message-buffer-or-redisplay 'ignore-original)
       (set-buffer cur-buf)
-      (if (wl-message-next-page)
-	  (wl-summary-down t)))))
+      ;; >>> sunway
+      (wl-message-next-page)
+      ;; (if (wl-message-next-page)
+      ;; 	  (wl-summary-down t))
+      ;; <<< sunway
+      )))
 
 (defsubst wl-summary-cursor-move-surface (downward interactive)
   (if wl-summary-move-direction-toggle
@@ -4372,11 +4382,14 @@ Use function list is `wl-summary-write-current-folder-functions'."
 		      (wl-summary-get-prev-folder)))
 	      (if next-entity
 		  (setq finfo (wl-folder-get-entity-info next-entity))))
-	    (wl-ask-folder
-	     '(lambda () (wl-summary-next-folder-or-exit next-entity))
-	     (format
-	      "No more messages. Type SPC to go to %s."
-	      (wl-summary-entity-info-msg next-entity finfo)))))))))
+	    ;; >>> sunway
+	    ;; (wl-ask-folder
+	    ;;  '(lambda () (wl-summary-next-folder-or-exit next-entity))
+	    ;;  (format
+	    ;;   "No more messages. Type SPC to go to %s."
+	    ;;   (wl-summary-entity-info-msg next-entity finfo)))
+	    ;; <<< sunway
+	    ))))))
 
 (defun wl-summary-prev (&optional interactive)
   (interactive)

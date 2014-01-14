@@ -651,9 +651,12 @@ Special commands:
 
 (defun wl-draft-key-setup ()
   (define-key wl-draft-mode-map "\C-c\C-y" 'wl-draft-yank-original)
+  ;; >>> sunway
   ;; (define-key wl-draft-mode-map "\C-c\C-s" 'wl-draft-send)
-  (define-key wl-draft-mode-map "\C-c\C-c" 'wl-draft-send-and-exit)
   (define-key wl-draft-mode-map "\C-c\C-s" 'wl-draft-save-and-exit)
+  (define-key wl-draft-mode-map "\C-c\C-z" 'wl-draft-save)
+  ;; <<< sunway
+  (define-key wl-draft-mode-map "\C-c\C-c" 'wl-draft-send-and-exit)
   (define-key wl-draft-mode-map "\C-c\C-k" 'wl-draft-kill)
   (define-key wl-draft-mode-map "\C-l" 'wl-draft-highlight-and-recenter)
   (define-key wl-draft-mode-map "\C-i" 'wl-complete-field-body-or-tab)
@@ -664,7 +667,6 @@ Special commands:
   (define-key wl-draft-mode-map "\C-c\C-j" 'wl-template-select)
   (define-key wl-draft-mode-map "\C-c\C-p" 'wl-draft-preview-message)
   (define-key wl-draft-mode-map "\C-c\C-a" 'wl-addrmgr)
- (define-key wl-draft-mode-map "\C-c\C-z" 'wl-draft-save)
   (define-key wl-draft-mode-map "\C-xk"    'wl-draft-mimic-kill-buffer)
   (define-key wl-draft-mode-map "\C-c\C-d" 'wl-draft-elide-region)
   (define-key wl-draft-mode-map "\C-a" 'wl-draft-beginning-of-line)
