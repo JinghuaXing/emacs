@@ -443,3 +443,8 @@
     (switch-to-buffer select_name)
     )
   )
+
+(defun sw/notify (body)
+  "Notify with TITLE, BODY via `libnotify'."
+  (call-process "notify-send" nil 0 nil
+		body "-t" "5000" ))

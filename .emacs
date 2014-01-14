@@ -34,7 +34,7 @@
 (load-file "~/.elisp/dotemacs/yasnippet.el")
 (load-file "~/.elisp/dotemacs/eim.el")
 
-(load-file "~/.elisp/dotemacs/openwith.el")
+;; (load-file "~/.elisp/dotemacs/openwith.el")
 (load-file "~/.elisp/dotemacs/mark.el")
 (load-file "~/.elisp/dotemacs/sdcv.el")
 (load-file "~/.elisp/dotemacs/color.el")

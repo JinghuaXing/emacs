@@ -1,6 +1,18 @@
-%inbox  "收件箱"
-%[Gmail]/草稿 "草稿"
-%[Gmail]/已发邮件 "已发邮件"
-%[Gmail]/已删除邮件 "已删除邮件"
+#
+# Folder definition file
+# This file is generated automatically by Wanderlust/2.15.9 (Almost Unreal).
+#
+# If you edit this file by hand, be sure that comment lines
+# will be washed out by wl-fldmgr.
+#
 
+%inbox	"收件箱"
++Drafts	"草稿"
+%Sent	"已发邮件"
+%Trash	"已删除邮件"
+%archieve	"归档"
+%todo	"待办"
 
+# petname definition (access group, folder in access group)
+
+# end of file.
