@@ -1297,71 +1297,77 @@ This function is defined by `wl-summary-define-sort-command'." sort-by)
 (defun wl-summary-exit (&optional force-exit)
   "Exit current summary.  if FORCE-EXIT, exits even the summary is sticky."
   (interactive "P")
-  (let ((summary-buf (current-buffer))
-	(sticky (wl-summary-sticky-p))
-	summary-win
-	message-buf message-win
-	folder-buf folder-win)
-    (run-hooks 'wl-summary-exit-pre-hook)
-    (if wl-summary-buffer-exit-function
-	(funcall wl-summary-buffer-exit-function)
-      (if (or force-exit (not sticky))
-	  (wl-summary-cleanup-temp-marks))
-      (unwind-protect
-	  ;; save summary status
-	  (progn
-	    (wl-summary-save-view)
-	    (if (or force-exit (not sticky))
-		(elmo-folder-close wl-summary-buffer-elmo-folder)
-	      (elmo-folder-commit wl-summary-buffer-elmo-folder)
-	      (elmo-folder-check wl-summary-buffer-elmo-folder))
-	    (if wl-use-scoring (wl-score-save)))
-	;; for sticky summary
-	(wl-delete-all-overlays)
-	(setq wl-summary-buffer-disp-msg nil)
-	(elmo-kill-buffer wl-summary-search-buf-name)
-	;; delete message window if displayed.
-	(if (and wl-message-buffer (get-buffer-window wl-message-buffer))
-	    (delete-window (get-buffer-window wl-message-buffer)))
-	(if (and wl-summary-use-frame
+  ;; >>> sunway
+  (if wl-summary-buffer-disp-msg
+      (wl-summary-toggle-disp-msg)
+    ;; <<< sunway
+    (let ((summary-buf (current-buffer))
+	  (sticky (wl-summary-sticky-p))
+	  summary-win
+	  message-buf message-win
+	  folder-buf folder-win)
+      (run-hooks 'wl-summary-exit-pre-hook)
+      (if wl-summary-buffer-exit-function
+	  (funcall wl-summary-buffer-exit-function)
+	(if (or force-exit (not sticky))
+	    (wl-summary-cleanup-temp-marks))
+	(unwind-protect
+	    ;; save summary status
+	    (progn
+	      (wl-summary-save-view)
+	      (if (or force-exit (not sticky))
+		  (elmo-folder-close wl-summary-buffer-elmo-folder)
+		(elmo-folder-commit wl-summary-buffer-elmo-folder)
+		(elmo-folder-check wl-summary-buffer-elmo-folder))
+	      (if wl-use-scoring (wl-score-save)))
+	  ;; for sticky summary
+	  (wl-delete-all-overlays)
+	  (setq wl-summary-buffer-disp-msg nil)
+	  (elmo-kill-buffer wl-summary-search-buf-name)
+	  ;; delete message window if displayed.
+	  (if (and wl-message-buffer (get-buffer-window wl-message-buffer))
+	      (delete-window (get-buffer-window wl-message-buffer)))
+	  (if (and wl-summary-use-frame
 		 (> (length (visible-frame-list)) 1))
-	    (delete-frame))
-	(if (setq folder-buf (get-buffer wl-folder-buffer-name))
-	    (if wl-summary-use-frame
-		(let (select-frame)
-		  (save-selected-window
-		    (dolist (frame (visible-frame-list))
-		      (select-frame frame)
-		      (if (get-buffer-window folder-buf)
-			  (setq select-frame frame))))
-		  (if select-frame
-		      (select-frame select-frame)
-		    (switch-to-buffer folder-buf)))
-	      (if (setq folder-win (get-buffer-window folder-buf))
-		  ;; folder win is already displayed.
-		  (select-window folder-win)
-		;; folder win is not displayed.
-		(switch-to-buffer folder-buf)))
-	  ;; currently no folder buffer
-	  (wl-folder))
-	(and wl-folder-move-cur-folder
+	      (delete-frame))
+	  (if (setq folder-buf (get-buffer wl-folder-buffer-name))
+	      (if wl-summary-use-frame
+		  (let (select-frame)
+		    (save-selected-window
+		      (dolist (frame (visible-frame-list))
+			(select-frame frame)
+			(if (get-buffer-window folder-buf)
+			    (setq select-frame frame))))
+		    (if select-frame
+			(select-frame select-frame)
+		      (switch-to-buffer folder-buf)))
+		(if (setq folder-win (get-buffer-window folder-buf))
+		    ;; folder win is already displayed.
+		    (select-window folder-win)
+		  ;; folder win is not displayed.
+		  (switch-to-buffer folder-buf)))
+	    ;; currently no folder buffer
+	    (wl-folder))
+	  (and wl-folder-move-cur-folder
 	     wl-folder-buffer-cur-point
 	     (goto-char wl-folder-buffer-cur-point))
-	(setq wl-folder-buffer-cur-path nil)
-	(setq wl-folder-buffer-last-visited-entity-id wl-folder-buffer-cur-entity-id)
-	(setq wl-folder-buffer-cur-entity-id nil)
-	(wl-delete-all-overlays)
-	(if wl-summary-exit-next-move
-	    (wl-folder-next-unsync t)
-	  (beginning-of-line))
-	(if (setq summary-win (get-buffer-window summary-buf))
-	    (delete-window summary-win))
-	(if (or force-exit
-		(not sticky))
-	    (progn
-	      (set-buffer summary-buf)
-	      (kill-buffer summary-buf)))
-	(run-hooks 'wl-summary-exit-hook)))))
+	  (setq wl-folder-buffer-cur-path nil)
+	  (setq wl-folder-buffer-last-visited-entity-id wl-folder-buffer-cur-entity-id)
+	  (setq wl-folder-buffer-cur-entity-id nil)
+	  (wl-delete-all-overlays)
+	  (if wl-summary-exit-next-move
+	      (wl-folder-next-unsync t)
+	    (beginning-of-line))
+	  (if (setq summary-win (get-buffer-window summary-buf))
+	      (delete-window summary-win))
+	  (if (or force-exit
+		 (not sticky))
+	      (progn
+		(set-buffer summary-buf)
+		(kill-buffer summary-buf)))
+	  (run-hooks 'wl-summary-exit-hook))))
+    )
+  )
 
 (defun wl-summary-suspend ()
   (interactive)
