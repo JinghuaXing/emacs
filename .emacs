@@ -213,8 +213,6 @@
 (setq-default save-place t)
 (transient-mark-mode t)
 
-;; (require 'switch-window)
-
 (setq backup-inhibited t)
 
 (require 'auto-highlight-symbol)

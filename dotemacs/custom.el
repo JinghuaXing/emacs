@@ -216,7 +216,6 @@
  '(sr-show-file-attributes nil)
  '(sr-use-commander-keys nil)
  '(sr-virtual-listing-switches " -aldpgG")
- '(switch-window-shortcut-style (quote alphabet))
  '(tabbar-home-button (quote (("") "")))
  '(tabbar-scroll-left-button (quote (("") "")))
  '(tabbar-scroll-right-button (quote (("") "")))

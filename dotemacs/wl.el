@@ -118,3 +118,9 @@ Email:wei.sun@spreadtrum.com
 	     (save-excursion
 	       (end-of-buffer)
 	       (wl-draft-insert-signature))))
+
+;; score
+(setq wl-summary-expunge-below -1000)
+(setq wl-summary-important-above 1000)
+
+(setq wl-forward-subject-prefix "Fwd: ") 
