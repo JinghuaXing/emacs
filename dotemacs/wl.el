@@ -1,12 +1,5 @@
 (setq wl-summary-width 150)
 
-(if (executable-find "w3m")
-    (progn
-      (add-to-list 'load-path "~/.elisp/w3m")
-      (require 'w3m)
-      )
-  )
-
 (add-to-list 'load-path "~/.elisp/wanderlust/flim")
 (add-to-list 'load-path "~/.elisp/wanderlust/apel/")
 (add-to-list 'load-path "~/.elisp/wanderlust/semi/")
@@ -17,7 +10,13 @@
 (autoload 'wl "wl" "Wanderlust" t)
 
 (setq wl-folders-file "~/.elisp/wanderlust/folders")
-(require 'mime-w3m)
+(if (executable-find "w3m")
+    (progn
+      (add-to-list 'load-path "~/.elisp/w3m")
+      (require 'w3m)
+      (require 'mime-w3m)
+      )
+  )
 
 (autoload 'wl-user-agent-compose "wl-draft" nil t)
 (if (boundp 'mail-user-agent)
