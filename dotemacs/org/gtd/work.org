@@ -543,3 +543,5 @@ CLOSED: [2013-12-31 Tue 18:12]
 CLOSED: [2014-01-14 Tue 15:53]
 - State "DONE"       from "TODO"       [2014-01-14 Tue 15:53]
 [2014-01-11 星期六 23:27]
+* TODO selinux on android and ACL                                      :work:
+[2014-01-15 星期三 22:46]
