@@ -838,11 +838,18 @@ This function is imported from Emacs 20.7."
 	    (timer-activate timer)))))))
 
 (defsubst wl-biff-notify (new-mails notify-minibuf)
-  (when (and (not wl-modeline-biff-status) (> new-mails 0))
+  ;; >>> sunway
+  ;; (when (and (not wl-modeline-biff-status) (> new-mails 0))
+  ;;   (run-hooks 'wl-biff-notify-hook))
+  ;; (when (and wl-modeline-biff-status (eq new-mails 0))
+  ;;   (run-hooks 'wl-biff-unnotify-hook))
+  (when (and t (> new-mails 0))
     (run-hooks 'wl-biff-notify-hook))
-  (when (and wl-modeline-biff-status (eq new-mails 0))
+  (when (and t (eq new-mails 0))
     (run-hooks 'wl-biff-unnotify-hook))
+  ;; <<< sunway
   (setq wl-modeline-biff-status (> new-mails 0))
+  (setq wl-new-mails new-mails)
   (force-mode-line-update t)
   (when notify-minibuf
     (cond ((zerop new-mails) (message "No mail."))
@@ -863,10 +870,13 @@ This function is imported from Emacs 20.7."
     (let ((new-mails 0)
 	  (flist (or wl-biff-check-folder-list (list wl-default-folder)))
 	  folder)
-      (if (eq (length flist) 1)
-	  (wl-biff-check-folder-async (wl-folder-get-elmo-folder
-				       (car flist) 'biff) (interactive-p))
-	(unwind-protect
+      ;; >>> sunway
+      ;; (if
+	  ;; (eq (length flist) 1)
+	  ;; (wl-biff-check-folder-async (wl-folder-get-elmo-folder
+	  ;; 			       (car flist) 'biff) (interactive-p))
+      ;; <<< sunway
+      (unwind-protect
 	    (while flist
 	      (setq folder (wl-folder-get-elmo-folder (car flist))
 		    flist (cdr flist))
@@ -875,9 +885,15 @@ This function is imported from Emacs 20.7."
 			 (elmo-folder-exists-p folder))
 		(setq new-mails
 		      (+ new-mails
-			 (nth 0 (wl-biff-check-folder folder))))))
+			 ;; >>> sunway
+			 ;; (nth 0 (wl-biff-check-folder folder))
+			 (nth 1 (wl-biff-check-folder folder))
+			 ;; <<< sunway
+			 ))))
 	  (setq wl-biff-check-folders-running nil)
-	  (wl-biff-notify new-mails (interactive-p)))))))
+	  (wl-biff-notify new-mails (interactive-p)))
+      ;; )
+    )))
 
 (defun wl-biff-check-folder (folder)
   (if (eq (elmo-folder-type-internal folder) 'pop3)

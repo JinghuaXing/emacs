@@ -401,7 +401,9 @@ See also variable `wl-use-petname'."
   
   (define-key wl-summary-mode-map "\r"   'wl-summary-enter-handler)
   (define-key wl-summary-mode-map "\C-m" 'wl-summary-enter-handler)
-  (define-key wl-summary-mode-map "/"    'wl-thread-open-close)
+  ;; >>> sunway
+  ;; (define-key wl-summary-mode-map "/"    'wl-thread-open-close)
+  ;; <<< sunway
   (define-key wl-summary-mode-map "["    'wl-thread-open-all)
   (define-key wl-summary-mode-map "]"    'wl-thread-close-all)
   (define-key wl-summary-mode-map "-"    'wl-summary-prev-line-content)
@@ -461,8 +463,10 @@ See also variable `wl-use-petname'."
 
   (define-key wl-summary-mode-map "l"    'wl-summary-toggle-disp-folder)
   (define-key wl-summary-mode-map "v"    'wl-summary-toggle-disp-msg)
-  (define-key wl-summary-mode-map "V"    'wl-summary-virtual)
-
+  ;; >>> sunway
+  ;; (define-key wl-summary-mode-map "V"    'wl-summary-virtual)
+  (define-key wl-summary-mode-map "/"    'wl-summary-virtual)
+  ;; <<< sunway
   (define-key wl-summary-mode-map "\C-i"  'wl-summary-goto-last-displayed-msg)
   (define-key wl-summary-mode-map "?"    'wl-summary-pick)
   (define-key wl-summary-mode-map "\ee"  'wl-summary-expire)

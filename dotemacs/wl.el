@@ -69,12 +69,24 @@
 (setq elmo-passwd-alist '(("IMAP:wei.sun@spreadtrum.com/clear@sci-mail8.spreadtrum.com:143" . "MTIzNDU2")))
 (setq wl-folder-desktop-name "Spreadtrum")
 
-(setq wl-message-ignored-field-list '("^.*:"))
+;; (setq wl-message-ignored-field-list '("^.*:"))
+(setq wl-message-ignored-field-list '(
+				      "^Content-Transfer-Encoding:"
+				      "^Sensitivity:"
+				      "^MIME-Version:"
+				      "^X-.*:"
+				      "^In-Reply-To:"
+				      "^Message-ID:"
+				      "^Content-Type:"
+				      "^Importance:"
+				      "^References:"
+				      "^Cc:"
+				      ))
 
 ;; ..but these five
 (setq wl-message-visible-field-list
       '("^To:"
-	"^Cc:"
+	;; "^Cc:"
 	"^From:"
 	"^Subject:"
 	"^Date:"))
@@ -84,7 +96,8 @@
 	"^Subject:"
 	"^Date:"
 	"^To:"
-	"^Cc:"))
+	;; "^Cc:"
+	))
 
 (setq wl-news-news-alist nil)
 
@@ -119,7 +132,30 @@ Email:wei.sun@spreadtrum.com
 	       (wl-draft-insert-signature))))
 
 ;; score
-(setq wl-summary-expunge-below -1000)
-(setq wl-summary-important-above 1000)
+;; (setq wl-summary-expunge-below -500)
+(setq wl-summary-important-above 500)
 
 (setq wl-forward-subject-prefix "Fwd: ") 
+
+(setq wl-new-mails 0)
+
+(setq default-mode-line-format (sw/insert-after default-mode-line-format 5 '(:eval
+									     (if (> wl-new-mails 0)
+										 (propertize (format " [wl:%d] " wl-new-mails) 'face 'bold)
+									       )
+									     )))
+(add-hook 'wl-biff-notify-hook '(lambda ()
+				  (sw/notify "new mail")
+				  ))
+
+(add-hook 'wl-init-hook 'wl-biff-start)
+
+(setq wl-summary-move-direction-toggle nil)
+
+(require 'elmo-search)
+(elmo-search-register-engine
+    'mu 'local-file
+    :prog "/usr/local/bin/mu" ;; or wherever you've installed it
+    :args '("find" pattern "--fields" "l") :charset 'utf-8)
+
+(setq elmo-search-default-engine 'mu)

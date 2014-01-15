@@ -211,7 +211,7 @@
       (progn 
 	(add-hook 'kill-emacs-hook 'my-desktop-kill-emacs-hook)
 ;;	(global-set-key (kbd "s-l") 'switch-session)
-	(setq default-mode-line-format (insert-after default-mode-line-format 6 '(:eval (concat "[" my-desktop-mode-indicator "] "))))
+	(setq default-mode-line-format (sw/insert-after default-mode-line-format 6 '(:eval (propertize (concat " [" my-desktop-mode-indicator "] ") 'face 'italic))))
 	;; (add-to-list 'default-mode-line-format '(:eval (concat "[" my-desktop-mode-indicator "]")))
 	(setq save-timer (run-with-timer 3600 3600 'save-session))
 	)
@@ -224,6 +224,5 @@
 
 (add-to-list 'desktop-modes-not-to-save 'dired-mode)
 
-(defun insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)
 (defalias 'ss 'switch-session)
 (provide 'my-desktop)

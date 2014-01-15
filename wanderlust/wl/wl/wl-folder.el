@@ -148,7 +148,9 @@
   (setq wl-folder-mode-map (make-sparse-keymap))
   (define-key wl-folder-mode-map " "    'wl-folder-jump-to-current-entity)
 ;;;  (define-key wl-folder-mode-map "\M- " 'wl-folder-open-close)
-  (define-key wl-folder-mode-map "/"    'wl-folder-open-close)
+  ;; >>> sunway
+  ;; (define-key wl-folder-mode-map "/"    'wl-folder-open-close)
+  ;; <<< sunway
   (define-key wl-folder-mode-map "\C-m" 'wl-folder-jump-to-current-entity)
   (define-key wl-folder-mode-map [(shift return)] 'wl-folder-jump-to-current-entity-with-arg)
   (define-key wl-folder-mode-map "\M-\C-m" 'wl-folder-update-recursive-current-entity)
@@ -183,7 +185,10 @@
   (define-key wl-folder-mode-map "e"    'wl-folder-expire-current-entity)
   (define-key wl-folder-mode-map "E"    'wl-folder-empty-trash)
   (define-key wl-folder-mode-map "F"    'wl-folder-flush-queue)
-  (define-key wl-folder-mode-map "V"    'wl-folder-virtual)
+  ;; >>> sunway
+  ;; (define-key wl-folder-mode-map "V"    'wl-folder-virtual)
+  (define-key wl-folder-mode-map "/"    'wl-folder-virtual)
+  ;; <<< sunway
   (define-key wl-folder-mode-map "?"    'wl-folder-pick)
   (define-key wl-folder-mode-map "q"    'wl-exit)
   (define-key wl-folder-mode-map "z"    'wl-folder-suspend)

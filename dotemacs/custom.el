@@ -237,6 +237,7 @@
  '(wg-query-for-save-on-workgroups-mode-exit nil)
  '(wg-use-faces nil)
  '(winner-ring-size 5)
+ '(wl-biff-check-interval 60)
  '(wl-draft-preview-attributes nil)
  '(wl-draft-send-confirm-with-preview nil)
  '(wl-draft-sendlog nil)
