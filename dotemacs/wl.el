@@ -81,6 +81,8 @@
 				      "^Importance:"
 				      "^References:"
 				      "^Cc:"
+				      "^Received:"
+				      "^User-Agent:"
 				      ))
 
 ;; ..but these five
@@ -131,6 +133,7 @@ Email:wei.sun@spreadtrum.com
 	       (end-of-buffer)
 	       (wl-draft-insert-signature))))
 
+(add-hook 'wl-mail-setup-hook 'auto-fill-mode)
 ;; score
 ;; (setq wl-summary-expunge-below -500)
 (setq wl-summary-important-above 500)
@@ -152,10 +155,10 @@ Email:wei.sun@spreadtrum.com
 
 (setq wl-summary-move-direction-toggle nil)
 
-(require 'elmo-search)
-(elmo-search-register-engine
-    'mu 'local-file
-    :prog "/usr/local/bin/mu" ;; or wherever you've installed it
-    :args '("find" pattern "--fields" "l") :charset 'utf-8)
+;; (require 'elmo-search)
+;; (elmo-search-register-engine
+;;     'mu 'local-file
+;;     :prog "/usr/local/bin/mu" ;; or wherever you've installed it
+;;     :args '("find" pattern "--fields" "l") :charset 'utf-8)
 
-(setq elmo-search-default-engine 'mu)
+;; (setq elmo-search-default-engine 'mu)
