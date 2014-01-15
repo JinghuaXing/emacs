@@ -154,11 +154,3 @@ Email:wei.sun@spreadtrum.com
 (add-hook 'wl-init-hook 'wl-biff-start)
 
 (setq wl-summary-move-direction-toggle nil)
-
-;; (require 'elmo-search)
-;; (elmo-search-register-engine
-;;     'mu 'local-file
-;;     :prog "/usr/local/bin/mu" ;; or wherever you've installed it
-;;     :args '("find" pattern "--fields" "l") :charset 'utf-8)
-
-;; (setq elmo-search-default-engine 'mu)
