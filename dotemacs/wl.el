@@ -69,21 +69,21 @@
 (setq elmo-passwd-alist '(("IMAP:wei.sun@spreadtrum.com/clear@sci-mail8.spreadtrum.com:143" . "MTIzNDU2")))
 (setq wl-folder-desktop-name "Spreadtrum")
 
-;; (setq wl-message-ignored-field-list '("^.*:"))
-(setq wl-message-ignored-field-list '(
-				      "^Content-Transfer-Encoding:"
-				      "^Sensitivity:"
-				      "^MIME-Version:"
-				      "^X-.*:"
-				      "^In-Reply-To:"
-				      "^Message-ID:"
-				      "^Content-Type:"
-				      "^Importance:"
-				      "^References:"
-				      "^Cc:"
-				      "^Received:"
-				      "^User-Agent:"
-				      ))
+(setq wl-message-ignored-field-list '("^.*:"))
+;; (setq wl-message-ignored-field-list '(
+;; 				      "^Content-Transfer-Encoding:"
+;; 				      "^Sensitivity:"
+;; 				      "^MIME-Version:"
+;; 				      "^X-.*:"
+;; 				      "^In-Reply-To:"
+;; 				      "^Message-ID:"
+;; 				      "^Content-Type:"
+;; 				      "^Importance:"
+;; 				      "^References:"
+;; 				      "^Cc:"
+;; 				      "^Received:"
+;; 				      "^User-Agent:"
+;; 				      ))
 
 ;; ..but these five
 (setq wl-message-visible-field-list
@@ -135,7 +135,7 @@ Email:wei.sun@spreadtrum.com
 
 (add-hook 'wl-mail-setup-hook 'auto-fill-mode)
 ;; score
-;; (setq wl-summary-expunge-below -500)
+(setq wl-summary-expunge-below -500)
 (setq wl-summary-important-above 500)
 
 (setq wl-forward-subject-prefix "Fwd: ") 

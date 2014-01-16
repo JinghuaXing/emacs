@@ -2,7 +2,14 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("yong"
+(("elisp"
+ (front-context-string . "\n4.1 String and ")
+ (rear-context-string . " and Characters\n")
+ (position . 203016)
+ (filename . "/usr/local/share/info/elisp")
+ (info-node . "String Basics")
+ (handler . Info-bookmark-jump))
+("yong"
  (filename . "/ssh:apadmin@yong:/home/apadmin/code/")
  (front-context-string . "2.3.5_lc_dev\n  d")
  (rear-context-string . " 4 Sep  9 12:27 ")
