@@ -163,6 +163,12 @@ activityThread will invoke AMS.attachApplication to notify AMS that
 process is OK, then AMS can call realStartActivity to launch the
 activity.
 
+**** bindApplication
+AMS 使用 thread.bindApplication 告诉新建立的 activityThread 应该 "bind"
+到哪个 application. 任何一个 ActivityThread 在刚启动时(通过 main) 时并
+不知道它和哪个 application (apk) 相关的, 只有
+AMS::thread.bindApplication 之后, ActivityThread 才和某个 app 相关, 通
+过 ps 或 ddms 看这个进程的名字都会显示 app 相关的名字.
 **** activityPaused
 
 activityPaused is called by ActivityThread to notity AMS that the
