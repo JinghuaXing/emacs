@@ -131,7 +131,6 @@ key 是 AMS 生成的 Token 对象, 这个 Token 对象是由 AMS 在启动 Acti
 
 #+END_EXAMPLE
 
-
 *** WindowManagerPolicy
 **** PhoneWindowManager
 ** Topics
@@ -326,7 +325,6 @@ Service 启动时不会于 PMS 添加任何 token
 
 #+END_SRC
 
-
 *** Activity window size
 http://blog.csdn.net/luoshengyang/article/details/8479101
 *** window z-order
@@ -337,3 +335,67 @@ http://blog.csdn.net/luoshengyang/article/details/8479101
 WMS.setAppStartingWindow
 *** Event Dispatching
 see also [[Android Event Dispatching]]
+*** 从 startActivity 到显示的过程
+
+#+BEGIN_SRC plantuml :file start_activity.png
+box "app 1"
+participant  previouse_activity as prev_act
+end box
+
+box "system_server"
+participant  ActivityManagerService as ams
+participant  WindowManagerService as wms
+end box
+
+box "app 2"
+participant  ActivityThread as at
+participant  WindowManagerImpl as wmi
+participant  ViewRootImpl as vri
+participant  Activity as act
+end box
+
+prev_act -> ams : startActivity
+ams -> wms : setAppStartingWindow
+activate wms
+wms -> wms : addStartingWindow
+deactivate wms
+
+ams -> ams : resumeTopActivityLocked
+activate ams
+ams -> prev_act : pauseActivity
+deactivate ams
+activate prev_act
+prev_act -> ams : activityPaused
+deactivate prev_act
+ams -> at : startProcessLocked
+activate at
+at -> ams : attachApplication
+deactivate at
+activate ams
+ams -> at : bindApplication
+ams -> at : scheduleLaunchActivity
+deactivate ams
+at -> act : onCreate
+at -> act : onStart
+at -> act : onResume
+act -> act : inflating views
+act -> wmi : addView
+wmi -> vri : performTraversals
+activate vri
+vri -> vri : dispatchAttachedToWindow
+vri -> wms : requestLayout
+activate wms
+wms --> vri : return windows size
+deactivate wms
+vri -> vri : onMeasure
+vri -> vri : onLayout
+vri -> vri : onDraw
+vri -> wms: finishDrawing
+deactivate vri
+activate wms
+wms -> wms : performShowLocked
+wms -> wms : removeStartingWindow
+activate wms
+deactivate wms
+deactivate wms
+#+END_SRC
