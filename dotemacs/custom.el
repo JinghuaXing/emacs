@@ -113,6 +113,7 @@
  '(gdb-enable-debug t)
  '(global-auto-complete-mode nil)
  '(global-semantic-stickyfunc-mode t)
+ '(gnus-demon-timestep 10)
  '(golden-ratio-exclude-modes (quote ("ediff-mode")))
  '(helm-ff-auto-update-initial-value nil)
  '(helm-for-files-preferred-list (quote (helm-source-buffer-not-found helm-source-buffers-list helm-source-recentf helm-source-ls-git helm-source-bookmarks helm-source-files-in-current-dir)))

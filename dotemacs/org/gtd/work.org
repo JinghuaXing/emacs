@@ -553,3 +553,7 @@ CLOSED: [2014-01-14 Tue 15:53]
 * TODO launch_activity and performTraversals  :work:
 why performTraversals is called so many times (traceview)
 [2014-01-17 Fri 20:10]
+* TODO IO performance: uui vs prime                                    :work:
+[2014-01-21 Tue 21:19]
+* TODO preload class native crash                                      :work:
+[2014-01-21 Tue 21:20]

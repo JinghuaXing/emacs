@@ -1,0 +1,96 @@
+#+TITLE: My Linux Desktop
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* My Linux Desktop
+工欲善其事，必先利其器 -- 《论语》
+
+** i3 wm
+i3 wm 是一个 tiling window manager (平铺式窗口管理器), 与常见的
+floating window manager (重叠式窗口管理器) 如 windows 默认的窗口管理器
+或 gnome 默认的 metacity 不同的是, i3 不允许窗口重叠, 通常把桌面划分为
+不相交的区域来显示各个窗口, 较少注意窗口装饰, 尽量铺满整个屏幕, 有丰富
+的快捷键支持, 可以不用鼠标就能完全控制它, 提高工作效率.
+
+** emacs
+emacs 是一个具有很强扩展性文本编辑器, 虽然我使用它已经超过十年了, 但它
+仍能时不时的给我一些惊喜. 除了它的基本的编辑功能, 我平时主要用下面这些
+扩展功能:
+*** magit
+magit 是一个 git 插件, 有了它, 我再也不敲 git 命令了.
+*** my-desktop
+我自己写的针对 desktop-mode 扩展, 用于切换不同的 project, 比如当前打开
+了 200 多个 4.1 仓库下的文件, 临时需要解决 4.4 的一个 bug, 我可以用
+my-desktop 把当前所有工作状态保存下来, 包含打开的文件, 命令的历史,甚至
+具体到某个变量, 以便以后能快速恢复之前的工作环境.
+*** org-mode
+我使用 org-mode 来做 GTD 和写一些工作笔记. 除此以外, 我使用 org-mode 来
+写任何的文档, 甚至我的所有密码和个人信息也是 org-mode 箮理的(当然, 是加
+密的).
+
+1. 它编辑的文件是纯文本的, 可以方便的使用版本控制
+2. 它可以导出成 pdf, html 等
+3. 它内置的 org-babel 功能可以使我以纯文本的方式插入其他程序源码, 并在
+   导出时执行这些源码生成最终的文档. 这个功能实际上就是 knuth 构想的"文
+   学编程", 你想过使用代码来写文档么? 听起来很玄, 目前我用 org-babel主
+   要是插入 graphviz 或 plantuml 代码, 用来在文档中插入图片.
+*** dired-mode
+在 emacs 中操作文件, 有了 dired-mode, 我从不用其他文件管理器.
+** screen
+screen  是一个 terminal multiplexer, 它可以操作多个 shell 窗口, 并且它
+的 attach/detach 功能尤其适合在远程终端上使用. 
+
+** dropbox
+dropbox 可能是唯一一个支持 linux 的云存储工具. 
+我使用 dropbox 来保存:
+1. 各种配置文件和 org-mode GTD 信息, 因为我需要不同机器和平台上
+   同步
+2. 重要文件的备份
+   比如未提交的代码, ssh 私钥等
+3. 一些旧的文件的存档
+** workrave
+定时提醒并锁定屏幕, 提醒我需要活动活动了.
+** zeal
+一个离线文档浏览器, 内置了许多项目的文档的下载, 例如 android, stl,
+ruby 等
+** 软件开发相关的工具
+*** droid
+我自己写的 android 小工具的集合, 可以省去许多繁琐的操作, 例如:
+- droid push 
+  找到当前 git 仓库编译输出的文件, 并 push 到手机对应的位置, 省去自己
+  去 out 目录找.
+- droid sniffer 
+  在 PC 里直接对手机进行 tcpdump.
+- droid debug java/exec/attach
+  使用 gdb 和 gdbserver 直接 debug native 代码.
+*** profiling
+- mat
+- valgrind
+- traceview
+*** 反编译
+分析代码时经常需要对 apk 进行反编译, 以下工具是必备的:
+- dex2jar
+- jd-gui
+- apktool
+- AXMLPrinter2
+- baksmali.jar & smali.jar
+*** portecle
+android app 或网络相关的程序经常与非对称密钥以及各种 key store 有关,
+这个工具可以代替复杂的 openssh 或 keytool 命令.
+*** charles web debugging proxy
+调试 https 程序的利器, 通过它, 你可以查看 ssl 加密的数据.
+*** ack
+比 grep 更快. 
+*** beagrep
+索引工具, 使用它在整个 android 仓库中查找一个字符串只需几秒钟.
+*** ctags
+** 其他
+*** solarized color theme
+长时间盯着电脑屏幕需要选择一个低对比度的 color theme, solarized dark 是
+一个不错的选择. 
+*** 字体
+- 英文
+  terminus
+- 中文
+  文泉驿 bitmap song
+
+这两个都是点阵字体, 相对于更"现代"的矢量字体, 我觉得点阵字体更适合写代码用. 

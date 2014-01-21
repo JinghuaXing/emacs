@@ -45,7 +45,8 @@
 (load-file "~/.elisp/dotemacs/file_cache.el")
 (load-file "~/.elisp/dotemacs/autoinsert.el")
 (load-file "~/.elisp/dotemacs/python.el")
-(load-file "~/.elisp/dotemacs/wl.el")
+;; (load-file "~/.elisp/dotemacs/wl.el")
+(load-file "~/.elisp/dotemacs/gnus.el")
 (require 'diff-mode-)
 
 (add-hook 'write-file-hooks 'time-stamp)
@@ -70,7 +71,7 @@
 (show-paren-mode t)
 ;; (setq show-paren-style 'mixed)
 (setq frame-title-format '(:eval (concat "%b [" my-desktop-mode-indicator "] -- Emacs")))
-(setq user-mail-address "sunwayforever@gmail.com")
+(setq user-mail-address "wei.sun@spreadtrum.com")
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 

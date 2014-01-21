@@ -1,22 +1,25 @@
 (setq mail-user-agent  'gnus-user-agent)
 (setq read-mail-command 'gnus)
-(setq user-full-name "sunway")
-(setq user-mail-address "sunwayforever@gmail.com")
-(setq nnmail-expiry-wait 3)
+(setq user-full-name "wei.sun")
+(setq user-mail-address "wei.sun@spreadtrum.com")
+
 (setq gnus-use-cache 'passive)
 (setq gnus-large-newsgroup nil)
 (setq gnus-check-new-newsgroups nil)
-(setq gnus-select-method '(nnfolder ""))
-(setq mail-sources
-      '(
-	(file :path "/var/mail/fetchmail")
-	))
-(setq nnmail-split-methods
-      '(("mail.emacs" ".*help-gnu-emacs@gnu.org")
-	("mail.mspace" "\\(.*jiangzhi.*\\)\\|\\(.*jiaoli.*\\)\\|\\(.*bergwolf.*\\)\\|\\(.*bjddsu.*\\)\\|\\(.*wwbupt.*\\)\\|\\(.*wangruisi.*\\)")
-	("mail.bupt" ".*bupt03405@googlegroups.com")
-	("mail.ion" ".*ion-general@lists.berlios.de")
-	("mail.misc" "")))
+
+(setq gnus-select-method '(nnimap "spreadtrum"
+				  (nnimap-address "sci-mail8.spreadtrum.com")   ; it could also be imap.googlemail.com if that's your server.
+				  (nnimap-server-port 143)
+				  (nnimap-stream network)))
+
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-auth-credentials '(("sci-mail8.spreadtrum.com" 25
+				   "wei.sun" "123456"))
+      smtpmail-default-smtp-server "sci-mail8.spreadtrum.com"
+      smtpmail-smtp-server "sci-mail8.spreadtrum.com"
+      smtpmail-smtp-service 25
+      )
+
 (setq gnus-use-nocem t)
 (add-hook 'mail-citation-hook 'sc-cite-original)
 (setq gnus-confirm-mail-reply-to-news t
@@ -24,7 +27,7 @@
       message-elide-ellipsis "[...]\n"
       )
 
-;;ÅÅÐò
+;;æŽ’åº
 (setq gnus-thread-sort-functions
       '(
 	(not gnus-thread-sort-by-date)
@@ -32,14 +35,14 @@
 	))
 
 (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
-;;ÖÐÎÄÉèÖÃ
+;;ä¸­æ–‡è®¾ç½®
 (setq gnus-summary-show-article-charset-alist
       '((1 . cn-gb-2312) (2 . big5) (3 . gbk) (4 . utf-8)))
-(setq
- gnus-default-charset 'cn-gb-2312       
- gnus-group-name-charset-group-alist '((".*" . cn-gb-2312))
- gnus-newsgroup-ignored-charsets
- '(unknown-8bit x-unknown iso-8859-1 ISO-8859-15 x-gbk GB18030 gbk DEFAULT_CHARSET))
+;; (setq
+;;  gnus-default-charset 'cn-gb-2312       
+;;  gnus-group-name-charset-group-alist '((".*" . cn-gb-2312))
+;;  gnus-newsgroup-ignored-charsets
+;;  '(unknown-8bit x-unknown iso-8859-1 ISO-8859-15 x-gbk GB18030 gbk DEFAULT_CHARSET))
 
 (eval-after-load "mm-decode"
   '(progn
@@ -47,11 +50,21 @@
      (add-to-list 'mm-discouraged-alternatives "text/richtext")))
 
 (defun my-fortune-signature ()
-  (shell-command-to-string "sig.pl"))
+  (concat
+   (shell-command-to-string "fortune")
+   "
+wei.sun(å­™ä¼Ÿ)
+åˆ†æœº: 589-653
+æ‰‹æœº: 18630859306
+Email:wei.sun@spreadtrum.com
+å±•è®¯é€šä¿¡(å¤©æ´¥)
+"
+   )
+  )
 (setq gnus-posting-styles
       '((".*"
-	 (name "sunway")
-	 (organization "BUPT")
+	 (name "wei.sun")
+	 (organization "pld_tj")
 	 (signature my-fortune-signature)
 	 )
 	))
@@ -63,10 +76,13 @@
     (if time
 	(format-time-string "%b %d  %H:%M" time)
       "")))
-(defadvice message-send (around my-confirm-message-send)
-  (if (yes-or-no-p "send it? ")
-      ad-do-it))
-(ad-activate 'message-send)
+
+;; (defadvice message-send (around my-confirm-message-send)
+;;   (if (yes-or-no-p "send it? ")
+;;       ad-do-it))
+
+;; (ad-activate 'message-send)
+
 (setq gnus-extract-address-components
       'mail-extract-address-components)
 (setq gnus-summary-line-format
@@ -78,15 +94,18 @@
       )
 (setq gnus-visible-headers "^From:\\|^Subject:\\|^To:\\|^Date:")
 (setq gnus-message-archive-group
-      '("sent"))
+      '("nnimap+spreadtrum:Sent"))
 
-(require 'bbdb)
-(bbdb-initialize 'gnus 'message)
-(setq bbdb-user-mail-names
-      (regexp-opt '("sunwayforever@gmail.com"
-                    )))
-(setq bbdb-complete-name-allow-cycling t)
-(setq bbdb-use-pop-up nil)
+(setq nnmail-expiry-wait-function
+      (lambda (group)
+	(cond ((string= group "todo")
+	       1)
+	      ((string= group "archives")
+	       1)
+	      (t
+	       1))))
+
+(setq nnmail-expiry-target "nnimap+spreadtrum:Trash")
 
 (add-hook 'gnus-summary-mode-hook 'my-setup-hl-line)
 (add-hook 'gnus-group-mode-hook 'my-setup-hl-line)
@@ -97,3 +116,48 @@
 (setq gnus-check-new-newsgroups nil
       gnus-read-active-file 'some
       gnus-nov-is-evil nil)
+
+(setq gnus-use-adaptive-scoring '(line))
+(setq gnus-default-adaptive-score-alist
+      '((gnus-unread-mark)
+	(gnus-ticked-mark (from 4))
+	(gnus-dormant-mark (from 5))
+	(gnus-del-mark (from -4) (subject -1))
+	(gnus-read-mark (from 4) (subject 2))
+	(gnus-expirable-mark (from -1) (subject -1))
+	(gnus-killed-mark (from -1) (subject -3))
+	(gnus-kill-file-mark)
+	(gnus-ancient-mark)
+	(gnus-low-score-mark)
+	(gnus-catchup-mark (from -1) (subject -1))))
+(add-hook 'gnus-started-hook '(lambda()
+				(gnus-demon-add-handler 'gnus-demon-scan-news 3 1)
+				))
+
+(add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail)
+
+(defun sw/gnus-check-mail (&rest ignored)
+  (interactive)
+  (let ((all-unread 0))
+    (mapc '(lambda (g)
+	     (let* ((group (car g))
+		    (unread (gnus-group-unread group)))
+	       (when (and (numberp unread) (> unread 0) (string= group "Inbox"))
+		 (incf all-unread unread)
+		 )
+	       ))
+	  gnus-newsrc-alist)
+    (setq my-gnus-new-mail all-unread)
+    (unless (= all-unread 0)
+      (sw/notify (format "%d new mail" all-unread)))
+    )
+  )
+
+
+(setq default-mode-line-format (sw/insert-after default-mode-line-format 5 '(:eval
+									     (if (> my-gnus-new-mail 0)
+										 (propertize (format " [mail:%d]" my-gnus-new-mail) 'face 'bold)
+									     ))))
+
+(define-key gnus-group-mode-map (kbd "q") 'gnus-group-suspend)
+(define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)
