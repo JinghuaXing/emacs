@@ -162,6 +162,7 @@ Email:wei.sun@spreadtrum.com
 (define-key gnus-group-mode-map (kbd "q") 'gnus-group-suspend)
 (define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)
 (define-key gnus-summary-mode-map (kbd "<delete>") 'gnus-summary-delete-article)
+(define-key gnus-summary-mode-map (kbd "C-o") 'gnus-summary-move-article)
 
 (copy-face 'font-lock-variable-name-face 'gnus-face-6)
 (setq gnus-face-6 'gnus-face-6)
