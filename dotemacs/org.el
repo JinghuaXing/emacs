@@ -1,6 +1,5 @@
 (require 'deft)
-(setq deft-directory "~/.elisp/dotemacs/org/cafebabe")
-
+(setq deft-directory "~/.elisp/dotemacs/org/note")
 
 (require 'org-install)
 (require 'org-agenda)
@@ -15,7 +14,7 @@
 ;; (org-remember-insinuate)
 (defalias 'todo 'org-remember)
 
-(setq org-directory "~/.elisp/dotemacs/org/cafebabe")
+(setq org-directory "~/.elisp/dotemacs/org/note/cafebabe")
 
 (setq org-agenda-files (quote ("~/.elisp/dotemacs/org/gtd") ))
 
@@ -104,21 +103,22 @@
 ;; (setq org-crypt-key nil)
 ;; (setq auto-save-default nil)
 
-(org-babel-do-load-languages
- (quote org-babel-load-languages)
- (quote ((emacs-lisp . t)
-         (dot . t)
-         (ditaa . t)
-         (R . t)
-         (python . t)
-         (ruby . t)
-         (gnuplot . t)
-         (clojure . t)
-         (sh . t)
-         (ledger . t)
-         (org . t)
-         (plantuml . t)
-         (latex . t))))
+;; (org-babel-do-load-languages
+;;  (quote org-babel-load-languages)
+;;  (quote (
+;; 	 (emacs-lisp . t)
+;;          (dot . t)
+;;          (ditaa . t)
+;;          (R . t)
+;;          (python . t)
+;;          (ruby . t)
+;;          (gnuplot . t)
+;;          (clojure . t)
+;;          (sh . t)
+;;          (ledger . t)
+;;          (org . t)
+;;          (plantuml . t)
+;;          (latex . t))))
 
 (add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
 (add-to-list 'org-src-lang-modes (quote ("dot" . dot)))
@@ -150,7 +150,7 @@
 (setq org-publish-project-alist
       '(
 	("cafebabe"
-	 :base-directory "~/.elisp/dotemacs/org/cafebabe"
+	 :base-directory "~/.elisp/dotemacs/org/note/cafebabe"
 	 :base-extension "org"
 	 :publishing-directory "~/.github.pages/cafebabe"
 	 :recursive t
