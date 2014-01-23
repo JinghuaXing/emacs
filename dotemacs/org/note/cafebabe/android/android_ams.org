@@ -1825,6 +1825,28 @@ that is ,
       [[@AppDeathRecipient]] to reset app.thread to null, which means the
       process has gone.
 
+** misc
+*** AMS.closeSystemDialogs
+AMS.closeSystemDialogs 所做的并不只是关闭某些窗口 ... 而是通知某些人
+当前需要关闭一些窗口, AMS.closeSystemDialogs 会做以下几件事:
+1. 发送一个特定的 broadcast
+2. 调用 WMS.closeSystemDialogs, 而 WMS.closeSystemDialogs 会通过
+   ViewRootImpl 调用到 DecorView 的 onCloseSystemDialogs, 进而调用
+   DecorView 的 closeAllPanels 导致各种 panel (实际上只有 options menu
+   这一个 panel ..., context menu, action bar 等都不是 panel) 被关闭,
+   所以 closeSystemDialogs 似乎更应该叫 closeAllOptionsMenu ...
+   
+   因为 View 的 onCloseSystemDialogs 目前为空操作, 所以popupWindow 不会
+   响应 closeSystemDialogs, 因为它的顶层 view 不是DecorView
+
+3. 调用 activityStack.closeSystemDialogs, 带有
+   FLAG_FINISH_ON_CLOSE_SYSTEM_DIALOGS 标志的 activity 会被 finish
+
+AMS.closeSystemDialogs 一方面可以由应用主动调用, 例如 launcher 或
+keyguard, 用来关闭一个窗口. 一方面会因为 KeyEvent 被触发, 目前长按电源
+关机, 或按 HOME 启动 launcher 或长按 HOME 启动 recentapp 都会触发
+closeSystemDialogs, 应用可以根本这一点获得关机或按 HOME 的通知. 
+
 ** What's the `system` process?
 
 简单的说:

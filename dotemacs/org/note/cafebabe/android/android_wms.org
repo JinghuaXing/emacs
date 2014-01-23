@@ -33,22 +33,24 @@ LinearLayout
 **** drawing cache
 *** ViewGroup
 *** Window
-对于ViewRoot来说,顶层的`Window`就是一个普通的View, 但有些和`Window`有关
-的操作,如:
+对于 activity 和 dialog 来说, 其 DecorView 与一个 PhoneWindow 一一对应,
+有一些和 `Window` 相关的操作, 如:
 
  - panel 的处理
  - 处理 window title, window icon ...
  - 从WMS来的一些事件如何通知给Activity,Dialog, 例如onBackPressed()
 
-因为, 提供了一个Window类, 用来处理这些和`Window`有关的操作, 但从WMS及
-ViewRoot的角度看,并没有`Window`的概念.
+因此, 提供了一个Window类, 用来处理这些和`Window`有关的操作. 一个Window
+对应一个 DecorView 及 ViewRoot (例如 activity 或 dialog 的 DecorView),
+但因为 window 会管理各种 panel, 所以它也会管理着 panel 的 ViewRoot 及顶
+层 view. 
 
 只有DecorView能和Window关联,来处理`Window`相关操作 (因为DecorView是
 Window的inner class), 所以只有Activity,Dialog有window的概念
 
-在 WMS 一侧也有一个 `window` 的概念, 因为它是 `WindowManager` 嘛, 不
-过 WMS 的 `window` 是叫 WindowState, 而不是 PhoneWindow, 它侧重的是
-Window 的管理, 例如:
+在 WMS 一侧也有一个 `window` 的概念, 因为它是 `WindowManager` 嘛, 不过
+WMS 的 `window` 是叫 WindowState, 对应于 ViewRoot 和 DecorView, 而不是
+PhoneWindow, 它侧重的是Window 的管理, 例如:
 
 1. LayoutParams
    1. Window 的类型: 应用的 window, 系统的 window, 输入法的, statusbar 的, ....
