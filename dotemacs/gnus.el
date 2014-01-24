@@ -186,3 +186,35 @@ Email:wei.sun@spreadtrum.com
 	gnus-sum-thread-tree-leaf-with-other "├─▶ "
 	gnus-sum-thread-tree-vertical "│"
 	gnus-sum-thread-tree-single-leaf "└─▶ ")
+
+
+(add-to-list 'load-path "~/.elisp/bbdb")
+(require 'bbdb)
+(bbdb-initialize 'gnus 'message)
+
+(setq bbdb-user-mail-names
+      (regexp-opt '("wei.sun@spreadtrum.com"
+		    )))
+(setq bbdb-complete-name-allow-cycling t)
+(setq bbdb-mua-pop-up nil)
+
+(setq bbdb/news-auto-create-p 'sw/bbdb-auto-create)
+(defun sw/bbdb-auto-create ()
+  "defun called when bbdb is trying to automatically create a record.  Filters out
+anything not actually adressed to me then passes control to 'bbdb-ignore-some-messages-hook'.
+Also filters out anything that is precedense 'junk' or 'bulk'  This code is from
+Ronan Waide < waider @ waider . ie >."
+  (let ((case-fold-search t)
+        (done nil)
+        (b (current-buffer))
+        (marker (bbdb-header-start))
+        field regexp fieldval)
+    (set-buffer (marker-buffer marker))
+    (save-excursion
+      (let (from)
+        (goto-char marker)
+        (setq from (bbdb-extract-field-value "From"))
+        (if (string-match "Review" (or from ""))
+	    nil
+	  (bbdb-ignore-some-messages-hook)
+          )))))

@@ -27,6 +27,7 @@
  '(auto-insert-query nil)
  '(auto-save-default t)
  '(back-button-index-timeout 0)
+ '(bbdb-file "~/.elisp/bbdb.db")
  '(bm-buffer-persistence t)
  '(bm-cycle-all-buffers t)
  '(bm-highlight-style (quote bm-highlight-only-fringe))
