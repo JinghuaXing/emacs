@@ -1,16 +1,16 @@
 #+TITLE: Sitemap for project cafebabe
 
    + android
-     + [[file:android/android_connectivity.org][Android Connectivity]]
-     + [[file:android/android_mk.org][Android.mk]]
+     + [[file:android/android_memory.org][Android Memory]]
      + [[file:android/android_wms.org][Android WindowManager]]
      + [[file:android/android_ams.org][ActivityManagerService]]
+     + [[file:android/android_connectivity.org][Android Connectivity]]
+     + [[file:android/android_mk.org][Android.mk]]
      + [[file:android/android_package_manager.org][Android PackageManager]]
      + [[file:android/android_debug.org][Android Debug]]
      + [[file:android/android.org][Android]]
      + [[file:android/android_io.org][Android IO]]
      + [[file:android/android_binder.org][Android Binder]]
-     + [[file:android/android_memory.org][Android Memory]]
      + [[file:android/android_ashmem.org][Android ashmem]]
      + [[file:android/android_event_dispatching.org][Android Event Dispatching]]
      + [[file:android/android_provider.org][Android ContentProvider]]
@@ -49,7 +49,6 @@
      + [[file:java/java_interface.org][Jave Interface]]
      + [[file:java/java.org][Jave]]
      + [[file:java/hash_code.org][Java Hashcode]]
-   + [[file:memo.org][memo]]
    + [[file:sqlite.org][SQLite]]
    + [[file:git.org][Git]]
    + linux

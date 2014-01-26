@@ -239,3 +239,103 @@ consume 50MB rss.
 ** Reference
 - [[http://stackoverflow.com/questions/2298208/how-to-discover-memory-usage-of-my-application-in-android][how-to-discover-memory-usage-of-my-application-in-android]]
 - [[http://stackoverflow.com/questions/131303/linux-how-to-measure-actual-memory-usage-of-an-application-or-process][linux-how-to-measure-actual-memory-usage-of-an-application-or-process]]
+** About GC heap, growthLimit and OOM
+一直以来 android 都流传着一个说法:
+`android 的 GC heap 有一个 growthLimit 参数, 可以控制 GC heap 的大小,
+而且 external 分配的内存也会算在 growthLimit 里, 当 GC heap 大小到达
+growthLimit 时, 会 OOM`
+
+我觉得这有些不可思议: 难道我在 jni 里 mmap 的内存也会受 growthLimit 的
+限制? 以下是我的调查:
+*** 第一阶段 ...
+- 为什么 OOM?
+  - 代码抛出来的 ...
+    - 用户自己故意通过 java 代码或 jni 抛出 OOM 异常
+    - dalvik 自己抛出 OOM 异常
+      - dvmMalloc
+        dalvik在构造一切 java 对象时都会使用 dvmMalloc 在 GC heap 上分
+        配内存.
+        - Heap.tryMalloc
+          - dvmHeapSourceAlloc
+          - dvmHeapSourceAllocAndGrow
+            当 grow 完了还是分配失败 dalvik 会主动抛出 OOM
+      - malloc/mmap/...
+        dalvik 有时有会需要使用 malloc/mmap 直接从 GC heap 之外分配内存,
+        例如 jni 里的 GetStringUTFChars:
+        #+BEGIN_EXAMPLE
+          GetStringUTFChars
+            char* newStr = (char*) malloc(byteLen+1);            
+            convertUtf16ToUtf8(newStr, data, len);
+            if (newStr == NULL):
+              /* assume memory failure */
+              dvmThrowOutOfMemoryError("native heap string alloc failed");
+        #+END_EXAMPLE
+
+- OOM 不一定是 GC heap 不足, dalvik 可以把任何形式的内存分配失败上报 为
+  OOM, 可以说某些 mmap/malloc/brk 操作会导致 OOM, 但不能说这些 OOM 是因
+  为 growthLimit 导致的. growthLimit 只会导致 dvmMalloc 抛出 OOM
+
+- ps
+  - GC heap 实际上是使用 mmap 一次性从 ashmem map 出 growthLimit 大小
+    的内存区域, 然后每次 dvmMalloc 是在这块大的区域上使用 ptmalloc 再
+    分配.
+  - 我看了一眼 ByteBuffer.allocateDirect 方法, 在 dalvik 里它是分配在
+    GC heap 上的...但在 hotspot 是用 mmap 分配的, 不太一样.
+  - bitmap 是分配在 GC heap 里, 但通过 binder 传输时会使用 ashmem, 因
+    为直接传的话 binder 放不下.
+  - CursorWindow 直接就是放在 ashmem 里的, 原因同 bitmap
+  - heapGrowthLimit 真的可以影响非 dvmMalloc 分配的内存(或者说非 GC
+    heap) 么?  求代码求真相, 反正我是没找到...
+*** 第二阶段 ...
+
+2.3.5 的代码中除了一个类似于 growthLimit 的 absoluteMaxSize 外, 还维护
+了一个 externalBytesAllocated 的变量, 初始为0.
+
+2.3.5 代码创建 bitmap 时使用的是 HeapAllocator (现在都改成
+JavaAllocator 了), 它会先调用 malloc 分配内存, 然后调用
+GraphicsJNI::setJavaPixelRef, 这个函数最终会调到 davlik 的 HeapSource里
+的 externalAlloc(), 这个 externalAlloc 实际上并不分配内存, 只是更新了一
+个 externalBytesAllocated 的值.
+
+当 dalvik 调用 dvmAlloc 从 GC heap 分配 java 对象时, 会有一个额外的判断:
+
+#+BEGIN_SRC java
+  if (max > hs->externalBytesAllocated) {
+      max -= hs->externalBytesAllocated;
+  
+      mspace_set_max_allowed_footprint(heap->msp, max);
+      ptr = dvmHeapSourceAlloc(n);
+      ...
+#+END_SRC
+   
+可见, 虽然 bitmap 并没有分配在 GC heap, 却可以通过
+externalBytesAllocated 这个值影响 GC heap 能使用的大小 ... Orz
+
+同样的情况还出现在 ByteBuffer.allocateDirect 方法中:
+
+ByteBuffer.allocateDirect() 分配内存时使用以下方法:
+
+#+BEGIN_SRC java
+  static jint OSMemory_malloc(JNIEnv* env, jclass, jint size) {
+      jboolean allowed = env->CallBooleanMethod(gIDCache.runtimeInstance,
+                                                gIDCache.method_trackExternalAllocation, static_cast<jlong>(size));
+      if (!allowed) {
+          LOGW("External allocation of %d bytes was rejected\n", size);
+          jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
+          return 0;
+      }
+  
+      LOGV("OSMemory alloc %d\n", size);
+      void* block = malloc(size + sizeof(jlong));
+      ...
+  
+#+END_SRC
+
+综上, 在 2.3.5, 分配 bitmap 和 ByteBuffer 时确实会影响可用的 GC heap,
+但到了现在 (4.x), 以上两种情况都已经不成立了:
+
+1. bitmap 改成在 GC heap 上分配了.
+2. DirectBuffer 也改成 GC heap 上分配了.
+3. HeapSource 中 external allocation 相关的代码都已经不存在了.
+
+

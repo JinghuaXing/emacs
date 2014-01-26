@@ -278,6 +278,7 @@
  '(font-latex-sectioning-3-face ((t (:inherit font-latex-sectioning-4-face :foreground "yellow" :height 1.3))))
  '(font-latex-sectioning-4-face ((t (:inherit font-latex-sectioning-5-face :foreground "cyan" :height 1.1))))
  '(font-latex-verbatim-face ((((class color) (background dark)) (:foreground "burlywood" :family "monospace"))))
+ '(gnus-summary-low-read ((t (:inherit gnus-summary-normal-ancient :foreground "gray43" :inverse-video nil :underline nil :slant italic :weight normal))))
  '(helm-selection ((t (:background "OrangeRed3" :foreground "white"))))
  '(hs-fringe-face ((t (:foreground "yellow"))))
  '(magit-header ((t (:inherit highlight))))

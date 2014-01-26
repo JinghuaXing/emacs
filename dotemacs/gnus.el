@@ -163,6 +163,15 @@ Email:wei.sun@spreadtrum.com
 (define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)
 (define-key gnus-summary-mode-map (kbd "<delete>") 'gnus-summary-delete-article)
 (define-key gnus-summary-mode-map (kbd "C-o") 'gnus-summary-move-article)
+(define-key gnus-summary-mode-map (kbd "r") '(lambda ()
+					       (interactive)
+					       (if current-prefix-arg
+						   (gnus-summary-reply)
+						   (gnus-summary-wide-reply))))
+(define-key message-mode-map (kbd "C-c C-s") 'message-goto-subject)
+(define-key message-mode-map (kbd "C-c C-t") 'message-goto-to)
+(define-key message-mode-map (kbd "C-c C-i") 'mml-attach-file)
+(define-key message-mode-map (kbd "C-c !") 'message-insert-or-toggle-importance)
 
 (copy-face 'font-lock-variable-name-face 'gnus-face-6)
 (setq gnus-face-6 'gnus-face-6)
@@ -175,7 +184,7 @@ Email:wei.sun@spreadtrum.com
 (copy-face 'font-lock-constant-face 'gnus-face-9)
 (set-face-foreground 'gnus-face-9 "gray70")
 (setq gnus-face-9 'gnus-face-9)
-(setq gnus-summary-make-false-root 'dummy)
+(setq gnus-summary-make-false-root 'adopt)
 ;; (setq gnus-summary-make-false-root-always nil)
 (setq gnus-summary-dummy-line-format "    %8{│%}   %(%8{│%}                       %7{│%}%) %6{□%}  %S\n"
 	gnus-summary-line-format "%8{%4k│%}%9{%U%R%z%}%8{│%}%*%(%-23,23f%)%7{│%} %6{%B%} %s\n"
