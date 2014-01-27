@@ -211,4 +211,19 @@ Email:wei.sun@spreadtrum.com
 (setq bbdb-ignore-some-messages-alist
       '(("From" . "Review")))
 
-(defalias 'm 'gnus)
+(defalias 'm 'sw/elscreen-gnus)
+
+(defun sw/elscreen-gnus ()
+  (interactive)
+  (let ((buffer (get-buffer "*Group*")))
+    (if buffer
+	(elscreen-find-and-goto-by-buffer (get-buffer "*Group*") 'create)
+      (progn
+	(elscreen-create)
+	(gnus)
+	)
+      )
+    )
+  )
+
+(add-hook 'gnus-suspend-gnus-hook 'elscreen-kill)
