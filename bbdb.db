@@ -2,10 +2,12 @@
 ;;; file-version: 6
 ["ace" "an" nil nil nil nil ("ace.an@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-01-26")) nil]
 ["Wenxiao" "Bai" nil nil nil nil ("Wenxiao.Bai@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-01-24")) nil]
+["Fengze" "Chan" nil nil nil nil ("Fengze.Chan@spreadtrum.com") ((creation-date . "2014-01-28") (timestamp . "2014-01-28")) nil]
 ["Cuicui" "Chen" nil nil nil nil ("Cuicui.Chen@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-01-24")) nil]
 ["Roc" "Chen" nil nil nil nil ("Roc.Chen@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-01-24")) nil]
 ["Bruce" "Chi" nil nil nil nil ("Bruce.Chi@spreadtrum.com") ((creation-date . "2014-01-27") (timestamp . "2014-01-27")) nil]
 ["Jing" "Deng" nil nil nil nil ("Jing.Deng@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-01-24")) nil]
+["HR" "Division" nil nil nil nil ("HR.Division@spreadtrum.com") ((creation-date . "2014-01-29") (timestamp . "2014-01-29")) nil]
 ["ehr" "" nil nil nil nil ("ehr@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-01-26")) nil]
 ["Xiuli" "Fang" nil nil nil nil ("Xiuli.Fang@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-01-24")) nil]
 ["yanbin" "fang" nil nil nil nil ("yanbin.fang@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-01-26")) nil]

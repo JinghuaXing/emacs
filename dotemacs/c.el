@@ -233,10 +233,10 @@
       )))
 (setq hs-set-up-overlay 'display-code-line-counts)
 
-(add-hook 'c-mode-common-hook
-	  (function (lambda ()
-		      (add-hook 'local-write-file-hooks
-				'check-parens))))
+;; (add-hook 'c-mode-common-hook
+;; 	  (function (lambda ()
+;; 		      (add-hook 'local-write-file-hooks
+;; 				'check-parens))))
 
 (require 'etags-select)
 (require 'etags-stack)
