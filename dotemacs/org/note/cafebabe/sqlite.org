@@ -385,12 +385,15 @@ list|column|insert|line|tabs|tcl|csv
 **** .tables
 **** .separator
 **** .schema
-
 **** .headers [on|off]
 **** explain query plan
 see also [[http://www.sqlite.org/queryplanner.html][queryplanner]]
 #+BEGIN_SRC sql
 explain query plan select * from foo;
+#+END_SRC
+**** explain
+#+BEGIN_SRC sql
+explain select * from foo;
 #+END_SRC
 **** vacuum
 *** sqlite SQL
@@ -1026,7 +1029,7 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 
 特别的,在 WAL 模式下, synchronous 为 NORMAL 时 commit 也不再写数据库,
 只有checkout 时才刷新.
-
+**** vdbe_trace=ON/OFF
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 
