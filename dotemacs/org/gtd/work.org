@@ -557,6 +557,7 @@ why performTraversals is called so many times (traceview)
 [2014-01-21 Tue 21:19]
 * TODO preload class native crash                                      :work:
 [2014-01-21 Tue 21:20]
-* TODO TJ_PLD All-hands Meeting Invitation  :work:
-SCHEDULED: <2014-01-29 Wed>
+* DONE TJ_PLD All-hands Meeting Invitation                             :work:
+CLOSED: [2014-01-30 Thu 08:29] SCHEDULED: <2014-01-29 Wed>
+- State "DONE"       from "TODO"       [2014-01-30 Thu 08:29]
 [2014-01-26 Sun 19:30]
