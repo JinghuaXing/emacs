@@ -361,3 +361,6 @@
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 
+
+(add-to-list 'load-path "~/.elisp/w3m")
+(require 'w3m)

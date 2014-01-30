@@ -227,3 +227,5 @@ Email:wei.sun@spreadtrum.com
   )
 
 (add-hook 'gnus-suspend-gnus-hook 'elscreen-kill)
+
+(setq mm-text-html-renderer 'w3m)
