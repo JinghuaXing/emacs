@@ -364,3 +364,7 @@
 
 (add-to-list 'load-path "~/.elisp/w3m")
 (require 'w3m)
+
+(require 'register-jump)
+(define-key ctl-x-r-map "j" 'register-jump)
+(setq register-preview-delay 0.1)

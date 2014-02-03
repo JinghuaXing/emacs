@@ -670,11 +670,21 @@ used to transform column values
 **** fts
 **** Summary
 ***** cross-join != full-outer-join
+例如, 若 A 表为 3 条, 其中 _id 分别为 1,2,3. B 表为 4 条, _id 分别为
+5,6,7,8, 则:
+- select * from A, B where A._id = B._id 返回 0 条
+- select * from A full outer join B on A._id = B._id 返回 7 条 (此处为
+  假设 full-outer-join 是支持的)
 ***** having 与 where 的区别
 - haveing 发生在 group by 之后, 而 where 发生在 group by 之前;
 - 可以使用 aggregation 函数
 ***** aggregation 函数只可以使用在 select 之后和 having 之后
 ***** 使用两个 left-outer-join 模拟 full-outer-join
+#+BEGIN_SRC sql
+  select * from A left outer join B on A._id = B._id 
+  UNION
+  select * from B left outer join A on A._id = B._id 
+#+END_SRC
 ***** distinct 可以使用 group by 来模拟
 ***** compound query 只允许在最后使用一个 order-by, 不过可以用 sub-query 来跳过这一限制
 ***** sub-query 几乎可以使用在任何地方, 不过只允许返回一列, 但可以返回多行 (虽然有时只有第一行有效)
@@ -731,9 +741,19 @@ sqlite 在不同的层次上定义了三种锁
 ***** db file lock
 ****** lock
 
-这里的 lock 是指数据库级别的文件锁.
-实际上, 为了实现这种多状态的锁, sqlite 针对 sqlite db 文件的三块区域定
-义了三个读写锁, 通过对不同的区域的锁定实现不同的状态.
+这里的 lock 是指数据库级别的文件锁, 这个锁是一个建议性锁 (advisory
+lock), 实际上, 为了实现这种多状态的锁, sqlite 针对 sqlite db 文件的三块
+区域(从 PENDING_BYTE 开始的 1+1+510=512 个字节)定义了三个读写锁, 通过对
+不同的区域的锁定实现不同的状态.
+
+PENDING_BYTE 目前定义为 0x40000000 (1G) 处, 需要注意的是 fcntl 对文件区
+域加锁时并不需要文件真的有那么大, 所以即时一个很小不到 1G 的数据库文件,也
+可以对 1G 处的"内容"进行锁定 ... 之所以设置 PENDING_BYTE 为 1G, 就是因
+为当数据库文件小于 1G 时可以节省这 512 字节, 因为 windows 只支持强制性
+文件锁, 为了避免 sqlite 读写这 512 字节的内容时因为强制锁出错, sqlite
+要求这 512 字节的空间不允许存储任何数据.
+
+当数据库文件大于 1G 时, 这 512 的字节被称为 lock-byte page.
 
 #+BEGIN_EXAMPLE
                                       read
@@ -925,7 +945,14 @@ if sqlite3_open() or sqlite3_open16() are used instead of
 sqlite3_open_v2(), then the default mode determined by the
 compile-time and start-time settings is used.
 
-**** Can multiple applications or multiple instances of the same application access a single database file at the same time?
+**** sqlite file format
+**** sqlite vdbe
+**** sqlite btree
+**** sqlite vfs
+**** sqlite pcache
+**** sqlite pager
+**** FAQ
+***** Can multiple applications or multiple instances of the same application access a single database file at the same time?
 http://www.sqlite.org/faq.html#q5
 
 Multiple processes can have the same database open at the same
@@ -972,7 +999,7 @@ the default behavior is to return SQLITE_BUSY. You can adjust this
 behavior from C code using the sqlite3_busy_handler() or
 sqlite3_busy_timeout() API functions.
 
-**** Is SQLite threadsafe?
+***** Is SQLite threadsafe?
 http://www.sqlite.org/faq.html#q6
 
 Threads are evil. Avoid them.
