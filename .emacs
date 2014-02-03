@@ -361,9 +361,12 @@
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 
-
-(add-to-list 'load-path "~/.elisp/w3m")
-(require 'w3m)
+(if (executable-find "w3m")
+    (progn
+      (add-to-list 'load-path "~/.elisp/w3m")
+      (require 'w3m)
+      )
+  )
 
 (require 'register-jump)
 (define-key ctl-x-r-map "j" 'register-jump)
