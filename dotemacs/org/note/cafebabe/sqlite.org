@@ -805,6 +805,14 @@ PENDING_BYTE 目前定义为 0x40000000 (1G) 处, 需要注意的是 fcntl 对�
 | SQL error: database is locked            |                                           |
 |------------------------------------------+-------------------------------------------|
 
+android framework 中采用了 ONE primary connection + N non-primary
+connections 的 connection pool 方案, 可能也是考虑到了这种死锁:
+
+primary connection 用于"可能"需要写操作的 transaction, 只有一个. 而
+non-primary connection 是用于读操作的 transaction, 可以有 N 个. 但这种
+做法仍然无法避免多个进程同时对同一个数据库写时的死锁, 如果要避免,可能需
+要要求所有写操作的 transaction 都以 begin reversed 开始.
+
 ****** transaction
 - begin [deferred]
 - begin immediate
@@ -1066,6 +1074,8 @@ transient table 来暂存中间结果, 尤其是 subquery. 这些 transient tabl
 - 使用显式的 temp table 并使用索引?
 - 使用 view?
 **** automatic index
+**** view 与 subquery 类似, 无法使用索引
+**** join 的顺序
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 
