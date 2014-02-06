@@ -287,3 +287,6 @@
 
 (define-key dired-mode-map (kbd "?") 'dired-get-size)
 
+
+(eval-after-load "dired-aux"
+     '(require 'dired-async))
