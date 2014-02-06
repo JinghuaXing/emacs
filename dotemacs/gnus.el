@@ -229,3 +229,24 @@ Email:wei.sun@spreadtrum.com
 (add-hook 'gnus-suspend-gnus-hook 'elscreen-kill)
 
 (setq mm-text-html-renderer 'w3m)
+
+(require 'async)
+(require 'smtpmail)
+
+(defun async-smtpmail-send-it ()
+  (let ((to (message-field-value "To")))
+    (message "Delivering message to %s..." to)
+    (async-start
+     `(lambda ()
+        (require 'smtpmail)
+        (with-temp-buffer
+          (insert ,(buffer-substring-no-properties (point-min) (point-max)))
+          ;; Pass in the variable environment for smtpmail
+          ,(async-inject-variables "\\`\\(smtpmail\\|\\(user-\\)?mail\\)-")
+          (smtpmail-send-it)))
+     `(lambda (&optional ignore)
+        (message "Delivering message to %s...done" ,to)))))
+
+;;(setq message-send-mail-function 'smtpmail-send-it)
+(setq send-mail-function 'async-smtpmail-send-it
+      message-send-mail-function 'async-smtpmail-send-it)
