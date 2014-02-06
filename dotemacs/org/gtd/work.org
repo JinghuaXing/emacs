@@ -106,7 +106,6 @@ CLOSED: [2012-10-26 Fri 15:40]
 - State "DONE"       from "TODO"       [2012-10-26 Fri 15:40]
 [2012-10-25 Thu 19:02]
 * TODO WindowManagerService                                            :work:
-SCHEDULED: <2014-01-20 星期一>
 :PROPERTIES:
 :ID:       c0e6a3fa-a77d-4426-99e4-a3b8d057b94a
 :END:

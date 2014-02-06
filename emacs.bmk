@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("elisp"
+(("github.io"
+ (filename . "~/.github.pages/")
+ (front-context-string . "cafebabe\n  drwxr")
+ (rear-context-string . " 4 Feb  6 12:47 ")
+ (position . 125))
+("elisp"
  (front-context-string . "\n4.1 String and ")
  (rear-context-string . " and Characters\n")
  (position . 203016)
