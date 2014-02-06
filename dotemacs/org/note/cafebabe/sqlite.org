@@ -1078,6 +1078,151 @@ transient table 来暂存中间结果, 尤其是 subquery. 这些 transient tabl
 **** join 的顺序
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
+** Inside SQLite
+*** SQLite 文件格式
+**** page
+SQLite 文件被分割为 page_size 大小的连续的 page (一般 page_size 为 1K, 在
+建立数据库时通过 pragma 可以修改, 这个值被保存在 sqlite 文件头中)
+
+page 1 是第一个 page, 这个 page 的格式与其他 page 都不同, 因为它的前
+100 bytes 用来保存 sqlite 文件头. 
+
+sqlite 文件头中保存的信息主要有:
+- magic number
+- page size
+- file change counter 每次对 sqlite 数据库的修改都会把这个值加1
+- free page list
+
+除去这 100 bytes, page 1 与其他 table interior page 格式相同
+
+一共有以下几种 page:
+
+1. table interior page
+2. table leaf page
+3. index interior page
+4. index leaf page
+5. trunk page
+6. free page
+7. lock byte page
+8. pointer map page
+
+前 4 种 page 因为是保存 table 和 index 内容的, 它们有类似的内部结构, 后
+4 种 page 不保存数据, 所以它们的结构是单独定义的.
+
+**** 前四种 page 的结构
+page 结构包含 page 头和 cell content
+
+page 头包含以下信息:
+1. page type, 例如 0x0d 表示 table leaf page, 0x02 表示 index interior
+   page 等. 不同的 page 的 cell content 格式略有不同.
+2. cell content 中 cell 的个数 N
+3. 第一个 cell 在 page 中的偏移量
+4. cell pointer array, 这里连续的保存着 N 个偏移量, 对比 N 个 cell 的
+   起始地址.
+5. 第一个 free cell 的偏移量
+6. 最后一个儿子 page 的 page 号 (只有 interior page 有)
+
+从 cell pointer array 可以找到各个 cell 在当前 page 的偏移量. 每个
+cell 对应于一条记录 (表记录或索引记录). cell 的格式根据 page 类型不同
+略有差别.
+
+***** table interior page
+table interior page 是用来保存 sqlite 表数据的 B+-tree 中间节点. 其
+cell 的格式为:
+
+[子 page 索引] [记录号]
+
+其中第一个字段是 page 号, 第二个字段是记录号, 所谓记录号, 就是 sqlite
+表中对应于每条记录的唯一标识 (rowid)
+
+因为 table interior page 是 B+-tree 中间节点, 所以它们只保存着索引信息
+(记录号和子节点 page 号),不包含 cell 对应的记录的详细信息.
+
+另外, sqlite 的 B-tree 或 B+-tree 并不是严格的 x 阶 B 树, 因为它每个节
+点可以包含的子节点个数是不定的, 由 cell 的大小决定, 例如, table
+interior page 中每个 cell 可能只占几个字节, 1K 的 page 除去 page 头和其
+它一些开销可能可以保存上百个 cell.
+
+***** table leaf page
+
+table leaf page 是用来保存表数据的 B+-tree 叶节点, 其 cell 格式为:
+[cell payload 大小][记录号][payload 内容][overflow page 索引]
+
+其中 payload 内容 保存着一个 record 的实际的数据. 若一个 record 的内容
+过多, 则会分配一个 overflow page 来保存过多的内容. 但要注意的是并不是
+record 大小超过  page_size 时才使用 overflow page, 实际上, sqlite 定义
+了一个常量, 使得 record 大小 page_size 的 1/4 时就会使用 overflow
+page, 并且只有 7/8 的内容会放在 overflow page 里, 剩下的 1/8 内容放在
+cell payload 中.
+
+***** index interior page
+
+index interior page 用来保存 sqlite 索引的 B-tree 中间节点, 其 cell 格
+式为:
+
+[子 page 索引] [索引使用的 key] [索引记录本身]
+
+这里与 table interior page 的区别主要有两点:
+1. table interior page 使用记录号有标识 cell 本身的 key, 而 index
+   interior page 使用的是建立索引时使用 key 字段, 例如:
+   
+   create index test_index on test(name), 则对于 test_index 的
+   interior page, key 就是 name 字段的值
+
+2. index interior page 的 cell 中还保存着 cell 本身对应索引记录本身,
+   因为 index interior page 是 B-tree 中间节点. 这样设计也是由 index
+   的工作原理决定的.
+
+***** index leaf page
+
+index leaf page 是 B-tree 叶节点, 和 table leaf page 基本相同, 只是
+B-tree 中间节点不包含在 B-tree 叶节点中. 
+
+**** lock byte page
+
+lock byte page 是非常特殊的一种 page:
+
+1. 它的大小是固定的 512 bytes, 而不是 page size 大小
+2. 对于小于 1G 的 sqlite 数据库, 并不包含这种 page, 对于大于 1G 的
+   sqlite 数据库, 只包含一个, 并且固定的位于 1G bytes 的位置
+
+lock byte page 实际是用来实现文件锁的一个区域, 这个区域被设计为
+1G-1G+512 bytes 的一块区域, 因为文件锁对文件的某个区域进行锁定时并不需
+要该区域一定是存在的, 所以对于小于 1G 的文件, 这个page 并不存在.
+
+之所以这个 page 规定为 512 字节, 是为了实现 sqlite 的多阶段文件锁,
+sqlite 把这个 512 字节的区域又分为 3 的区域, 其中一个字节用来支持一个
+reserved lock , 一个字段用来支持一个 pending lock , 剩下的 510 的字节用
+来支持 510 个 shared lock 和一个 exclusive lock.
+
+**** trunk page 与 free page
+在 sqlite 文件头中有一个 free page list 的指针, 指向第一个 trunk
+page. 
+
+trunk page 和 free page 是 sqlite 用来缓存那些暂时不用的 page 的. 通过
+trunk page 和 free page, 构成一个简单的两级索引结构: trunk page 用来做
+索引, 真正缓存的 page 只是 free page.
+
+trunk page 与 free page 是和 vacuum 相关的. 实际上 vacuum 命令消除
+free page 的方法相当简单:
+
+insert into new_table select * from orig_table
+
+**** page 1
+
+page 1 是第一个 page, 一般来说它是一个 table leaf page, 除了保存着 100
+bytes 的 sqlite 文件头, 还保存着 sqlite_master 表的内容, 即数据库的
+schema.
+
+sqlite_master 表中最重要的一个信息应该算是每个表和索引的 root page
+number 了, 有了这个信息, 我们从某个表查询时, 才能找到对应的 root page
+number 进而查询整下 B-tree. 
+
+**** 总结
+
+sqlite 数据库由 N 个 page 组成, 但这些 page 有些构成一棵棵的 B-tree
+(index page), 有的构成 B+-tree (table page), 有的构成一个链表 (trunk
+page 与 free page), 有的只有孤零零一个在那儿 (lock byte page) ...
 
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
