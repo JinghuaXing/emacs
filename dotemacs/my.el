@@ -447,6 +447,6 @@
 (defun sw/notify (body)
   "Notify with TITLE, BODY via `libnotify'."
   (call-process "notify-send" nil 0 nil
-		body "-t" "5000" ))
+		body "-t" "2000" ))
 
 (defun sw/insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)

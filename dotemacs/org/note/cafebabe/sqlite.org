@@ -208,10 +208,10 @@ e.g. during local `onMove`
           mCursor.moveToPosition(startPos)
           return mCursor.getWindow()
             // SQLiteCursor
-            mCursor.fillWindow(position, window);  
+            mCursor.fillWindow(position, window);
               mQuery.fillWindow(position,window);
                 getSession().executeForCursorWindow();
-                  SQLiteConnection.nativeExecuteForCursorWindow(start, requiredRow)  
+                  SQLiteConnection.nativeExecuteForCursorWindow(start, requiredRow)
                   // native
                     while (window not full):
                       sqlite3_step(stmt);
@@ -241,7 +241,7 @@ e.g. during local `onMove`
       Log.e("sunway","done");
       db.setTransactionSuccessful();
       db.endTransaction();
-      
+
       cursor.moveToFirst();
       Log.e("sunway","moveToFirst again: data:"+cursor.getString(0));
       cursor.close();
@@ -268,10 +268,10 @@ c++ object, and is stored using `ashmem'
         }
         return status;
     }
-  
+
   status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outCursorWindow) {
       String8 name = parcel->readString8();
-  
+
       status_t result;
       int ashmemFd = parcel->readFileDescriptor();
       // ...
@@ -681,9 +681,9 @@ used to transform column values
 ***** aggregation 函数只可以使用在 select 之后和 having 之后
 ***** 使用两个 left-outer-join 模拟 full-outer-join
 #+BEGIN_SRC sql
-  select * from A left outer join B on A._id = B._id 
+  select * from A left outer join B on A._id = B._id
   UNION
-  select * from B left outer join A on A._id = B._id 
+  select * from B left outer join A on A._id = B._id
 #+END_SRC
 ***** distinct 可以使用 group by 来模拟
 ***** compound query 只允许在最后使用一个 order-by, 不过可以用 sub-query 来跳过这一限制
@@ -756,17 +756,17 @@ PENDING_BYTE 目前定义为 0x40000000 (1G) 处, 需要注意的是 fcntl 对�
 当数据库文件大于 1G 时, 这 512 的字节被称为 lock-byte page.
 
 #+BEGIN_EXAMPLE
-                                      read
+                                           r
                               -+------------------------------------+
                                |                exclusive           |
                                |          -+------------------------+--------+
-              -+---+        -+-+-+  write  | -+---+---+---+---+---+-v-+----+ |
+              -+---+   w    -+-+-+   w     | -+---+---+---+---+---+-v-+----+ |
                |  -+-------->+  -+-------->+  +   |   |   |   |   |   |    | |
               -+-+-+        -+---+         | -+---+---+---+---+---+-+-+----+ |
              rese|rved       pending       |          shared        |        |
                  ^         (starting)     -+------------------------+--------+
                 -+--------------------------------------------------+
-#+END_EXAMPLE
+#+END_EXAMPLE                          w
 
 - pending
 - unlocked
@@ -1079,13 +1079,14 @@ transient table 来暂存中间结果, 尤其是 subquery. 这些 transient tabl
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 ** Inside SQLite
-*** SQLite 文件格式
+*** vdbe
+*** btree (SQLite 文件格式)
 **** page
 SQLite 文件被分割为 page_size 大小的连续的 page (一般 page_size 为 1K, 在
 建立数据库时通过 pragma 可以修改, 这个值被保存在 sqlite 文件头中)
 
 page 1 是第一个 page, 这个 page 的格式与其他 page 都不同, 因为它的前
-100 bytes 用来保存 sqlite 文件头. 
+100 bytes 用来保存 sqlite 文件头.
 
 sqlite 文件头中保存的信息主要有:
 - magic number
@@ -1165,7 +1166,7 @@ index interior page 用来保存 sqlite 索引的 B-tree 中间节点, 其 cell 
 这里与 table interior page 的区别主要有两点:
 1. table interior page 使用记录号有标识 cell 本身的 key, 而 index
    interior page 使用的是建立索引时使用 key 字段, 例如:
-   
+
    create index test_index on test(name), 则对于 test_index 的
    interior page, key 就是 name 字段的值
 
@@ -1176,7 +1177,7 @@ index interior page 用来保存 sqlite 索引的 B-tree 中间节点, 其 cell 
 ***** index leaf page
 
 index leaf page 是 B-tree 叶节点, 和 table leaf page 基本相同, 只是
-B-tree 中间节点不包含在 B-tree 叶节点中. 
+B-tree 中间节点不包含在 B-tree 叶节点中.
 
 **** lock byte page
 
@@ -1193,11 +1194,15 @@ lock byte page 实际是用来实现文件锁的一个区域, 这个区域被设
 之所以这个 page 规定为 512 字节, 是为了实现 sqlite 的多阶段文件锁,
 sqlite 把这个 512 字节的区域又分为 3 的区域, 其中一个字节用来支持一个
 reserved lock , 一个字段用来支持一个 pending lock , 剩下的 510 的字节用
-来支持 510 个 shared lock 和一个 exclusive lock.
+来支持多个 shared lock 和一个 exclusive lock. (注: 对于 linux, shared
+lock 是对 整个510 个字节区域的 read lock, 可以有无数个, exclusive 是对
+这 510 个字节区域的 right lock , 只能有一个；对于 windows, 因为它只支
+持 write lock , 所以 shared lock 是对 510 个字节中的某一个字节的 write
+lock, 所以最多有 510 个)
 
 **** trunk page 与 free page
 在 sqlite 文件头中有一个 free page list 的指针, 指向第一个 trunk
-page. 
+page.
 
 trunk page 和 free page 是 sqlite 用来缓存那些暂时不用的 page 的. 通过
 trunk page 和 free page, 构成一个简单的两级索引结构: trunk page 用来做
@@ -1216,7 +1221,7 @@ schema.
 
 sqlite_master 表中最重要的一个信息应该算是每个表和索引的 root page
 number 了, 有了这个信息, 我们从某个表查询时, 才能找到对应的 root page
-number 进而查询整下 B-tree. 
+number 进而查询整下 B-tree.
 
 **** 总结
 
@@ -1224,6 +1229,10 @@ sqlite 数据库由 N 个 page 组成, 但这些 page 有些构成一棵棵的 B
 (index page), 有的构成 B+-tree (table page), 有的构成一个链表 (trunk
 page 与 free page), 有的只有孤零零一个在那儿 (lock byte page) ...
 
+*** pager
+1. pager 即 page cache, 负责所有 IO 操作, 并使用 cache 加快 IO.
+2. pager 是 sqlite 实现 ACID 的核心, 除了数据库文件的IO, pager 还负责
+   journal 以及 lock 相关的操作.
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
