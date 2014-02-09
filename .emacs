@@ -371,3 +371,10 @@
 (require 'register-jump)
 (define-key ctl-x-r-map "j" 'register-jump)
 (setq register-preview-delay 0.1)
+
+(require 'git-messenger)
+(global-set-key (kbd "C-x v m") 'git-messenger:popup-message)
+(setq git-messenger:show-detail t)
+
+(require 'visual-regexp)
+(global-set-key (kbd "M-%") 'vr/query-replace)
