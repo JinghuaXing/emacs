@@ -104,8 +104,8 @@
 
 (global-set-key (kbd "C-x C-r") 'file-cache-ido-find-file)
 
-(global-set-key (kbd "C-x r b") 'sw/bookmark-jump)
-(global-set-key (kbd "C-x r m") 'sw/bookmark-set)
+;;(global-set-key (kbd "C-x r b") 'sw/bookmark-jump)
+;;(global-set-key (kbd "C-x r m") 'sw/bookmark-set)
 (global-set-key (kbd "<M-up>") 'sw/move-line-up)
 (global-set-key (kbd "<M-down>") 'sw/move-line-down)
 (global-set-key (kbd "M-T") 'sw/transporse-region)

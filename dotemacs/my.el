@@ -69,26 +69,26 @@
   (list locate-command "-i" search-string))
 (setq locate-make-command-line 'my-locate-command-line)
 
-(defun sw/bookmark-jump (bookmark)
-  (interactive
-   (progn
-     (require 'bookmark)
-     (bookmark-maybe-load-default-file)
-     (list (ido-completing-read "Jump to bookmark: "
-				(mapcar 'car bookmark-alist)))))
-  (if (or (eq major-mode 'sr-mode) (eq major-mode 'sr-virtual-mode)) 
-      (sr-quit)
-      )
-  (bookmark-jump bookmark))
+;; (defun sw/bookmark-jump (bookmark)
+;;   (interactive
+;;    (progn
+;;      (require 'bookmark)
+;;      (bookmark-maybe-load-default-file)
+;;      (list (ido-completing-read "Jump to bookmark: "
+;; 				(mapcar 'car bookmark-alist)))))
+;;   (if (or (eq major-mode 'sr-mode) (eq major-mode 'sr-virtual-mode)) 
+;;       (sr-quit)
+;;       )
+;;   (bookmark-jump bookmark))
 
-(defun sw/bookmark-set (bookmark)
-  (interactive
-   (progn
-     (require 'bookmark)
-     (bookmark-maybe-load-default-file)
-     (list (ido-completing-read "Set bookmark: "
-				(mapcar 'car bookmark-alist)))))
-  (bookmark-set bookmark))
+;; (defun sw/bookmark-set (bookmark)
+;;   (interactive
+;;    (progn
+;;      (require 'bookmark)
+;;      (bookmark-maybe-load-default-file)
+;;      (list (ido-completing-read "Set bookmark: "
+;; 				(mapcar 'car bookmark-alist)))))
+;;   (bookmark-set bookmark))
 
 (defvar find-file-root-prefix (if (featurep 'xemacs) "/[sudo/root@localhost]" "/sudo:root@localhost:" )
   "*The filename prefix used to open a file with `find-file-root'.")

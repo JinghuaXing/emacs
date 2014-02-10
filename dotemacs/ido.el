@@ -11,3 +11,10 @@
 			     (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
 			     (define-key ido-completion-map (kbd "SPC") 'ido-restrict-to-matches)
 			     ))
+
+
+(require 'ido-vertical-mode)
+(ido-vertical-mode t)
+
+(require 'ido-ubiquitous)
+(ido-ubiquitous-mode t)
