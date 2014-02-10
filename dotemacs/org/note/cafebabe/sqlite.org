@@ -1337,8 +1337,7 @@ storage type A:
 
 3. 以上所有的转换, 若失败, 则直接保存,不会发生数据无法插入的情况.
 
-4. BLOB, NULL 永远不会被转换. (所以不存在一种 affinity type 为 BLOB 或
-   NULL)
+4. BLOB, NULL 永远不会被转换.
 
 **** 读数据库时的类型转换
 
