@@ -370,7 +370,7 @@ The result will be displayed in buffer named with
 
 (defun sdcv-search-simple (&optional word)
   "Search WORD simple translate result."
-  (showtip
+  (popup-tip
    (sdcv-search-witch-dictionary word sdcv-dictionary-simple-list)))
 
 (defun sdcv-search-witch-dictionary (word dictionary-list)
@@ -381,13 +381,13 @@ Argument DICTIONARY-LIST the word that need transform."
   ;; Record current translate object.
   (setq sdcv-current-translate-object word)
   ;; Return translate result.
-  ;; (sdcv-filter
-  ;;  (shell-command-to-string
-  ;;   (format "sdcv -n %s %s"
-  ;;           (mapconcat (lambda (dict)
-  ;;                        (concat "-u " dict))
-  ;;                      dictionary-list " ") word)))
-  word
+  (sdcv-filter
+   (shell-command-to-string
+    (format "sdcv -n %s %s"
+            (mapconcat (lambda (dict)
+                         (concat "-u " dict))
+                       dictionary-list " ") word)))
+  ;; word
   )
 
 (defun sdcv-filter (sdcv-string)

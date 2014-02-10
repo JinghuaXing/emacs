@@ -79,7 +79,7 @@
   )
 
 (eval-after-load 'sdcv
-  '(global-set-key (kbd "M-?") 'sdcv-search-input)
+  '(global-set-key (kbd "M-?") 'sdcv-search-input+)
   )
 
 (global-set-key (kbd "C-x b") 'ido-switch-buffer)

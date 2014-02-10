@@ -732,316 +732,6 @@ select x from foo where x="a" or y="a";
 ***** savepoint & rollback to
 ***** conflict resolution
 ***** attach database
-*** sqlite internal
-**** concurrent & lock
-sqlite 在不同的层次上定义了三种锁
-***** thread lock
-- shared cache mode lock
-  - threading modes lock
-***** db file lock
-****** lock
-
-这里的 lock 是指数据库级别的文件锁, 这个锁是一个建议性锁 (advisory
-lock), 实际上, 为了实现这种多状态的锁, sqlite 针对 sqlite db 文件的三块
-区域(从 PENDING_BYTE 开始的 1+1+510=512 个字节)定义了三个读写锁, 通过对
-不同的区域的锁定实现不同的状态.
-
-PENDING_BYTE 目前定义为 0x40000000 (1G) 处, 需要注意的是 fcntl 对文件区
-域加锁时并不需要文件真的有那么大, 所以即时一个很小不到 1G 的数据库文件,也
-可以对 1G 处的"内容"进行锁定 ... 之所以设置 PENDING_BYTE 为 1G, 就是因
-为当数据库文件小于 1G 时可以节省这 512 字节, 因为 windows 只支持强制性
-文件锁, 为了避免 sqlite 读写这 512 字节的内容时因为强制锁出错, sqlite
-要求这 512 字节的空间不允许存储任何数据.
-
-当数据库文件大于 1G 时, 这 512 的字节被称为 lock-byte page.
-
-#+BEGIN_EXAMPLE
-                                           r
-                              -+------------------------------------+
-                               |                exclusive           |
-                               |          -+------------------------+--------+
-              -+---+   w    -+-+-+   w     | -+---+---+---+---+---+-v-+----+ |
-               |  -+-------->+  -+-------->+  +   |   |   |   |   |   |    | |
-              -+-+-+        -+---+         | -+---+---+---+---+---+-+-+----+ |
-             rese|rved       pending       |          shared        |        |
-                 ^         (starting)     -+------------------------+--------+
-                -+--------------------------------------------------+
-#+END_EXAMPLE                          w
-
-- pending
-- unlocked
-- shared
-执行任何语句前要进行 shared 状态
-- reserved
-  执行任何写语句前需要首先进入 reserved 状态
-
-  shared 想升级为 reserved, 必须保证当前没有任何 reserved 及 exclusive lock
-- exclusive
-  - pending
-
-    commit 前需要进行 pending 状态
-
-    reserved 升级为 exclusive 时会先暂时的升级为 pending, pending lock 会禁止任
-    何新的 lock 的获取, 包括 shared, 否则可以会因为不停的有新的 shared lock 进入
-    而导致 reserved 永远无法升级为 exclusive.
-
-  reserved要想升级为 exclusive, 必须保证当前没有任何其他的 lock, 包含 shared
-****** dead lock example
-
-|------------------------------------------+-------------------------------------------|
-| A connection                             | B connection                              |
-|------------------------------------------+-------------------------------------------|
-| BEGIN;                                   |                                           |
-|                                          | BEGIN;                                    |
-|                                          | # acquiring `reserved` lock ok            |
-|                                          | INSERT INTO foo values("bar")             |
-| # acquiring `shared` lock ok             |                                           |
-| SELECT * from foo                        |                                           |
-|                                          | # acquiring `exclusive` lock failed[fn:1] |
-|                                          | COMMIT;                                   |
-|                                          | SQL error: database is locked             |
-| # acquiring `reserved` lock failed[fn:2] |                                           |
-| INSERT INTO foo values ("bar")           |                                           |
-| SQL error: database is locked            |                                           |
-|------------------------------------------+-------------------------------------------|
-
-android framework 中采用了 ONE primary connection + N non-primary
-connections 的 connection pool 方案, 可能也是考虑到了这种死锁:
-
-primary connection 用于"可能"需要写操作的 transaction, 只有一个. 而
-non-primary connection 是用于读操作的 transaction, 可以有 N 个. 但这种
-做法仍然无法避免多个进程同时对同一个数据库写时的死锁, 如果要避免,可能需
-要要求所有写操作的 transaction 都以 begin reversed 开始.
-
-****** transaction
-- begin [deferred]
-- begin immediate
-- begin exclusive
-
-**** threads
-***** Shared Cache Mode
-
-shared cache mode 主要应用在嵌入式系统中, 可以使同一个进程的多个
-connection 共享 page cache, 以显著的降低内存和 io 的消耗. 但这需要引入
-额外的锁机制, 导致多个线程同时查询时速度非常慢
-
-shared cache mode 的比较:
-
-|-------------------------------+----------------|
-| MULTITHREAD, 三个线程同时查询 | 每个线程的 rss |
-|-------------------------------+----------------|
-| 未使用 shared cache mode      | 8M             |
-| 使用 shared cache mode        | 3.3M           |
-|-------------------------------+----------------|
-
-
-****** Read Uncommitted Isolation Level
-***** threading modes
-http://www.sqlite.org/threadsafe.html
-
-SQLite support three different threading modes:
-
-- SINGLETHREAD
-
-In this mode, all mutexes are disabled and SQLite is unsafe to use in
-more than a single thread at once.
-
-同时只能有一个线程在使用 connection (相同或不同的), 否则出现段错误.
-
-- MULTITHREAD
-
-In this mode, SQLite can be safely used by multiple threads provided
-that no single database connection is used simultaneously in two or
-more threads.
-
-同时可以有多个线程使用 connection (不同的), 否则段错误.
-
-- SERIALIZED
-
-In serialized mode, SQLite can be safely used by multiple threads with
-no restriction.
-
-The threading mode can be selected at compile-time (when the SQLite
-library is being compiled from source code) or at start-time (when the
-application that intends to use SQLite is initializing) or at run-time
-(when a new SQLite database connection is being created). Generally
-speaking, run-time overrides start-time and start-time overrides
-compile-time. Except, single-thread mode cannot be overridden once
-selected.
-
-The default mode is serialized.
-
-在 android 4.0 上, 该配置在编译时设为 SERIALIZED, 在 android 4.1 变为 MULTITHREAD
-
-同时可以有多个线程使用 connection (相同或不同的)
-
-****** Benchmark
-查询 1600 W 条记录所耗的时间的比较
-
-|---------------------------------------------------------------+------+------+-----|
-| 查询类型                                                      | real | user | sys |
-|---------------------------------------------------------------+------+------+-----|
-| 使用 SINGLETHREAD 查询一次                                    |  3.5 |  3.5 | 0.4 |
-| 使用 MULTITHREAD 查询一次                                     |  3.5 |  3.5 | 0.4 |
-| 使用 SERIALZIED 查询一次                                      |  3.8 |  3.8 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.3 |    4 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.8 |  4.2 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用相同的 connection 查询         |   27 |   28 |   9 |
-| 使用 SHARED CACHE MODE 在两个线程中使用不同的 connection 查询 |   31 |   31 |  11 |
-|---------------------------------------------------------------+------+------+-----|
-
-可见,
-
-- 不使用多线程的情况下, SINGLETHREAD 和 MULTITHREAD 差不多,SERIALZIED
-  变慢
-- 使用多线程的情况下,
-  - SINGLETHREAD 无法使用
-  - MULTITHREAD 可以利用多线程显著的降低 real time
-  - SERIALZIED 使用不同的线程时也比 MULTITHREAD 稍慢
-  - SERIALZIED 使用相同的线程时速度无法接受
-
-综上, 使用 MULTITHREAD 多线程使用不同的 connection 是最好的选择.
-
-****** Compile-time selection of threading mode
-
-Use the SQLITE_THREADSAFE compile-time parameter to selected the
-threading mode. If no SQLITE_THREADSAFE compile-time parameter is
-present, then serialized mode is used. This can be made explicit with
--DSQLITE_THREADSAFE=1. With -DSQLITE_THREADSAFE=0 the threading mode
-is single-thread. With -DSQLITE_THREADSAFE=2 the threading mode is
-multi-thread.
-
-The return value of the sqlite3_threadsafe() interface is determined
-by the compile-time threading mode selection. If single-thread mode is
-selected at compile-time, then sqlite3_threadsafe() returns false. If
-either the multi-thread or serialized modes are selected, then
-sqlite3_threadsafe() returns true. The sqlite3_threadsafe() interface
-predates the multi-thread mode and start-time and run-time mode
-selection and so is unable to distinguish between multi-thread and
-serialized mode nor is it able to report start-time or run-time mode
-changes.
-
-If single-thread mode is selected at compile-time, then critical
-mutexing logic is omitted from the build and it is impossible to
-enable either multi-thread or serialized modes at start-time or
-run-time.
-
-****** Start-time selection of threading mode
-
-Assuming that the compile-time threading mode is not single-thread,
-then the threading mode can be changed during initialization using the
-sqlite3_config() interface. The SQLITE_CONFIG_SINGLETHREAD verb puts
-SQLite into single-thread mode, the SQLITE_CONFIG_MULTITHREAD verb
-sets multi-thread mode, and the SQLITE_CONFIG_SERIALIZED verb sets
-serialized mode.
-
-****** Run-time selection of threading mode
-
-If single-thread mode has not been selected at compile-time or
-start-time, then individual database connections can be created as
-either multi-thread or serialized. It is not possible to downgrade an
-individual database connection to single-thread mode. Nor is it
-possible to escalate an individual database connection if the
-compile-time or start-time mode is single-thread.
-
-The threading mode for an individual database connection is determined
-by flags given as the third argument to sqlite3_open_v2(). The
-SQLITE_OPEN_NOMUTEX flag causes the database connection to be in the
-multi-thread mode and the SQLITE_OPEN_FULLMUTEX flag causes the
-connection to be in serialized mode. If neither flag is specified or
-if sqlite3_open() or sqlite3_open16() are used instead of
-sqlite3_open_v2(), then the default mode determined by the
-compile-time and start-time settings is used.
-
-**** sqlite file format
-**** sqlite vdbe
-**** sqlite btree
-**** sqlite vfs
-**** sqlite pcache
-**** sqlite pager
-**** FAQ
-***** Can multiple applications or multiple instances of the same application access a single database file at the same time?
-http://www.sqlite.org/faq.html#q5
-
-Multiple processes can have the same database open at the same
-time. Multiple processes can be doing a SELECT at the same time. But
-only one process can be making changes to the database at any moment
-in time, however.
-
-SQLite uses reader/writer locks to control access to the
-database. (Under Win95/98/ME which lacks support for reader/writer
-locks, a probabilistic simulation is used instead.) But use caution:
-this locking mechanism might not work correctly if the database file
-is kept on an NFS filesystem. This is because fcntl() file locking is
-broken on many NFS implementations. You should avoid putting SQLite
-database files on NFS if multiple processes might try to access the
-file at the same time. On Windows, Microsoft's documentation says that
-locking may not work under FAT filesystems if you are not running the
-Share.exe daemon. People who have a lot of experience with Windows
-tell me that file locking of network files is very buggy and is not
-dependable. If what they say is true, sharing an SQLite database
-between two or more Windows machines might cause unexpected problems.
-
-We are aware of no other embedded SQL database engine that supports as
-much concurrency as SQLite. SQLite allows multiple processes to have
-the database file open at once, and for multiple processes to read the
-database at once. When any process wants to write, it must lock the
-entire database file for the duration of its update. But that normally
-only takes a few milliseconds. Other processes just wait on the writer
-to finish then continue about their business. Other embedded SQL
-database engines typically only allow a single process to connect to
-the database at once.
-
-However, client/server database engines (such as PostgreSQL, MySQL, or
-Oracle) usually support a higher level of concurrency and allow
-multiple processes to be writing to the same database at the same
-time. This is possible in a client/server database because there is
-always a single well-controlled server process available to coordinate
-access. If your application has a need for a lot of concurrency, then
-you should consider using a client/server database. But experience
-suggests that most applications need much less concurrency than their
-designers imagine.
-
-When SQLite tries to access a file that is locked by another process,
-the default behavior is to return SQLITE_BUSY. You can adjust this
-behavior from C code using the sqlite3_busy_handler() or
-sqlite3_busy_timeout() API functions.
-
-***** Is SQLite threadsafe?
-http://www.sqlite.org/faq.html#q6
-
-Threads are evil. Avoid them.
-
-SQLite is threadsafe. We make this concession since many users choose
-to ignore the advice given in the previous paragraph. But in order to
-be thread-safe, SQLite must be compiled with the SQLITE_THREADSAFE
-preprocessor macro set to 1. Both the Windows and Linux precompiled
-binaries in the distribution are compiled this way. If you are unsure
-if the SQLite library you are linking against is compiled to be
-threadsafe you can call the sqlite3_threadsafe() interface to find
-out.
-
-Prior to version 3.3.1, an sqlite3 structure could only be used in the
-same thread that called sqlite3_open() to create it. You could not
-open a database in one thread then pass the handle off to another
-thread for it to use. This was due to limitations (bugs?) in many
-common threading implementations such as on RedHat9. Specifically, an
-fcntl() lock created by one thread cannot be removed or modified by a
-different thread on the troublesome systems. And since SQLite uses
-fcntl() locks heavily for concurrency control, serious problems arose
-if you start moving database connections across threads.
-
-The restriction on moving database connections across threads was
-relaxed somewhat in version 3.3.1. With that and subsequent versions,
-it is safe to move a connection handle across threads as long as the
-connection is not holding any fcntl() locks. You can safely assume
-that no locks are being held if no transaction is pending and all
-statements have been finalized.
-
-Under Unix, you should not carry an open SQLite database across a
-fork() system call into the child process. Problems will result if you
-do.
-
 *** sqlite limitation
 - right and full outer join
 - complete ALTER TABLE support
@@ -1233,6 +923,305 @@ page 与 free page), 有的只有孤零零一个在那儿 (lock byte page) ...
 1. pager 即 page cache, 负责所有 IO 操作, 并使用 cache 加快 IO.
 2. pager 是 sqlite 实现 ACID 的核心, 除了数据库文件的IO, pager 还负责
    journal 以及 lock 相关的操作.
+*** lock
+sqlite 在不同的层次上定义了三种锁
+**** shared cache mode lock
+shared cache mode 主要应用在嵌入式系统中, 可以使同一个进程的多个
+connection 共享 page cache, 以显著的降低内存和 io 的消耗. 但这需要引入
+额外的锁机制, 导致多个线程同时查询时速度非常慢
+
+shared cache mode 的比较:
+
+|-------------------------------+----------------|
+| MULTITHREAD, 三个线程同时查询 | 每个线程的 rss |
+|-------------------------------+----------------|
+| 未使用 shared cache mode      | 8M             |
+| 使用 shared cache mode        | 3.3M           |
+|-------------------------------+----------------|
+
+**** thread lock
+sqlite 内部使用两个 mutex 来实现三种不同的 thread lock 模型
+- core mutex
+- full mutex
+
+http://www.sqlite.org/threadsafe.html
+
+SQLite support three different threading modes:
+
+- SINGLETHREAD
+  
+In this mode, all mutexes are disabled and SQLite is unsafe to use in
+more than a single thread at once.
+
+同时只能有一个线程在使用 connection (相同或不同的), 否则出现段错误.
+
+- MULTITHREAD
+  
+In this mode, SQLite can be safely used by multiple threads provided
+that no single database connection is used simultaneously in two or
+more threads.
+
+同时可以有多个线程使用 connection (不同的), 否则段错误.
+
+- SERIALIZED
+  
+In serialized mode, SQLite can be safely used by multiple threads with
+no restriction.
+
+The threading mode can be selected at compile-time (when the SQLite
+library is being compiled from source code) or at start-time (when the
+application that intends to use SQLite is initializing) or at run-time
+(when a new SQLite database connection is being created). Generally
+speaking, run-time overrides start-time and start-time overrides
+compile-time. Except, single-thread mode cannot be overridden once
+selected.
+
+The default mode is serialized.
+
+在 android 4.0 上, 该配置在编译时设为 SERIALIZED, 在 android 4.1 变为 MULTITHREAD
+
+同时可以有多个线程使用 connection (相同或不同的)
+
+***** Benchmark
+查询 1600 W 条记录所耗的时间的比较
+
+|---------------------------------------------------------------+------+------+-----|
+| 查询类型                                                      | real | user | sys |
+|---------------------------------------------------------------+------+------+-----|
+| 使用 SINGLETHREAD 查询一次                                    |  3.5 |  3.5 | 0.4 |
+| 使用 MULTITHREAD 查询一次                                     |  3.5 |  3.5 | 0.4 |
+| 使用 SERIALZIED 查询一次                                      |  3.8 |  3.8 | 0.4 |
+| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.3 |    4 | 0.4 |
+| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.8 |  4.2 | 0.4 |
+| 使用 MULTITHREAD 在两个线程使用相同的 connection 查询         |   27 |   28 |   9 |
+| 使用 SHARED CACHE MODE 在两个线程中使用不同的 connection 查询 |   31 |   31 |  11 |
+|---------------------------------------------------------------+------+------+-----|
+
+可见,
+
+- 不使用多线程的情况下, SINGLETHREAD 和 MULTITHREAD 差不多,SERIALZIED
+  变慢
+- 使用多线程的情况下,
+  - SINGLETHREAD 无法使用
+  - MULTITHREAD 可以利用多线程显著的降低 real time
+  - SERIALZIED 使用不同的线程时也比 MULTITHREAD 稍慢
+  - SERIALZIED 使用相同的线程时速度无法接受
+    
+综上, 使用 MULTITHREAD 多线程使用不同的 connection 是最好的选择.
+
+***** Compile-time selection of threading mode
+
+Use the SQLITE_THREADSAFE compile-time parameter to selected the
+threading mode. If no SQLITE_THREADSAFE compile-time parameter is
+present, then serialized mode is used. This can be made explicit with
+-DSQLITE_THREADSAFE=1. With -DSQLITE_THREADSAFE=0 the threading mode
+is single-thread. With -DSQLITE_THREADSAFE=2 the threading mode is
+multi-thread.
+
+The return value of the sqlite3_threadsafe() interface is determined
+by the compile-time threading mode selection. If single-thread mode is
+selected at compile-time, then sqlite3_threadsafe() returns false. If
+either the multi-thread or serialized modes are selected, then
+sqlite3_threadsafe() returns true. The sqlite3_threadsafe() interface
+predates the multi-thread mode and start-time and run-time mode
+selection and so is unable to distinguish between multi-thread and
+serialized mode nor is it able to report start-time or run-time mode
+changes.
+
+If single-thread mode is selected at compile-time, then critical
+mutexing logic is omitted from the build and it is impossible to
+enable either multi-thread or serialized modes at start-time or
+run-time.
+
+***** Start-time selection of threading mode
+
+Assuming that the compile-time threading mode is not single-thread,
+then the threading mode can be changed during initialization using the
+sqlite3_config() interface. The SQLITE_CONFIG_SINGLETHREAD verb puts
+SQLite into single-thread mode, the SQLITE_CONFIG_MULTITHREAD verb
+sets multi-thread mode, and the SQLITE_CONFIG_SERIALIZED verb sets
+serialized mode.
+
+***** Run-time selection of threading mode
+
+If single-thread mode has not been selected at compile-time or
+start-time, then individual database connections can be created as
+either multi-thread or serialized. It is not possible to downgrade an
+individual database connection to single-thread mode. Nor is it
+possible to escalate an individual database connection if the
+compile-time or start-time mode is single-thread.
+
+The threading mode for an individual database connection is determined
+by flags given as the third argument to sqlite3_open_v2(). The
+SQLITE_OPEN_NOMUTEX flag causes the database connection to be in the
+multi-thread mode and the SQLITE_OPEN_FULLMUTEX flag causes the
+connection to be in serialized mode. If neither flag is specified or
+if sqlite3_open() or sqlite3_open16() are used instead of
+sqlite3_open_v2(), then the default mode determined by the
+compile-time and start-time settings is used.
+
+**** db file lock
+***** lock
+
+这里的 lock 是指数据库级别的文件锁, 这个锁是一个建议性锁 (advisory
+lock), 实际上, 为了实现这种多状态的锁, sqlite 针对 sqlite db 文件的三块
+区域(从 PENDING_BYTE 开始的 1+1+510=512 个字节)定义了三个读写锁, 通过对
+不同的区域的锁定实现不同的状态.
+
+PENDING_BYTE 目前定义为 0x40000000 (1G) 处, 需要注意的是 fcntl 对文件区
+域加锁时并不需要文件真的有那么大, 所以即时一个很小不到 1G 的数据库文件,也
+可以对 1G 处的"内容"进行锁定 ... 之所以设置 PENDING_BYTE 为 1G, 就是因
+为当数据库文件小于 1G 时可以节省这 512 字节, 因为 windows 只支持强制性
+文件锁, 为了避免 sqlite 读写这 512 字节的内容时因为强制锁出错, sqlite
+要求这 512 字节的空间不允许存储任何数据.
+
+当数据库文件大于 1G 时, 这 512 的字节被称为 lock-byte page.
+
+#+BEGIN_EXAMPLE
+                                           r
+                              -+------------------------------------+
+                               |                exclusive           |
+                               |          -+------------------------+--------+
+              -+---+   w    -+-+-+   w     | -+---+---+---+---+---+-v-+----+ |
+               |  -+-------->+  -+-------->+  +   |   |   |   |   |   |    | |
+              -+-+-+        -+---+         | -+---+---+---+---+---+-+-+----+ |
+             rese|rved       pending       |          shared        |        |
+                 ^         (starting)     -+------------------------+--------+
+                -+--------------------------------------------------+
+#+END_EXAMPLE                          w
+
+- pending
+- unlocked
+- shared
+执行任何语句前要进行 shared 状态
+- reserved
+  执行任何写语句前需要首先进入 reserved 状态
+  
+  shared 想升级为 reserved, 必须保证当前没有任何 reserved 及 exclusive lock
+- exclusive
+  - pending
+    
+    commit 前需要进行 pending 状态
+    
+    reserved 升级为 exclusive 时会先暂时的升级为 pending, pending lock 会禁止任
+    何新的 lock 的获取, 包括 shared, 否则可以会因为不停的有新的 shared lock 进入
+    而导致 reserved 永远无法升级为 exclusive.
+    
+  reserved要想升级为 exclusive, 必须保证当前没有任何其他的 lock, 包含 shared
+***** dead lock example
+
+|------------------------------------------+-------------------------------------------|
+| A connection                             | B connection                              |
+|------------------------------------------+-------------------------------------------|
+| BEGIN;                                   |                                           |
+|                                          | BEGIN;                                    |
+|                                          | # acquiring `reserved` lock ok            |
+|                                          | INSERT INTO foo values("bar")             |
+| # acquiring `shared` lock ok             |                                           |
+| SELECT * from foo                        |                                           |
+|                                          | # acquiring `exclusive` lock failed[fn:1] |
+|                                          | COMMIT;                                   |
+|                                          | SQL error: database is locked             |
+| # acquiring `reserved` lock failed[fn:2] |                                           |
+| INSERT INTO foo values ("bar")           |                                           |
+| SQL error: database is locked            |                                           |
+|------------------------------------------+-------------------------------------------|
+
+android framework 中采用了 ONE primary connection + N non-primary
+connections 的 connection pool 方案, 可能也是考虑到了这种死锁:
+
+primary connection 用于"可能"需要写操作的 transaction, 只有一个. 而
+non-primary connection 是用于读操作的 transaction, 可以有 N 个. 但这种
+做法仍然无法避免多个进程同时对同一个数据库写时的死锁, 如果要避免,可能需
+要要求所有写操作的 transaction 都以 begin reversed 开始.
+
+***** transaction
+- begin [deferred]
+- begin immediate
+- begin exclusive
+**** FAQ
+***** Can multiple applications or multiple instances of the same application access a single database file at the same time?
+http://www.sqlite.org/faq.html#q5
+
+Multiple processes can have the same database open at the same
+time. Multiple processes can be doing a SELECT at the same time. But
+only one process can be making changes to the database at any moment
+in time, however.
+
+SQLite uses reader/writer locks to control access to the
+database. (Under Win95/98/ME which lacks support for reader/writer
+locks, a probabilistic simulation is used instead.) But use caution:
+this locking mechanism might not work correctly if the database file
+is kept on an NFS filesystem. This is because fcntl() file locking is
+broken on many NFS implementations. You should avoid putting SQLite
+database files on NFS if multiple processes might try to access the
+file at the same time. On Windows, Microsoft's documentation says that
+locking may not work under FAT filesystems if you are not running the
+Share.exe daemon. People who have a lot of experience with Windows
+tell me that file locking of network files is very buggy and is not
+dependable. If what they say is true, sharing an SQLite database
+between two or more Windows machines might cause unexpected problems.
+
+We are aware of no other embedded SQL database engine that supports as
+much concurrency as SQLite. SQLite allows multiple processes to have
+the database file open at once, and for multiple processes to read the
+database at once. When any process wants to write, it must lock the
+entire database file for the duration of its update. But that normally
+only takes a few milliseconds. Other processes just wait on the writer
+to finish then continue about their business. Other embedded SQL
+database engines typically only allow a single process to connect to
+the database at once.
+
+However, client/server database engines (such as PostgreSQL, MySQL, or
+Oracle) usually support a higher level of concurrency and allow
+multiple processes to be writing to the same database at the same
+time. This is possible in a client/server database because there is
+always a single well-controlled server process available to coordinate
+access. If your application has a need for a lot of concurrency, then
+you should consider using a client/server database. But experience
+suggests that most applications need much less concurrency than their
+designers imagine.
+
+When SQLite tries to access a file that is locked by another process,
+the default behavior is to return SQLITE_BUSY. You can adjust this
+behavior from C code using the sqlite3_busy_handler() or
+sqlite3_busy_timeout() API functions.
+
+***** Is SQLite threadsafe?
+http://www.sqlite.org/faq.html#q6
+
+Threads are evil. Avoid them.
+
+SQLite is threadsafe. We make this concession since many users choose
+to ignore the advice given in the previous paragraph. But in order to
+be thread-safe, SQLite must be compiled with the SQLITE_THREADSAFE
+preprocessor macro set to 1. Both the Windows and Linux precompiled
+binaries in the distribution are compiled this way. If you are unsure
+if the SQLite library you are linking against is compiled to be
+threadsafe you can call the sqlite3_threadsafe() interface to find
+out.
+
+Prior to version 3.3.1, an sqlite3 structure could only be used in the
+same thread that called sqlite3_open() to create it. You could not
+open a database in one thread then pass the handle off to another
+thread for it to use. This was due to limitations (bugs?) in many
+common threading implementations such as on RedHat9. Specifically, an
+fcntl() lock created by one thread cannot be removed or modified by a
+different thread on the troublesome systems. And since SQLite uses
+fcntl() locks heavily for concurrency control, serious problems arose
+if you start moving database connections across threads.
+
+The restriction on moving database connections across threads was
+relaxed somewhat in version 3.3.1. With that and subsequent versions,
+it is safe to move a connection handle across threads as long as the
+connection is not holding any fcntl() locks. You can safely assume
+that no locks are being held if no transaction is pending and all
+statements have been finalized.
+
+Under Unix, you should not carry an open SQLite database across a
+fork() system call into the child process. Problems will result if you
+do.
+
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或

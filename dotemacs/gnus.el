@@ -54,7 +54,7 @@
    (shell-command-to-string "fortune")
    "
 wei.sun(孙伟)
-分机: 589-653
+分机: 589-683
 手机: 18630859306
 Email:wei.sun@spreadtrum.com
 展讯通信(天津)
@@ -250,3 +250,40 @@ Email:wei.sun@spreadtrum.com
 ;;(setq message-send-mail-function 'smtpmail-send-it)
 (setq send-mail-function 'async-smtpmail-send-it
       message-send-mail-function 'async-smtpmail-send-it)
+
+(defun gnus-user-format-function-A (header)
+  "Display @ for message with attachment in summary line.
+You need to add `Content-Type' to `nnmail-extra-headers' and
+`gnus-extra-headers', see Info node `(gnus)To From Newsgroups'."
+  (let ((case-fold-search t)
+        (ctype (or (cdr (assq 'Content-Type (mail-header-extra header)))
+                   "text/plain"))
+        (indicator " "))
+    (when (string-match "^multipart/mixed" ctype)
+      (setq indicator "@"))
+    indicator))
+
+(setq gnus-user-date-format-alist
+      '(((gnus-seconds-today) . "%H:%M")
+        ((+ 86400 (gnus-seconds-today)) . "Yest, %H:%M")
+        (604800 . "%a %H:%M") ;;that's one week
+        ((gnus-seconds-month) . "%a %d")
+        ((gnus-seconds-year) . "%b %d")
+        ((* 30 (gnus-seconds-year)) . "%b %d '%y")
+        (t . "")))
+
+(setq nnmail-extra-headers
+      '(To Cc Newsgroups Content-Type Thread-Topic Thread-Index))
+(add-to-list 'gnus-extra-headers 'Content-Type)
+
+(setq gnus-face-9  'font-lock-warning-face
+      gnus-face-10 'shadow
+      gnus-face-11 'vbe:proportional
+      gnus-summary-line-format
+      (concat
+       "%10{%U%R%z%}" " " "%1{%11,11&user-date;%}"
+       "%10{│%}"
+       "%10{%u&A; %}" "%(%-15,15f %)"
+       "%*"
+       " " "%10{%B%}"
+       "%s\n"))
