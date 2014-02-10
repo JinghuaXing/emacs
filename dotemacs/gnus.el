@@ -283,7 +283,7 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
       (concat
        "%10{%U%R%z%}" " " "%1{%11,11&user-date;%}"
        "%10{│%}"
-       "%10{%u&A; %}" "%(%-15,15f %)"
+       "%9{%u&A; %}" "%(%-15,15f %)"
        "%*"
        " " "%10{%B%}"
        "%s\n"))

@@ -949,14 +949,14 @@ http://www.sqlite.org/threadsafe.html
 SQLite support three different threading modes:
 
 - SINGLETHREAD
-  
+
 In this mode, all mutexes are disabled and SQLite is unsafe to use in
 more than a single thread at once.
 
 同时只能有一个线程在使用 connection (相同或不同的), 否则出现段错误.
 
 - MULTITHREAD
-  
+
 In this mode, SQLite can be safely used by multiple threads provided
 that no single database connection is used simultaneously in two or
 more threads.
@@ -964,7 +964,7 @@ more threads.
 同时可以有多个线程使用 connection (不同的), 否则段错误.
 
 - SERIALIZED
-  
+
 In serialized mode, SQLite can be safely used by multiple threads with
 no restriction.
 
@@ -1006,7 +1006,7 @@ The default mode is serialized.
   - MULTITHREAD 可以利用多线程显著的降低 real time
   - SERIALZIED 使用不同的线程时也比 MULTITHREAD 稍慢
   - SERIALZIED 使用相同的线程时速度无法接受
-    
+
 综上, 使用 MULTITHREAD 多线程使用不同的 connection 是最好的选择.
 
 ***** Compile-time selection of threading mode
@@ -1096,17 +1096,17 @@ PENDING_BYTE 目前定义为 0x40000000 (1G) 处, 需要注意的是 fcntl 对�
 执行任何语句前要进行 shared 状态
 - reserved
   执行任何写语句前需要首先进入 reserved 状态
-  
+
   shared 想升级为 reserved, 必须保证当前没有任何 reserved 及 exclusive lock
 - exclusive
   - pending
-    
+
     commit 前需要进行 pending 状态
-    
+
     reserved 升级为 exclusive 时会先暂时的升级为 pending, pending lock 会禁止任
     何新的 lock 的获取, 包括 shared, 否则可以会因为不停的有新的 shared lock 进入
     而导致 reserved 永远无法升级为 exclusive.
-    
+
   reserved要想升级为 exclusive, 必须保证当前没有任何其他的 lock, 包含 shared
 ***** dead lock example
 
@@ -1221,6 +1221,193 @@ statements have been finalized.
 Under Unix, you should not carry an open SQLite database across a
 fork() system call into the child process. Problems will result if you
 do.
+
+*** type system
+
+sqlite 的类型系统被称为 manifest typing (或 latent typing, dynamic
+typing), 而不是其他 DBMS 采用的 static typing.
+
+所谓 manifest typing, 是指数据的类型不是由表定义时决定的, 而是由数据本
+身决定的. 通过观察 table leaf page 中 cell 的格式可以更清楚的认识这一
+点: 每个 cell 对应着一条记录, cell 的格式既包含记录的数据, 也包含记录中
+各个字段的类型... 显然, 相对于 static typing, sqlite 的这种类型系统会占
+用更多的文件空间, 但也带来了一些灵活性. 
+
+由数据本身决定的类型信息,称之为 storage type, sqlite 定义了以下几种
+storage type:
+
+- NULL
+- INTEGER
+- REAL
+- TEXT
+- BLOB
+
+为了与其他 DBMS 和 sql 标准尽量兼容, sqlite 在建表中也支持指定一些类型
+信息, 例如 VARCHAR, 这些类型称为 affinity type. 在读取和写入数据时,
+sqlite 会根据 storage type 与 affinity type 之间的一些规则进入类型转换.
+
+另外, storage type 也会影响一些和比较相关的操作, 如 order by, group by
+等.
+
+sqlite 定义几种 affinity type:
+
+- INTEGER
+- REAL
+- NONE
+- REAL
+- NUMERIC
+
+在建表时, sqlite 使用了如下的规则来确定 affinity type:
+
+- 若类型的名字包含 INT, 则该列的 affinity type 为 INTEGER
+- 若类型名字包含 CHAR, CLOB, TEXT, 则为 TEXT
+- 若类型名字包含 BLOB, 则为 NONE
+- 若类型名字包含 REAL,FLOA,DOUB,则为 REAL
+- 否则, 为 NUMERIC
+
+所以, create table test (num test) 是一个合法的语句... create table
+test (name CHAR) 与 create table test (name VARCHAR) 是一样的...
+
+#+BEGIN_EXAMPLE
+
+      storage type A            storage type B
+           |                          ^
+           | insert                   | query
+           v                          |
+-----------|--------------------------|---------
+           |                          |
+           |                          |
+       conversion A            conversion B
+           |      (affinity type)     |
+          -+------storage type C------+
+
+#+END_EXAMPLE
+
+由上图所示, 使用 storage type 的有三个场合, 类型转换在读写数据库时都会
+发生.
+
+**** 写数据库时的类型转换
+
+当向数据库写入数据时, 在 conversion A 进行之前, sqlite 需要确定
+storage type A:
+
+- 若数据使用引号包起来, 则为 TEXT
+- 若没有包含小数点或 e指数, 则为 INTEGER
+- 若包含小数点或 e, 则为 REAL
+- 若为 NULL, 则为 NULL
+- 若为 X"abcd"形式, 则为 BLOB
+
+若数据是通过 sqlite3_bind_* 指定的, 则 storage type 与不同的 bind 方法
+是对应的, 则 sqlite3_bind_blob 绑定的数据是 BLOB 类型. 
+
+确定 storage type A 后, sqlite 使用 affinity type 进行 conversion A:
+1. TEXT affinity type
+
+   - BLOB, TEXT, NULL 三种 storage type 会被直接保存, 不进行转换, 则
+     storage type C 是 BLOB, TEXT 和 NULL
+   - INTEGER, REAL 会被转换为相应的字符串, 即 123 -> "123", 且 storage
+     type C 会变为 TEXT
+
+2. NUMERIC affinity type
+
+   - BLOB, NULL 不会被转换
+   - 其他类型会尽量被转换为 INTEGER 或 REAL
+
+3. INTEGER affinity type
+
+   与 NUMERIC 类似, 但是会尽量会转换为 INTEGER. 例如:
+   insert into test values ("123"), 123 最终的 storage type 会是
+   INTEGER 而不是 TEXT. 但 12.1 不会转换为 12, 因为会损失数据. 
+
+4. REAL affinity type
+
+   与 NUMERIC 类似, 但整数会被转换为浮点数.
+
+5. NONE affinity type
+   
+   不做任何转换
+
+综上所述:
+
+1. conversion A 会将输入的数据从 storage type A 转换为 storage C, 在转
+   换过程中决不会丢失数据 (例如不会把 12.1 转换为 12),
+
+2. NONE 不做任何转换,TEXT 尽量转换为 TEXT, NUMERIC 尽量转换为 INTEGER
+   或 REAL, INTEGER尽量转换为 INTEGER, REAL 尽量转换为 REAL
+
+3. 以上所有的转换, 若失败, 则直接保存,不会发生数据无法插入的情况.
+
+4. BLOB, NULL 永远不会被转换.
+
+**** 读数据库时的类型转换
+
+在读数据库时, 应用会使用 sqlite3_column_xxx 函数期望获取一个 xxx 类型的
+数据 (storage type B), 当与 storage type C 不一致时, conversion B 会起
+作用. 要注意的是 conversion B 并不需要 affinity type 参与, 它完全由
+storage type B 和 storage type C 决定.
+
+|----------------+----------------+---------------|
+| storage type C | storage type B | conversion B  |
+|----------------+----------------+---------------|
+| NULL           | INTEGER        | 0             |
+| NULL           | FLOAT          | 0             |
+| NULL           | TEXT           | null pointer  |
+| NULL           | BLOB           | null pointer  |
+|----------------+----------------+---------------|
+| INTEGER        | FLOAT          | float(int a)  |
+| INTEGER        | TEXT           | sprintf("%d") |
+| INTEGER        | BLOB           | sprintf("%d") |
+|----------------+----------------+---------------|
+| FLOAT          | INTEGER        | int(float a)  |
+| FLOAT          | TEXT           | sprintf("%f") |
+| FLOAT          | TEXT           | sprintf("%f") |
+|----------------+----------------+---------------|
+| TEXT           | INTEGER        | atoi          |
+| TEXT           | FLOAT          | atof          |
+| TEXT           | BLOB           | no change     |
+|----------------+----------------+---------------|
+| BLOB           | INTEGER        | atoi          |
+| BLOB           | FLOAT          | atof          |
+| BLOB           | TEXT           | no change     |
+|----------------+----------------+---------------|
+
+由此可见, conversion B 有可能丢失数据, 例如 int(float a) 或者
+atoi("abc")
+
+**** 处理 NULL
+**** 比较不同 storage type 的大小
+
+- 若比较的双方来自两个列, 则使用以下的规则
+  null < integer, real < text < blob
+- 若一方来自一列, 另一方来自输入或另一个查询或表达式的结果, 则另一个结
+  果会先经过 conversion A 的转换 (使用第一方的 affinity type) 再应用第
+  一条规则
+- 若双方都来自输入或中间结果, 则不做转换, 直接应用第一条规则
+- 以上规则不仅适用于 <, between, in 等, 也适用于 order by, group by 等
+
+例如:
+#+BEGIN_SRC sql
+  create table test (name INTEGER);
+  insert into test values (1);
+  insert into test values ("abc");
+  insert into test values ("2.1");
+  insert into test values (3);
+#+END_SRC
+输出为:
+#+BEGIN_EXAMPLE
+  sqlite> select typeof(name),name from test order by name desc;
+  text|abc
+  integer|3
+  real|2.1
+  integer|1
+#+END_EXAMPLE
+
+**** 关于类型系统的总结
+
+- 不同的 storage type C 一起排序时是分段排序的
+- conversion A 不会损失数据精度, 但 conversion B 会
+- conversion A 使用 affinity type 来参与转换, conversion B 不使用
+- 在比较不同的 storage type C 的大小时, 可能会使用到 conversion A
 
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
