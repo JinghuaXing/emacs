@@ -9,7 +9,7 @@
 (global-set-key (kbd "<f11>") 'douban-music)
 (global-set-key (kbd "M-m") 'ace-jump-mode)
 (global-set-key (kbd "M-I") 'aj-toggle-fold)
-(global-set-key (kbd "M-J") 'idomenu)
+(global-set-key (kbd "M-J") 'imenu)
 
 
 (add-hook 'sql-interactive-mode-hook

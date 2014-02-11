@@ -17,7 +17,7 @@
     )
   (c-set-offset 'case-label 4)
   (imenu-add-menubar-index)
-  (which-function-mode 1)
+  ;; (which-function-mode 1)
   (local-set-key (kbd "C-h C-h") 'sourcepair-load)
   ;; (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)

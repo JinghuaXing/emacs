@@ -312,14 +312,12 @@
 ;; (global-subword-mode t)
 (global-auto-revert-mode 1)
 
-(require 'idomenu)
-
 (require 'pdftools)
 
 ;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;; (require 'xclip)
-;; (turn-on-xclip)
+(require 'xclip)
+(turn-on-xclip)
 
 (require 'elscreen)
 (elscreen-start)
@@ -337,14 +335,9 @@
 
 ;; (global-linum-mode t)
 
-;; (require 'golden-ratio)
-;; (golden-ratio-mode 1)
-
 ;; (require 'flycheck)
 ;; (add-hook 'after-init-hook #'global-flycheck-mode)
 (require 'awk-it)
-;;; .emacs ends here
-
 (require 'ascii)
 
 (require 'autopair)
@@ -378,4 +371,3 @@
 
 (require 'visual-regexp)
 (global-set-key (kbd "M-%") 'vr/query-replace)
-

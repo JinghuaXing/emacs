@@ -165,7 +165,7 @@
 (require 'outline)
 (eval-when-compile
   (require 'cl))
-(require 'showtip)
+(require 'popup)
 
 ;;; Code:
 

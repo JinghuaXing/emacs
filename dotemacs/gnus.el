@@ -12,6 +12,8 @@
 				  (nnimap-server-port 143)
 				  (nnimap-stream network)))
 
+;; (setq gnus-secondary-select-methods '((nntp "news.gmane.org")))
+
 (setq message-send-mail-function 'smtpmail-send-it
       smtpmail-auth-credentials '(("sci-mail8.spreadtrum.com" 25
 				   "wei.sun" "123456"))

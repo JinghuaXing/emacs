@@ -55,10 +55,10 @@
  (rear-context-string . "_DM_BASE_W12.46\n")
  (position . 124))
 ("ftp/pdtest"
- (filename . "/ftp:pdtest@10.0.6.4:/PDLogs/MocorDroid/2013/")
- (front-context-string . "10.1.2.2.3\n  drw")
- (rear-context-string . " 0 Aug 30 15:45 ")
- (position . 225))
+ (filename . "/ftp:pdtest@10.0.6.4:/PDLogs/MocorDroid/2014/")
+ (front-context-string . "2351×¨Ïî²âÊÔ°æ±¾")
+ (rear-context-string . " 0 Jan 11 17:05 ")
+ (position . 106))
 ("org-refile-last-stored"
  (filename . "~/.elisp/dotemacs/org/android.org")
  (front-context-string . "*** DONE `withYi")
