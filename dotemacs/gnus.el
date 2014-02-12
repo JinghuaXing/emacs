@@ -32,7 +32,7 @@
 ;;排序
 (setq gnus-thread-sort-functions
       '(
-	(not gnus-thread-sort-by-date)
+	(not gnus-thread-sort-by-most-recent-date)
 	(not gnus-thread-sort-by-number)
 	))
 
@@ -133,7 +133,7 @@ Email:wei.sun@spreadtrum.com
 	(gnus-low-score-mark)
 	(gnus-catchup-mark (from -1) (subject -1))))
 (add-hook 'gnus-started-hook '(lambda()
-				(gnus-demon-add-handler 'gnus-demon-scan-news 3 1)
+				(gnus-demon-add-handler 'gnus-demon-scan-news 300 1)
 				))
 
 (add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail)
@@ -239,8 +239,7 @@ Email:wei.sun@spreadtrum.com
 (require 'smtpmail)
 
 (defun async-smtpmail-send-it ()
-  (let ((to (message-field-value "To")))
-    (message "Delivering message to %s..." to)
+  (let ()
     (async-start
      `(lambda ()
         (require 'smtpmail)
@@ -251,7 +250,7 @@ Email:wei.sun@spreadtrum.com
           (smtpmail-send-it))
 	)
      `(lambda (&optional ignore)
-        (sw/notify (format "Delivering message to %s...done" to))))))
+        (sw/notify "Delivering message...done")))))
 
 ;;(setq message-send-mail-function 'smtpmail-send-it)
 (setq send-mail-function 'async-smtpmail-send-it
