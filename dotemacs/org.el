@@ -167,3 +167,5 @@
 (setq org-agenda-include-diary t)
 
 (setq org-html-style-default "<link rel=\"stylesheet\" type=\"text/css\" href=\"/stylesheets/main.css\" media=\"screen\" />")
+
+(require 'org-gnus)

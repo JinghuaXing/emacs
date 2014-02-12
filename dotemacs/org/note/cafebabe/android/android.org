@@ -382,7 +382,31 @@ ZygoteInit.java: framework/base/core/java/com/android/internal/os
     Q: Why SystemServer.java will call android_server.so:init1(), which will call SystemServer.java:init2()? instead of call init2() directly?
     A: android_server.so:init1() is needed because it will call `joinThreadPool` to put the process into ThreadPool. There is no java correspondent of
        joinThreadPool()
+*** app_process init
+zygote 本身就是通过 app_process 启动的, 另外, 除了通过 zygote 来启动
+java 程序外, android 还可以通过 app_process 来启动 java 程序.
 
+例如, adb shell am, adb shell pm, monkey 等都是通过 app_process 启动的. 
+
+与 zygote init 的过程一样, app_process 启动一般 java 程序的过程大致是:
+
+#+BEGIN_SRC text
+  app_main.cpp::main(className)
+    AndroidRuntime.cpp::runtime.start("com.android.internal.os.RuntimeInit")
+      AndroidRuntime.cpp::start(const char* className, const char* options)
+        // 找到 RuntimeInit 类的 main 并调用
+        jmethodID startMeth = env->GetStaticMethodID(startClass, "main"...
+        env->CallStaticVoidMethod(startClass, startMeth, strArray);
+          RuntimeInit.java::nativeFinishInit();
+            app_main.cpp::runtime.onStarted()
+              // 启动一个单独的 binder 线程
+              proc->startThreadPool();
+              // 调到 app_process 命令指定的类的 main 函数
+              ar->callMain(mClassName, mClass, mArgC, mArgV);
+              // app_process 命令指定的类的 main 函数返回, 整个
+              // app_main::main() 结束, 进程终止
+              IPCThreadState::self()->stopProcess();
+#+END_SRC
 ** Input Method Framework
 ** IntentSender
    :PROPERTIES:

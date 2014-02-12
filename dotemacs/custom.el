@@ -114,6 +114,7 @@
  '(gdb-enable-debug t)
  '(global-auto-complete-mode nil)
  '(global-semantic-stickyfunc-mode t)
+ '(gnus-asynchronous t)
  '(gnus-demon-timestep 10)
  '(golden-ratio-exclude-modes (quote ("ediff-mode")))
  '(helm-ff-auto-update-initial-value nil)

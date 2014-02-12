@@ -245,9 +245,10 @@ Email:wei.sun@spreadtrum.com
           (insert ,(buffer-substring-no-properties (point-min) (point-max)))
           ;; Pass in the variable environment for smtpmail
           ,(async-inject-variables "\\`\\(smtpmail\\|\\(user-\\)?mail\\)-")
-          (smtpmail-send-it)))
+          (smtpmail-send-it))
+	)
      `(lambda (&optional ignore)
-        (message "Delivering message to %s...done" ,to)))))
+        (sw/notify (format "Delivering message to %s...done" to))))))
 
 ;;(setq message-send-mail-function 'smtpmail-send-it)
 (setq send-mail-function 'async-smtpmail-send-it

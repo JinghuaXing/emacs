@@ -1,5 +1,5 @@
-;; (add-to-list 'load-path "~/.elisp/magit-1.2.0")
-(add-to-list 'load-path "~/.elisp/magit")
+(add-to-list 'load-path "~/.elisp/magit-1.2.0")
+;; (add-to-list 'load-path "~/.elisp/magit")
 (add-to-list 'load-path "~/.elisp/git-modes/")
 (require 'git-rebase-mode)
 (require 'git-commit-mode)

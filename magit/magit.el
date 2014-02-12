@@ -2112,7 +2112,10 @@ Otherwise, return nil."
 
 (defun magit-ref-ambiguous-p (ref)
   "Return whether or not REF is ambiguous."
-  (not (magit-git-success "rev-parse" "--abbrev-ref" ref)))
+  ;; An ambiguous ref does not cause `git rev-parse --abbrev-ref'
+  ;; to exits with a non-zero status.  But there is nothing on
+  ;; stdout in that case.
+  (not (magit-git-string "rev-parse" "--abbrev-ref" ref)))
 
 (defun magit-rev-diff-count (a b)
   "Return the commits in A but not B and vice versa.
@@ -2156,10 +2159,10 @@ involving HEAD."
   (magit-git-success "diff" "--quiet" "--" file))
 
 (defun magit-anything-staged-p ()
-  (not (magit-git-success "diff-index" "--cached" "--quiet" "HEAD" "--")))
+  (magit-git-failure "diff-index" "--cached" "--quiet" "HEAD"))
 
 (defun magit-anything-unstaged-p ()
-  (not (magit-git-success "diff-files" "--quiet" "--")))
+  (magit-git-failure "diff-files" "--quiet"))
 
 (defun magit-everything-clean-p ()
   (and (not (magit-anything-staged-p))
@@ -3104,17 +3107,21 @@ Run Git in the root of the current repository.
           (set-marker-insertion-type (magit-section-content-beginning s) nil)
           (current-buffer)))))
 
-;;;;; Process Api
 ;;;;; Synchronous Processes
+
+(defun magit-git-exit-code (&rest args)
+  "Execute Git with ARGS, returning its exit code."
+  (apply #'process-file magit-git-executable nil nil nil
+         (append magit-git-standard-options
+                 (magit-flatten-onelevel args))))
 
 (defun magit-git-success (&rest args)
   "Execute Git with ARGS, returning t if its exit code is 0."
   (= (apply #'magit-git-exit-code args) 0))
 
-(defun magit-git-exit-code (&rest args)
-  "Execute Git with ARGS, returning its exit code."
-  (apply #'process-file magit-git-executable nil nil nil
-         (append magit-git-standard-options args)))
+(defun magit-git-failure (&rest args)
+  "Execute Git with ARGS, returning t if its exit code is 1."
+  (= (apply #'magit-git-exit-code args) 1))
 
 (defun magit-git-string (&rest args)
   "Execute Git with ARGS, returning the first line of its output.
@@ -3122,7 +3129,8 @@ If there is no output return nil.  If the output begins with a
 newline return an empty string."
   (with-temp-buffer
     (apply #'process-file magit-git-executable nil (list t nil) nil
-           (append magit-git-standard-options args))
+           (append magit-git-standard-options
+                   (magit-flatten-onelevel args)))
     (unless (= (point-min) (point-max))
       (goto-char (point-min))
       (buffer-substring-no-properties
@@ -3132,14 +3140,16 @@ newline return an empty string."
 (defun magit-git-insert (&rest args)
   "Execute Git with ARGS, inserting its output at point."
   (apply #'process-file magit-git-executable nil (list t nil) nil
-         (append magit-git-standard-options args)))
+         (append magit-git-standard-options
+                 (magit-flatten-onelevel args))))
 
 (defun magit-git-lines (&rest args)
   "Execute Git with ARGS, returning its output as a list of lines.
 Empty lines anywhere in the output are omitted."
   (with-temp-buffer
     (apply #'process-file magit-git-executable nil (list t nil) nil
-           (append magit-git-standard-options args))
+           (append magit-git-standard-options
+                   (magit-flatten-onelevel args)))
     (split-string (buffer-string) "\n" 'omit-nulls)))
 
 (defun magit-run-git (&rest args)
@@ -4420,7 +4430,7 @@ Customize variable `magit-diff-refine-hunk' to change the default mode."
 
 ;;; Modes (1)
 ;;;; Commit Mode
-;;;; Commit Core
+;;;;; Commit Core
 
 (define-derived-mode magit-commit-mode magit-mode "Magit"
   "Mode for looking at a git commit.
@@ -4445,7 +4455,7 @@ from the parent keymap `magit-mode-map' are also available."
   "Show information about COMMIT."
   (interactive (list (magit-read-rev-with-default
                       "Show commit (hash or ref)")))
-  (unless (magit-git-success "cat-file" "commit" commit)
+  (when (magit-git-failure "cat-file" "commit" commit)
     (user-error "%s is not a commit" commit))
   (magit-mode-setup magit-commit-buffer-name
                     (if noselect 'display-buffer 'pop-to-buffer)
@@ -4507,7 +4517,7 @@ stash at point, then prompt for a commit."
     "--cc" "-p" (and magit-show-diffstat "--stat")
     magit-diff-options commit))
 
-;;;; Commit Washing
+;;;;; Commit Washing
 
 (defun magit-wash-commit ()
   (looking-at "^commit \\([a-z0-9]+\\)\\(?: \\(.+\\)\\)?$")
