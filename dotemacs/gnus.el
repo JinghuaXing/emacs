@@ -138,6 +138,7 @@ Email:wei.sun@spreadtrum.com
 
 (add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail)
 
+(setq my-gnus-new-mail -1)
 (defun sw/gnus-check-mail (&rest ignored)
   (interactive)
   (let ((all-unread 0))
@@ -155,11 +156,13 @@ Email:wei.sun@spreadtrum.com
     )
   )
 
-
 (setq default-mode-line-format (sw/insert-after default-mode-line-format 5 '(:eval
-									     (if (> my-gnus-new-mail 0)
-										 (propertize (format " [mail:%d]" my-gnus-new-mail) 'face 'bold)
-									     ))))
+									     (cond ((> my-gnus-new-mail 0)
+										    (propertize (format " [M:%d]" my-gnus-new-mail) 'face 'bold))
+										   ((< my-gnus-new-mail 0)
+										    (propertize " [M:nil]" 'face 'bold))
+										   )
+									     )))
 
 (define-key gnus-group-mode-map (kbd "q") 'gnus-group-suspend)
 (define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)

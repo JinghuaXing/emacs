@@ -25,3 +25,6 @@
 (defadvice magit-update-vc-modeline (after my-magit-update-vc-modeline activate)
   (progn (diff-hl-update-each-buffer)))
 
+(magit-wip-mode 1)
+(global-magit-wip-save-mode 1)
+
