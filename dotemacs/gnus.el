@@ -65,8 +65,9 @@ Email:wei.sun@spreadtrum.com
   )
 (setq gnus-posting-styles
       '((".*"
-	 (name "wei.sun")
-	 (organization "pld_tj")
+	 (address "wei.sun@spreadtrum.com")
+	 (name "孙伟")
+	 ;; (organization "pld_tj")
 	 (signature my-fortune-signature)
 	 )
 	))
@@ -94,6 +95,8 @@ Email:wei.sun@spreadtrum.com
        '("\\\\.\\(doc\\|xsl\\)$" "soffice %s")
        )
       )
+;; (setq message-default-mail-headers "Cc: \n")
+
 (setq gnus-visible-headers "^From:\\|^Subject:\\|^To:\\|^Date:")
 (setq gnus-message-archive-group
       '("nnimap+spreadtrum:Sent"))
@@ -136,10 +139,35 @@ Email:wei.sun@spreadtrum.com
 				(gnus-demon-add-handler 'gnus-demon-scan-news 300 1)
 				))
 
-(add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail)
+(add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail-1)
 
 (setq my-gnus-new-mail -1)
-(defun sw/gnus-check-mail (&rest ignored)
+
+(defun sw/gnus-check-mail-1 (&rest ignored)
+  (interactive)
+  (let ((all-unread 0))
+    (mapc '(lambda (g)
+	     (let* ((group (car g))
+		    (unread (gnus-group-unread group)))
+	       (when (and (numberp unread) (> unread 0) (string= group "Inbox"))
+		 (incf all-unread unread)
+		 )
+	       ))
+	  gnus-newsrc-alist)
+    (setq my-gnus-new-mail all-unread)
+    (unless (= all-unread 0)
+      (progn
+	(save-window-excursion
+	  (save-excursion
+	    (when (gnus-alive-p)
+	      (set-buffer gnus-group-buffer)
+	      (gnus-topic-read-group)
+	      (gnus-summary-save-newsrc)
+	      )))
+	(sw/gnus-check-mail-2)
+	))))
+
+(defun sw/gnus-check-mail-2 (&rest ignored)
   (interactive)
   (let ((all-unread 0))
     (mapc '(lambda (g)
@@ -165,6 +193,10 @@ Email:wei.sun@spreadtrum.com
 									     )))
 
 (define-key gnus-group-mode-map (kbd "q") 'gnus-group-suspend)
+(define-key gnus-summary-mode-map (kbd "f") '(lambda()
+					       (interactive)
+					       (gnus-summary-mail-forward 3)
+					       ))
 (define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)
 (define-key gnus-summary-mode-map (kbd "<delete>") 'gnus-summary-delete-article)
 (define-key gnus-summary-mode-map (kbd "C-o") 'gnus-summary-move-article)
@@ -232,6 +264,9 @@ Email:wei.sun@spreadtrum.com
   )
 
 (add-hook 'gnus-suspend-gnus-hook 'elscreen-kill)
+(add-hook 'gnus-suspend-gnus-hook '(lambda()
+				     (gnus-group-save-newsrc t)
+				     ))
 
 (setq mm-text-html-renderer 'w3m)
 
@@ -292,3 +327,20 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
        "%*"
        " " "%10{%B%}"
        "%s\n"))
+
+(setq message-wash-forwarded-subjects t)
+(setq message-make-forward-subject-function (quote message-forward-subject-fwd))
+
+(defvar my-message-attachment-regexp "\\(attach\\|附件\\)")
+  ;; the function that checks the message
+(defun my-message-check-attachment nil
+  "Check if there is an attachment in the message if I claim it."
+  (save-excursion
+    (message-goto-body)
+    (when (search-forward-regexp my-message-attachment-regexp nil t nil)
+      (message-goto-body)
+      (unless (or (search-forward "<#part" nil t nil)
+		 (message-y-or-n-p
+		  "No attachment. Send the message ?" nil nil))
+  	(error "No message sent")))))
+(add-hook 'message-send-hook 'my-message-check-attachment)
