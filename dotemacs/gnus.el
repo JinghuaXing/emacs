@@ -328,9 +328,6 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
        " " "%10{%B%}"
        "%s\n"))
 
-(setq message-wash-forwarded-subjects t)
-(setq message-make-forward-subject-function (quote message-forward-subject-fwd))
-
 (defvar my-message-attachment-regexp "\\(attach\\|附件\\)")
   ;; the function that checks the message
 (defun my-message-check-attachment nil
@@ -344,3 +341,11 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 		  "No attachment. Send the message ?" nil nil))
   	(error "No message sent")))))
 (add-hook 'message-send-hook 'my-message-check-attachment)
+
+(setq gnus-gcc-mark-as-read t)
+
+(setq gnus-auto-select-first nil)
+(setq gnus-auto-select-subject 'best)
+(setq message-wash-forwarded-subjects t)
+(setq message-make-forward-subject-function (quote message-forward-subject-fwd))
+gnus-article-highlight-signature
