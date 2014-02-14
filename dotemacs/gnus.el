@@ -314,7 +314,9 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 
 (setq nnmail-extra-headers
       '(To Cc Newsgroups Content-Type Thread-Topic Thread-Index))
+
 (add-to-list 'gnus-extra-headers 'Content-Type)
+(add-to-list 'gnus-extra-headers 'To)
 
 (setq gnus-face-9  'font-lock-warning-face
       gnus-face-10 'shadow
@@ -348,4 +350,53 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (setq gnus-auto-select-subject 'best)
 (setq message-wash-forwarded-subjects t)
 (setq message-make-forward-subject-function (quote message-forward-subject-fwd))
-gnus-article-highlight-signature
+(add-hook 'message-sent-hook 'gnus-score-followup-thread)
+
+(eval-after-load 'nnir
+  '(defun nnir-run-imap (query srv &optional groups)
+    "Run a search against an IMAP back-end server.
+This uses a custom query language parser; see `nnir-imap-make-query' for
+details on the language and supported extensions."
+    (save-excursion
+      (let ((qstring (cdr (assq 'query query)))
+	    (server (cadr (gnus-server-to-method srv)))
+	    (defs (caddr (gnus-server-to-method srv)))
+	    (criteria (or (cdr (assq 'criteria query))
+			 (cdr (assoc nnir-imap-default-search-key
+				     nnir-imap-search-arguments))))
+	    (gnus-inhibit-demon t)
+	    (groups (or groups (nnir-get-active srv))))
+	(message "Opening server %s" server)
+	(apply
+	 'vconcat
+	 (catch 'found
+	   (mapcar
+	    (lambda (group)
+	      (let (artlist)
+		(condition-case ()
+		    (when (nnimap-possibly-change-group
+			   (gnus-group-short-name group) server)
+		      (with-current-buffer (nnimap-buffer)
+			(message "Searching %s..." group)
+			(let ((arts 0)
+			      (result (nnimap-command "UID SEARCH CHARSET UTF-8 %s"
+						      (if (string= criteria "")
+							  qstring
+							(nnir-imap-make-query
+							 criteria qstring)))))
+			  (mapc
+			   (lambda (artnum)
+			     (let ((artn (string-to-number artnum)))
+			       (when (> artn 0)
+				 (push (vector group artn 100)
+				       artlist)
+				 (when (assq 'shortcut query)
+				   (throw 'found (list artlist)))
+				 (setq arts (1+ arts)))))
+			   (and (car result) (cdr (assoc "SEARCH" (cdr result)))))
+			  (message "Searching %s... %d matches" group arts)))
+		      (message "Searching %s...done" group))
+		  (quit nil))
+		(nreverse artlist)))
+	    groups))))))
+  )
