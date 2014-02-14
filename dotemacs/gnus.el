@@ -23,7 +23,7 @@
       )
 
 (setq gnus-use-nocem t)
-(add-hook 'mail-citation-hook 'sc-cite-original)
+;; (add-hook 'mail-citation-hook 'sc-cite-original)
 (setq gnus-confirm-mail-reply-to-news t
       message-kill-buffer-on-exit t
       message-elide-ellipsis "[...]\n"
@@ -32,8 +32,8 @@
 ;;排序
 (setq gnus-thread-sort-functions
       '(
-	(not gnus-thread-sort-by-most-recent-date)
-	(not gnus-thread-sort-by-number)
+	gnus-thread-sort-by-most-recent-date
+	;; gnus-thread-sort-by-number
 	))
 
 (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
@@ -99,7 +99,7 @@ Email:wei.sun@spreadtrum.com
 
 (setq gnus-visible-headers "^From:\\|^Subject:\\|^To:\\|^Date:")
 (setq gnus-message-archive-group
-      '("nnimap+spreadtrum:Sent"))
+      '("nnimap+spreadtrum:Sent" "nnimap+spreadtrum:Inbox"))
 
 ;; (setq nnmail-expiry-wait-function
 ;;       (lambda (group)
@@ -125,13 +125,16 @@ Email:wei.sun@spreadtrum.com
 (setq gnus-use-adaptive-scoring '(line))
 (setq gnus-default-adaptive-score-alist
       '((gnus-unread-mark)
-	(gnus-ticked-mark (from 4))
-	(gnus-dormant-mark (from 5))
-	(gnus-del-mark (from -4) (subject -1))
-	(gnus-read-mark (from 4) (subject 2))
-	(gnus-expirable-mark (from -1) (subject -1))
-	(gnus-killed-mark (from -1) (subject -3))
-	(gnus-kill-file-mark)
+	(gnus-ticked-mark (from 5) (subject 10))
+	(gnus-dormant-mark (from 5) (subject 10))
+	(gnus-replied-mark (from 2) (subject 4))
+	(gnus-forwarded-mark (from 2) (subject 4))
+	(gnus-read-mark (from 1) (subject 2))
+	
+	(gnus-del-mark)
+	(gnus-expirable-mark (from -2) (subject -4))
+	(gnus-killed-mark (from -1) (subject -2))
+	(gnus-kill-file-mark (from -1) (subject -2))
 	(gnus-ancient-mark)
 	(gnus-low-score-mark)
 	(gnus-catchup-mark (from -1) (subject -1))))
@@ -199,7 +202,8 @@ Email:wei.sun@spreadtrum.com
 					       ))
 (define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)
 (define-key gnus-summary-mode-map (kbd "<delete>") 'gnus-summary-delete-article)
-(define-key gnus-summary-mode-map (kbd "C-o") 'gnus-summary-move-article)
+(define-key gnus-summary-mode-map (kbd "o") 'gnus-summary-move-article)
+(define-key gnus-summary-mode-map (kbd "C-o") nil)
 (define-key gnus-summary-mode-map (kbd "r") '(lambda ()
 					       (interactive)
 					       (if current-prefix-arg
@@ -351,6 +355,9 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (setq message-wash-forwarded-subjects t)
 (setq message-make-forward-subject-function (quote message-forward-subject-fwd))
 (add-hook 'message-sent-hook 'gnus-score-followup-thread)
+
+(setq message-citation-line-function 'message-insert-formatted-citation-line)
+(setq message-citation-line-format "On %a, %b %d %Y, %f wrote:\n")
 
 (eval-after-load 'nnir
   '(defun nnir-run-imap (query srv &optional groups)
