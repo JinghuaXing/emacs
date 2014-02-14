@@ -11,6 +11,10 @@
 				  (nnimap-address "sci-mail8.spreadtrum.com")   ; it could also be imap.googlemail.com if that's your server.
 				  (nnimap-server-port 143)
 				  (nnimap-stream network)))
+;; (setq gnus-select-method '(nnimap "QMail"
+;; 				  (nnimap-address "imap.qq.com")   ; it could also be imap.googlemail.com if that's your server.
+;; 				  (nnimap-server-port 143)
+;; 				  (nnimap-stream network)))
 
 ;; (setq gnus-secondary-select-methods '((nntp "news.gmane.org")))
 
@@ -88,8 +92,7 @@ Email:wei.sun@spreadtrum.com
 
 (setq gnus-extract-address-components
       'mail-extract-address-components)
-(setq gnus-summary-line-format
-      "%U%R%z%(%[%-20,20f %]%) %B%s\n")
+
 (setq gnus-uu-user-view-rules
       (list
        '("\\\\.\\(doc\\|xsl\\)$" "soffice %s")
@@ -243,6 +246,7 @@ Email:wei.sun@spreadtrum.com
 (add-to-list 'load-path "~/.elisp/bbdb")
 (require 'bbdb)
 (bbdb-initialize 'gnus 'message)
+;;(bbdb-insinuate-gnus)
 
 (setq bbdb-user-mail-names
       (regexp-opt '("wei.sun@spreadtrum.com"
@@ -331,7 +335,7 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
       (concat
        "%10{%U%R%z%}" " " "%1{%11,11&user-date;%}"
        "%10{│%}"
-       "%9{%u&A; %}" "%(%-15,15f %)"
+       "%9{%u&A; %}" "%(%-15,15uB %)"
        "%*"
        " " "%10{%B%}"
        "%s\n"))
