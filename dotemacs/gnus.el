@@ -365,6 +365,8 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (setq message-citation-line-function 'message-insert-formatted-citation-line)
 (setq message-citation-line-format "On %a, %b %d %Y, %f wrote:\n")
 
+(setq gnus-fetch-old-headers 'some)
+
 (eval-after-load 'nnir
   '(defun nnir-run-imap (query srv &optional groups)
     "Run a search against an IMAP back-end server.
@@ -413,3 +415,4 @@ details on the language and supported extensions."
 		(nreverse artlist)))
 	    groups))))))
   )
+
