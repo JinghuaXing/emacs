@@ -3,18 +3,20 @@
 (setq user-full-name "wei.sun")
 (setq user-mail-address "wei.sun@spreadtrum.com")
 
-(setq gnus-use-cache 'passive)
+(setq gnus-use-cache t)
+(setq gnus-cache-enter-articles  '(ticked dormant unread read))
+(setq gnus-cache-remove-articles nil)
 (setq gnus-large-newsgroup nil)
 (setq gnus-check-new-newsgroups nil)
 
 (setq gnus-select-method '(nnimap "spreadtrum"
-				  (nnimap-address "sci-mail8.spreadtrum.com")   ; it could also be imap.googlemail.com if that's your server.
+				  (nnimap-address "sci-mail8.spreadtrum.com")	; it could also be imap.googlemail.com if that's your server.
 				  (nnimap-server-port 143)
 				  (nnimap-stream network)))
 ;; (setq gnus-select-method '(nnimap "QMail"
-;; 				  (nnimap-address "imap.qq.com")   ; it could also be imap.googlemail.com if that's your server.
-;; 				  (nnimap-server-port 143)
-;; 				  (nnimap-stream network)))
+;;  				  (nnimap-address "imap.qq.com")   ; it could also be imap.googlemail.com if that's your server.
+;;  				  (nnimap-server-port 143)
+;;  				  (nnimap-stream network)))
 
 ;; (setq gnus-secondary-select-methods '((nntp "news.gmane.org")))
 
