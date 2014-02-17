@@ -62,13 +62,12 @@
    (shell-command-to-string "fortune")
    "
 wei.sun(孙伟)
+展讯通信(天津)
 分机: 589-683
 手机: 18630859306
-Email:wei.sun@spreadtrum.com
-展讯通信(天津)
+邮箱: wei.sun@spreadtrum.com
 "
-   )
-  )
+   ))
 (setq gnus-posting-styles
       '((".*"
 	 (address "wei.sun@spreadtrum.com")
