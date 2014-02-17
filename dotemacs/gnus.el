@@ -144,7 +144,7 @@ Email:wei.sun@spreadtrum.com
 	(gnus-low-score-mark)
 	(gnus-catchup-mark (from -1) (subject -1))))
 (add-hook 'gnus-started-hook '(lambda()
-				(gnus-demon-add-handler 'gnus-demon-scan-news 300 1)
+				(gnus-demon-add-handler 'gnus-demon-scan-news 30 1)
 				))
 
 (add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail-1)
@@ -170,8 +170,8 @@ Email:wei.sun@spreadtrum.com
 	    (when (gnus-alive-p)
 	      (set-buffer gnus-group-buffer)
 	      (gnus-topic-read-group)
-	      (gnus-group-save-newsrc t)
-	      ;; (gnus-summary-save-newsrc)
+	      ;; (gnus-group-save-newsrc t)
+	      (gnus-summary-save-newsrc)
 	      )))
 	(sw/gnus-check-mail-2)
 	))))
@@ -256,9 +256,12 @@ Email:wei.sun@spreadtrum.com
 (setq bbdb-complete-name-allow-cycling t)
 (setq bbdb-mua-pop-up nil)
 
-(setq bbdb/news-auto-create-p 'bbdb-ignore-some-messages-hook)
-(setq bbdb-ignore-some-messages-alist
-      '(("From" . "Review")))
+(setq bbdb/news-auto-create-p nil)
+;; (setq bbdb/news-auto-create-p 'bbdb-ignore-some-messages-hook)
+;; (setq bbdb-ignore-some-messages-alist
+;;       '(("From" . "Review")))
+
+(setq mm-w3m-safe-url-regexp ".*")
 
 (defalias 'm 'sw/elscreen-gnus)
 
@@ -337,10 +340,12 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
       (concat
        "%10{%U%R%z%}" " " "%1{%11,11&user-date;%}"
        "%10{│%}"
-       "%9{%u&A; %}" "%(%-15,15uB %)"
+       "%9{%u&A;%}" "%(%-15,15uB %)"
        "%*"
        " " "%10{%B%}"
        "%s\n"))
+
+(setq bbdb/gnus-summary-known-poster-mark " ")
 
 (defvar my-message-attachment-regexp "\\(attach\\|附件\\)")
   ;; the function that checks the message
@@ -417,4 +422,3 @@ details on the language and supported extensions."
 		(nreverse artlist)))
 	    groups))))))
   )
-

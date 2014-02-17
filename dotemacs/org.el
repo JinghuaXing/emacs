@@ -132,11 +132,12 @@
                "* %? :joke:\n%U\n\n")
 	      ("n" "note" entry (file "~/.elisp/dotemacs/org/note.org")
                "* %? :note:\n%U\n\n")
+	      ("m" "Gnus" entry (file "~/.elisp/dotemacs/org/gtd/work.org")
+	       "* TODO Gnus: %a :work:\n%U\n\n")
               ("h" "life habit" entry (file "~/.elisp/dotemacs/org/gtd/life.org")
                "* TODO %? :life:habit:\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
 
 (setq org-agenda-start-with-log-mode t)
-
 
 ;; Set to the location of your Org files on your local system
 (setq org-directory "~/.elisp/dotemacs/org")
