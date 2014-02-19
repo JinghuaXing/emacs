@@ -149,8 +149,8 @@
 
 (defvar quickrun/language-alist
   '(("c/gcc" . ((:command . "gcc")
-                (:exec    . ("%c -x c %o -o %e %s" "%e %a"))
-                (:compile-only . "%c -Wall -Werror %o -o %e %s")
+                (:exec    . ("%c -x c %o -o %e %s -lglut -lGLU" "%e %a"))
+                (:compile-only . "%c -Wall -Werror %o -o %e %s -lglut -lGLU")
                 (:remove . ("%e"))
                 (:description . "Compile C file with gcc and execute")))
 
