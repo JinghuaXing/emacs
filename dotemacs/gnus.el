@@ -4,8 +4,8 @@
 (setq user-mail-address "wei.sun@spreadtrum.com")
 
 (setq gnus-use-cache t)
-(setq gnus-cache-enter-articles  '(ticked dormant unread read))
-(setq gnus-cache-remove-articles nil)
+;; (setq gnus-cache-enter-articles  '(ticked dormant unread read))
+;; (setq gnus-cache-remove-articles nil)
 (setq gnus-large-newsgroup nil)
 (setq gnus-check-new-newsgroups nil)
 
@@ -169,6 +169,7 @@ wei.sun(孙伟)
 	    (when (gnus-alive-p)
 	      (set-buffer gnus-group-buffer)
 	      (gnus-topic-read-group)
+	      ;; (gnus-summary-exit)
 	      ;; (gnus-group-save-newsrc t)
 	      (gnus-summary-save-newsrc t)
 	      )))

@@ -237,6 +237,7 @@
 
 (require 'quickrun)
 (global-set-key (kbd "<f5>") 'quickrun)
+(setq quickrun-timeout-seconds 600)
 ;; (setq url-proxy-services '(("no_proxy" . "work\\.com")
 ;;                            ("http" . "127.0.0.1:5865")))
 
