@@ -450,3 +450,13 @@
 		body "-t" "2000" ))
 
 (defun sw/insert-after (lst index newelt) (push newelt (cdr (nthcdr index lst))) lst)
+
+(defun baidu (q)
+  (interactive "Mbaidu: ")
+  (w3m-browse-url (concat "http://www.baidu.com/s?wd=" q))
+  )
+
+(defun google (q)
+  (interactive "Mgoogle: ")
+  (w3m-browse-url (concat "http://www.google.com.tw/search?newwindow=1&site=&source=hp&q=" q))
+  )
