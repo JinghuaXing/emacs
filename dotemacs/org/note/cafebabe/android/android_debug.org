@@ -43,6 +43,31 @@ adb shell setprop log.tag.mytag verbose
 例如 hierachyviewer 启动 ViewServer 就是使用 "service call window 1
 i32 port" 命令
 ** monkey
-** tombstone
 ** uiautomator
+** tombstone / debuggerd
+tombstone 的生成由两方面配合: 
+1. 一个 stand-alone 的基于 local socket 的 server: debuggerd.c
+2. bionic 中通过 linker 嵌入到每一个可执行程序的代码: debugger.c
+
+*** debuggerd.c
+
+debuggerd 由 init 启动, 在一个 local socket 上监听, 每一个进程当收到
+SIG_ABORT 等信号时, 会因为 debugger.c 的原因向 debuggerd.c 发送通知,
+debuggerd.c 负责 dump tombstone 文件, dump 完成后向原进程再次发送同样
+的信号, 这时进程才真正退出. 
+
+*** debugger.c
+
+debugger.c 由 bionic 的 linker 负责嵌入到每一个 elf 文件的 _start 段,
+所以每一个进程都会自动执行该代码. 它的作用主要是 catch 住所有会导致退
+出的信号, 例如 SIG_ABRT, SIG_SEGV 等 (但不包括 SIG_KILL). 对应的
+signal handler 就是向 debuggerd.c 发送消息, 请求 dump tombstone, 同时,
+为了收到 debuggerd 再次发送的信号能退出, debugger.c 会把这些信号的
+handler 置为 default.
+
+因为 SIG_KILL 无法被 catch, 所以 tombstone 无法处理 java crash, 因为
+java crash 是通过 dalvik 向自己发送 SIG_KILL 实现的.
+
+** watchdog
+** anr trace
 

@@ -460,3 +460,4 @@
   (interactive "Mgoogle: ")
   (w3m-browse-url (concat "http://www.google.com.tw/search?newwindow=1&site=&source=hp&q=" q))
   )
+(defalias 'w 'w3m)
