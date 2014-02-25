@@ -28,7 +28,8 @@ ddms 通过 jdwp 控制 java 进程
 adb 通过 host 上的 adb 与手机端的 adbd 通信
 *** logcat
 adb shell setprop log.tag.mytag verbose
-**** event log
+**** events log
+- content_query_sample
 *** logwrapper
 *** am
 *** pm

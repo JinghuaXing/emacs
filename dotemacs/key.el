@@ -111,8 +111,8 @@
 (global-set-key (kbd "M-T") 'sw/transporse-region)
 (global-set-key (kbd "M-^") 'sw/join-line)
 
-(global-set-key (kbd "<C-mouse-4>") 'sw/increase-font-size)
-(global-set-key (kbd "<C-mouse-5>") 'sw/decrease-font-size)
+;; (global-set-key (kbd "<C-mouse-4>") 'sw/increase-font-size)
+;; (global-set-key (kbd "<C-mouse-5>") 'sw/decrease-font-size)
 
 (define-key isearch-mode-map "\M-w" 'sw/isearch-save-and-exit)
 (define-key isearch-mode-map "\C-y" 'isearch-yank-kill)

@@ -759,13 +759,13 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 **** 使用索引
 **** 避免 transient table (subquery)
 许多 sqlite 操作例如 order by, aggregation, subquery 等需要使用到
-transient table 来暂存中间结果, 尤其是 subquery. 这些 transient table
-主要的问题是无法使用 index.
+transient table 来暂存中间结果, 尤其是 subquery. 这些 transient table主
+要的问题是无法使用 index.
 - 使用显式的 temp table 并使用索引?
-- 使用 view?
 **** automatic index
 **** view 与 subquery 类似, 无法使用索引
 **** join 的顺序
+**** 使用 limit
 *** references
 [[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
 ** Inside SQLite
