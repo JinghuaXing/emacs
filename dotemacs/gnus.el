@@ -114,7 +114,7 @@ wei.sun(孙伟)
 ;; 	      (t
 ;; 	       1))))
 
-(setq nnmail-expiry-target "nnimap+spreadtrum:Trash")
+(setq nnmail-expiry-target "nnimap+spreadtrum:GC")
 
 (add-hook 'gnus-summary-mode-hook 'my-setup-hl-line)
 (add-hook 'gnus-group-mode-hook 'my-setup-hl-line)
@@ -378,54 +378,5 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (setq message-citation-line-format "On %a, %b %d %Y, %f wrote:\n")
 
 (setq gnus-fetch-old-headers 'some)
-
-(eval-after-load 'nnir
-  '(defun nnir-run-imap (query srv &optional groups)
-    "Run a search against an IMAP back-end server.
-This uses a custom query language parser; see `nnir-imap-make-query' for
-details on the language and supported extensions."
-    (save-excursion
-      (let ((qstring (cdr (assq 'query query)))
-	    (server (cadr (gnus-server-to-method srv)))
-	    (defs (caddr (gnus-server-to-method srv)))
-	    (criteria (or (cdr (assq 'criteria query))
-			 (cdr (assoc nnir-imap-default-search-key
-				     nnir-imap-search-arguments))))
-	    (gnus-inhibit-demon t)
-	    (groups (or groups (nnir-get-active srv))))
-	(message "Opening server %s" server)
-	(apply
-	 'vconcat
-	 (catch 'found
-	   (mapcar
-	    (lambda (group)
-	      (let (artlist)
-		(condition-case ()
-		    (when (nnimap-possibly-change-group
-			   (gnus-group-short-name group) server)
-		      (with-current-buffer (nnimap-buffer)
-			(message "Searching %s..." group)
-			(let ((arts 0)
-			      (result (nnimap-command "UID SEARCH CHARSET UTF-8 %s"
-						      (if (string= criteria "")
-							  qstring
-							(nnir-imap-make-query
-							 criteria qstring)))))
-			  (mapc
-			   (lambda (artnum)
-			     (let ((artn (string-to-number artnum)))
-			       (when (> artn 0)
-				 (push (vector group artn 100)
-				       artlist)
-				 (when (assq 'shortcut query)
-				   (throw 'found (list artlist)))
-				 (setq arts (1+ arts)))))
-			   (and (car result) (cdr (assoc "SEARCH" (cdr result)))))
-			  (message "Searching %s... %d matches" group arts)))
-		      (message "Searching %s...done" group))
-		  (quit nil))
-		(nreverse artlist)))
-	    groups))))))
-  )
 
 (setq gnus-novice-user nil)
