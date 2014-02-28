@@ -28,3 +28,5 @@
 (magit-wip-mode 1)
 (global-magit-wip-save-mode 1)
 
+
+(setq magit-repo-dirs '("~/.elisp"))
