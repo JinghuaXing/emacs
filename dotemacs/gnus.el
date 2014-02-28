@@ -114,7 +114,7 @@ wei.sun(孙伟)
 ;; 	      (t
 ;; 	       1))))
 
-(setq nnmail-expiry-target "nnimap+spreadtrum:GC")
+;; (setq nnmail-expiry-target "nnimap+spreadtrum:GC")
 
 (add-hook 'gnus-summary-mode-hook 'my-setup-hl-line)
 (add-hook 'gnus-group-mode-hook 'my-setup-hl-line)
