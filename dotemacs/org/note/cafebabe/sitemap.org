@@ -1,7 +1,8 @@
 #+TITLE: Sitemap for project cafebabe
 
-   + [[file:sqlite.org][SQLite]]
    + android
+     + [[file:android/android_debug.org][Android Debug]]
+     + [[file:android/android.org][Android]]
      + [[file:android/android_wms.org][Android WindowManager]]
      + [[file:android/android_security.org][Android Security]]
      + [[file:android/android_save_state.org][Android Save State]]
@@ -23,7 +24,6 @@
      + [[file:android/android_event_dispatching.org][Android Event Dispatching]]
      + [[file:android/android_drawable.org][Android Drawable]]
      + [[file:android/android_dex.org][Android DEX & ODEX]]
-     + [[file:android/android_debug.org][Android Debug]]
      + [[file:android/android_crash.org][How Android Is Crashed]]
      + [[file:android/android_connectivity.org][Android Connectivity]]
      + [[file:android/android_bitmap.org][Android Bitmap]]
@@ -31,7 +31,7 @@
      + [[file:android/android_ashmem.org][Android ashmem]]
      + [[file:android/android_app.org][Android Applications]]
      + [[file:android/android_ams.org][ActivityManagerService]]
-     + [[file:android/android.org][Android]]
+   + [[file:sqlite.org][SQLite]]
    + [[file:unicode.org][Unicode]]
    + [[file:tools.org][My Linux Desktop]]
    + [[file:sqlite_optimization.org][Android SQLite Optimization Plan]]

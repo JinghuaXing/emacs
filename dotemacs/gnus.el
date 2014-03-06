@@ -18,7 +18,12 @@
 ;;  				  (nnimap-server-port 143)
 ;;  				  (nnimap-stream network)))
 
-;; (setq gnus-secondary-select-methods '((nntp "news.gmane.org")))
+(setq gnus-secondary-select-methods '((nnfolder "archive"
+						(nnfolder-directory   "~/Mail/archive")
+						(nnfolder-active-file "~/Mail/archive/active")
+						(nnfolder-get-new-mail nil)
+						(nnfolder-nov-is-evil t)
+						(nnfolder-inhibit-expiry t))))
 
 (setq message-send-mail-function 'smtpmail-send-it
       smtpmail-auth-credentials '(("sci-mail8.spreadtrum.com" 25
@@ -114,7 +119,7 @@ wei.sun(孙伟)
 ;; 	      (t
 ;; 	       1))))
 
-;; (setq nnmail-expiry-target "nnimap+spreadtrum:GC")
+(setq nnmail-expiry-target "nnfolder+archive:archive")
 
 (add-hook 'gnus-summary-mode-hook 'my-setup-hl-line)
 (add-hook 'gnus-group-mode-hook 'my-setup-hl-line)
