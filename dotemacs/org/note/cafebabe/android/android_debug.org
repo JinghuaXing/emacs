@@ -16,12 +16,6 @@ ddms 通过 jdwp 控制 java 进程
 - 在代码中生成
   Debug.dumpHprofData()
 - 使用信号on-demand生成
-  #+BEGIN_EXAMPLE
-    $ chmod 777 /data/misc -R
-    $ ps # 找到进程号
-    $ kill -10 进程号 # 发送SIGQUIT信事信号给该进程，此时生成hprof信息
-    $ ls /data/misc/*.hprof
-  #+END_EXAMPLE
 - 为了能让MAT识别android的hprof格式,需要用hprof-conv转换一下
 *** gc
 ** adb
@@ -71,4 +65,39 @@ java crash 是通过 dalvik 向自己发送 SIG_KILL 实现的.
 
 ** watchdog
 ** anr trace
+*** AMS 发送 SIGQUIT (3)
+#+BEGIN_SRC java
+  AMS:appNotResponding
+    // for the pid, or other related pids, send SIG_QUIT (3)
+    Process.sendSignal(pid, Process.SIGNAL_QUIT);
+#+END_SRC
 
+*** SignalCatcher Thread
+每个 java 进程初始时会启动一个 SignalCatcher Thread, 用来接收 SIG_QUIT
+#+BEGIN_SRC java
+  /* start signal catcher thread that dumps stacks on SIGQUIT */
+  if (!gDvm.reduceSignals && !gDvm.noQuitHandler) {
+      if (!dvmSignalCatcherStartup())
+          return false;
+  }
+#+END_SRC
+
+SIG_QUIT 的 handler 如下:
+
+#+BEGIN_SRC java
+  dvmSuspendAllThreads(SUSPEND_FOR_STACK_DUMP);
+  dvmDumpLoaderStats("sig");
+  dvmDumpJniStats(&target);
+  dvmDumpAllThreadsEx(&target, true);
+#+END_SRC
+
+其中 dvmSuspendAllThreads 会负责将每一个 thread 的 suspendCount 置 1,
+导致:
+
+1. status 为 RUNNING 的 thread 将来运行到 safepoint 时会调用
+   dvmCheckSuspendPending(self), 进而被 suspend, 变为 SUSPEND 状态.
+
+2. status 为 NATIVE, MONITOR, WAIT, SUSPEND 等的 thread 在从 jni 返回,
+   从 monitor 返回, 从 WAIT 返回等之前, 会调用 dvmChangeStatus 尝试将
+   status 变成最初的状态 (如 RUNNING), 此时会因为 suspendCount 为 1
+   而被 block (仅仅是 block , 不会改变状态)

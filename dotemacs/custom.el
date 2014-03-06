@@ -230,7 +230,7 @@
  '(uniquify-separator "@")
  '(uniquify-strip-common-suffix t)
  '(vc-follow-symlinks nil)
- '(w3m-default-display-inline-images t)
+ '(w3m-default-display-inline-images nil)
  '(wg-morph-hsteps 50)
  '(wg-morph-on nil)
  '(wg-morph-vsteps 30)
