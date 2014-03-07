@@ -115,7 +115,7 @@ wei.sun(孙伟)
 
 (setq gnus-visible-headers "^From:\\|^Subject:\\|^To:\\|^Date:")
 (setq gnus-message-archive-group
-      '("nnml:Inbox"))
+      '("nnml:inbox"))
 
 ;; (setq gnus-message-archive-group
 ;;       '("nnimap+spreadtrum:Sent" "nnimap+spreadtrum:Inbox"))
@@ -172,7 +172,7 @@ wei.sun(孙伟)
     (mapc '(lambda (g)
 	     (let* ((group (car g))
 		    (unread (gnus-group-unread group)))
-	       (when (and (numberp unread) (> unread 0) (string= group "Inbox"))
+	       (when (and (numberp unread) (> unread 0) (string= group "inbox"))
 		 (incf all-unread unread)
 		 )
 	       ))
@@ -200,7 +200,7 @@ wei.sun(孙伟)
     (mapc '(lambda (g)
 	     (let* ((group (car g))
 		    (unread (gnus-group-unread group)))
-	       (when (and (numberp unread) (> unread 0) (string= group "Inbox"))
+	       (when (and (numberp unread) (> unread 0) (string= group "inbox"))
 		 (incf all-unread unread)
 		 )
 	       ))
@@ -409,3 +409,6 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
  mail-source-delete-incoming t
  )
 
+
+(setq nnmail-split-methods
+      '(("inbox" "")))
