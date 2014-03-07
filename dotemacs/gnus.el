@@ -3,16 +3,23 @@
 (setq user-full-name "wei.sun")
 (setq user-mail-address "wei.sun@spreadtrum.com")
 
-(setq gnus-use-cache t)
+(setq gnus-use-cache 'passive)
 ;; (setq gnus-cache-enter-articles  '(ticked dormant unread read))
 ;; (setq gnus-cache-remove-articles nil)
 (setq gnus-large-newsgroup nil)
 (setq gnus-check-new-newsgroups nil)
+(add-to-list 'mail-sources '(imap :server "sci-mail8.spreadtrum.com"
+                                  :user "wei.sun"
+				  :password "123456"
+				  :port 143
+                                  :stream network
+				  ))
 
-(setq gnus-select-method '(nnimap "spreadtrum"
-				  (nnimap-address "sci-mail8.spreadtrum.com")	; it could also be imap.googlemail.com if that's your server.
-				  (nnimap-server-port 143)
-				  (nnimap-stream network)))
+(setq gnus-select-method '(nnml ""))
+;; (setq gnus-select-method '(nnimap "spreadtrum"
+;; 				  (nnimap-address "sci-mail8.spreadtrum.com")	; it could also be imap.googlemail.com if that's your server.
+;; 				  (nnimap-server-port 143)
+;; 				  (nnimap-stream network)))
 ;; (setq gnus-select-method '(nnimap "QMail"
 ;;  				  (nnimap-address "imap.qq.com")   ; it could also be imap.googlemail.com if that's your server.
 ;;  				  (nnimap-server-port 143)
@@ -108,7 +115,10 @@ wei.sun(孙伟)
 
 (setq gnus-visible-headers "^From:\\|^Subject:\\|^To:\\|^Date:")
 (setq gnus-message-archive-group
-      '("nnimap+spreadtrum:Sent" "nnimap+spreadtrum:Inbox"))
+      '("nnml:Inbox"))
+
+;; (setq gnus-message-archive-group
+;;       '("nnimap+spreadtrum:Sent" "nnimap+spreadtrum:Inbox"))
 
 ;; (setq nnmail-expiry-wait-function
 ;;       (lambda (group)
@@ -158,7 +168,6 @@ wei.sun(孙伟)
 (defun sw/gnus-check-mail-1 (&rest ignored)
   (interactive)
   (let ((all-unread 0)
-	(buffer (current-buffer))
 	)
     (mapc '(lambda (g)
 	     (let* ((group (car g))
@@ -176,8 +185,7 @@ wei.sun(孙伟)
 	    (when (gnus-alive-p)
 	      (set-buffer gnus-group-buffer)
 	      (gnus-topic-read-group)
-	      (unless (or (eq buffer gnus-summary-buffer)
-			 (eq buffer gnus-article-buffer))
+	      (unless sw/in-gnus
 		(gnus-summary-exit)
 		)
 	      ;; (gnus-group-save-newsrc t)
@@ -275,8 +283,10 @@ wei.sun(孙伟)
 
 (defalias 'm 'sw/elscreen-gnus)
 
+(setq sw/in-gnus nil)
 (defun sw/elscreen-gnus ()
   (interactive)
+  (setq sw/in-gnus t)
   (let ((buffer (get-buffer "*Group*")))
     (if buffer
 	(elscreen-find-and-goto-by-buffer (get-buffer "*Group*") 'create)
@@ -291,6 +301,7 @@ wei.sun(孙伟)
 (add-hook 'gnus-suspend-gnus-hook 'elscreen-kill)
 (add-hook 'gnus-suspend-gnus-hook '(lambda()
 				     (gnus-group-save-newsrc t)
+				     (setq sw/in-gnus nil)
 				     ))
 
 (setq mm-text-html-renderer 'w3m)
@@ -385,3 +396,16 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (setq gnus-fetch-old-headers 'some)
 
 (setq gnus-novice-user nil)
+
+(setq
+ nndraft-directory "~/Mail/drafts/"
+ gnus-directory "~/Mail/news/"
+ gnus-article-save-directory "~/Mail/news"
+ gnus-cache-directory "~/Mail/cache"
+ gnus-cache-active-file "~/Mail/cache/active"
+ gnus-kill-files-direcotry "~/Mail/news"
+ gnus-home-score-file "~/Mail/score/SCORE"
+ gnus-home-adapt-file "~/Mail/score/ADAPT.SCORE"
+ mail-source-delete-incoming t
+ )
+
