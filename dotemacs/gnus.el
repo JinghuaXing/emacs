@@ -97,11 +97,10 @@ wei.sun(孙伟)
 	(format-time-string "%b %d  %H:%M" time)
       "")))
 
-;; (defadvice message-send (around my-confirm-message-send)
-;;   (if (yes-or-no-p "send it? ")
-;;       ad-do-it))
-
-;; (ad-activate 'message-send)
+(defadvice message-send (around my-confirm-message-send)
+  (if (yes-or-no-p "send it ? ")
+      ad-do-it))
+(ad-activate 'message-send)
 
 (setq gnus-extract-address-components
       'mail-extract-address-components)
@@ -253,14 +252,14 @@ wei.sun(孙伟)
 (setq gnus-summary-make-false-root 'adopt)
 ;; (setq gnus-summary-make-false-root-always nil)
 (setq gnus-summary-dummy-line-format "    %8{│%}   %(%8{│%}                       %7{│%}%) %6{□%}  %S\n"
-	gnus-summary-line-format "%8{%4k│%}%9{%U%R%z%}%8{│%}%*%(%-23,23f%)%7{│%} %6{%B%} %s\n"
-	gnus-sum-thread-tree-indent " "
-	gnus-sum-thread-tree-root "■ "
-	gnus-sum-thread-tree-false-root "□ "
-	gnus-sum-thread-tree-single-indent "▣ "
-	gnus-sum-thread-tree-leaf-with-other "├─▶ "
-	gnus-sum-thread-tree-vertical "│"
-	gnus-sum-thread-tree-single-leaf "└─▶ ")
+      gnus-summary-line-format "%8{%4k│%}%9{%U%R%z%}%8{│%}%*%(%-23,23f%)%7{│%} %6{%B%} %s\n"
+      gnus-sum-thread-tree-indent " "
+      gnus-sum-thread-tree-root "■ "
+      gnus-sum-thread-tree-false-root "□ "
+      gnus-sum-thread-tree-single-indent "▣ "
+      gnus-sum-thread-tree-leaf-with-other "├─▶ "
+      gnus-sum-thread-tree-vertical "│"
+      gnus-sum-thread-tree-single-leaf "└─▶ ")
 
 
 (add-to-list 'load-path "~/.elisp/bbdb")
@@ -333,7 +332,7 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 `gnus-extra-headers', see Info node `(gnus)To From Newsgroups'."
   (let ((case-fold-search t)
         (ctype (or (cdr (assq 'Content-Type (mail-header-extra header)))
-                   "text/plain"))
+		  "text/plain"))
         (indicator " "))
     (when (string-match "^multipart/mixed" ctype)
       (setq indicator "@"))
@@ -369,7 +368,7 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (setq bbdb/gnus-summary-known-poster-mark " ")
 
 (defvar my-message-attachment-regexp "\\(attach\\|附件\\)")
-  ;; the function that checks the message
+;; the function that checks the message
 (defun my-message-check-attachment nil
   "Check if there is an attachment in the message if I claim it."
   (save-excursion
