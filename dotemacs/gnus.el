@@ -128,8 +128,6 @@ wei.sun(孙伟)
 ;; 	      (t
 ;; 	       1))))
 
-(setq nnmail-expiry-target "nnfolder+archive:archive")
-
 (add-hook 'gnus-summary-mode-hook 'my-setup-hl-line)
 (add-hook 'gnus-group-mode-hook 'my-setup-hl-line)
 (defun my-setup-hl-line ()
@@ -201,22 +199,24 @@ wei.sun(孙伟)
 		    (unread (gnus-group-unread group)))
 	       (when (and (numberp unread) (> unread 0) (string= group "inbox"))
 		 (incf all-unread unread)
-		 )
-	       ))
+		 )))
 	  gnus-newsrc-alist)
     (setq my-gnus-new-mail all-unread)
     (unless (= all-unread 0)
-      (sw/notify (format "%d new mail" all-unread)))
-    )
-  )
+      (progn
+	(sw/notify (format "%d new mail" all-unread))
+	(unless sw/in-gnus
+	  (sw/elscreen-gnus)
+	  (switch-to-buffer gnus-group-buffer)
+	  (gnus-topic-read-group)
+	  )))))
 
 (setq default-mode-line-format (sw/insert-after default-mode-line-format 5 '(:eval
 									     (cond ((> my-gnus-new-mail 0)
 										    (propertize (format " [M:%d]" my-gnus-new-mail) 'face 'bold))
 										   ((< my-gnus-new-mail 0)
 										    (propertize " [M:nil]" 'face 'bold))
-										   )
-									     )))
+										   ))))
 
 (define-key gnus-group-mode-map (kbd "q") 'gnus-group-suspend)
 (define-key gnus-summary-mode-map (kbd "f") '(lambda()
@@ -326,6 +326,23 @@ wei.sun(孙伟)
 (setq send-mail-function 'async-smtpmail-send-it
       message-send-mail-function 'async-smtpmail-send-it)
 
+(defun gnus-user-format-function-S (head)
+  "Return pretty-printed version of message size.
+
+Like `gnus-summary-line-message-size' but more verbose.  This function is
+intended to be used in `gnus-summary-line-format-alist', with
+\(defalias 'gnus-user-format-function-X 'rs-gnus-summary-line-message-size).
+
+See (info \"(gnus)Group Line Specification\")."
+  (let ((c (or (mail-header-chars head) -1)))
+    (gnus-message 9 "c=%s chars in article %s" c (mail-header-number head))
+    (cond ((< c 0) "n/a") ;; chars not available
+	  ((< c (* 1000))       (format "%db"  c))
+	  ((< c (* 1000 10))    (format "%dk" (/ c 1024.0)))
+	  ((< c (* 1000 1000))  (format "%dk" (/ c 1024.0)))
+	  ((< c (* 1000 10000)) (format "%dM" (/ c (* 1024.0 1024))))
+	  (t (format "%dM" (/ c (* 1024.0 1024)))))))
+
 (defun gnus-user-format-function-A (header)
   "Display @ for message with attachment in summary line.
 You need to add `Content-Type' to `nnmail-extra-headers' and
@@ -362,8 +379,10 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
        "%10{│%}"
        "%9{%u&A;%}" "%(%-15,15uB %)"
        "%*"
-       " " "%10{%B%}"
-       "%s\n"))
+       "%5k"
+       "  " "%10{%B%}"
+       "%s\n"
+       ))
 
 (setq bbdb/gnus-summary-known-poster-mark " ")
 
@@ -408,6 +427,19 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
  mail-source-delete-incoming t
  )
 
-
 (setq nnmail-split-methods
       '(("inbox" "")))
+
+;; (setq nnmail-expiry-target "nnfolder+archive:archive")
+(defun sw/gnus-expiry-target (group)
+  "inbox and sent are archived, the rest is deleted"
+  (concat "nnfolder+archive:"
+	  (format-time-string "%m-%Y" (sw/gnus-get-article-date))))
+
+(defun sw/gnus-get-article-date ()
+  "Extracts the date from the current article and converts it to Emacs time"
+  (save-excursion
+    (goto-char (point-min))
+    (gnus-date-get-time (message-fetch-field "date"))))
+
+(setq nnmail-expiry-target 'sw/gnus-expiry-target)
