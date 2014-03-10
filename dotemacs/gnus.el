@@ -12,8 +12,8 @@
                                   :user "wei.sun"
 				  :password "123456"
 				  :port 143
-                                  :stream network
-				  ))
+				  :predicate "ALL"
+                                  :stream network))
 
 (setq gnus-select-method '(nnml ""))
 ;; (setq gnus-select-method '(nnimap "spreadtrum"
