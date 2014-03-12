@@ -472,8 +472,9 @@ see also `trigger`
      update food_types set name=new.tname where id=new.tid;
   end;
 #+END_SRC
+注: sqlite 的 trigger 不支持 `for each statement`, 只支持 `for each row`
 **** transaction
-- begin
+- begin [ deferred | immediate | exclusive ] [transaction] 
 - commit
 - rollback
 - savepoint
@@ -992,8 +993,8 @@ The default mode is serialized.
 | 使用 MULTITHREAD 查询一次                                     |  3.5 |  3.5 | 0.4 |
 | 使用 SERIALZIED 查询一次                                      |  3.8 |  3.8 | 0.4 |
 | 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.3 |    4 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用不同的 connection 查询         |  7.8 |  4.2 | 0.4 |
-| 使用 MULTITHREAD 在两个线程使用相同的 connection 查询         |   27 |   28 |   9 |
+| 使用 SERIALZIED 在两个线程使用不同的 connection 查询          |  7.8 |  4.2 | 0.4 |
+| 使用 SERIALZIED 在两个线程使用相同的 connection 查询          |   27 |   28 |   9 |
 | 使用 SHARED CACHE MODE 在两个线程中使用不同的 connection 查询 |   31 |   31 |  11 |
 |---------------------------------------------------------------+------+------+-----|
 

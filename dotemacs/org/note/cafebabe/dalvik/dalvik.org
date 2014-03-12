@@ -1,0 +1,306 @@
+#+TITLE: Dalvik
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Dalvik
+** dalvik 命令及 dvm 预览
+dalvik 是 android 编译出来的一个位于 out/host/linux-x86/ 下的一个脚本,
+可以用来在 linux host 上启动一个 dalvik 进程. 和 linux 上的 java 命令
+类似. 实际上, 它只是一个针对 dalvikvm 命令的 wrapper, 负责设置一些调用
+dalvikvm 的参数
+
+#+BEGIN_SRC sh
+  mkdir -p /tmp/android-data/dalvik-cache
+  ANDROID_PRINTF_LOG=tag \
+  ANDROID_LOG_TAGS="" \
+  ANDROID_DATA=/tmp/android-data \
+  ANDROID_ROOT=$ANDROID_BUILD_TOP/out/host/linux-x86 \
+  LD_LIBRARY_PATH=$ANDROID_BUILD_TOP/out/host/linux-x86/lib \
+  exec $ANDROID_BUILD_TOP/out/host/linux-x86/bin/dalvikvm \
+  -Xbootclasspath\
+  :$ANDROID_BUILD_TOP/out/host/linux-x86/framework/core-hostdex.jar\
+  :$ANDROID_BUILD_TOP/out/host/linux-x86/framework/conscrypt-hostdex.jar\
+  :$ANDROID_BUILD_TOP/out/host/linux-x86/framework/okhttp-hostdex.jar\
+  :$ANDROID_BUILD_TOP/out/host/linux-x86/framework/bouncycastle-hostdex.jar\
+  :$ANDROID_BUILD_TOP/out/host/linux-x86/framework/apache-xml-hostdex.jar \
+  $*
+#+END_SRC
+
+*** dalvikvm
+dalvikvm 是一个由 dalvikvm.cc 编译出来的可执行文件, 与 java 命令类似
+
+#+BEGIN_SRC java
+  static int dalvikvm(int argc, char** argv):
+    UniquePtr<JavaVMOption[]> options(new JavaVMOption[option_count]());
+    // JavaVMOption 一会儿在 vm init 时 (vm/Init.cpp) 时会被处理.
+    // dalvikvm 这里只负责将命令行参数中的 -Xxxx 做为 Java 虚拟机参数加
+    // 到 JavaVMOption 中, 但有一个参数例外:
+    if (strncmp(argv[arg_idx], "-XXlib:", strlen("-XXlib:")) == 0):
+      lib = argv[arg_idx] + strlen("-XXlib:");
+    // -XXlib 指定的是 Java 虚拟机代码所在的 lib, 必须由 dalvikvm 处理.
+    // 后续的 jni_invocation.Init(lib) 会负责 dlopen(lib) 来找到启动 vm
+    // 的代码
+    JniInvocation jni_invocation;
+    jni_invocation.Init(lib)
+      char* default_library = "libdvm.so"
+        if (lib == NULL) {
+          library = default_library;
+      handle_ = dlopen(library, RTLD_NOW);        
+      // 从现在开始, libdvm.so 中提供的函数就是可用的了, 包括:
+      // JNICreateJavaVM, JNI_GetCreatedJavaVMs, JNI_GetDefaultJavaVMInitArgs
+      JavaVMInitArgs init_args;
+      init_args.options = options.get();
+      // JavaVM 对每一个进程只有一个
+      JavaVM* vm = NULL;
+      // JNIEnv 对每一个线程都有一个
+      JNIEnv* env = NULL;
+      JNI_CreateJavaVM(&vm, &env, &init_args);
+      InvokeMain(env, &argv[arg_idx]);
+      vm->DestroyJavaVM();
+#+END_SRC
+
+*** JNI_CreateJavaVM
+JNI_CreateJavaVM 是 libdvm.so 提供的一个函数, 负责:
+1. 生成 JavaVM 及 JNIEnv, 做为上层调用后续 jni 调用的接口. 
+2. 启动虚拟机, 这里的 "启动" 主要是指设置一些执行环境, 启动
+   HeapWorker 等线程等. 详同 dvmStartup
+**** 关于 JavaVM
+JavaVM 本身很简单, 只是提供了一个函数表 (JNIInvokeInterface), 以提供以
+下函数:
+
+#+BEGIN_SRC c
+  struct JNIInvokeInterface {
+      jint        (*DestroyJavaVM)(JavaVM*);
+      jint        (*AttachCurrentThread)(JavaVM*, JNIEnv**, void*);
+      jint        (*DetachCurrentThread)(JavaVM*);
+      jint        (*GetEnv)(JavaVM*, void**, jint);
+      jint        (*AttachCurrentThreadAsDaemon)(JavaVM*, JNIEnv**, void*);
+  };
+#+END_SRC
+**** 关于 JNIEnv
+JNIEnv 与 JavaVM 类似, 主要也只是一个函数表
+
+**** dvmStartup
+JNICreateJavaVM 主要通过 dvmStartup 启动虚拟机. 此时正式进入 vm 相关的
+代码, 而不是 Jni 的代码.
+***** processOptions
+vm/Init.cpp::dvmStartup 先调用 processOptions 处理上层传入的参数, 具体
+包括:
+1. -classpath
+2. -Xbootclasspath
+3. -D
+   java properties
+4. -jar
+5. -Xms, -Xmx
+6. -XX:HeapGrowthLimit
+7. -XX:HeapMinFree
+8. -XX:HeapMaxFree
+9. -XX:LowMemoryMode
+10. -Xss
+11. -XX:mainThreadStackSize
+12. -XX:+DisableExplicitGC
+13. -verbose:jni
+14. -verbose:gc
+15. -enableassertions
+16. -Xrs
+    reduceSignals
+17. -Xzygote
+18. -Xint
+19. -Xstacktracefile
+20. -Xgc
+21. ...
+
+在 processOptions 之前, dvmStartup 会通过 setCommandLineDefaults 给
+dvm 设置一些默认值.
+
+***** dvmStartup
+设置好 options 后, dvmStartup 开始初始化许多组件
+****** blockSignals
+
+在启动任何其他 thread 之前, dvm 先通过 blockSignals 设置主线程的忽略掉
+SIG_QUIT (通过 sigprocmask)
+
+之所以这样, 是因为 dvm 后面会启动一个单独的 SignalCatcherThread, 并且
+通过 sigwait 的方式在 SIG_QUIT 上等待, 以便生成 trace 文件. 
+
+一般情况下, 我们会使用 signal 及 signal handler 来处理信号, 但涉及到多
+线程时, 一般都使用 sigprocmask 及 sigwait 方式. 
+
+具体区别见 http://blog.csdn.net/hunanchenxingyu/article/details/12073685
+
+****** dvmAllocTrackerStartup
+****** dvmGcStartup
+dvmGcStartup 指的是初始化 GC heap, 即 Java 堆. 
+#+BEGIN_SRC text
+  Alloc::dvmGcStartup
+    dvmHeapStartup()
+      dvmHeapSourceStartup(gDvm.heapStartingSize,
+               gDvm.heapMaximumSize, gDvm.heapGrowthLimit);
+        // dvmHeapSourceStartup 负责初始化 GC 堆, 根据编译时的配置, 会
+        // 选 HeapSource.cpp 中的版本 (对应 MarkSweep GC) 或 Copying.cpp
+        // 中的版本 (对应 Copying GC), 默认为 MarkSweep GC
+        // 使用 asheme 映射的一块内存做为 GC 堆
+        base = dvmAllocRegion("dalvik-heap");
+        // 在 GC 堆上建立一个 dlmalloc mspace
+        msp = createMspace(base, kInitialMorecoreStart, startSize);
+        // 除了 GC heap 外, dvm 还会分配一个 live-bits 堆, 一个
+        // mark-bits 堆, 这三个堆统一由 HeapSource 管理.
+        HeapSource * hs = (HeapSource *)calloc(1, sizeof(*hs));
+        hs->heapBase = (char *)base;
+        hs->heapLength = length;
+        hs->startSize = startSize;
+        hs->maximumSize = maximumSize;
+        hs->growthLimit = growthLimit;
+        // ...
+        dvmHeapBitmapInit(&hs->liveBits, base, length, "dalvik-bitmap-1");
+        dvmHeapBitmapInit(&hs->markBits, base, length, "dalvik-bitmap-2");
+        allocMarkStack(&gcHeap->markContext.stack, hs->maximumSize);
+        gcHeap->markContext.bitmap = &hs->markBits;
+        gcHeap->heapSource = hs;
+      // 初始化 card table, 暂时不明白意义
+      dvmCardTableStartup(gDvm.heapMaximumSize, gDvm.heapGrowthLimit);
+#+END_SRC
+******* hs->liveBits 与 hs->markBits
+liveBits 与 markBits 是关于 GC Heap 的两个位图, 比例均为 8 bytes / 1
+bit, 即 GC heap 中每 8 个字节由 liveBits 中 1 位来表示. 
+
+liveBits 记录 GC 堆分配的的情况. markBits 在 MarkSweep 阶段被使用, 记
+录对象扫描时被 mark 的情况
+
+******* gcHeap->markContext.stack
+
+markStack 与 markBits 相同, 也是在 MarkSweep 的 mark 阶段被使用. 最简
+单的 mark 实现是使用递归, 但递归容易栈溢出, 所以 dvm 并没有使用递归来
+mark, 而是使用 mark stack 模拟递归的调用栈, 防止溢出.
+
+****** dvmThreadStartup
+Initialize thread list and main thread's environment.  We need to set
+up some basic stuff so that dvmThreadSelf() will work when we start
+loading classes (e.g. to check for exceptions).
+****** dvmInlineNativeStartup
+
+****** dvmRegisterMapStartup
+
+****** dvmInstanceofStartup
+#+BEGIN_SRC java
+gDvm.instanceofCache = dvmAllocAtomicCache(INSTANCEOF_CACHE_SIZE);
+#+END_SRC
+
+instanceof 是有一个 cache 的...
+****** dvmClassStartup
+#+BEGIN_SRC text
+  dvmClassStartup()
+    /*
+    ,* Create the initial class instances. These consist of the class
+    ,* Class and all of the classes representing primitive types.
+    ,*/
+    createInitialClasses()
+      // 在代码中直接定义 Class 类
+      ClassObject* clazz = (ClassObject*)
+      dvmMalloc(classObjectSize(CLASS_SFIELD_SLOTS), ALLOC_NON_MOVING);
+      DVM_OBJECT_INIT(clazz, clazz);
+      SET_CLASS_FLAG(clazz, ACC_PUBLIC | ACC_FINAL | CLASS_ISCLASS);
+      clazz->descriptor = "Ljava/lang/Class;";
+      gDvm.classJavaLangClass = clazz;
+      // 定义各种 primitive type
+      createPrimitiveType(PRIM_VOID, &gDvm.typeVoid);
+      createPrimitiveType(PRIM_BOOLEAN, &gDvm.typeBoolean);
+      // ...
+    processClassPath(gDvm.bootClassPathStr, true);
+      // 将 bootclasspath 中指定的字符串转换为内部的 ClassPathEntry (cpe)
+      // 并且在转换的过程中, dex 文件会被转换为 odex, 并被 mmap, 同时
+      // mmap 返回的地址会做为 cpe->ptr 保存起来. 
+    
+#+END_SRC
+****** dvmFindRequiredClassesAndMembers
+这个函数会提前将常用的类的 ClassObject, Method, offset 等从 java 类中
+取出, 并赋给 gDvm 相关的成员.
+****** dvmStringInternStartup
+初始化 string intern 使用的 hashmap
+****** dvmNativeStartup
+
+****** dvmInternalNativeStartup
+
+****** dvmJniStartup
+初始化 jni 的 reference table
+****** dvmProfilingStartup
+
+****** dvmPrepMainForJni
+
+****** registerSystemNatives
+
+****** dvmCreateStockExceptions
+
+****** dvmPrepMainThread
+
+****** dvmDebuggerStartup
+
+****** dvmInitAfterZygote
+#+BEGIN_SRC text
+  dvmInitAfterZygote
+    dvmGcStartupAfterZygote()
+      // 启动 alloc 中的 HeapWorker
+    dvmSignalCatcherStartup()
+    if (gDvm.logStdio):
+      dvmStdioConverterStartup()
+    initJdwp()
+#+END_SRC
+
+*** InvokeMain
+dalvikvm 中的 InvokeMain 是对 CALL_STATIC_xx 的简单封装
+#+BEGIN_SRC text
+  jmethodID method = env->GetStaticMethodID(klass.get(), "main","([Ljava/lang/String;)V");
+  env->CallStaticVoidMethod(klass.get(), method, args.get());
+    // CallStaticVoidMethod 是通过 CALL_STATIC 宏产生的
+    dvmCallMethodV(ts.self(), (Method*)methodID, NULL, true, &result, args);
+      dvmInterpret(self, method, pResult);
+      // 自此进入 interp 相关代码
+        Interp::dvmMterpStd(self)
+        // 进入 mterp
+          Mterp::dvmMterpStdRun();
+          // 进入汇编代码, 以 x86 为例:
+            InterpAsm-x86.S::dvmMterpStdRun
+              push    %ebp                 # save caller base pointer
+              // ...
+          
+  
+#+END_SRC
+
+** Dalvik Virtual Machine
+*** 代码结构
+- Jni
+
+  主要是 vm/Jni.cpp, 主要包含各种 Jni 函数的实现, 包括
+  JNI_CreateJavaVM等启动 dvm 的函数以及 GetStringChars 等 Jni 函数.
+  Jni部分是启动 dvm 的入口
+
+- Init.cpp
+  由 Jni 调用, 负责 dvm 初始化
+
+- alloc/
+
+  主要包含 HeapSource, 用来实现 Java 的内存分配及 GC
+
+- interp/ & mterp/
+  
+  dvm 的解释器
+
+- Sync.cpp & Thread.cpp
+  
+  和同步及 Java Thread 相关的代码
+
+- oo/
+  和 Java 的 OO 相关的实现, 例如继承, 接口, 权限检查等
+
+- LinearAlloc.cpp
+
+- DvmDex.cpp & RawDexFile.cpp & JarFile.cpp
+
+- 其他
+
+  - SignalCatcher.cpp
+
+  - jdwp/ & ddm.cpp
+
+  - hprof/
+
+  - AllocTracker.cpp
