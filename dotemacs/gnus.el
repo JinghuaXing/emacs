@@ -207,13 +207,7 @@ wei.sun(孙伟)
     (unless (= all-unread 0)
       (progn
 	(sw/notify (format "%d new mail" all-unread))
-	(unless sw/in-gnus
-	  (sw/elscreen-gnus)
-	  (switch-to-buffer gnus-group-buffer)
-	  (goto-char (point-min))
-	  (search-forward-regexp "inbox")
-	  (gnus-topic-read-group)
-	  )))))
+	))))
 
 (setq default-mode-line-format (sw/insert-after default-mode-line-format 5 '(:eval
 									     (cond ((> my-gnus-new-mail 0)

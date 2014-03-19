@@ -2,3 +2,14 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Alloc
+** Glossary
+- HeapSource
+- GcHeap
+- MarkSweep
+- Copying
+- Mspace & dlmalloc
+- liveBits
+- markBits
+- markStack
+- cardTable
+- HeapWorker

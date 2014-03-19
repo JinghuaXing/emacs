@@ -208,7 +208,8 @@ instanceof 是有一个 cache 的...
     processClassPath(gDvm.bootClassPathStr, true);
       // 将 bootclasspath 中指定的字符串转换为内部的 ClassPathEntry (cpe)
       // 并且在转换的过程中, dex 文件会被转换为 odex, 并被 mmap, 同时
-      // mmap 返回的地址会做为 cpe->ptr 保存起来. 
+      // mmap 返回的地址会做为 cpe->ptr 保存起来. 以后加载类时会直接使用 cpe->ptr
+      // 来读取数据
     
 #+END_SRC
 ****** dvmFindRequiredClassesAndMembers
@@ -267,11 +268,10 @@ dalvikvm 中的 InvokeMain 是对 CALL_STATIC_xx 的简单封装
 
 ** Dalvik Virtual Machine
 *** 代码结构
-- Jni
+- Jni.cpp
 
-  主要是 vm/Jni.cpp, 主要包含各种 Jni 函数的实现, 包括
-  JNI_CreateJavaVM等启动 dvm 的函数以及 GetStringChars 等 Jni 函数.
-  Jni部分是启动 dvm 的入口
+  主要包含各种 Jni 函数的实现, 包括JNI_CreateJavaVM等启动 dvm 的函数以
+  及 GetStringChars 等 Jni 函数. Jni部分是启动 dvm 的入口
 
 - Init.cpp
   由 Jni 调用, 负责 dvm 初始化
@@ -292,6 +292,11 @@ dalvikvm 中的 InvokeMain 是对 CALL_STATIC_xx 的简单封装
   和 Java 的 OO 相关的实现, 例如继承, 接口, 权限检查等
 
 - LinearAlloc.cpp
+
+- IndirectRefTable.cpp
+
+- arch/
+  JNI Call Bridge
 
 - DvmDex.cpp & RawDexFile.cpp & JarFile.cpp
 

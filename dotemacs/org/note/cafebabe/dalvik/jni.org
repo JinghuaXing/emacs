@@ -1,0 +1,143 @@
+#+TITLE: Jni
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Jni
+jni.cpp 中包含 jni spec 中规定的各种接口的实现.
+** ScopedJniThreadState
+在调用任何 jni spec 中规定的接口之前, 都需要初始化一个
+ScopedJniThreadState, 这个类主要作用是在初始化时调用
+dvmChangeStatus(Thread.RUNNING), 在析构时调用
+dvmChangeStatus(Thread.NATIVE), 因为:
+"
+All JNI methods must start by changing their thread status to
+THREAD_RUNNING, and finish by changing it back to THREAD_NATIVE before
+returning to native code.  The switch to "running" triggers a thread
+suspension check.
+"
+
+之所以这样, 是因为 dvmChangeStatus(Thread.RUNNING) 时会有一个检查: 若
+vm 当前因为 debugger, trace 等原因被 suspend, 则这个 dvmChangeStatus 也
+会 block, 阻止 native 代码访问任何 java 对象
+
+** RegisterNatives
+在 System.loadLibrary 时, lib 中的 JNI_OnLoad 会被调用, 这里 lib 通常
+会通过 env->RegisterNatives 注册 jni 函数.
+#+BEGIN_SRC text
+  // Register a method that uses JNI calling conventions.
+  // 所谓的 JNI calling conventions, 是指上层 java 调用 jni 函数时使
+  // 用的 calling conventions, 即: 上层 java 如何向 jni 传递参数, 如何处
+  // 理 jni 返回值等
+  dvmRegisterJNIMethod(ClassObject* clazz, char * methodName, char * sig, void * fnPtr)
+    Method* method = dvmFindDirectMethodByDescriptor(clazz, methodName, signature);
+    if method == null:
+      method = dvmFindVirtualMethodByDescriptor(clazz, methodName,signature);
+    if (method->nativeFunc != dvmResolveNativeMethod):
+      // already registered
+    dvmUseJNIBridge(method, fnPtr);
+      // Point "method->nativeFunc" at the JNI bridge, and overload "method->insns"
+      // to point at the actual function.
+      DalvikBridgeFunc bridge = dvmCallJNIMethod;
+      dvmSetNativeFunc(method, bridge, (const u2*) func);
+      // method->nativeFunc 会被设置为这个 bridge function, 真正的
+      // native func 会被保存到 method->insns. 当上层需要调用 任何 jni 函数时
+      // 都会先调用到 dvmCallJNIMethod 这个 bridge 函数, 而
+      // dvmCallJNIMethod 通过最终的 dvmPlatformInvoke 将 JNI 的 calling
+      // conventions 转换为 arch 相关的 calling conventions 后再调用真正
+      // 的 jni 函数.
+      // dvmPlatformInvoke 是 arch 相关的, 一般使用平台相关的汇编写成,
+      // 例如 Call386ABI.S
+#+END_SRC
+
+*** Lazy register natives (dvmResolveNativeMethod)
+当 lib 中没有实现 JNI_OnLoad 时, lib 中的 jni 函数都是没有注册的. 但
+dvm 中有一个 dvmResolveNativeMethod 方法, 可以在调用 jni 函数时临时去
+解析. 
+
+具体的做法是: 
+OO/Class.cpp 在加载 class 和 methods 时, 会将 `method->nativeFunc =
+dvmResolveNativeMethod`, 此后如果没有调用过 RegisterNatives, 则
+dvmCallMethodV 时会最终调用到 dvmResolveNativeMethod, 从而实现 lazy
+register. 
+
+** JNI Call Bridge
+dvm 中大部分代码都是使用 portable C 写的, 但 JNI Call Bridge (即
+dvmPlatformInvoke) 不是, 因为它的作用是将 JNI Calling Conventions 转换
+为 arch 相关的 Calling Conventions (x86, arm, mips ...), 虽然使用
+libffi 可以用 portable C 的方式实现 bridge, 但速度较慢, 所以 android 对
+每一个支持的 arch 都用 asm 实现了一个 bridge. JNI Call Bridge 的入口函
+数是 dvmCallJNIMethod
+
+** JNI Calling Conventions
+- dvmCallMethodV
+- dvmCallJNIMethod
+- dvmInterpret
+
+任何支持函数的语言都要定义其 calling conventions, Jni calling
+conventions 主要体现在 dvmCallMethodV 函数中, 简单说来, 在调用任何函数
+(java 或 jni) 函数时,参数都会根据 signature 被"打包"在一个 u4 类型的数
+组,并被置于当前 java 栈帧的某个位置. java 或 jni 函数会从这个 u4 数组中
+根据 signature "解包" 出原始的参数. 相应的, 返回值也会做类似处理.
+
+#+BEGIN_SRC text
+  dvmCallMethodV()
+    // 处理参数
+    while (*desc != '\0'):
+      switch (*(desc++)) {
+        case 'L': {     /* 'shorty' descr uses L for all refs, incl array */
+          jobject argObj = reinterpret_cast<jobject>(arg);
+          if (fromJni)
+              ,*ins++ = (u4) dvmDecodeIndirectRef(self, argObj);
+          else
+              ,*ins++ = (u4) argObj;
+          break;
+        }
+    if (dvmIsNativeMethod(method)):
+      dvmCallJNIMethod(pResult)
+    else:
+      dvmInterpret(pResult);
+#+END_SRC
+
+#+BEGIN_SRC text
+  dvmCallJNIMethod
+    // dvmCallJNIMethod 在 dvmPlatformInvoke 之前, 将 object 转换为
+    // IndirectRefTable reference
+    while (*shorty != '\0'):
+      switch (*shorty++) {
+        case 'L':
+          modArgs[idx] = (u4) addLocalReference(self, (Object*) modArgs[idx]);
+  
+    dvmChangeStatus(self, THREAD_NATIVE);      
+    dvmPlatformInvoke(ins);
+    dvmChangeStatus(self, THREAD_RUNNING);
+    // 处理返回值
+    convertReferenceResult(pResult);
+      pResult->l = dvmDecodeIndirectRef(self, (jobject) pResult->l);
+#+END_SRC
+
+可见, 由于Jni IndirectRefTable 的存在, 需要对于类型为 `L` 的参数要额外
+处理:
+
+1. 若调用本身就是来自于 jni 调用 (例如在 jni 代码中再调用 java 类的函
+   数), 则参数并不是对象本身的地址 (argObj), 因为这里的argObj
+   并不是一个有效的地址, 而是相当于 IndirectRefTable 中的一个索引, 所以
+   需要通过 dvmDecodeIndirectRef 获得对象真正的地址后再传递给 jni
+
+2. 若调用不是来自于 jni, 则 argObj 本身就是对象的地址, 可以直接传递给
+   jni
+
+在通过 dvmPlatformInvoke 调用真正的 jni 函数之前, dvmCallJNIMethod 会先
+用 addLocalReference(self, (Object*) argObj) 生成一个 jobject 索引后再
+调用 dvmPlatformInvoke, 所以, 一切 jni 函数的参数中的 jobject, jclass
+等都是 IndirectRefTable 中的 reference 而不是真正的地址.
+
+而若 jni 函数需要返回一个 Java Object 给 java 时, dvmCallJNIMethod 最
+后的 convertReferenceResult 会负责将 jobject 转换为真正的对象的地址. 
+
+综上:
+1. 上层 java 调用 jni 函数 (dvmCallMethodV) 时, 参数打包时使用的是对象
+   的实际地址.
+2. dvmCallJNIMethod 会先将对象保存到 IndirectRefTable 中, 然后再调用 dvmPlatformInvoke
+3. dvmPlatformInvoke (或真正的 jni 函数) 看到的对象都是
+   IndirectRefTable 中的 reference
+4. jni 返回给 java 层的对象会通过 IndirectRefTable 转换为实际的对象地
+   址. 

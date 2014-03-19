@@ -2,3 +2,293 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * OO
+Java 本身并没有规定 Object 的内存布局, 例如在 class 文件, 引用某个
+instance filed 时完全通过 constant pool 来指定, 不涉及任何实现细节. 但
+具体实现 vm 时, 内存布局是必须要考虑的.
+
+Dalvik 的 Object Model 定义起来比较简单: 它是用 C++ 语言来描述的. 所以
+`一般`不需要关注内存布局中的细节, 但如果涉及到 fast mterp, 还是需要从内
+存布局的角度描述 Object Model.
+
+Dalvik 使用 C++ 定义了五种对象:
+1. Object
+2. ArrayObject
+3. ClassObject
+4. StringObject
+5. DataObject
+
+其中 Object 是其它四种对象的基类.
+
+
+** ClassObject 与 Object
+
+#+BEGIN_SRC c++
+  struct Object {
+      ClassObject*    clazz;
+      u4              lock;
+  };
+
+  struct ClassObject : Object {
+      u4              instanceData[CLASS_FIELD_SLOTS];
+      const char*     descriptor;
+      u4              accessFlags;
+      size_t          objectSize;
+      ClassObject*    super;
+      Object*         classLoader;
+      int             interfaceCount;
+      ClassObject**   interfaces;
+      // directMethod, 包括 private, final, <init> 等
+      int             directMethodCount;
+      Method*         directMethods;
+      // 虚函数, 即非 directMethods, 这些函数不会直接被调用:
+      // 它们会通过后面的 vtable 被调用
+      int             virtualMethodCount;
+      Method*         virtualMethods;
+      /*
+       ,* Virtual method table (vtable), for use by "invoke-virtual".  The
+       ,* vtable from the superclass is copied in, and virtual methods from
+       ,* our class either replace those from the super or are appended.
+       ,*/
+      int             vtableCount;
+      Method**        vtable;
+      // 成员变量
+      int             ifieldCount;
+      InstField*      ifields;
+
+      /* static fields */
+      int             sfieldCount;
+      StaticField     sfields[0]; /* MUST be last item */
+  };
+#+END_SRC
+
+从两个类的定义中, 可以看出:
+1. Object 本身并没有太多的数据, 数据都存在于 ClassObject 中, 实际上,
+   只有 InstField 会被保存在 Object 中.
+
+以下面的代码为例:
+#+BEGIN_SRC java
+  class Base {
+      int base;
+  }
+  class Foo extends Base {
+      public static int xxx;
+      public int bcd;
+      public int abc;
+
+      public static void main(String[] args) {
+          Foo f = new Foo();
+          f.abc= 0x1234;
+          System.out.println("Hello, foo"+f.abc);
+      }
+  }
+#+END_SRC
+
+这段代码执行时会生成一个 Object 对象代表 Foo 对象, 以及一个
+ClassObject 代表 Foo 类, 一个 ClassObject 代表 Base 类. 其中
+ClassObject 的内存布局与 C++ 定义的一致.而 Object 的布局会有一点
+tricky:
+
+#+BEGIN_EXAMPLE
+
+  Object
+ -+-------------+      ClassObject
+  | ClassObject-+---->+-------------------+
+ -+-------------+     | ClassObject (NULL)|
+  | lock        |    -+-------------------+
+ -+-------------+     | lock              |
+  | base field  |    -+-------------------+
+ -+-------------+     | instance data     |
+  | abc field   |    -+-------------------+
+ -+-------------+     | descriptor        |
+  | bcd field   |    -+-------------------+
+ -+-------------+     | ....              |
+                     -+-------------------+
+
+
+#+END_EXAMPLE
+
+上面的示意图有几点要注意:
+1. instance field 是直接放在 Object 中的, 并按照字母顺序. 虽然 Object
+   本身并没有定义一个类似于 InstField 的字段.
+2. 基类的 InstField 会插入到 Object 自身的 InstField 之前.
+3. ClassObject 的开头 8 个字节与 Object 结构相同, 因为它继承自 Object,
+   这一点要参考 C++ Object Model
+4. Object 中定义的 lock 字与 hotspot 中的 mark word作用类似, 但与 mark
+   word 不同的是, lock 并不包含对象的年代信息以及 GC 信息.
+** ArrayObject
+
+#+BEGIN_SRC java
+  struct ArrayObject : Object {
+      /* number of elements; immutable after init */
+      u4              length;
+  
+      /*
+       ,* Array contents; actual size is (length * sizeof(type)).  This is
+       ,* declared as u8 so that the compiler inserts any necessary padding
+       ,* (e.g. for EABI); the actual allocation may be smaller than 8 bytes.
+       ,*/
+      u8              contents[1];
+  };
+  #+END_SRC
+可见, 
+1. ArrayObject offset 为 8 的 int 值保存着 Array 的长度. 
+2. Array 的数据部分保存在它的变长的 contents 区域.
+** Class Loading
+java 类加载的过程包含一般包括加载, 解析, 初始化等过程.  特别的, dvm 加
+载类的过程基本上就是:
+1. 加载
+
+   从 odex 中加载类 (loadClassFromDex), 此后 ClassObject 的多数成员已经
+   被初始化
+
+2. 解析 (link)
+
+   通过 dvmLinkClass, 将 ClassObject 中的存在的 symbolic references
+   resolve 为 direct pointer (对于 vtable, superclass, iftable 等) 或
+   offset (对于 sfields, ifields)
+
+   需要注意的是, 在最初的 ClassLoader 初始化阶段, dexopt 会负责将 dex
+   转换为 odex, 这时会做一些类似于 resolve 的工作, 但这些工作影响的主
+   要是 dex 中的代码部分: 即 xxx 指令会被转换为 xxx_quick 指令, 使代码
+   由使用 symbolic references 的方式变为使用 direct pointer 或 offset
+   的方式. 所以, 即使有 odex, dvmLinkClass 时还是需要做 resolve 的动作. 
+
+Class Loading 的入口是 findClassNoInit
+
+#+BEGIN_SRC text
+  ClassObject* findClassNoInit(descriptor, loader, pDvmDex)
+    clazz = loadClassFromDex(pDvmDex, pClassDef, loader);
+      newClass = (ClassObject*) dvmMalloc(size, ALLOC_NON_MOVING);
+      newClass->descriptor = descriptor;
+      newClass->interfaceCount = pInterfacesList->size;
+      // 读取 ifaces
+      newClass->interfaces = (ClassObject**) dvmLinearAlloc(classLoader,
+      newClass->interfaceCount * sizeof(ClassObject*));
+  
+      for (i = 0; i < newClass->interfaceCount; i++):
+        const DexTypeItem* pType = dexGetTypeItem(pInterfacesList, i);
+        newClass->interfaces[i] = (ClassObject*)(u4) pType->typeIdx;
+  
+      // 读取 sfield  
+      newClass->sfieldCount = count;
+      for (i = 0; i < count; i++):
+        dexReadClassDataField(&pEncodedData, &field, &lastIndex);
+        loadSFieldFromDex(newClass, &field, &newClass->sfields[i]);
+      // 读取 ifield, direct methods, virtual methods ...
+    dvmLinkClass(clazz)
+      // resolve superclass 为 direct pointer
+      ClassObject* super = dvmResolveClass(clazz, superclassIdx, false);
+      dvmSetFieldObject(clazz,  OFFSETOF_MEMBER(ClassObject,super),super);
+      // resolve ifaces
+      for (i = 0; i < clazz->interfaceCount; i++) {
+        clazz->interfaces[i] = dvmResolveClass(clazz,interfaceIdxArray[i], false);
+      // 根据 virtualMethods 及 superclass, ifaces 生成 vtable
+      createVtable(clazz)
+        clazz->vtable = (Method**) dvmLinearAlloc(clazz->classLoader, maxCount);
+        // 将 super 的 vtable 与 clazz 自己的 virtualMethods 进行比较,
+        // 生成最终的 clazz->vtable
+        // ...
+      // 生成 iftable
+      // 上一步的 vtable 中包含了所有的虚函数, 包括继承自 super 的和自己
+      // 实现的, 但自己实现的接口中的虚函数需要通过 iftable 进行索引, 因
+      // 为 invoke-interface 和 invoke-virtual 是不同的, 前者需要
+      // iftable 才能工作, 具体见
+      // http://stackoverflow.com/questions/1504633/what-is-the-point-of-invokeinterface
+      createIftable(clazz)
+      // 计算所有 filed 的 offset, 后面的 GetFieldID 等需要使用
+      computeFieldOffsets(clazz)
+#+END_SRC
+
+至此 ClassObject 已经准备完毕:
+1. clazz->super 指向了父类的 ClassObject
+2. clazz->virtualMethods 包含了所有该类实现的虚函数 Method, 而
+   Method->insns 又指向了 mmap 的 odex 中真正的代码部分
+3. clazz->vtable 包含该类, 父类中定义的所有虚函数 Method 的引用.
+4. clazz->iftable 包含该类实现的接口函数在 vtable 中的引用.
+5. clazz->ifield 中所有的 InstField 在 Object 中的 offset 被计算出来
+6. ...
+
+note: 虽然 ClassObject 中包含很多的信息, 但 dvmInterpret 时有时并不使
+用这些信息...这些信息大部分被 Jni 和反射使用. 这样设计的原因可能是:
+1. Jni 接口中定义了 jmethodID, jfieldID 等接口, 并且需要从 signature获
+   得这些接口, 需要 ClassObject 定义各种成员来支持这些接口
+
+2. interpreter 使用 dvmResolveXXX 等方法可能比 Jni 使用 ClassObject 成
+   员的方法更快. 
+ 
+** 各种函数的实现
+*** iget / iset
+**** Jni version
+第一步, 获得 jfieldID, 这个 jfieldID 实际上是 InstField *, 其
+byteOffset 保存着 Object 中保存该 ifield 的偏移量. 
+
+#+BEGIN_SRC java
+  static jfieldID GetFieldID(JNIEnv* env, jclass jclazz, const char* name, const char* sig) {
+      ScopedJniThreadState ts(env);
+      ClassObject* clazz = (ClassObject*) dvmDecodeIndirectRef(ts.self(), jclazz);
+  
+      // jfieldID 与 jmethodID 等一样, 实际类型都是一个 opaque pointer
+      // 这里 jfieldID 的实际类型为 InstField*
+      jfieldID id = (jfieldID) dvmFindInstanceFieldHier(clazz, name, sig);
+      return id;
+  }
+#+END_SRC
+
+第二步, 调用 GetField##_jname, 以 byte 为例
+#+BEGIN_SRC text
+  INLINE s1 dvmGetFieldByte(const Object* obj, int offset) {
+      return ((JValue*)BYTE_OFFSET(obj, offset))->b;
+  }
+#+END_SRC
+**** interpreter version
+与下面 sget / sset 类似, 根据 dex 中的 id 获得 name, 然后根据 name 找
+到 InstField*, 然后根据偏移量得到 ifield 的值. 
+
+*** sget / sset
+sget/sset 比 iget/iset 要复杂, 因为 static 变量可以存在于 interface 中
+**** jni version
+首先, GetStaticFieldID 得到 jfieldID, 这个 jfieldID 实现上是
+StaticField *, 其 value 值即为所求. 
+#+BEGIN_SRC text
+  jfieldID GetStaticFieldID(env, jclazz, char* name, char* sig)
+    jfieldID id = dvmFindStaticFieldHier(clazz, name, sig);
+      // search in current clazz
+      pField = dvmFindStaticField(clazz, fieldName, signature);
+        // 通过遍历 clazz->sfields 查找
+        pField = &clazz->sfields[0];
+        for (i = 0; i < clazz->sfieldCount; i++, pField++):
+          if (strcmp(fieldName, pField->name) == 0 &&
+            strcmp(signature, pField->signature) == 0)
+            return (StaticField*) pField;
+        // 若 clazz 中没找到, 则查找所有接口
+        for ( ; i < clazz->iftableCount; i++) {
+          ClassObject* iface = clazz->iftable[i].clazz;
+          pField = dvmFindStaticField(iface, fieldName, signature);
+          if (pField != NULL):
+            return pField;
+        // 若所有接口中都没有找到, 则查找父类
+        if (clazz->super != NULL):
+          return dvmFindStaticFieldHier(clazz->super, fieldName, signature);
+        else
+          return NULL;
+#+END_SRC
+
+第二步, GetStaticField##_jname, 这个函数直接从 jfieldID (即
+StaticField* ) 中取出 value 字段即可. 
+**** interface version
+#+BEGIN_SRC text
+  // ref 是一个整数, odex 代码中不是使用 name 查找 filed 的, 而是已
+  // 经计算出了 sfield 在 sfields 中的 offset, 所以第一步需要根据 ref 找
+  // 到原来的 name
+  
+  StaticField* sfield = dvmResolveStaticField(clazz, ref);
+    DexFieldId pFieldId = dexGetFieldId(pDvmDex->pDexFile, ref);
+    // 通过 dexStringById 后到 name 后, 后面的调用和 jni 相同
+    return dvmFindStaticFieldHier(resClass,
+             dexStringById(pDvmDex->pDexFile, pFieldId->nameIdx),
+             dexStringByTypeIdx(pDvmDex->pDexFile, pFieldId->typeIdx));
+#+END_SRC
+*** invoke-direct
+*** invoke-virtual
+*** invoke-static
+*** invoke-interface
