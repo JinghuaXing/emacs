@@ -1,5 +1,31 @@
 #+TITLE: Sitemap for project cafebabe
 
+   + dalvik
+     + [[file:dalvik/oo.org][OO]]
+     + [[file:dalvik/dalvik.org][Dalvik]]
+     + [[file:dalvik/mterp.org][Mterp]]
+     + [[file:dalvik/jni_bridge.org][JniBridge]]
+     + [[file:dalvik/object_model.org][Object Model]]
+     + [[file:dalvik/alloc.org][Alloc]]
+     + [[file:dalvik/jni.org][Jni]]
+     + [[file:dalvik/thread.org][Thread]]
+     + [[file:dalvik/sync.org][Sync]]
+   + java
+     + [[file:java/jvm.org][JVM]]
+     + [[file:java/visitor_pattern.org][Visitor Pattern]]
+     + [[file:java/lightweight_lock.org][Java Lightweight Lock]]
+     + [[file:java/java_quiz.org][Java Quiz]]
+     + [[file:java/java_interface.org][Jave Interface]]
+     + [[file:java/java.org][Jave]]
+     + [[file:java/hash_code.org][Java Hashcode]]
+     + java puzzle
+       + [[file:java/java puzzle/java_puzzle_value_not_initialized.org][Java Puzzle:value not changed?]]
+       + [[file:java/java puzzle/java_puzzle_thread_join.org][Java Puzzle:thread join]]
+       + [[file:java/java puzzle/java_puzzle_local_slot.org][Java Puzzle:Local Variable Slot]]
+       + [[file:java/java puzzle/java_puzzle_clinit.org][Java Puzzle:class not initialized?]]
+       + [[file:java/java puzzle/java_puzzle_class_init_hang.org][Java Puzzle:class initialization hangs]]
+       + [[file:java/java puzzle/java_puzzle_any_deadlock.org][Java Puzzle:deadlock?]]
+   + [[file:sqlite.org][SQLite]]
    + android
      + [[file:android/android_debug.org][Android Debug]]
      + [[file:android/android.org][Android]]
@@ -31,7 +57,6 @@
      + [[file:android/android_ashmem.org][Android ashmem]]
      + [[file:android/android_app.org][Android Applications]]
      + [[file:android/android_ams.org][ActivityManagerService]]
-   + [[file:sqlite.org][SQLite]]
    + [[file:unicode.org][Unicode]]
    + [[file:tools.org][My Linux Desktop]]
    + [[file:sqlite_optimization.org][Android SQLite Optimization Plan]]
@@ -57,18 +82,3 @@
      + [[file:linux/linux_dev.org][Linux Development]]
      + [[file:linux/linux_cheatsheet.org][Linux Cheat Sheet]]
      + [[file:linux/linux_app.org][Linux Applications]]
-   + java
-     + [[file:java/visitor_pattern.org][Visitor Pattern]]
-     + [[file:java/lightweight_lock.org][Java Lightweight Lock]]
-     + [[file:java/jvm.org][JVM]]
-     + [[file:java/java_quiz.org][Java Quiz]]
-     + [[file:java/java_interface.org][Jave Interface]]
-     + [[file:java/java.org][Jave]]
-     + [[file:java/hash_code.org][Java Hashcode]]
-     + java puzzle
-       + [[file:java/java puzzle/java_puzzle_value_not_initialized.org][Java Puzzle:value not changed?]]
-       + [[file:java/java puzzle/java_puzzle_thread_join.org][Java Puzzle:thread join]]
-       + [[file:java/java puzzle/java_puzzle_local_slot.org][Java Puzzle:Local Variable Slot]]
-       + [[file:java/java puzzle/java_puzzle_clinit.org][Java Puzzle:class not initialized?]]
-       + [[file:java/java puzzle/java_puzzle_class_init_hang.org][Java Puzzle:class initialization hangs]]
-       + [[file:java/java puzzle/java_puzzle_any_deadlock.org][Java Puzzle:deadlock?]]

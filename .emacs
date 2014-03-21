@@ -372,3 +372,6 @@
 
 (require 'visual-regexp)
 (global-set-key (kbd "M-%") 'vr/query-replace)
+
+(require 'anzu)
+(global-anzu-mode +1)

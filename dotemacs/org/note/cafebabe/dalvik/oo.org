@@ -11,6 +11,7 @@ Dalvik 的 Object Model 定义起来比较简单: 它是用 C++ 语言来描述�
 存布局的角度描述 Object Model.
 
 Dalvik 使用 C++ 定义了五种对象:
+
 1. Object
 2. ArrayObject
 3. ClassObject
@@ -19,7 +20,6 @@ Dalvik 使用 C++ 定义了五种对象:
 
 其中 Object 是其它四种对象的基类.
 
-
 ** ClassObject 与 Object
 
 #+BEGIN_SRC c++
@@ -27,7 +27,7 @@ Dalvik 使用 C++ 定义了五种对象:
       ClassObject*    clazz;
       u4              lock;
   };
-
+  
   struct ClassObject : Object {
       u4              instanceData[CLASS_FIELD_SLOTS];
       const char*     descriptor;
@@ -37,11 +37,11 @@ Dalvik 使用 C++ 定义了五种对象:
       Object*         classLoader;
       int             interfaceCount;
       ClassObject**   interfaces;
-      // directMethod, 包括 private, final, <init> 等
+      // directMethod, 包括 private, static, <init> 等
       int             directMethodCount;
       Method*         directMethods;
       // 虚函数, 即非 directMethods, 这些函数不会直接被调用:
-      // 它们会通过后面的 vtable 被调用
+      // 它们会通过后面的 vtable 被调用. 另外, virtualMethods 只包含本 class 实现的虚函数.
       int             virtualMethodCount;
       Method*         virtualMethods;
       /*
@@ -54,7 +54,11 @@ Dalvik 使用 C++ 定义了五种对象:
       // 成员变量
       int             ifieldCount;
       InstField*      ifields;
-
+  
+      // interface table
+      int             iftableCount;
+      InterfaceEntry* iftable;
+  
       /* static fields */
       int             sfieldCount;
       StaticField     sfields[0]; /* MUST be last item */
@@ -267,7 +271,7 @@ StaticField *, 其 value 值即为所求.
 
 第二步, GetStaticField##_jname, 这个函数直接从 jfieldID (即
 StaticField* ) 中取出 value 字段即可. 
-**** interface version
+**** interpreter version
 #+BEGIN_SRC text
   // ref 是一个整数, odex 代码中不是使用 name 查找 filed 的, 而是已
   // 经计算出了 sfield 在 sfields 中的 offset, 所以第一步需要根据 ref 找
@@ -280,7 +284,299 @@ StaticField* ) 中取出 value 字段即可.
              dexStringById(pDvmDex->pDexFile, pFieldId->nameIdx),
              dexStringByTypeIdx(pDvmDex->pDexFile, pFieldId->typeIdx));
 #+END_SRC
-*** invoke-direct
-*** invoke-virtual
-*** invoke-static
-*** invoke-interface
+*** iget-quick/iset-quick
+由于 iget/iset 本质是操作 Object 的一个 offset, 所以 odex 提供 quick 版
+本的iget/iset, 直接以 offset 做为操作数. 
+
+但 sget/sset 并不存在 quick 版本, 因为接口也可以包含 static 变量, 无法
+通过一个 offset 简单的搞定. 
+
+*** invoke
+所有 invoke 类调用都分为两步:
+1. 查找真正的 Method (dvmResolveMethod)
+2. 调用 Method (处理参数, 返回值, 栈帧等)
+
+dalvik 的 invoke 类调用共分为五种, 主要原因是查找 Method 的方法不同,
+例如, invoke-direct 是从 Object 的 directMethods 中找, 而
+invoke-virtual 需要从 Object->vtable 和 Object->virtualMethods 中找.
+更复杂的 invoke-interface 需要从 Object->iftable, Object->vtable 和
+Object->virtualMethods 中找到.
+
+**** 五种 invoke
+#+BEGIN_SRC java
+  interface I {
+      void i();
+  }
+  
+  class Base {
+      public void b() {};
+  }
+  
+  class Foo extends Base implements I {
+      public void b() {
+          // invoke-super
+          super.b();
+      }
+      public void i() {
+          
+      }
+  
+      void v() {}
+      static void s() {}
+  
+      private void p() {}
+      final void f() {}
+      
+      public static void main(String[] args) {
+          // invoke-static
+          Foo.s();
+  
+          Foo f =  new Foo();
+          // invoke-virtual
+          f.v();
+          f.i();
+          f.f();
+          // invoke-interface
+          ((I)f).i();
+          // invoke-direct
+          f.p();
+      }
+  }
+  
+#+END_SRC
+
+对应的 dalvik 字节码为:
+#+BEGIN_SRC text
+  .class LFoo;
+  .super LBase;
+  .source "Foo.java"
+  
+  # interfaces
+  .implements LI;
+  
+  
+  # direct methods
+  .method constructor <init>()V
+      .locals 0
+  
+      .prologue
+      .line 10
+      invoke-direct {p0}, LBase;-><init>()V
+  
+      return-void
+  .end method
+  
+  .method public static main([Ljava/lang/String;)V
+      .locals 1
+      .parameter
+  
+      .prologue
+      .line 27
+      invoke-static {}, LFoo;->s()V
+  
+      .line 29
+      new-instance v0, LFoo;
+  
+      invoke-direct {v0}, LFoo;-><init>()V
+  
+      .line 31
+      invoke-virtual {v0}, LFoo;->v()V
+  
+      .line 33
+      invoke-virtual {v0}, LFoo;->i()V
+  
+      .line 34
+      invoke-virtual {v0}, LFoo;->f()V
+  
+      .line 36
+      invoke-interface {v0}, LI;->i()V
+  
+      .line 38
+      invoke-direct {v0}, LFoo;->p()V
+  
+      .line 39
+      return-void
+  .end method
+  
+  .method private p()V
+      .locals 0
+  
+      .prologue
+      .line 22
+      return-void
+  .end method
+  
+  .method static s()V
+      .locals 0
+  
+      .prologue
+      .line 20
+      return-void
+  .end method
+  
+  
+  # virtual methods
+  .method public b()V
+      .locals 0
+  
+      .prologue
+      .line 13
+      invoke-super {p0}, LBase;->b()V
+  
+      .line 14
+      return-void
+  .end method
+  
+  .method final f()V
+      .locals 0
+  
+      .prologue
+      .line 23
+      return-void
+  .end method
+  
+  .method public i()V
+      .locals 0
+  
+      .prologue
+      .line 17
+      return-void
+  .end method
+  
+  .method v()V
+      .locals 0
+  
+      .prologue
+      .line 19
+      return-void
+  .end method
+  
+#+END_SRC
+
+虽然 invoke 分为五种, 但实际上根据查找的表的不同又分为两大类:
+
+1. 查找 Object->directMethods
+   - invoke-static
+   - invoke-direct
+2. 查找 Object->virtualMethods
+   - invoke-super
+   - invoke-virtual
+   - invoke-interface
+**** dvmResolveMethod
+任何一种 invoke 的第一步都是调用 dvmResolveMethod 来查找真正的 Method,
+不过不同的 invoke 会使用不同的参数
+
+#+BEGIN_SRC text
+  Method* dvmResolveMethod(const ClassObject* referrer, u4 methodIdx,MethodType methodType)
+    // 根据 nameIdx 从 dex 中获得 method name
+    char* name = dexStringById(pDvmDex->pDexFile, pMethodId->nameIdx);
+    if (methodType == METHOD_DIRECT):
+      resMethod = dvmFindDirectMethod(resClass, name, &proto);
+    else if (methodType == METHOD_STATIC):
+      resMethod = dvmFindDirectMethodHier(resClass, name, &proto);
+    else:
+      resMethod = dvmFindVirtualMethodHier(resClass, name, &proto);
+  
+  // ------------------- for direct
+  Method* dvmFindDirectMethod(clazz, methodName, proto)
+    // 从 Object->directMethods 中查找, 但使用一个 false 参数表示不需要
+    // 从父类中查找
+    findMethodInListByProto(clazz, METHOD_DIRECT, false, methodName,proto);
+      while (clazz != NULL) {
+        int i;
+        if (wantedType == METHOD_VIRTUAL || wantedType == METHOD_UNKNOWN):
+          for (i = 0; i < clazz->virtualMethodCount; i++):
+            Method* method = &clazz->virtualMethods[i];
+              // 基于字符串的匹配
+              if (dvmCompareNameProtoAndMethod(name, proto, method) == 0) {
+                return method;
+        if (wantedType == METHOD_DIRECT || wantedType == METHOD_UNKNOWN):
+          for (i = 0; i < clazz->directMethodCount; i++):
+            Method* method = &clazz->directMethods[i];
+              if (dvmCompareNameProtoAndMethod(name, proto, method) == 0):
+                return method;
+        if (! isHier):
+          break;
+      
+        clazz = clazz->super;
+      // end while
+  
+  // -------------------- for STATIC
+  Method* dvmFindDirectMethod(clazz, methodName, proto)
+    findMethodInListByProto(clazz, METHOD_DIRECT, true, methodName, proto)
+  
+  // -------------------- for VIRTUAL (mainly SUPER)
+  Method* dvmFindVirtualMethodHier(clazz,methodName,proto)
+    findMethodInListByProto(clazz, METHOD_VIRTUAL, true, methodName,proto);
+  
+  
+#+END_SRC
+
+**** invoke-static
+#+BEGIN_SRC text
+  methodToCall = dvmResolveMethod(curMethod->clazz, ref, METHOD_STATIC);
+  // 找到 methodToCall 后直接调用即可
+  GOTO_invokeMethod(methodCallRange, methodToCall, vsrc1, vdst);
+#+END_SRC
+**** invoke-direct
+#+BEGIN_SRC text
+  methodToCall = dvmResolveMethod(curMethod->clazz, ref,METHOD_DIRECT);
+  // 与 invokeStatic 一样, 直接调用, 只不过因为它用的参数是METHOD_DIRECT
+  // 导致在 clazz->directMethods 查找时不会查找到父类
+  GOTO_invokeMethod(methodCallRange, methodToCall, vsrc1, vdst);
+#+END_SRC
+**** invoke-super
+#+BEGIN_SRC text
+  // 查找 base method 时, 可以在当前 class 找到, 也可能在父类中找到
+  // 但不影响最终的结果, 即 baseMethod->methodIndex
+  baseMethod = dvmResolveMethod(curMethod->clazz, ref,METHOD_VIRTUAL);
+  if (baseMethod->methodIndex >= curMethod->clazz->super->vtableCount):
+     // error
+  // 这里需要在 super->vtable 中查找, 是因为有可能 baseMethod 是在当前类
+  // 中找到的, 我们需要调用的是父类的版本.
+  methodToCall = curMethod->clazz->super->vtable[baseMethod->methodIndex];
+  GOTO_invokeMethod(methodCallRange, methodToCall, vsrc1, vdst);
+#+END_SRC
+**** invoke-virtual
+#+BEGIN_SRC text
+  baseMethod = dvmResolveMethod(curMethod->clazz, ref,METHOD_VIRTUAL);
+  // 这里没有直接使用 baseMethod, 是因为有可能 baseMethod 是从父类中开始
+  // 查找的, 我们要用的是子类中的版本
+  methodToCall = thisPtr->clazz->vtable[baseMethod->methodIndex];
+  GOTO_invokeMethod(methodCallRange, methodToCall, vsrc1, vdst);
+#+END_SRC
+**** invoke-interface
+invoke-interface 与 invoke-virtual 不同:
+
+invoke-interface 时使用的 ref 参数是和 interface 相关的, 无法通过调用
+dvmResolveMethod 直接找到 clazz->virtualMethods 中对应的虚函数. 必须通过它
+先找到接口类, 然后根据接口类在 clazz->iftable 中找到对应于该接口的
+methodIndexArray, 然后才能从 clazz->vtable 中找到真正的 virtual
+methods. 
+
+#+BEGIN_SRC text
+  methodToCall = dvmFindInterfaceMethodInCache(thisClass, ref,curMethod,methodClassDex);
+    dvmInterpFindInterfaceMethod(thisClass, methodIdx,method,methodClassDex)
+      // 从接口类中找到 absMethod, 这个 absMethod 并不能执行, 直接的可执行的 method
+      // 在 thisClass 的 virtualMethods 中
+      // 这里的 method->clazz 指的是接口类本身
+      absMethod = dvmResolveInterfaceMethod(method->clazz, methodIdx);
+        Method* dvmFindInterfaceMethodHier(iface,methodName,proto)
+      for (i = 0; i < thisClass->iftableCount; i++):
+        if (thisClass->iftable[i].clazz == absMethod->clazz):
+          break;
+      // iftable[i] 此时代表相应的接口类
+      vtableIndex =
+        thisClass->iftable[i].methodIndexArray[absMethod->methodIndex];
+      methodToCall = thisClass->vtable[vtableIndex];    
+  GOTO_invokeMethod(methodCallRange, methodToCall, vsrc1, vdst);  
+#+END_SRC
+**** invoke-virtual-quick 与 invoke-super-quick
+odex 对 dex 优化时, 会将原来的 invoke-virtual 或 invoke-super 替换为相
+应的 quick 版本, 相应的指令参数也会变: 由原来的 ref 直接变为 vtable
+index, 这样可以节省一个 dvmResolveMethod 的过程. 
+
+但是, invoke-direct, invoke-static 和 invoke-interface 并没有相应的
+quick 版本. 因为这是不可能的...
+
+
