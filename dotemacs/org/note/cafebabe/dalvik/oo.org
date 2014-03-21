@@ -208,14 +208,6 @@ Class Loading 的入口是 findClassNoInit
 5. clazz->ifield 中所有的 InstField 在 Object 中的 offset 被计算出来
 6. ...
 
-note: 虽然 ClassObject 中包含很多的信息, 但 dvmInterpret 时有时并不使
-用这些信息...这些信息大部分被 Jni 和反射使用. 这样设计的原因可能是:
-1. Jni 接口中定义了 jmethodID, jfieldID 等接口, 并且需要从 signature获
-   得这些接口, 需要 ClassObject 定义各种成员来支持这些接口
-
-2. interpreter 使用 dvmResolveXXX 等方法可能比 Jni 使用 ClassObject 成
-   员的方法更快. 
- 
 ** 各种函数的实现
 *** iget / iset
 **** Jni version
