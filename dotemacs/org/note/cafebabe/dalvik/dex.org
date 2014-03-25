@@ -2,3 +2,20 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Dex
+** dex 文件结构
+总的来说, dex 包含以下结构:
+
+1. File Header
+2. String Table
+3. Class List
+4. Field Table
+5. Method Table
+6. Class Definition Table
+7. Field List
+8. Method List
+9. Code Header
+10. Local Variable List
+
+http://www.retrodev.com/android/dexformat.html
+http://stackoverflow.com/questions/7750448/dex-file-in-android
+http://source.android.com/devices/tech/dalvik/dex-format.html

@@ -159,6 +159,7 @@ java 类加载的过程包含一般包括加载, 解析, 初始化等过程.  �
 
 Class Loading 的入口是 findClassNoInit
 
+findClassNoInit:
 #+BEGIN_SRC text
   ClassObject* findClassNoInit(descriptor, loader, pDvmDex)
     clazz = loadClassFromDex(pDvmDex, pClassDef, loader);
@@ -203,7 +204,48 @@ Class Loading 的入口是 findClassNoInit
       computeFieldOffsets(clazz)
 #+END_SRC
 
+loadClassFromDex
+#+BEGIN_SRC text
+  DexClassDef* pClassDef;
+  pClassDef = dexFindClass(pDvmDex->pDexFile, descriptor);
+    // DexClassDef 实际上就是 dex 文件中 Class Definition Table 中的一项
+    // pLookup 是 odex 包含的一个对于加速查找的数据结构
+    // ...
+    return (const DexClassDef*)
+      (pDexFile->baseAddr + pLookup->table[idx].classDefOffset);
+  
+  clazz = loadClassFromDex(pDvmDex, pClassDef, loader);
+    // class data 是 class definition 的一项, 包含了各种 fields, methods
+    // 的索引和权限信息
+    pEncodedData = dexGetClassData(pDexFile, pClassDef);
+    dexReadClassDataHeader(&pEncodedData, &header);
+      pHeader->staticFieldsSize = readUnsignedLeb128(pData);
+      pHeader->instanceFieldsSize = readUnsignedLeb128(pData);
+      pHeader->directMethodsSize = readUnsignedLeb128(pData);
+      pHeader->virtualMethodsSize = readUnsignedLeb128(pData);
+    // pDvmDex 是 dex file
+    // pClassDef 是 dex file 中的 Class Definition Table 中的一项
+    // header 是 class 的各种 field, methods 在 dex file 中的索引
+    // pEncodedData 是 pClassDef 的 data 部分
+    loadClassFromDex0(pDvmDex, pClassDef, &header, pEncodedData, classLoader);
+      pDexFile = pDvmDex->pDexFile;
+      descriptor = dexGetClassDescriptor(pDexFile, pClassDef);
+        // 使用 pClassDef->classIdx 扫描 String Table 获得 descriptor
+        dexStringByTypeIdx(pDexFile, pClassDef->classIdx);
+      newClass->descriptor = descriptor;
+      //... 读取其它的 field, methods, interface ...
+      // 包括在 LinearAlloc 上分配相应的 Field, Method 对象, 从 dex file
+      // 中读取相应的数据, 这里读到的数据需要被后续的 dvmLinkClass 处理
+      // 后才能使用, 包括:
+      // 1. ifield 需要通过 link 得到在 Object 中的索引.
+      // 2. super 需要通过 link 将 idx 变为实际的 ClassObject*
+      // 3. iftable 需要通过 link 将 idx 变为 ClassObject*
+      // 4. vtable 需要通过 link 生成
+      // 5. ...
+#+END_SRC
+
 至此 ClassObject 已经准备完毕:
+
 1. clazz->super 指向了父类的 ClassObject
 2. clazz->virtualMethods 包含了所有该类实现的虚函数 Method, 而
    Method->insns 又指向了 mmap 的 odex 中真正的代码部分
@@ -211,6 +253,12 @@ Class Loading 的入口是 findClassNoInit
 4. clazz->iftable 包含该类实现的接口函数在 vtable 中的引用.
 5. clazz->ifield 中所有的 InstField 在 Object 中的 offset 被计算出来
 6. ...
+
+注意: ClassObject 本身分配在 GC Heap, 但它的 ifield, sfield,
+virtualMethods 等成员却分配在 LinearAlloc. 分配在 GC Heap 可能主要是考
+虑到 ClassObject 也要参与到 GC 扫描, 而 GC 扫描通过 liveBits, markBits
+进行的, 必须要求 ClassObject 本身分配在 GC Heap 上 (因为 liveBits,
+markBits 是针对 GC Heap 的 bitmap)
 
 ** 各种函数的实现
 *** iget / iset
