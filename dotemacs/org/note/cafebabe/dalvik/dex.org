@@ -3,19 +3,267 @@
 #+EMAIL: wei.sun@spreadtrum.com
 * Dex
 ** dex 文件结构
-总的来说, dex 包含以下结构:
-
-1. File Header
-2. String Table
-3. Class List
-4. Field Table
-5. Method Table
-6. Class Definition Table
-7. Field List
-8. Method List
-9. Code Header
-10. Local Variable List
 
 http://www.retrodev.com/android/dexformat.html
 http://stackoverflow.com/questions/7750448/dex-file-in-android
 http://source.android.com/devices/tech/dalvik/dex-format.html
+http://blog.csdn.net/hlchou/article/details/6303566
+http://www.2cto.com/Article/201308/236054.html
+
+dex 文件主要由一个 dex header, 多个表(ids, defs)和数据 (data) 部分组成.
+构成一个复杂的索引关系, 这些表和数据的位置大约是:
+
+1. dex header
+2. dex string ids
+3. dex type ids
+4. dex field ids
+5. dex method ids
+6. dex class defs
+7. data
+8. dex map list
+
+*** dex header
+dex header 中主要下面提到的各个 ids, defs 的 size 和 offset, 以便能找
+到这些 table, 例如:
+#+BEGIN_SRC c
+  struct header_item {
+      struct dex_magic {
+          /* dex.. */
+      };
+      uint checksum;
+      char signature[20];
+      uint file_size;
+      uint header_size;
+      uint endian_tag;
+      uint link_size;
+      uint link_off;
+      uint map_off;               /* map list offset */
+      uint string_ids_size;
+      uint string_ids_off;
+      uint type_ids_size;
+      uint type_ids_off;
+      uint proto_ids_size;
+      uint proto_ids_off;
+      uint field_ids_size;
+      uint field_ids_off;
+      uint method_ids_size;
+      uint mehtod_ids_off;
+      uint class_defs_size;
+      uint class_defs_off;
+      uint data_size;
+      uint data_off;              /* data_off 可能主要用来检查 */
+  };
+  
+#+END_SRC
+
+*** dex string ids
+#+BEGIN_SRC c
+  struct string_id_list {
+      struct string_id_item {
+          uint string_data_off;
+      } [string_ids_size];
+  };
+  
+#+END_SRC
+
+通过这个 string_data_off, 可以在 data 部分找到这个 string 对应的
+string_item 结构.
+
+*** dex type ids
+
+#+BEGIN_SRC c
+  struct type_id_list {
+      struct type_id_item {
+          uint descriptor_idx;    /* => string_id_item */
+      } [type_ids_size];
+  };
+  
+#+END_SRC
+
+*** dex proto ids
+#+BEGIN_SRC c
+  struct proto_id_list {
+      struct proto_id_item {
+          uint shorty_idx;            /* => string_id_item */
+          uint reture_type_idx;       /* => type_id_item */
+          unit parameters_off;
+      } [proto_ids_size];
+  };
+#+END_SRC
+
+
+**** prarameters_off
+parameters_off 表示该函数的参数情况, 指向 data 部分的一个
+type_item_list 结构
+
+#+BEGIN_SRC c
+  struct type_item_list {
+      uint size;                  /* 参数的个数 */
+      struct type_item [size];
+  };
+  struct type_item {
+      ushort type_idx;            /* 指向 string ids */
+  };
+#+END_SRC
+
+*** dex field ids
+#+BEGIN_SRC c
+  struct field_id_list {
+      struct field_id_item {
+          uint class_idx;             /* => type_id_item */
+          uint type_idx;              /* => type_id_item */
+          uint name_idx;              /* => string_id_item */
+      } [field_ids_size];
+  };
+#+END_SRC
+
+*** dex method ids
+#+BEGIN_SRC c
+  struct method_id_list {
+      struct method_id_item {
+          ushort class_idx;           /* => type_id_item */
+          ushort proto_idx;           /* => proto_id_item */
+          uint name_idx;              /* => string_id_item */
+      } [method_ids_size];
+  };
+  
+#+END_SRC
+
+*** dex class defs
+class defs 是这些表中是复杂的一个表.
+
+#+BEGIN_SRC c
+  struct class_def_item_list {
+      struct class_def_item {
+          uint class_idx;             /* => type_id_item */
+          enum ACCESS_FLAGS;
+          uint superclass_idx;        /* => type_id_item */
+          uint interface_off;
+          uint source_file_idx;       /* => string_id_item */
+          uint annotation_off;
+          uint class_data_off;
+          uint static_value_off;
+      } [class_defs_size];
+  };
+  
+#+END_SRC
+
+与 string_id_item 中的 string_data_off 及 proto_id_item 中的
+parameters_off 类似, class_def_item 中包含四项 off 也存在到 data 部分,
+
+
+**** interface_off
+   #+BEGIN_SRC c
+     struct type_item_list {
+         uint size;
+         struct type_item[size];
+     };
+     
+     struct type_item {
+         ushort type_index;          /* => type_id_item */
+     };
+   #+END_SRC
+
+**** static_value_off
+
+**** class_data_off
+class_data_off 是 class_def_item 中最复杂的. 
+
+#+BEGIN_SRC c
+  struct class_data_item {
+      uleb128 static_fields_size;
+      uleb128 instance_fields_size;
+      uleb128 direct_methods_size;
+      uleb128 virtual_methods_size;
+  
+      struct encoded_field_list {
+          struct encoded_field {
+              /* field_idx_diff 与前面提到的 xxx_idx 不同:
+                 actual_idx[i]= sum_{0}^{i}(field_idx_diff[x]d(x))
+               ,,*/
+              uleb128 field_idx_diff; /* => field_id_item */
+          } [static_fields_size];
+      } static_fields;
+  
+      struct encoded_field_list {
+          struct encoded_field {
+              uleb128 field_idx_diff; /* => field_id_item */
+              uleb128 access_flags;
+          } [instance_fields_size];
+      } instance_fields;
+  
+      struct encoded_methods_list {
+          struct encoded_method {
+              uleb128 method_idx_diff; /* => method_id_item */
+              uleb128 access_flags;
+              uleb128 code_off;
+          } [direct_methods_size];
+      } direct_methods;
+    
+      struct encoded_methods_list {
+          struct encoded_method {
+              uleb128 method_idx_diff; /* => method_id_item */
+              uleb128 access_flags;
+              uleb128 code_off;
+          } [virtual_methods_size];
+      } virtual_methods;
+  };
+#+END_SRC
+
+***** code off
+encoded_method 中包含一个 code_off 的指针, 指向真正的 code_item
+
+#+BEGIN_SRC c
+  struct code_item {
+      ushort register_size;       /* 使用多少个 register */
+      ushort ins_size;
+      ushort outs_size;
+      ushort tries_size;
+      uint debug_info_off;
+      uint insns_size;            /* instruction size */
+      ushort insns[insns_size];   /*  真正的 byte code*/
+  };
+#+END_SRC
+*** dex map list
+#+BEGIN_SRC c
+  struct map_list_type {
+      uint size;
+      struct map_item_list {
+          struct map_item {
+              enum type;
+              ushort unused;
+              uint size;
+              uint offset;
+          } [size];
+      };
+  };
+#+END_SRC
+
+`This is a list of the entire contents of a file, in order. It contains
+some redundancy with respect to the header_item but is intended to be
+an easy form to use to iterate over an entire file.`
+
+map_list 中保存着许多不同类型的 entry 对应的 offset, 与 header_item有些重复,
+例如以下类型的 entry 在 header_item 中也是存在的
+
+- TYPE_TYPE_ID_ITEM
+- TYPE_PROTO_ID_ITEM
+- TYPE_FIELD_ID_ITEM
+- ...
+
+但它也可以包含以下类型:
+
+- TYPE_CLASS_DATA_ITEM
+- TYPE_CODE_ITEM
+- TYPE_STRING_DATA_ITEM
+- ...
+
+这些数据在 header_item 是不存在的, 以 CLASS_DATA_ITEM 为例, 如果不使用
+中 map_list, 必须通过 header_item -> class_def_item -> class_data_item
+这条路径才能找到. 有了 map_list, 代码可以用一种更简单一致的方法来遍历
+整个 dex 文件. 
+
+** 工具
+- androguard
+- 010 editor
+
