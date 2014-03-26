@@ -215,12 +215,14 @@ encoded_method 中包含一个 code_off 的指针, 指向真正的 code_item
 
 #+BEGIN_SRC c
   struct code_item {
-      ushort register_size;       /* 使用多少个 register */
-      ushort ins_size;
-      ushort outs_size;
+      ushort register_size;       /* 使用多少个 register, 包括参数, 局域
+                                   ,* 变量等 */
+      ushort ins_size;            /* 参数用到的 register 个数 */
+      ushort outs_size;           /* 调用其他函数需要用到的 register 个
+                                   ,* 数 */
       ushort tries_size;
       uint debug_info_off;
-      uint insns_size;            /* instruction size */
+      uint insns_size;            /* instruction size, 以 16 bits 为单位 */
       ushort insns[insns_size];   /*  真正的 byte code*/
   };
 #+END_SRC
@@ -261,9 +263,18 @@ map_list 中保存着许多不同类型的 entry 对应的 offset, 与 header_it
 这些数据在 header_item 是不存在的, 以 CLASS_DATA_ITEM 为例, 如果不使用
 中 map_list, 必须通过 header_item -> class_def_item -> class_data_item
 这条路径才能找到. 有了 map_list, 代码可以用一种更简单一致的方法来遍历
-整个 dex 文件. 
-
-** 工具
+整个 dex 文件.
+** odex 文件结构
+odex 文件对 dex 做了如下的修改:
+1. 文件开头加入一个 odex header
+2. dex 文件本身会被修改, 例如 xxx => xxx_quick
+3. 在文件末尾加入两个数据结构: classLookup 与 registerMapPool
+*** classLookup
+*** registerMap
+register map 主要用来帮助 dvm 知道当前各个寄存器中哪些保存着 java 对象.
+以便 GC 时这些会被做为 GC Root. 
+** class 文件结构
+** tools
 - androguard
 - 010 editor
 

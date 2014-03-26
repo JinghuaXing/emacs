@@ -1,0 +1,64 @@
+#+TITLE: Stack
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Stack
+dalvik 的 stack 是用 malloc 在 native 的堆上分配的(或者用 mmap 分配的,由
+编译选项决定), 和 native 的 stack没有任何关系.
+
+** dalvik stack 初始化
+每一个 dalvik thread 都有一个 dalvik stack, 所以 dalvik stack 初始化是
+在 allocThread 时初始化的. 
+
+dvm 启动时调用 dvmThreadStartup 或 JNI AttachCurrentThread 时会调用
+allocThread 方法
+
+#+BEGIN_SRC text
+  Thread* allocThread(int interpStackSize)
+    stackBottom = (u1*) malloc(interpStackSize);
+    // 或 stackBottom = (u1*) mmap(NULL, interpStackSize, ...)
+    thread->interpStackSize = interpStackSize;
+    thread->interpStackStart = stackBottom + interpStackSize;
+    thread->interpStackEnd = stackBottom + STACK_OVERFLOW_RESERVE;
+    dvmInitInterpreterState(thread);
+#+END_SRC
+
+** stack frame 结构
+
+From Stack.h:
+
+#+BEGIN_EXAMPLE
+    Low addresses (0x00000000)
+
+                     +- - - - - - - - -+
+                     -  out0           -
+                     +-----------------+  <-- stack ptr (top of stack)
+                     +  VM-specific    +
+                     +  internal goop  +
+                     +-----------------+  <-- curFrame: FP for cur function
+                     +  v0 == local0   +
++-----------------+  +-----------------+
++  out0           +  +  v1 == in0      +
++-----------------+  +-----------------+
++  out1           +  +  v2 == in1      +
++-----------------+  +-----------------+
++  VM-specific    +
++  internal goop  +
++-----------------+  <-- frame ptr (FP) for previous function
++  v0 == local0   +
++-----------------+
++  v1 == local1   +
++-----------------+
++  v2 == in0      +
++-----------------+
++  v3 == in1      +
++-----------------+
++  v4 == in2      +
++-----------------+
+-                 -
+-                 -
+-                 -
++-----------------+  <-- interpStackStart
+
+    High addresses (0xffffffff)
+
+#+END_EXAMPLE

@@ -284,6 +284,8 @@ dalvikvm 中的 InvokeMain 是对 CALL_STATIC_xx 的简单封装
   
   dvm 的解释器
 
+- Stack.cpp
+
 - Sync.cpp & Thread.cpp
   
   和同步及 Java Thread 相关的代码
