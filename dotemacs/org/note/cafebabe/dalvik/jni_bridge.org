@@ -2,3 +2,13 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * JniBridge
+JniBridge 即 dvmCallJNIMethod (或者更底层一点的 dvmPlatformInvoke), 主
+要用来在调用 native 函数时将 java calling convention 转换为各个平台的
+calling convention. 
+
+之所以需要转换, 是因为 dalvik 在调用 native 函数时, 会像调用 interp 函
+数一样, 在 dalvik stack 上调用 stack frame, 参数也是放在这个 stack
+frame 中, 但是这样的话是无法直接调用 native 函数的, 因为 native 函数按
+照平台 ABI 的要求, 对参数一般都有不一样的规定, 例如 x86 平台一般要求头
+几个参数要放在 ebx,ecx 等几个寄存器中, 更多的参数要放在栈上. JniBridge
+就是负责把 stack frame 中的参数搬到寄存器和 native stack 上.

@@ -62,3 +62,155 @@ From Stack.h:
     High addresses (0xffffffff)
 
 #+END_EXAMPLE
+
+其中的 VM-specific internal goop 实际上就是 StackSaveArea 结构.
+
+** 关于 dalvik 的寄存器
+dalvik 中定义的寄存器如 v0/v1.. 实际上并不是真正的 cpu 寄存器, 而是对
+应于 stack frame 中的一定区域:
+
+#+BEGIN_SRC c
+  # define GET_REGISTER(_idx)                 (fp[(_idx)])
+#+END_SRC
+
+** stack frame 的维护
+*** interp -> 
+**** invokeMethod 时 push stack frame
+#+BEGIN_SRC text
+  GOTO_TARGET(invokeMethod, const Method* _methodToCall,...)
+    StackSaveArea* newSaveArea;
+    u4* newFp;
+  
+    // registersSize 包含参数, 局部变量等, 但不包含 outs
+    // 如 stack.org 所述,  fp 指向 StackSaveArea 的底部(高地址), 所以有
+    // SAVEAREA_FROM_FP 和 FP_FROM_SAVEAREA 这两个宏:
+    // SAVEAREA_FROM_FP(_fp)   ((StackSaveArea*)(_fp) -1)
+  
+    newFp = (u4*) SAVEAREA_FROM_FP(fp) - methodToCall->registersSize;
+    newSaveArea = SAVEAREA_FROM_FP(newFp);
+    newSaveArea->prevFrame = fp;
+    // pc 是当然函数函数内的程序计数器
+    newSaveArea->savedPc = pc;
+    newSaveArea->method = methodToCall;
+  
+    if (!dvmIsNativeMethod(methodToCall)):
+      /*
+      ,* "Call" interpreted code.  Reposition the PC, update the
+      ,* frame pointer and other local state, and continue.
+      ,*/
+      curMethod = methodToCall;
+      self->interpSave.method = curMethod;
+      pc = methodToCall->insns;
+      fp = newFp;
+      self->interpSave.curFrame = fp;
+      FINISH(0);
+        inst = FETCH(0);
+        goto *handlerTable[INST_INST(inst)];
+    // else
+      self->interpSave.curFrame = newFp;
+      // jni call bridge: dvmCallJNIMethod
+      (*methodToCall->nativeFunc)(newFp, &retval, methodToCall, self);
+      // pop stack frame
+      self->interpSave.curFrame = newSaveArea->prevFrame;
+      fp = newSaveArea->prevFrame;
+      FINISH(3);
+  
+#+END_SRC
+
+构造 stack frame 的过程:
+1. 根据新函数的 registersSize 生成一个新的 fp 和 StackSaveArea
+2. 将当前的 fp 保存到 StackSaveArea 的 prevFrame
+3. 将当前的 pc 保存到 StackSaveArea 的 savedPc
+4. 设置新的 fp 和 pc, 然后根据 pc 获得指令, 再根据跳转表跳转
+**** invokeMethod 时 pop stack frame
+
+#+BEGIN_SRC text
+  GOTO_TARGET(returnFromMethod)
+    StackSaveArea* saveArea;
+    saveArea = SAVEAREA_FROM_FP(fp);
+    fp = (u4*)saveArea->prevFrame;
+    curMethod = SAVEAREA_FROM_FP(fp)->method;
+    pc = saveArea->savedPc;
+    FINISH(3);
+#+END_SRC
+**** To summarize
+由 interp 发起的 invokeMethod 会 push 一个 stack frame, 若
+methodToCall 也是 interp, 则 fp, pc 会被设置为新的 frame 的相关值, 然
+后调用. 若 methodToCall 是 native, 则并不会设置 pc, fp, 因为对 native
+方法不需要使用这两个值
+
+*** dvmInvokeMethod ->
+
+在 jni 中可以通过 dvmInvokeMethod 调用 java 类的 method, 特别的, 启动
+虚拟机也是通过该方法. 
+
+#+BEGIN_SRC text
+  void dvmCallMethodV(self,method, obj, pResult...)
+    clazz = callPrep(self, method, obj, false);
+      dvmPushInterpFrame(self, method)
+        if (self->interpSave.curFrame != NULL):
+          stackPtr = (u1*) SAVEAREA_FROM_FP(self->interpSave.curFrame);
+        else
+          stackPtr = self->interpStackStart;
+        // 构造一个 break frame, 和一个对象于 method 调用的 StackSaveArea
+        // 并赋值给 self->interpSave.curFrame
+        self->interpSave.curFrame = FP_FROM_SAVEAREA(saveBlock);
+    if (dvmIsNativeMethod(method)):
+      (*method->nativeFunc)((u4*)self->interpSave.curFrame, pResult, method, self);
+    else:    
+      dvmInterpret(self, method, pResult);
+    dvmPopFrame(self);      
+#+END_SRC
+
+*** 关于函数返回值
+函数参数在调用时会通过 outs 放到新函数的 stack frame 中, 但返回值如何
+返回? 
+通过设置 interpretor 自身的一个变量:  retval, 例如:
+
+#+BEGIN_SRC c
+  HANDLE_OPCODE(OP_RETURN /*vAA*/)
+  vsrc1 = INST_AA(inst);
+  retval.i = GET_REGISTER(vsrc1);
+  GOTO_returnFromMethod();
+  OP_END
+#+END_SRC
+
+以及调用 native 函数时:
+#+BEGIN_SRC c
+  (*methodToCall->nativeFunc)(newFp, &retval, methodToCall, self);
+#+END_SRC
+** StackSaveArea
+StackSaveArea 是位于 stack frame 中用了保存上一个 frame 相关信息的结构
+#+BEGIN_SRC c
+  struct StackSaveArea {
+      u4*         prevFrame;
+  
+      /* saved program counter (from method in caller's frame) */
+      const u2*   savedPc;
+  
+      /* pointer to method we're *currently* executing; handy for exceptions */
+      const Method* method;
+  
+  };
+#+END_SRC
+
+** InterpSave
+每一个 dalvik thread 都有一个 InterpSave 对象,
+
+#+BEGIN_SRC c
+  struct InterpSave {
+      const u2*       pc;         // Dalvik PC
+      u4*             curFrame;   // Dalvik frame pointer
+      const Method    *method;    // Method being executed
+      DvmDex*         methodClassDex;
+      JValue          retval;
+      // ...
+  };
+#+END_SRC
+
+之所以 thread 需要保存这个对象, 是因为 interpretor 可以嵌套调用, 即:
+dvmCallMethodV -> interp -> jni -> dvmCallMethodV -> interp
+
+这些函数调用之间必须把 fp 保存下来, 而无法把 fp 做为一个简单的函数内部
+的局部变量. 所以 dalvik 选择用 thread->interpSave 在函数调用之间保存
+fp, 否则用参数在各个函数间传来传去太麻烦了...

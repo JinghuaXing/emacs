@@ -2,4 +2,3 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Mterp
-** java stack frame

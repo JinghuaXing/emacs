@@ -1,4 +1,0 @@
-#+TITLE: Object Model
-#+AUTHOR: Wei Sun (孙伟)
-#+EMAIL: wei.sun@spreadtrum.com
-* Object Model
