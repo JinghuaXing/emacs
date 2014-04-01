@@ -1,12 +1,12 @@
 #+TITLE: Sitemap for project cafebabe
 
    + dalvik
-     + [[file:dalvik/dex.org][Dex]]
-     + [[file:dalvik/oo.org][OO]]
-     + [[file:dalvik/dalvik.org][Dalvik]]
      + [[file:dalvik/mterp.org][Mterp]]
      + [[file:dalvik/jni_bridge.org][JniBridge]]
-     + [[file:dalvik/object_model.org][Object Model]]
+     + [[file:dalvik/stack.org][Stack]]
+     + [[file:dalvik/dalvik.org][Dalvik]]
+     + [[file:dalvik/dex.org][Dex]]
+     + [[file:dalvik/oo.org][OO]]
      + [[file:dalvik/alloc.org][Alloc]]
      + [[file:dalvik/jni.org][Jni]]
      + [[file:dalvik/thread.org][Thread]]

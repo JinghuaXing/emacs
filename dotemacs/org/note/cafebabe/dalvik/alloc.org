@@ -13,3 +13,148 @@
 - markStack
 - cardTable
 - HeapWorker
+
+** dvmAllocObject
+#+BEGIN_SRC text
+  Object* dvmAllocObject(ClassObject* clazz, int flags)
+    newObj = (Object*)dvmMalloc(clazz->objectSize, flags);
+      ptr = tryMalloc(size);
+        ptr = dvmHeapSourceAlloc(size);
+        if (ptr != NULL):
+          return ptr;
+        // 分配失败, 开始 GC, false 表示 SoftReferences 不被 GC
+        gcForMalloc(false);
+          dvmCollectGarbageInternal(GC_FOR_MALLOC);
+        // 第二次 malloc  
+        ptr = dvmHeapSourceAlloc(size);
+          ptr = mspace_malloc(heap->msp, n);
+          // countAllocation 会将 hs->liveBits 对应的置 1
+          countAllocation(heap, ptr);
+        if (ptr != NULL): return ptr;
+        // 第三次 ...
+        ptr = dvmHeapSourceAllocAndGrow(size);
+        if (ptr != NULL): return ptr;
+        // 即使 Heap Grow 了还是不行, 再次 GC, true 表示 SoftReferences 也被 GC
+        gcForMalloc(true);
+        // 第四次 ...
+        ptr = dvmHeapSourceAllocAndGrow(size);
+        if (ptr != NULL): return ptr;
+        return null;
+      if (ptr == NULL):
+        throwOOME();
+    DVM_OBJECT_INIT(newObj, clazz);
+      dvmSetFieldObject(obj, OFFSETOF_MEMBER(Object, clazz), clazz_)
+#+END_SRC
+
+** dvmCollectGarbageInternal
+#+BEGIN_SRC text
+  dvmCollectGarbageInternal(spec)
+    // 一共有四种类型的 GC:
+    // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
+    // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
+    // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
+    // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
+    if (spec == GC_FOR_MALLOC):
+      ATRACE_BEGIN("GC (Alic)");
+    else if (spec == GC_CONCURRENT):
+      ATRACE_BEGIN("GC (concurrent)");
+    else if (spec == GC_EXPLICIT):
+      ATRACE_BEGIN("GC (explicit)");
+    else if (spec == GC_BEFORE_OOM):
+      ATRACE_BEGIN("GC (before OOM)");
+    else:
+      ATRACE_BEGIN("GC (unknown)");
+    // 参考: dalvik thread dvmSuspendAllThreads
+    dvmSuspendAllThreads(SUSPEND_FOR_GC);
+    // mark 阶段
+    /* Mark the set of objects that are strongly reachable from the roots.
+    ,*/
+    dvmHeapMarkRootSet();
+    /* Recursively mark any objects that marked objects point to strongly.
+    ,* If we're not collecting soft references, soft-reachable
+    ,* objects will also be marked.
+    ,*/
+    dvmHeapScanMarkedObjects();
+    /*
+    ,* All strongly-reachable objects have now been marked.  Process
+    ,* weakly-reachable objects discovered while tracing.
+    ,*/
+    dvmHeapProcessReferences();
+    // sweep 阶段
+    dvmHeapSweepSystemWeaks();
+    /*
+    ,* Live objects have a bit set in the mark bitmap, swap the mark
+    ,* and live bitmaps.  The sweep can proceed concurrently viewing
+    ,* the new live bitmap as the old mark bitmap, and vice versa.
+    ,*/
+    dvmHeapSourceSwapBitmaps();
+    dvmHeapSweepUnmarkedObjects();
+    dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
+#+END_SRC
+
+*** dvmHeapMarkRootSet
+#+BEGIN_SRC text
+  rootMarkObjectVisitor(void *addr, u4 thread, ...)
+    markObjectNonNull(obj, ctx, false);
+    
+  dvmHeapMarkRootSet
+    // rootMarkObjectVisitor 是一个 callback, 对每一个 gc root 中的对象
+    // 都会调用这个 visitor
+    dvmVisitRoots(rootMarkObjectVisitor, &gcHeap->markContext);
+      visitHashTable(visitor, gDvm.loadedClasses, ROOT_STICKY_CLASS, arg);
+      visitPrimitiveTypes(visitor, arg);
+      visitHashTable(visitor, gDvm.literalStrings, ROOT_INTERNED_STRING, arg);
+      visitIndirectRefTable(visitor, &gDvm.jniGlobalRefTable, 0, ROOT_JNI_GLOBAL, arg);
+      visitReferenceTable(visitor, &gDvm.jniPinRefTable, 0, ROOT_VM_INTERNAL, arg);
+      // visitThreads 是最主要的一过 scan 过程: GC root 大部分例如 static 对象,
+      // 局部对象等都包含在 stack frame 中, visitThreads 负责扫描所有
+      // stack frame
+      visitThreads(visitor, arg);
+        for each thread:
+          (*visitor)(&thread->threadObj, threadId, ROOT_THREAD_OBJECT, arg);
+          (*visitor)(&thread->exception, threadId, ROOT_NATIVE_STACK, arg);
+          visitIndirectRefTable(visitor, &thread->jniLocalRefTable, threadId, ...);
+          // visitThreadStack 负责扫描所有的 stack frame, 并根据 stack
+          // frame 中 register 的使用情况来判断是否要 mark
+          visitThreadStack(visitor, thread, arg);
+            // 遍历所有 frame
+            for (u4 *fp = (u4 *)thread->interpSave.curFrame;
+                  fp != NULL;
+                  fp = (u4 *)saveArea->prevFrame):
+              // 若此时存在 register map, 则根据 register map 得到
+              // register 使用情况, 否则, 扫描所有的 register
+              // 对每一个可能使用的 register, 通过 liveBits 可以判断
+              // 出这个 register 对应的地址是否是一个 java 对象
+#+END_SRC
+
+**** 关于 bitmap 的操作
+对于 markBits 和 liveBits 一样
+
+markObjectNonNull 的过程是: 根据 addr 换算出对象在 bitmap 中的 bit
+index, 将 bitmap 该bit 置 1, 因为 dalvik 中所有的对象都是 8 bytes 对齐
+的, 所以 bitmap 中每 bit 代表 heap 的 8 bytes.
+
+假设 gc heap 大小为 32 bytes, 则 markBits 的大小为 4 bits, 假设一共有两
+个对象需要 mark, 地址相对于 heap->base 的 offset 分别为 0, 16, 则
+markBits 的值为 1010, 即 markBits 只标记对象的地址, 和对象的大小无关.
+
+*** dvmHeapScanMarkedObjects
+#+BEGIN_SRC text
+  dvmHeapScanMarkedObjects
+    /* The bitmaps currently have bits set for the root set.
+    ,* Walk across the bitmaps and scan each object.
+    ,*/
+    // dvmHeapBitmapScanWalk 负责扫描 markBits, 对直接引用的
+    // filed 等进行 mark, 并放到 markStack 中
+    dvmHeapBitmapScanWalk(ctx->bitmap, scanBitmapCallback, ctx);
+    processMarkStack(ctx);
+      // 在 scanObject 过程中, markStack 会增长, 通过 markStack, 将递归
+      // 过程变为迭代
+      GcMarkStack *stack = &ctx->stack;
+      while (stack->top > stack->base):
+        const Object *obj = markStackPop(stack);
+        scanObject(obj, ctx);
+#+END_SRC
+
+*** dvmHeapProcessReferences
+到此

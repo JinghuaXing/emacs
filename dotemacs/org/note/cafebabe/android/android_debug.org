@@ -91,41 +91,4 @@ SIG_QUIT 的 handler 如下:
   dvmDumpAllThreadsEx(&target, true);
 #+END_SRC
 
-其中 dvmSuspendAllThreads 会负责将每一个 thread 的 suspendCount 置 1,
-导致:
-
-1. status 为 RUNNING 的 thread 将来运行到 safepoint 时会调用
-   dvmCheckSuspendPending(self), 进而被 suspend, 变为 SUSPEND 状态.
-
-2. status 为 MONITOR, WAIT, SUSPEND  等的 thread 在从 monitor 返回, 从
-   WAIT 返回等之前, 会调用 dvmChangeStatus 尝试将status 变成 RUNNING 状
-   态, 此时会因为 suspendCount 为 1 而被 block,导致无法变为 RUNNING 状
-   态 (注意只有 dvmChangeStatus 为 RUNNING 时才进行 suspendCount 的检查,
-   因为这表示后续的代码将要操作 java 对象)
-
-3. status 为 NATIVE 的 thread 的 suspendCount 检查主要有两个方面:
-   - 整个 native 函数调用返回
-     dvmCallJNIMethod 函数在调用完 jni 函数后, 要通过 dvmChangeStatus
-     (RUNNING), 导致 suspendCount 检查
-
-   - native 函数本身需要调用 env->xxx 等 jni 函数
-     "
-     All JNI methods must start by changing their thread status to
-     THREAD_RUNNING, and finish by changing it back to THREAD_NATIVE
-     before returning to native code.  The switch to "running"
-     triggers a thread suspension check.
-     "     
-     即: native 函数要调用 env->xxx 如 env->NewObject 时, 需要先
-     dvmChangeStatus(RUNNING), 这时会进行 suspendCount 检查, 当
-     env->NewObject 返回时要调用 dvmChangeStatus(NATIVE)
-
-     这说明了一个事实: 若 native 函数正在做一些不需要导致
-     dvmChangeStatus 的动作, 例如没有调用 env->xxx, 则 suspendCount 并
-     不会导致该 thread 被 suspend.
-
-除了 dump trace (SignalCatcher),  dvmSuspendAllThreads 在以下情况下也
-会被调用:
-
-1. GC
-2. jdwp
-
+参考: dalvik thread suspend
