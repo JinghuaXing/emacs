@@ -1,15 +1,15 @@
 #+TITLE: Sitemap for project cafebabe
 
    + dalvik
-     + [[file:dalvik/mterp.org][Mterp]]
+     + [[file:dalvik/alloc.org][Alloc]]
+     + [[file:dalvik/thread.org][Thread]]
      + [[file:dalvik/jni_bridge.org][JniBridge]]
+     + [[file:dalvik/mterp.org][Mterp]]
      + [[file:dalvik/stack.org][Stack]]
      + [[file:dalvik/dalvik.org][Dalvik]]
      + [[file:dalvik/dex.org][Dex]]
      + [[file:dalvik/oo.org][OO]]
-     + [[file:dalvik/alloc.org][Alloc]]
      + [[file:dalvik/jni.org][Jni]]
-     + [[file:dalvik/thread.org][Thread]]
      + [[file:dalvik/sync.org][Sync]]
    + java
      + [[file:java/jvm.org][JVM]]
@@ -26,7 +26,6 @@
        + [[file:java/java puzzle/java_puzzle_clinit.org][Java Puzzle:class not initialized?]]
        + [[file:java/java puzzle/java_puzzle_class_init_hang.org][Java Puzzle:class initialization hangs]]
        + [[file:java/java puzzle/java_puzzle_any_deadlock.org][Java Puzzle:deadlock?]]
-   + [[file:sqlite.org][SQLite]]
    + android
      + [[file:android/android_debug.org][Android Debug]]
      + [[file:android/android.org][Android]]
@@ -58,6 +57,7 @@
      + [[file:android/android_ashmem.org][Android ashmem]]
      + [[file:android/android_app.org][Android Applications]]
      + [[file:android/android_ams.org][ActivityManagerService]]
+   + [[file:sqlite.org][SQLite]]
    + [[file:unicode.org][Unicode]]
    + [[file:tools.org][My Linux Desktop]]
    + [[file:sqlite_optimization.org][Android SQLite Optimization Plan]]

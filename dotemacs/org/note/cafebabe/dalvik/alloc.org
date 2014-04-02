@@ -48,48 +48,51 @@
 
 ** dvmCollectGarbageInternal
 #+BEGIN_SRC text
-  dvmCollectGarbageInternal(spec)
-    // 一共有四种类型的 GC:
-    // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
-    // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
-    // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
-    // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
-    if (spec == GC_FOR_MALLOC):
-      ATRACE_BEGIN("GC (Alic)");
-    else if (spec == GC_CONCURRENT):
-      ATRACE_BEGIN("GC (concurrent)");
-    else if (spec == GC_EXPLICIT):
-      ATRACE_BEGIN("GC (explicit)");
-    else if (spec == GC_BEFORE_OOM):
-      ATRACE_BEGIN("GC (before OOM)");
-    else:
-      ATRACE_BEGIN("GC (unknown)");
-    // 参考: dalvik thread dvmSuspendAllThreads
-    dvmSuspendAllThreads(SUSPEND_FOR_GC);
-    // mark 阶段
-    /* Mark the set of objects that are strongly reachable from the roots.
-    ,*/
-    dvmHeapMarkRootSet();
-    /* Recursively mark any objects that marked objects point to strongly.
-    ,* If we're not collecting soft references, soft-reachable
-    ,* objects will also be marked.
-    ,*/
-    dvmHeapScanMarkedObjects();
-    /*
-    ,* All strongly-reachable objects have now been marked.  Process
-    ,* weakly-reachable objects discovered while tracing.
-    ,*/
-    dvmHeapProcessReferences();
-    // sweep 阶段
-    dvmHeapSweepSystemWeaks();
-    /*
-    ,* Live objects have a bit set in the mark bitmap, swap the mark
-    ,* and live bitmaps.  The sweep can proceed concurrently viewing
-    ,* the new live bitmap as the old mark bitmap, and vice versa.
-    ,*/
-    dvmHeapSourceSwapBitmaps();
-    dvmHeapSweepUnmarkedObjects();
-    dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
+    dvmCollectGarbageInternal(spec)
+      // 一共有四种类型的 GC:
+      // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
+      // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
+      // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
+      // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
+      if (spec == GC_FOR_MALLOC):
+        ATRACE_BEGIN("GC (Alic)");
+      else if (spec == GC_CONCURRENT):
+        ATRACE_BEGIN("GC (concurrent)");
+      else if (spec == GC_EXPLICIT):
+        ATRACE_BEGIN("GC (explicit)");
+      else if (spec == GC_BEFORE_OOM):
+        ATRACE_BEGIN("GC (before OOM)");
+      else:
+        ATRACE_BEGIN("GC (unknown)");
+      // 参考: dalvik thread dvmSuspendAllThreads
+      dvmSuspendAllThreads(SUSPEND_FOR_GC);
+      // mark 阶段
+      /* Mark the set of objects that are strongly reachable from the roots.
+      ,*/
+      dvmHeapMarkRootSet();
+      /* Recursively mark any objects that marked objects point to strongly.
+      ,* If we're not collecting soft references, soft-reachable
+      ,* objects will also be marked.
+      ,*/
+      dvmHeapScanMarkedObjects();
+      /*
+      ,* All strongly-reachable objects have now been marked.  Process
+      ,* weakly-reachable objects discovered while tracing.
+      ,*/
+      dvmHeapProcessReferences();
+      // sweep 阶段
+      dvmHeapSweepSystemWeaks();
+      /*
+      ,* Live objects have a bit set in the mark bitmap, swap the mark
+      ,* and live bitmaps.  The sweep can proceed concurrently viewing
+      ,* the new live bitmap as the old mark bitmap, and vice versa.
+      ,*/
+      dvmHeapSourceSwapBitmaps();
+      dvmHeapSweepUnmarkedObjects();
+      // 将本次 GC 产生的 white reference 和 finalizer reference 通知给
+      // java 层的 ReferenceQueueDaemon
+      dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
+  
 #+END_SRC
 
 *** dvmHeapMarkRootSet
@@ -260,3 +263,128 @@ them.  Assumes the bitmaps have been swapped.
     dvmHeapSourceFreeList(numPtrs, ptrs);
       mspace_bulk_free(msp, ptrs, numPtrs);
 #+END_SRC
+** Daemons 与 ReferenceQueue
+clearWhiteReferences 和 enqueueFinalizerReferences 最终会将 reference
+对象放在 gDvm.gcHeap->clearedReferences 这个列表中. 
+
+对于 FinalizerReference, 其 referent 对应的 finalize() 函数需要被调用.对
+于 weak, soft, phantom reference, 其 ReferenceQueue 的 poll 或remove 需
+要结束阻塞并返回该 reference. 如何做到?
+
+在 GC 的最后阶段, dvmEnqueueClearedReferences 会负责将这些 reference
+通知给 java 层的 ReferenceQueueDaemon:
+
+#+BEGIN_SRC text
+  dvmEnqueueClearedReferences
+    Method *meth = gDvm.methJavaLangRefReferenceQueueAdd;
+    dvmCallMethod(self, meth, NULL, &unused, reference);
+#+END_SRC
+
+实际上就是调用了 ReferenceQueue 的静态方法: add
+
+#+BEGIN_SRC java
+  static void add(Reference<?> list) {
+      synchronized (ReferenceQueue.class) {
+          if (unenqueued == null) {
+              unenqueued = list;
+          } else {
+              Reference<?> next = unenqueued.pendingNext;
+              unenqueued.pendingNext = list.pendingNext;
+              list.pendingNext = next;
+          }
+          ReferenceQueue.class.notifyAll();
+      }
+  }
+#+END_SRC
+
+静态的 ReferenceQueue 拿到了所有的 white reference 和 finalize
+reference, 但是 notifyAll 是通知谁?
+
+答案就是 ReferenceQueueDaemon !
+
+Daemons 是一个 java 类, 实际上就是对 Thread 的一个简单包装. 
+当 zygote fork 后, 会通过 Daemons.start 启动如下的线程:
+
+1. ReferenceQueueDaemon
+2. FinalizerDaemon
+3. FinalizerWatchdogDaemon
+
+ReferenceQueueDaemon 负责在 ReferenceQueue 上 wait, 等待 dalvik 的通知,
+一旦拿到 reference, 会把消息分发给各个 reference
+
+1. 对于 weak, soft, phantom 等 white reference 来说, 就是通知各自的 ReferenceQueue 对象.
+2. 对于 FinalizerReference 来说, 就是通知 FinalizerDaemon 开始工作: 调
+   用 finalize() 函数.
+
+还有一个 FinalizerWatchdogDaemon 是负责监视 finalize 函数的执行的, 执
+行过久的进程会被 kill. 
+
+** HeapWorker
+dalvik 启动时会启动 HeapWorker 线程, 负责 concurrent GC.
+
+HeapWorker 对应于这个 native thread:
+
+#+BEGIN_SRC c
+  static void *gcDaemonThread(void* arg)
+  {
+      dvmChangeStatus(NULL, THREAD_VMWAIT);
+      bool trim = false;
+      if (gHs->gcThreadTrimNeeded) {
+          int result = dvmRelativeCondWait(&gHs->gcThreadCond, &gHs->gcThreadMutex,
+                                           HEAP_TRIM_IDLE_TIME_MS, 0);
+          if (result == ETIMEDOUT) {
+              /* Timed out waiting for a GC request, schedule a heap trim. */
+              trim = true;
+          }
+      } else {
+          dvmWaitCond(&gHs->gcThreadCond, &gHs->gcThreadMutex);
+      }
+  
+      // Many JDWP requests cause allocation. We can't take the heap lock and wait to
+      // transition to runnable so we can start a GC if a debugger is connected, because
+      // we don't know that the JDWP thread isn't about to allocate and require the
+      // heap lock itself, leading to deadlock. http://b/8191824.
+      if (gDvm.debuggerConnected) {
+          continue;
+      }
+  
+      dvmLockHeap();
+      /*
+       ,* Another thread may have started a concurrent garbage
+       ,* collection before we were scheduled.  Check for this
+       ,* condition before proceeding.
+       ,*/
+      if (!gDvm.gcHeap->gcRunning) {
+          dvmChangeStatus(NULL, THREAD_RUNNING);
+          if (trim) {
+              trimHeaps();
+              gHs->gcThreadTrimNeeded = false;
+          } else {
+              dvmCollectGarbageInternal(GC_CONCURRENT);
+              gHs->gcThreadTrimNeeded = true;
+          }
+          dvmChangeStatus(NULL, THREAD_VMWAIT);
+      }
+      dvmUnlockHeap();
+      dvmChangeStatus(NULL, THREAD_RUNNING);
+      return NULL;
+  }
+#+END_SRC
+
+可见, HeapWorker 是否工作取决于 gHs->gcThreadCond, 参考
+dvmHeapSourceAlloc 的代码:
+
+#+BEGIN_SRC text
+  dvmHeapSourceAlloc
+    if (heap->bytesAllocated > heap->concurrentStartBytes):
+      /*
+      ,* We have exceeded the allocation threshold.  Wake up the
+      ,* garbage collector.
+      ,*/
+      dvmSignalCond(&gHs->gcThreadCond);
+  
+#+END_SRC
+所以, 如果当前已经发配的内存大于 heap->concurrentStartBytes 时 (默认的
+配置是 freeBytes - CONCURRENT_START(128KB), 即当可用内存少于 128KB 时),
+HeapWorker 会开始工作, 并且周期性的 (HEAP_TRIM_IDLE_TIME_MS) 执行
+dvmCollectGarbageInternal

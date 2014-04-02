@@ -303,7 +303,7 @@ Finalizer 的具体实现和使用 PhantomReference 避免 finalizer 非常类�
 finalizer
 
 ***** FinalizerReference
-***** Finalizer Thread (HeapWorker)
+***** Finalizer Thread 
 **** 使用 PhantomReference 避免 finalize()
 http://java.dzone.com/articles/finalization-and-phantom
 
