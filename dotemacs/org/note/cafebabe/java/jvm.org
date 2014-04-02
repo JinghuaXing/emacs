@@ -320,9 +320,11 @@ http://java.dzone.com/articles/finalization-and-phantom
   // 的 reference 置于 FinalizerQueue 中, 以调度 finalize()
   enqueueFinalizerReferences(finalizerReferences);
   
-  // 由于 enqueueFinalizerReferences 会调用 referent 被 mark, 进而
-  // 导致可能有新的 weak, soft, phantom reference 对象变为 marked, 所以
-  // 重新调用一个 clearWhiteXxx
+  /*
+   * Clear all f-reachable soft and weak references with white
+   * referents.
+   */
+
   clearWhiteReferences(softReferences);
   clearWhiteReferences(weakReferences);
   

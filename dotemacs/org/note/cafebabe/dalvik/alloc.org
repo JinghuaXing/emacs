@@ -157,4 +157,106 @@ markBits 的值为 1010, 即 markBits 只标记对象的地址, 和对象的大�
 #+END_SRC
 
 *** dvmHeapProcessReferences
-到此
+到此, 所有 strong references 的对象都被 mark 了, 但 soft, weak,
+phantom references 并没有被 mark. 
+
+dvmHeapProcessReferences 负责将 reference 放到 reference queue 中, 另
+外, 对 soft reference, 会根据上层 dvmCollectGarbageInternal 使用的
+spec, 决定是否将 soft reference 也进行 mark
+
+gcHeap 本身对所有 soft, weak, phantom reference对象都维护着一个列表, 保
+存着这些 Reference 对象, 以便这里可以方便的遍历. 每次 GC 时在 scan 阶段
+都会重新生成这些列表, 这些列表中保存的 reference 对象本身肯定是 marked.
+
+#+BEGIN_SRC text
+  scanObject
+    scanDataObject(obj, ctx);
+      if (IS_CLASS_FLAG_SET(obj->clazz, CLASS_ISREFERENCE)):
+        delayReferenceReferent((Object *)obj, ctx);
+          enqueuePendingReference(obj, list);
+#+END_SRC
+
+另外, gcHeap 还维护着一个 finalizerReferences 列表, 这个队列中的成员不
+是用户通过 new 生成的 reference, 而是一些那些定义了 finalize 函数的对
+象. 
+
+#+BEGIN_SRC text
+  dvmHeapProcessReferences
+    if (!gDvm.zygote && !clearSoftRefs):
+      preserveSomeSoftReferences(softReferences);
+        while (*list != NULL) {
+          Object *ref = dequeuePendingReference(list);
+          // referent 是 Reference 类的一个成员, 指向 reference 引用的对象
+          // 例如 new WeakReference<Object>(o), 则 referent 指向 o
+          Object *referent = dvmGetFieldObject(ref, referentOffset);
+          bool marked = isMarked(referent, ctx);
+          if (!marked && ((++counter) & 1)):
+            /* Referent is white and biased toward saving, mark it. */
+            markObject(referent, ctx);
+            marked = true;
+          if (!marked):
+            /* Referent is white, queue it for clearing. */
+            enqueuePendingReference(ref, &clear);
+    // 所谓的 white reference, 是否 referent 没有被 mark 的 reference       
+    clearWhiteReferences(softReferences);
+    clearWhiteReferences(weakReferences);
+    // 若 finalizerReferences 中的 reference 的 referent 没有 mark, 则
+    // 将这个 reference 放到 f-queue 中, HeapWorker 会负责执行它的
+    // finalize 函数. 但是正因为 HeapWorker 还需要访问 referent, 所以
+    // referent 会被重新置为 marked
+    enqueueFinalizerReferences(finalizerReferences);
+  
+    /*
+    ,* Clear all f-reachable soft and weak references with white
+    ,* referents.
+    ,*/
+    // 这两句又被调用一次? 因为 enqueueFinalizerReferences 可能导致
+    // 新的 referent 变为 unmarked, 进而导致这些 referent 中的
+    // reference 成员也变为 unmarked, 进而被加入 references 列表中, 所以需
+    // 要对这些新加入的 reference 对象本身再 clear 一次. 
+  
+    clearWhiteReferences(softReferences);
+    clearWhiteReferences(weakReferences);
+  
+    // phantom 在最后被 clear, 而不是像 weak, soft 那样在
+    // enqueueFinalizerReferences 前就进行一次 clear. 为啥 weak, soft 的
+    // 不能像 phantom 一样只在 enqueueFinalizerReferences 后进行一次?
+    // 因为 soft, weak 对象本身有一个 referent 引用...而 phantom 是不包
+    // 括这个成员的: 若新 enqueueFinalizerReferences 再 clear weak
+    // references, 有可能会发生本该 clear 的 weak reference 没有 clear:
+    // 因为 enqueueFinalizerReferences 将某个 weak reference 的 referent
+    // 变为 marked 了...
+  
+    // phantom 的这个特点也使它适合用来代替 finalize 函数
+    // 参考 jvm 使用 PhantomReference 避免 finalize()
+    clearWhiteReferences(phantomReferences);
+  
+#+END_SRC
+*** dvmHeapSourceSwapBitmaps
+#+BEGIN_SRC c
+  HeapBitmap tmp = gHs->liveBits;
+  gHs->liveBits = gHs->markBits;
+  gHs->markBits = tmp;
+#+END_SRC
+简单的交换一下 liveBits 与 markBits, 以便进行下次 GC.
+*** dvmHeapSweepUnmarkedObjects
+
+Walk through the list of objects that haven't been marked and free
+them.  Assumes the bitmaps have been swapped.
+
+真正的 sweep 阶段
+
+#+BEGIN_SRC text
+  dvmHeapSweepUnmarkedObjects
+    // 对每一个 garbage object 执行
+    // 如何找到 garbage object? (liveBits & ~markBits) = 1 表示 garbage object
+    // 注意这里的 markBits, liveBits 指的是 swap 前的 bitmap, 而且这个操作并
+    // 不等价于 "异或" 操作.
+    dvmHeapBitmapSweepWalk(sweepBitmapCallback,...)
+#+END_SRC
+ 
+#+BEGIN_SRC text
+  sweepBitmapCallback(size_t numPtrs, void **ptrs, void *arg)
+    dvmHeapSourceFreeList(numPtrs, ptrs);
+      mspace_bulk_free(msp, ptrs, numPtrs);
+#+END_SRC
