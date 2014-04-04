@@ -137,6 +137,42 @@ tricky:
 可见, 
 1. ArrayObject offset 为 8 的 int 值保存着 Array 的长度. 
 2. Array 的数据部分保存在它的变长的 contents 区域.
+** StringObject
+*** intern
+
+OP_CONST_STRING:
+
+#+BEGIN_SRC c
+  HANDLE_OPCODE(OP_CONST_STRING /*vAA, string@BBBB*/)
+  {
+      StringObject* strObj;
+  
+      vdst = INST_AA(inst);
+      ref = FETCH(1);
+      ILOGV("|const-string v%d string@0x%04x", vdst, ref);
+      strObj = dvmDexGetResolvedString(methodClassDex, ref);
+      if (strObj == NULL) {
+          EXPORT_PC();
+          strObj = dvmResolveString(curMethod->clazz, ref);
+          if (strObj == NULL)
+              GOTO_exceptionThrown();
+      }
+      SET_REGISTER(vdst, (u4) strObj);
+  }
+  FINISH(2);
+  OP_END
+#+END_SRC
+
+dvmResolveString:
+
+#+BEGIN_SRC text
+  StringObject* dvmResolveString(const ClassObject* referrer, u4 stringIdx)
+    utf8 = dexStringAndSizeById(pDvmDex->pDexFile, stringIdx, &utf16Size);
+    strObj = dvmCreateStringFromCstrAndLength(utf8, utf16Size);
+    internStrObj = dvmLookupImmortalInternedString(strObj);
+    return internStrObj;
+#+END_SRC
+
 ** Class Loading
 java 类加载的过程包含一般包括加载, 解析, 初始化等过程.  特别的, dvm 加
 载类的过程基本上就是:

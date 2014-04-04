@@ -140,4 +140,18 @@ conventions 主要体现在 dvmCallMethodV 函数中, 简单说来, 在调用任
 3. dvmPlatformInvoke (或真正的 jni 函数) 看到的对象都是
    IndirectRefTable 中的 reference
 4. jni 返回给 java 层的对象会通过 IndirectRefTable 转换为实际的对象地
-   址. 
+   址.
+** 各种 jni 函数
+*** GetStringChars / GetStringUTFChars
+*** GetXxxArrayElements
+*** GetXxxArrayRegion
+*** GetMethodID
+*** GetFieldID
+*** NewLocalRef / NewGlobalRef
+*** PushLocalFrame / PopLocalFrame
+*** ThrowNew / ExceptionOccurred
+*** NewObject / AllocObject
+*** CallXxxMethod
+*** NewString / NewStringUTF
+*** NewXxxArray
+*** MonitorEnter / MonitorExit

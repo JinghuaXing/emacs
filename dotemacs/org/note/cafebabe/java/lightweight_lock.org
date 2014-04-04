@@ -26,7 +26,8 @@
 </pre>
 #+END_HTML
 
-    Dalvik 的 MonitorEnter() 的源码:
+Dalvik 的 MonitorEnter() 的源码:
+
 #+BEGIN_HTML
 <pre lang="c" line="1">
     MonitorEnter:
@@ -82,8 +83,8 @@
     总结:
     - 因为Lightweight Lock机制, java的synchronized比想象的要高效, 特别是没有锁冲突的情况下,只是简单一条CAS指令,几乎没有额外开销.
     - Lightweight Lock过程
-	  1. T1 is the first thread acquiring the lock, so it will using CAS to acquire the THIN_LOCK
-	  2. while T1 holding the lock, T2,T3 come to request the lock, they both will spin on the THIN_LOCK
-	  3. when T2 acquire the lock, it will inflate the lock from THIN_LOCK to FAT_LOCK, and use mutex to accquire the lock; 
+	1. T1 is the first thread acquiring the lock, so it will using CAS to acquire the THIN_LOCK
+	2. while T1 holding the lock, T2,T3 come to request the lock, they both will spin on the THIN_LOCK
+	3. when T2 acquire the lock, it will inflate the lock from THIN_LOCK to FAT_LOCK, and use mutex to accquire the lock; 
              after that, T3 will use mutex to accquire the lock
-	  4. once a lock is inflated to FAT_LOCK, there is no way for it to com back as THIN_LOCK.
+	4. once a lock is inflated to FAT_LOCK, there is no way for it to com back as THIN_LOCK.
