@@ -72,8 +72,8 @@
 	     t
 	     )
 (add-to-list 'org-latex-default-packages-alist
-	     "\\setCJKmainfont{WenQuanYi Zen Hei}
-\\setmainfont{Droid Serif}"
+	     "\\setCJKmainfont{SimSun}
+\\setmainfont{FreeSerif}"
 	     t
 	     )
 
