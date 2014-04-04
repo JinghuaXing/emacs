@@ -1,6 +1,9 @@
 #+TITLE: Sitemap for project cafebabe
 
    + dalvik
+     + [[file:dalvik/oo.org][OO]]
+     + [[file:dalvik/sync.org][Sync]]
+     + [[file:dalvik/jni.org][Jni]]
      + [[file:dalvik/alloc.org][Alloc]]
      + [[file:dalvik/thread.org][Thread]]
      + [[file:dalvik/jni_bridge.org][JniBridge]]
@@ -8,13 +11,10 @@
      + [[file:dalvik/stack.org][Stack]]
      + [[file:dalvik/dalvik.org][Dalvik]]
      + [[file:dalvik/dex.org][Dex]]
-     + [[file:dalvik/oo.org][OO]]
-     + [[file:dalvik/jni.org][Jni]]
-     + [[file:dalvik/sync.org][Sync]]
    + java
+     + [[file:java/lightweight_lock.org][Java Lightweight Lock]]
      + [[file:java/jvm.org][JVM]]
      + [[file:java/visitor_pattern.org][Visitor Pattern]]
-     + [[file:java/lightweight_lock.org][Java Lightweight Lock]]
      + [[file:java/java_quiz.org][Java Quiz]]
      + [[file:java/java_interface.org][Jave Interface]]
      + [[file:java/java.org][Jave]]

@@ -141,6 +141,12 @@ conventions 主要体现在 dvmCallMethodV 函数中, 简单说来, 在调用任
    IndirectRefTable 中的 reference
 4. jni 返回给 java 层的对象会通过 IndirectRefTable 转换为实际的对象地
    址.
+5. 只有 jobject (包括派生出来的 jclass, jstring, ...) 是通过
+   IndirectRefTable 来索引的, 其他的像 jmethodID, jfieldID 实现上就是
+   Method, Field 结构的指针: 因为 IndirectRefTable 是用来做为 GC Root的,
+   object, class 等会被 GC, 而 jmethodID, jfieldID 指向的结构是不会被
+   GC 的.
+
 ** 各种 jni 函数
 *** GetStringChars / GetStringUTFChars
 *** GetXxxArrayElements

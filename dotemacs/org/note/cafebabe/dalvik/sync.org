@@ -31,9 +31,97 @@ mutex 的 lock 不同, 它分为两种状态: thin 和 fat.  在不同的状态�
 态, 此后该 lock 就会通过传统的 mutex 来进行锁的获得与释放, 而该 lock 会
 一直处于 fat 状态 (无法退回到 thin 状态)
 
-参考: java lightweight_lock
+*** Java Lightweight Lock
+Lightweight Lock 是java 1.6提供的一种锁优化机制, Dalvik 看起来也使用了这种机制. 
+在虚拟机中, synchronized 对应的具体指令是 MonitorEnter/MonitorExit, 例如:
+#+BEGIN_HTML
+<pre lang="java" line="1">
+Object obj=new Object ();
+synchronized (obj) {
+System.out.println("");
+}
+</pre>
+#+END_HTML
+对应的byte code是:
+#+BEGIN_HTML
+<pre lang="java" line="1">
+...
+10:	astore_2
+11:	monitorenter
+12:	getstatic	#3; //Field java/lang/System.out:Ljava/io/PrintStream;
+15:	ldc	#4; //String 
+17:	invokevirtual	#5; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+20:	aload_2
+21:	monitorexit
+</pre>
+#+END_HTML
 
-** hashcode
+Dalvik 的 MonitorEnter() 的源码:
+
+#+BEGIN_HTML
+<pre lang="c" line="1">
+MonitorEnter:
+dvmLockObject(_self, obj);
+threadId = self->threadId;
+thinp = &obj->lock; // 每个object都有一个四字节的lock成员,在hotspot虚拟机, 这个u4长度的lock和hash code等一起,放在对象头的Mark Word中 
+if LW_SHAPE(thin) == LW_SHAPE_THIN:  // LW_SHAPE 实际是取 thin 这个 u4的最低位, 若为0, 表示这是一个thin lock ,否则, 为fat lock
+if LW_LOCK_OWNER(thin) == threadId:
+obj->lock += 1 << LW_LOCK_COUNT_SHIFT;
+else if LW_LOCK_OWNER(thin) == 0:
+ATOMIC_CMP_SWAP((int32_t *)thinp, thin, newThin)
+else:
+for (;;):
+if LW_SHAPE(thin) == LW_SHAPE_THIN:
+if ATOMIC_CMP_SWAP:
+break;
+else:
+sched_yield() ;; lock is inflated by another thread to FAT_LOCK
+;; we have acquired the lock, FATTEN it.
+mon = dvmCreateMonitor(obj);
+lockMonitor(self, mon);b
+thin |= (u4)mon | LW_SHAPE_FAT;
+else: // is a FAT_LOCK
+lockMonitor(self, LW_MONITOR(obj->lock));
+</pre>
+#+END_HTML
+    - 所谓thin lock, fat lock:
+      
+      在Lightweight Lock中, 同一个对象的锁可能处于两种状态:thin, fat; thin lock 是指该锁可以使用CAS (Compare And Swap) 这种轻量级的指令直接获得或释放,开销很小. 
+      fat lock 是指该锁必须使用操作系统提供的mutex进行获取或释放,开销较大.
+    - CAS
+      
+      Compare And Swap, 意思是比较两个值,若不等,则进行交换, 这个指令的关键是比较与赋值这两个操作是原子的, 不需要再加锁.在不同的平台中都有直接的机器指令与之对应,
+      如x86中的cmpxchg指令. CAS的开销很小,而且两个操作是原子的不用加锁,经常用来实际各种lock-free算法 
+    - lock-free, 就是避免加锁,如最简单的环形缓冲区方法
+    - 上面代码显示的Lightweight Lock的实现中,关键的几点是:
+      
+      - 若一个锁是thin且尚未锁定,则使用CAS加锁(实际只是修改lock的owner为当前线程,并没有什么耗时的加锁动作)
+      - 若一个锁是thin且已锁定,则把它作为一个spinlock在死循环,直到之前持有thin lock的线程将thin lock释放
+        这里提到的thin lock的判断锁定,加锁,解锁开销都很小, 例如通过判断lock owner 判断是否加锁, 使用CAS加锁,解锁 
+      - 进行spin的的线程在获得thin lock后, 会将锁升级为fat lock；thin lock此时被升级为fat lock, 是因为系统发现锁出现了竞争, 再使用spinlock很有可能会白白浪费CPU. 
+      - thin lock一旦变成fat lock, Lightweight Lock的使命就结束了, 之后对这个锁的使用操作都会使用pthread_mutex_xxx
+      - Lightweight Lock机制没有办法把fat lock降级为thin lock 
+    - spinlock
+      
+      spinlock,即自旋锁, 线程在等待spinlock时, 不会被挂起,而是执行一个while(true)的死循环,并在这个死循环中不停的检测锁是否释放. 
+      spinlock适用于锁持有时间较短的情况,并且主要用在SMP的情况; 但在单处理器的情况下,就无法避免进程切换了, 因为要
+      退出spin, 只能靠别的进程来修改spin的flag.
+    - pthread_mutex_xxx
+      
+      pthread提供的mutex；现在linux都使用futex(Fast Usermode muTex) 来实现mutex, 开销也比以前通过syscall进入内核的方法好多了.
+      
+    总结:
+    - 因为Lightweight Lock机制, java的synchronized比想象的要高效, 特别是没有锁冲突的情况下,只是简单一条CAS指令,几乎没有额外开销.
+    - Lightweight Lock过程
+	1. T1 is the first thread acquiring the lock, so it will using CAS to acquire the THIN_LOCK
+	2. while T1 holding the lock, T2,T3 come to request the lock, they both will spin on the THIN_LOCK
+	3. when T2 acquire the lock, it will inflate the lock from THIN_LOCK to FAT_LOCK, and use mutex to accquire the lock; 
+           after that, T3 will use mutex to accquire the lock
+	4. once a lock is inflated to FAT_LOCK, there is no way for it to com back as THIN_LOCK.
+
+
+
+**** hashcode
 对与 MarkSweep GC 来说, hashcode 就是 struct Object 的地址. 因为
 MarkSweep GC 不会移动对象. 
 
@@ -44,10 +132,10 @@ LW_HASH_STATE_UNHASHED, 则 hashcode 直接就是Object 地址. 若 hashState
 Copying GC 移动过对象, 这时 hashcode 不能简单的取对象的地址了: Copying
 GC 会负责在移动对象时根据当前 hashState 决定是否把移动前的对象地址做为
 hashcode 保存到对象后面的一个特定位置中.
-** lock
-*** dvmLockObject
-*** lockMonitor
-*** unlockMonitor
-** wait/notify
-*** waitMonitor
-*** notifyMonitor
+**** lock
+***** dvmLockObject
+***** lockMonitor
+***** unlockMonitor
+**** wait/notify
+***** waitMonitor
+***** notifyMonitor
