@@ -48,51 +48,60 @@
 
 ** dvmCollectGarbageInternal
 #+BEGIN_SRC text
-    dvmCollectGarbageInternal(spec)
-      // 一共有四种类型的 GC:
-      // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
-      // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
-      // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
-      // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
-      if (spec == GC_FOR_MALLOC):
-        ATRACE_BEGIN("GC (Alic)");
-      else if (spec == GC_CONCURRENT):
-        ATRACE_BEGIN("GC (concurrent)");
-      else if (spec == GC_EXPLICIT):
-        ATRACE_BEGIN("GC (explicit)");
-      else if (spec == GC_BEFORE_OOM):
-        ATRACE_BEGIN("GC (before OOM)");
-      else:
-        ATRACE_BEGIN("GC (unknown)");
-      // 参考: dalvik thread dvmSuspendAllThreads
+  dvmCollectGarbageInternal(spec)
+    // 一共有四种类型的 GC:
+    // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
+    // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
+    // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
+    // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
+    if (spec == GC_FOR_MALLOC):
+      ATRACE_BEGIN("GC (Alic)");
+    else if (spec == GC_CONCURRENT):
+      ATRACE_BEGIN("GC (concurrent)");
+    else if (spec == GC_EXPLICIT):
+      ATRACE_BEGIN("GC (explicit)");
+    else if (spec == GC_BEFORE_OOM):
+      ATRACE_BEGIN("GC (before OOM)");
+    else:
+      ATRACE_BEGIN("GC (unknown)");
+    // 参考: dalvik thread dvmSuspendAllThreads
+    dvmSuspendAllThreads(SUSPEND_FOR_GC);
+    // mark 阶段
+    /* Mark the set of objects that are strongly reachable from the roots.
+    ,*/
+    dvmHeapMarkRootSet();
+    // 若 spec 表明该 gc 由 HeapWorker 发起, 则 dvmHeapScanMarkedObjects
+    // 时并不 stop the world. 这也是 Concurrent GC 的本意.
+    if (spec->isConcurrent):
+      dvmClearCardTable();
+      dvmResumeAllThreads(SUSPEND_FOR_GC);
+    /* Recursively mark any objects that marked objects point to strongly.
+    ,* If we're not collecting soft references, soft-reachable
+    ,* objects will also be marked.
+    ,*/
+    dvmHeapScanMarkedObjects();
+    if (spec->isConcurrent):
       dvmSuspendAllThreads(SUSPEND_FOR_GC);
-      // mark 阶段
-      /* Mark the set of objects that are strongly reachable from the roots.
-      ,*/
-      dvmHeapMarkRootSet();
-      /* Recursively mark any objects that marked objects point to strongly.
-      ,* If we're not collecting soft references, soft-reachable
-      ,* objects will also be marked.
-      ,*/
-      dvmHeapScanMarkedObjects();
-      /*
-      ,* All strongly-reachable objects have now been marked.  Process
-      ,* weakly-reachable objects discovered while tracing.
-      ,*/
-      dvmHeapProcessReferences();
-      // sweep 阶段
-      dvmHeapSweepSystemWeaks();
-      /*
-      ,* Live objects have a bit set in the mark bitmap, swap the mark
-      ,* and live bitmaps.  The sweep can proceed concurrently viewing
-      ,* the new live bitmap as the old mark bitmap, and vice versa.
-      ,*/
-      dvmHeapSourceSwapBitmaps();
-      dvmHeapSweepUnmarkedObjects();
-      // 将本次 GC 产生的 white reference 和 finalizer reference 通知给
-      // java 层的 ReferenceQueueDaemon
-      dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
-  
+      dvmHeapReMarkRootSet();
+      dvmHeapReScanMarkedObjects();
+    /*
+    ,* All strongly-reachable objects have now been marked.  Process
+    ,* weakly-reachable objects discovered while tracing.
+    ,*/
+    dvmHeapProcessReferences();
+    // sweep 阶段
+    dvmHeapSweepSystemWeaks();
+    /*
+    ,* Live objects have a bit set in the mark bitmap, swap the mark
+    ,* and live bitmaps.  The sweep can proceed concurrently viewing
+    ,* the new live bitmap as the old mark bitmap, and vice versa.
+    ,*/
+    dvmHeapSourceSwapBitmaps();
+    dvmHeapSweepUnmarkedObjects();
+    // 将本次 GC 产生的 white reference 和 finalizer reference 通知给
+    // java 层的 ReferenceQueueDaemon
+    dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
+    
 #+END_SRC
 
 *** dvmHeapMarkRootSet
@@ -235,6 +244,14 @@ gcHeap 本身对所有 soft, weak, phantom reference对象都维护着一个列�
     clearWhiteReferences(phantomReferences);
   
 #+END_SRC
+
+**** FinalizerReference
+FinalizerReference 是一个 java 类, 但在 java 层并不可见: dalvik 在初始
+化一个 Object 时, 若发现该对象实现了 finalize() 方法, 则会通过
+dvmSetFinalizable (通过 FinalizerReference.add) 方法添加一个
+FinalizerReference 对象对 FinalizerReference 的一个静态成员. 后续 GC
+scan 时一定会找到这个 FinalizerReference.
+
 *** dvmHeapSourceSwapBitmaps
 #+BEGIN_SRC c
   HeapBitmap tmp = gHs->liveBits;
@@ -388,3 +405,57 @@ dvmHeapSourceAlloc 的代码:
 配置是 freeBytes - CONCURRENT_START(128KB), 即当可用内存少于 128KB 时),
 HeapWorker 会开始工作, 并且周期性的 (HEAP_TRIM_IDLE_TIME_MS) 执行
 dvmCollectGarbageInternal
+
+** Concurrent GC
+HeapWorker 实际上就是实现了 Concurrent Mark Sweep (CMS), 说它是
+concurrent, 不是因为它会周期性的执行, 而是因为它允许在
+dvmHeapScanMarkedObjects() 时各个 java 继续执行, 而不必`stop the
+world` (并发标记).
+
+CMS 一般分为四个阶段:
+1. 初始标记
+   对应于 dvmCollectGarbageInternal 的 dvmHeapMarkRootSet
+2. 并发标记
+   对应于 dvmHeapScanMarkedObjects
+3. 重新标记
+   对应于 dvmHeapReMarkRootSet 与 dvmHeapReScanMarkedObjects
+4. 清除
+
+
+CMS 可以更快, 是因为并发标记期间并没有 `stop the world`, 但带来的后果
+是并发标记结束后有可能会因为其他线程的执行产生新的 garbage, 这时就需要
+重新标记. 但是重新标记不能像初始标记和并发标记那样从头扫描一次, 这样就
+速度太慢没有意义. 
+
+要做到快速重新标记, 需要一个叫做 CardTable 的东西与之配合.
+
+CardTable 实际就是一个 write barrier, GC Heap 被分割为固定大小的 card
+保存在 CardTable 中, 每次对 GC Heap 的修改会导致 CardTable 中相应的
+card 被标记为 dirty. 如此一来, 重新标记时只需要考虑这些 dirty 的 card
+对应的内存中的对象. 
+#+BEGIN_SRC text
+  scanDirtyCards
+    HeapBitmap *markBits = ctx->bitmap;
+    const u1 *card = start, *prevAddr = NULL;
+    while (card < end):
+      if (*card != GC_CARD_DIRTY):
+        return card;
+      while (ptr < limit):
+        // 所谓的 gray object, 是否之间是可达的 (black reference)
+        // 但现在有可能是不可达的 (white reference)
+        Object *obj = nextGrayObject(ptr, limit, markBits);
+          // nextGrayObject 的过程是在 dirty card 表示的内存的范围内
+          // 对每一个 8 bytes 对齐的地址在 markBits 中查找, 看看是不是一个
+          // 对象
+          for (ptr = base; ptr < limit; ptr += HB_OBJECT_ALIGNMENT) {
+            if (dvmHeapBitmapIsObjectBitSet(markBits, ptr)):
+              return (Object *)ptr;
+        scanObject(obj, ctx);
+        ptr = (u1*)obj + ALIGN_UP(objectSize(obj), HB_OBJECT_ALIGNMENT);
+       
+      if (ptr < limit) {
+      /* Ended within the current card, advance to the next card. */
+        ++card;
+#+END_SRC
+
+
