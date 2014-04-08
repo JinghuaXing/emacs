@@ -441,12 +441,14 @@ card 被标记为 dirty. 如此一来, 重新标记时只需要考虑这些 dirt
       if (*card != GC_CARD_DIRTY):
         return card;
       while (ptr < limit):
-        // 所谓的 gray object, 是否之间是可达的 (black reference)
-        // 但现在有可能是不可达的 (white reference)
+        // 所谓的 gray object, 是指不确定是否是 black 的 object.
+        // 重新标记的目的不是为了把已经 mark 的 unmark, 而是
+        // 将新产生的可达的 object 重新 mark, 确保没有正在使用
+        // 的对象被 GC
         Object *obj = nextGrayObject(ptr, limit, markBits);
           // nextGrayObject 的过程是在 dirty card 表示的内存的范围内
           // 对每一个 8 bytes 对齐的地址在 markBits 中查找, 看看是不是一个
-          // 对象
+          // 对象.
           for (ptr = base; ptr < limit; ptr += HB_OBJECT_ALIGNMENT) {
             if (dvmHeapBitmapIsObjectBitSet(markBits, ptr)):
               return (Object *)ptr;
