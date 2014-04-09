@@ -32,6 +32,9 @@ Dalvik 使用 C++ 定义了五种对象:
       u4              instanceData[CLASS_FIELD_SLOTS];
       const char*     descriptor;
       u4              accessFlags;
+      // objectSize 是保存在 ClassObject (即 java 类中), 而不是保存在
+      // java 对象中. 因为同一个类的对象的大小是相同的. 实际上就是 8 +
+      // InstField 的大小. 
       size_t          objectSize;
       ClassObject*    super;
       Object*         classLoader;
@@ -112,9 +115,10 @@ tricky:
 #+END_EXAMPLE
 
 上面的示意图有几点要注意:
-1. instance field 是直接放在 Object 中的, 并按照字母顺序. 虽然 Object
-   本身并没有定义一个类似于 InstField 的字段.
-2. 基类的 InstField 会插入到 Object 自身的 InstField 之前.
+1. instance field 是直接按一定顺序放在 Object 中的. 虽然 Object本身并没
+   有定义一个类似于 InstField 的字段.
+2. 基类的 InstField 会插入到 Object 自身的 InstField 之前 (通过
+   computeFieldOffsets 代码可以确认)
 3. ClassObject 的开头 8 个字节与 Object 结构相同, 因为它继承自 Object,
    这一点要参考 C++ Object Model
 4. Object 中定义的 lock 字与 hotspot 中的 mark word作用类似, 但与 mark
@@ -216,6 +220,7 @@ findClassNoInit:
         dexReadClassDataField(&pEncodedData, &field, &lastIndex);
         loadSFieldFromDex(newClass, &field, &newClass->sfields[i]);
       // 读取 ifield, direct methods, virtual methods ...
+  
     dvmLinkClass(clazz)
       // resolve superclass 为 direct pointer
       ClassObject* super = dvmResolveClass(clazz, superclassIdx, false);
@@ -228,7 +233,36 @@ findClassNoInit:
         clazz->vtable = (Method**) dvmLinearAlloc(clazz->classLoader, maxCount);
         // 将 super 的 vtable 与 clazz 自己的 virtualMethods 进行比较,
         // 生成最终的 clazz->vtable
-        // ...
+  
+        // maxCount 是指本类的 vtable 可能达到的最大大小, 最终 vtable 的
+        // 大小必然会 <= maxCount
+        maxCount = clazz->virtualMethodCount;
+        if (clazz->super != NULL):
+          maxCount += clazz->super->vtableCount;
+        clazz->vtable = (Method**) dvmLinearAlloc(sizeof(Method*) * maxCount);
+        // 先用 super->vtable 覆盖 class->vtabl 的前几项
+        memcpy(clazz->vtable, clazz->super->vtable,
+              sizeof(*(clazz->vtable)) * clazz->super->vtableCount);
+        actualCount = clazz->super->vtableCount;        
+        // 然后扫描 class->virtualMethods, 通过名字的比较看是否有方法需要覆盖基类               for (i = 0; i < clazz->virtualMethodCount; i++):
+          Method* localMeth = &clazz->virtualMethods[i];
+          for (si = 0; si < clazz->super->vtableCount; si++):
+            Method* superMeth = clazz->vtable[si];
+            // 两个方法的名字和 signature 是相同的 ...
+            if (dvmCompareMethodNamesAndProtos(localMeth, superMeth) == 0):
+              // 确保基类方法不是 final
+              if (dvmIsFinalMethod(superMeth)): bail;
+              // 本类方法覆盖基类方法
+              clazz->vtable[si] = localMeth;
+              localMeth->methodIndex = (u2) si;
+           // inner for ends here
+           // super->vtable 中各项扫描完毕, 发现不能覆盖, 放到结尾
+           if (si == clazz->super->vtableCount):
+             clazz->vtable[actualCount] = localMeth;
+             localMeth->methodIndex = (u2) actualCount;
+         // outer for ends here
+         assert(actualCount <= maxCount);
+          
       // 生成 iftable
       // 上一步的 vtable 中包含了所有的虚函数, 包括继承自 super 的和自己
       // 实现的, 但自己实现的接口中的虚函数需要通过 iftable 进行索引, 因
@@ -236,8 +270,14 @@ findClassNoInit:
       // iftable 才能工作, 具体见
       // http://stackoverflow.com/questions/1504633/what-is-the-point-of-invokeinterface
       createIftable(clazz)
-      // 计算所有 filed 的 offset, 后面的 GetFieldID 等需要使用
+      // 计算所有 ifiled 的 offset, 后面的 GetFieldID 等需要使用
+      // ifiled 与 vtable 的组织有些类似: 都是基类成员在前, 自身成员在后
       computeFieldOffsets(clazz)
+        if (clazz->super != NULL):
+          fieldOffset = clazz->super->objectSize;
+          for (i = 0; i < clazz->ifieldCount; i++):
+            pField->byteOffset = fieldOffset;
+            fieldOffset += sizeof(u4);
       // precacheReferenceOffsets 会负责将 referent filed 从 ifields
       // 移除, 以便 GC 时 scanDataObject 时不会扫描到 referent 对象.
       if (strcmp(clazz->descriptor, "Ljava/lang/ref/Reference;") == 0):
@@ -299,6 +339,22 @@ virtualMethods 等成员却分配在 LinearAlloc. 分配在 GC Heap 可能主要
 虑到 ClassObject 也要参与到 GC 扫描, 而 GC 扫描通过 liveBits, markBits
 进行的, 必须要求 ClassObject 本身分配在 GC Heap 上 (因为 liveBits,
 markBits 是针对 GC Heap 的 bitmap)
+
+*** class 何时被加载
+基本上涉及到 clazz 的 OP_CODE 都会直接或间接通过 dvmResolveClass 来导致
+class 被加载.
+
+以下情况下 class 会首次被加载:
+
+1. 主动调用 Class.forName 等函数
+2. 通过 reflect 的一些方法对 class 进行操作时
+3. OP_NEW_INSTANCE
+4. OP_SGET/OP_SSET
+5. OP_INVOKE_STATIC
+6. OP_INSTANCE_OF
+
+invoke-virtual, invoke-interface 等以及 iget/iset 不包含在以上列表中,
+因为这些调用之前, OP_NEW_INSTANCE 肯定已经把 class 加载完成了. 
 
 ** 各种函数的实现
 *** iget / iset

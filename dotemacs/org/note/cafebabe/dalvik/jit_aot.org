@@ -1,4 +1,5 @@
-#+TITLE: JIT
+#+TITLE: JIT And AOT
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * JIT
+* AOT
