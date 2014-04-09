@@ -276,7 +276,7 @@ contant-pool would be iterated to find the interface method, since an object can
 *** 分代 GC
 **** young gen
 ***** eden
-***** survior
+***** survior * 2
 **** old gen
 大对象直接进入 old gen
 **** perm gen

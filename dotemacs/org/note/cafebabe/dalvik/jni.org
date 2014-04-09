@@ -92,9 +92,9 @@ conventions 主要体现在 dvmCallMethodV 函数中, 简单说来, 在调用任
           break;
         }
     if (dvmIsNativeMethod(method)):
-      dvmCallJNIMethod(pResult)
+      dvmCallJNIMethod((u4*)self->interpSave.curFrame,pResult, ...)
     else:
-      dvmInterpret(pResult);
+      dvmInterpret(self, method, pResult);
 #+END_SRC
 
 #+BEGIN_SRC text

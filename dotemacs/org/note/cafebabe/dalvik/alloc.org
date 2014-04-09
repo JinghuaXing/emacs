@@ -412,6 +412,24 @@ concurrent, 不是因为它会周期性的执行, 而是因为它允许在
 dvmHeapScanMarkedObjects() 时各个 java 继续执行, 而不必`stop the
 world` (并发标记).
 
+关于 CMS:
+http://dl.acm.org/citation.cfm?id=362422.362480
+
+"This paper reports our experiences with a mostly-concurrent
+incremental garbage collector, implemented in the context of a high
+performance virtual machine for the Java™ programming language. The
+garbage collector is based on the “mostly parallel” collection
+algorithm of Boehm et al. and can be used as the old generation of a
+generational memory system. It overloads efficient write-barrier code
+already generated to support generational garbage collection to also
+identify objects that were modified during concurrent marking. These
+objects must be rescanned to ensure that the concurrent marking phase
+marks all live objects. This algorithm minimises maximum garbage
+collection pause times, while having only a small impact on the
+average garbage collection pause time and overall execution time. We
+support our claims with experimental results, for both a synthetic
+benchmark and real programs."
+
 CMS 一般分为四个阶段:
 1. 初始标记
    对应于 dvmCollectGarbageInternal 的 dvmHeapMarkRootSet
@@ -422,10 +440,10 @@ CMS 一般分为四个阶段:
 4. 清除
 
 
-CMS 可以更快, 是因为并发标记期间并没有 `stop the world`, 但带来的后果
-是并发标记结束后有可能会因为其他线程的执行产生新的 garbage, 这时就需要
-重新标记. 但是重新标记不能像初始标记和并发标记那样从头扫描一次, 这样就
-速度太慢没有意义. 
+CMS 可以更快, 是因为并发标记期间并没有 `stop the world`, 但带来的后果是
+并发标记结束后有可能会因为其他线程的执行产生新的可达对象, 这时就需要重
+新标记. 但是重新标记不能像初始标记和并发标记那样从头扫描一次, 这样就速
+度太慢没有意义.
 
 要做到快速重新标记, 需要一个叫做 CardTable 的东西与之配合.
 
@@ -441,7 +459,9 @@ card 被标记为 dirty. 如此一来, 重新标记时只需要考虑这些 dirt
       if (*card != GC_CARD_DIRTY):
         return card;
       while (ptr < limit):
-        // 所谓的 gray object, 是指不确定是否是 black 的 object.
+        // 所谓的 gray object, 是指该 object 已经扫描到, 但没有后续进一步扫描
+        // dalvic GC mark 部分代码频繁提到 black, white, gray, 应该是指 dalvik
+        // 使用了 tri-color marking (三色标记算法)
         // 重新标记的目的不是为了把已经 mark 的 unmark, 而是
         // 将新产生的可达的 object 重新 mark, 确保没有正在使用
         // 的对象被 GC
