@@ -2,3 +2,70 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Mterp
+** 指令分发
+最简单的指令分发可能是这样的:
+#+BEGIN_SRC text
+  while (true) {
+        op = get_op(pc);
+        if (op == OP_A) {
+           //
+        } else if (op == OP_B) {
+          ///
+        } else if (...) {
+          //
+        }
+  }
+#+END_SRC
+*** mterp-portable 的指令分发
+#+BEGIN_SRC text
+  void * handlerTable[] = {
+       op_OP_NOP;
+       op_OP_MOVE;
+       //...
+  }
+  
+  op_OP_NOP:
+          // ...
+  
+  op_OP_MOVE:
+          // ...
+#+END_SRC
+
+并且每次一条指令执行完后并不是跳转到开头, 而是在指令结尾通过一个
+FINISH 宏直接进行跳转
+
+#+BEGIN_SRC text
+  #define FINISH goto *handlerTable[inst];
+#+END_SRC
+
+mterp-portable 使用跳转表去掉一次条件判断, 使用 FINISH 宏避免一次跳转
+
+*** mterp-arm 中的指令分发
+mterp 中也有一个 类似于 handlerTable 的跳转表, 但是跳转表中的 entry 并
+不是指向代码的指针, 而是真正的代码, 并且每一个 case 对应的代码要求是64
+字节对齐的.
+
+类似这样的结构:
+#+BEGIN_SRC text
+  void * handlerTable = op_OP_NOP;
+  .balign 64
+  op_OP_NOP:
+  // ...
+  .balign 64
+  op_OP_MOVE:
+  // ...
+#+END_SRC
+
+这样可以在跳转时减少一个内存读取, 代价是每一个 OP 对应的指令不能超过
+64 字节. 
+
+跳转语句为:
+#+BEGIN_SRC text
+  #define GOTO_OPCODE(_reg)       add     pc, rIBASE, _reg, lsl #6
+#+END_SRC
+其中 rIBASE 是 op_OP_NOP 的地址, 即跳转表的基址, lsl #6 表示 64 (逻辑
+左移 6 位)
+
+mterp-arm 在 mterp-portable 基础上通过固定长度的代码避免内存读取.
+
+具体描述见: http://blog.csdn.net/crosskernel/article/details/21168603

@@ -1,6 +1,7 @@
 #+TITLE: Sitemap for project cafebabe
 
    + dalvik
+     + [[file:dalvik/mterp.org][Mterp]]
      + [[file:dalvik/oo.org][OO]]
      + [[file:dalvik/jit_aot.org][JIT And AOT]]
      + [[file:dalvik/jni.org][Jni]]
@@ -9,7 +10,6 @@
      + [[file:dalvik/indirect_ref_table.org][Indirect Ref Table]]
      + [[file:dalvik/thread.org][Thread]]
      + [[file:dalvik/jni_bridge.org][JniBridge]]
-     + [[file:dalvik/mterp.org][Mterp]]
      + [[file:dalvik/stack.org][Stack]]
      + [[file:dalvik/dalvik.org][Dalvik]]
      + [[file:dalvik/dex.org][Dex]]
