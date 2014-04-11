@@ -274,7 +274,39 @@ odex 文件对 dex 做了如下的修改:
 register map 主要用来帮助 dvm 知道当前各个寄存器中哪些保存着 java 对象.
 以便 GC 时这些会被做为 GC Root. 
 ** class 文件结构
-** tools
-- androguard
-- 010 editor
+** DexFile 与 DvmDex
+dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍. parse
+的过程基本是:
+
+1. 通过 mmap 将 odex 映射到内存 A
+2. 生成 DexFile 结构, 将其成员设置为到 A 各个区域的指针
+
+#+BEGIN_SRC text
+    pDexFile->pStringIds = (const DexStringId*) (A + pHeader->stringIdsOff);
+    pDexFile->pTypeIds = (const DexTypeId*) (A + pHeader->typeIdsOff);
+    pDexFile->pFieldIds = (const DexFieldId*) (A + pHeader->fieldIdsOff);
+    pDexFile->pMethodIds = (const DexMethodId*) (A + pHeader->methodIdsOff);
+    pDexFile->pProtoIds = (const DexProtoId*) (A + pHeader->protoIdsOff);
+    pDexFile->pClassDefs = (const DexClassDef*) (A + pHeader->classDefsOff);
+    pDexFile->pLinkData = (const DexLink*) (A + pHeader->linkOff);
+#+END_SRC
+
+3. 生成 DvmDex 结构
+
+   这个结构实际就是 procmem 时显示的 "dalvik-aux-structure". 
+   这是一个辅助的数据结构: 因为 DexFile 基本是直接映射了 odex 文件, 里
+   面的内容都是一些 "ID", 但实际执行时程序需要的通常不是 "ID", 而是真
+   正的内容, 这时 DvmDex 相当于一个将 "ID" 映射为真正内容的一个 cache.
+
+   以 dvmResolveClass 为例:
+
+   #+BEGIN_SRC text
+     dvmResolveClass
+       resClass = dvmDexGetResolvedClass(pDvmDex, classIdx);
+         return pDvmDex->pResClasses[classIdx];
+       if (resClass != NULL):
+         return resClass;
+   #+END_SRC
+
+   
 

@@ -1343,13 +1343,15 @@ delete b;
 ~D
 ~B
 #+END_EXAMPLE
-//解释
-沿着程序执行流程，从main函数进入
-首先，执行语句Base *b=new Derived();
-结果是在堆中创建类Derived的一个对象，并且让类型为Base *的指针b指向这个对象；
-其次，执行语句delete b;
-运行结果是释放b指向对象的内存空间。按照C++的delete操作符的语义，编译器会指针b“对应类型”的对象的析构函数调用（你或许认为是Base::~Base()），但是由于类Base的析构函数声明为虚函数，因此实现方式具有多态特征（具体实现采用的技术请查看相关书籍，例如经典的Inside The C++ Object Model），因此运行时调用的析构函数是Derived::~Derived()。
-第三，子类的析构函数Derived::~Derived()内部会调用父类的析构函数，因此执行结果如上！
+//解释沿着程序执行流程，从main函数进入首先，执行语句Base *b=new
+Derived();结果是在堆中创建类Derived的一个对象，并且让类型为Base *的指针
+b指向这个对象；其次，执行语句delete b;运行结果是释放b指向对象的内存空间。
+按照C++的delete操作符的语义，编译器会指针b“对应类型”的对象的析构函数调
+用（你或许认为是Base::~Base()），但是由于类Base的析构函数声明为虚函数，
+因此实现方式具有多态特征（具体实现采用的技术请查看相关书籍，例如经典的
+Inside The C++ Object Model），因此运行时调用的析构函数是
+Derived::~Derived()。第三，子类的析构函数Derived::~Derived()内部会调用
+父类的析构函数，因此执行结果如上！
 
 基类中的虚析构函数使得派生类在使用多态性时也能被正确的析构。
 ** DONE c++ string literal的类型是什么?

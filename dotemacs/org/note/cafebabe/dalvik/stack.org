@@ -106,7 +106,7 @@ dalvik 中定义的寄存器如 v0/v1.. 实际上并不是真正的 cpu 寄存�
       FINISH(0);
         inst = FETCH(0);
         goto *handlerTable[INST_INST(inst)];
-    // else
+    else:
       self->interpSave.curFrame = newFp;
       // jni call bridge: dvmCallJNIMethod
       (*methodToCall->nativeFunc)(newFp, &retval, methodToCall, self);

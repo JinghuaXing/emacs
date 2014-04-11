@@ -457,6 +457,7 @@ Object->virtualMethods 中找到.
   }
   
   class Foo extends Base implements I {
+      public Foo() {}
       public void b() {
           // invoke-super
           super.b();
@@ -474,7 +475,7 @@ Object->virtualMethods 中找到.
       public static void main(String[] args) {
           // invoke-static
           Foo.s();
-  
+          // invoke-direct  
           Foo f =  new Foo();
           // invoke-virtual
           f.v();
