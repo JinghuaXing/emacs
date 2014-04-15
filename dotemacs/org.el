@@ -58,6 +58,7 @@
 				    (search category-keep)))
 (require 'ox-latex)
 (require 'ox-beamer)
+(require 'ox-md)
 (setq org-ditaa-jar-path "~/.elisp/ditaa0_9.jar")
 (setq org-plantuml-jar-path "~/.elisp/plantuml.jar")
 (setq org-src-fontify-natively t)

@@ -200,58 +200,68 @@ Server initiate one BBinder, and deliver it to the client using Intent.
 	get target binder_proc through binder_node->proc
       - for now, target binder_proc and binder_node have been found, call (BBinder *)(binder_node->cookie)->transact() in binder_proc
 *** binder_thread
-     Driver can't execute user-mode BBinder in kernel-mode, How does the driver execute BBinder in server process?
+Driver can't execute user-mode BBinder in kernel-mode, How does the driver execute BBinder in server process?
 
-     - The Binder server has several `while(1) {}` thread blocked on IOCTL, waiting for client transaction.
-     - when the driver need to execute BBinder, it will first put data (BBinder address, function argument) to a place server can reach, then
-       wake up the one of the server thread.
-     - those server thread are so-called `Binder Thread #1/#2...`
+- The Binder server has several `while(1) {}` thread blocked on IOCTL, waiting for client transaction.
+- when the driver need to execute BBinder, it will first put data
+  (BBinder address, function argument) to a place server can reach,
+  then wake up the one of the server thread.
+- those server thread are so-called `Binder Thread #1/#2...`
 **** Binder Thread initiate
-      - IPCThreadState.startThreadPool() can start a binder thread.
-      - ProcessState.joinThreadPool() can turn the calling thread to a binder thread.
-      - java process have a born binder thread, because onZygoteInit() will call IPCThreadState.startThreadPool() to init a binder thread.
-      - native c++ service must call IPCThreadState.startThreadPool() or ProcessState.joinThreadPool() explicitly.
-      - if a process has no binder thread, although driver can find the binder_proc and BBinder, but since there is no binder thread,
-	driver simply can't wake up any thread to perform the transaction.
-**** Calling stack
-      Client:
-#+BEGIN_EXAMPLE lang=c
-      BpBinder::transact()
-       	IPCThreadState::transact()
-          IPC~::waitForResponse()
-             IPC~::talkWithDriver()
-               	ioctl(BINDER_WRITE_READ)
-                  drv::binder_thread_write()
-                     wake_up server thread
-                  drv::binder_thread_read()
-                      wait...
-             case BR_REPLY
-#+END_EXAMPLE
-      Server:
-#+BEGIN_EXAMPLE lang=c
-      IPC~::joinThreadPool
-       	IPC~::talkWithDriver()
-           ioctl(BINDER_WRITE_READ)
-                  drv::binder_thread_write()
-                  drv::binder_thread_read()
-                      wait for client ....
-                      now have work.
-       	IPC~::executeCommand(BR_TRAN.)
-           cookie::transact()
-               BnInterface::onTransact()
-           IPC~::sendReply()
-              IPC~::talkWithDriver()
-                 .....
-                 wake up client
-#+END_EXAMPLE
-*** binder_buffer
-     - binder_buffer is used during ONE binder transaction to save request(in the target_proc's)  and reply data (in the host_proc's)
-       and this buffer is mmap to user-mode directly. so that user-mode BBinder can access binder_buffer directly.
-     - every binder_proc has it's own buffer, size limited to 1M-8k, driver will allocate one binder_buffer from the buffer for every transaction.
-     - one binder_proc's bind_buffers are organized in rb_tree, every node control a sized buffer.
-     - the rb_tree use `best-fit` rule to allocate binder_buffer, and can `merge/split` on demand to reduce external memory fragmentation.
+- IPCThreadState.startThreadPool() can start a binder thread.
+- ProcessState.joinThreadPool() can turn the calling thread to a
+  binder thread.
+- java process have a born binder thread, because onZygoteInit() will
+  call IPCThreadState.startThreadPool() to init a binder thread.
+- native c++ service must call IPCThreadState.startThreadPool() or
+  ProcessState.joinThreadPool() explicitly.
+- if a process has no binder thread, although driver can find the
+  binder_proc and BBinder, but since there is no binder thread, driver
+  simply can't wake up any thread to perform the transaction.
+- binder thread 如何动态生成?
+  #+BEGIN_SRC text
+  void ProcessState::spawnPooledThread(bool isMain)
+  #+END_SRC
 
-       all buffers are in a continuous memory block:
+**** Calling stack
+Client:
+#+BEGIN_SRC text
+  BpBinder::transact()
+    IPCThreadState::transact()
+      IPC~::waitForResponse()
+         IPC~::talkWithDriver()
+            ioctl(BINDER_WRITE_READ)
+              drv::binder_thread_write()
+                 wake_up server thread
+              drv::binder_thread_read()
+                  wait...
+         case BR_REPLY
+#+END_SRC
+Server:
+#+BEGIN_SRC text
+  IPC~::joinThreadPool
+    IPC~::talkWithDriver()
+       ioctl(BINDER_WRITE_READ)
+              drv::binder_thread_write()
+              drv::binder_thread_read()
+                  wait for client ....
+                  now have work.
+    IPC~::executeCommand(BR_TRAN.)
+       cookie::transact()
+           BnInterface::onTransact()
+       IPC~::sendReply()
+          IPC~::talkWithDriver()
+             .....
+             wake up client
+#+END_SRC
+*** binder_buffer
+- binder_buffer is used during ONE binder transaction to save request(in the target_proc's)  and reply data (in the host_proc's)
+  and this buffer is mmap to user-mode directly. so that user-mode BBinder can access binder_buffer directly.
+- every binder_proc has it's own buffer, size limited to 1M-8k, driver will allocate one binder_buffer from the buffer for every transaction.
+- one binder_proc's bind_buffers are organized in rb_tree, every node control a sized buffer.
+- the rb_tree use `best-fit` rule to allocate binder_buffer, and can `merge/split` on demand to reduce external memory fragmentation.
+
+all buffers are in a continuous memory block:
 #+BEGIN_EXAMPLE
 	       0                       1K      	       	       	       	       	       	1M-8K
 	       +----------------------------------------------------------------+-------+
@@ -448,38 +458,34 @@ seq graph:
     　- C++ 层面的RefBase
     　- driver 层面 binder_ref 的引用计数
 **** When Java Binder is finalized
-#+BEGIN_HTML
-<pre lang="c++" line="1">
-      Binder.finalize() @ Binder.java
-        android_os_Binder_destroy() //jni
-	  JavaBBinderHolder->decStrong();
-	    c = android_atomic_dec(&refs->mStrong)
-	    if (c == 1):
-              const_cast<RefBase*>(this)->onLastStrongRef(id)
-	        {} // nop for BBinder
-</pre>
-#+END_HTML
+#+BEGIN_SRC text
+  Binder.finalize() @ Binder.java
+    android_os_Binder_destroy() //jni
+      JavaBBinderHolder->decStrong();
+        c = android_atomic_dec(&refs->mStrong)
+        if (c == 1):
+          const_cast<RefBase*>(this)->onLastStrongRef(id)
+            {} // nop for BBinder
+#+END_SRC
 **** When Java BinderProxy is finalized
-#+BEGIN_HTML
-<pre lang="c++" line="1">
-      BinderProxy.finalize() @ Binder.java
-        android_os_BinderProxy_destroy(JNIEnv* env, jobject obj)
-	  BinderProxy.decStrong()
-	    c = android_atomic_dec(&refs->mStrong)
-	    if (c == 1):
-              const_cast<RefBase*>(this)->onLastStrongRef(id)
-	        IPCThreadState->decStrongHandle(mHandle);
-		  mOut.writeInt32(BC_RELEASE)
-                    binder_thread_write()
-	              case BC_RELEASE:
-	                binder_dec_ref(ref, 1);
-	                  ref->strong--;
-	                  if ref->strong == 0:
-	                   binder_dec_node(ref->node, strong, 1);
-	                 if ref->strong == 0 && ref->weak == 0:
-	                   binder_delete_ref(ref);
-</pre>
-#+END_HTML
+#+BEGIN_SRC text
+  BinderProxy.finalize() @ Binder.java
+    android_os_BinderProxy_destroy(JNIEnv* env, jobject obj)
+      BinderProxy.decStrong()
+        c = android_atomic_dec(&refs->mStrong)
+        if (c == 1):
+          const_cast<RefBase*>(this)->onLastStrongRef(id)
+            IPCThreadState->decStrongHandle(mHandle);
+              mOut.writeInt32(BC_RELEASE)
+                binder_thread_write()
+                  case BC_RELEASE:
+                    binder_dec_ref(ref, 1);
+                      ref->strong--;
+                      if ref->strong == 0:
+                       binder_dec_node(ref->node, strong, 1);
+                     if ref->strong == 0 && ref->weak == 0:
+                       binder_delete_ref(ref);
+#+END_SRC
      What's more:
      - binder_dec_ref() will also be called during binder_free_buffer() and the buffer contains BINDER_TYPE_HANDLE.
      - binder_node will be deleted when:
@@ -572,71 +578,71 @@ seq graph:
          }
 #+END_EXAMPLE
 ***** stub side
-      - Binder.execTransact()
-#+BEGIN_EXAMPLE lang=c
-        try {
-            res = onTransact(code, data, reply, flags);
-	    // if exceptions other than RemoteException and RuntimeException are thrown here,
-	    // the outer JavaBBinder jni wrapper class will handle it, and output message like
-	    // "Uncaught remote exception!
-	    // Exceptions are not yet supported across processes"
-        } catch (RemoteException e) {
-            reply.writeException(e);
-            res = true;
-        } catch (RuntimeException e) {
-            reply.writeException(e);
-            res = true;
-        }
-#+END_EXAMPLE
-      - writeException()
-#+BEGIN_EXAMPLE lang=c
-	int code = 0;
-        if (e instanceof SecurityException) {
-            code = EX_SECURITY;
-        } else if (e instanceof BadParcelableException) {
-            code = EX_BAD_PARCELABLE;
-        } else if (e instanceof IllegalArgumentException) {
-            code = EX_ILLEGAL_ARGUMENT;
-        } else if (e instanceof NullPointerException) {
-            code = EX_NULL_POINTER;
-        } else if (e instanceof IllegalStateException) {
-            code = EX_ILLEGAL_STATE;
-        }
-        writeInt(code);
-	if (code==0) throw new RuntimeException();
-#+END_EXAMPLE
-      - Binder.stub.onTransact()
-#+BEGIN_EXAMPLE lang=c
-	case TRANSACTION_foo:
-	{
-	    data.enforceInterface(DESCRIPTOR);
-	    int _result = this.foo();
-	    reply.writeNoException();
-	    reply.writeInt(_result);
-	    return true;
-	}
-#+END_EXAMPLE
+- Binder.execTransact()
+#+BEGIN_SRC c
+  try {
+      res = onTransact(code, data, reply, flags);
+      // if exceptions other than RemoteException and RuntimeException are thrown here,
+      // the outer JavaBBinder jni wrapper class will handle it, and output message like
+      // "Uncaught remote exception!
+      // Exceptions are not yet supported across processes"
+  } catch (RemoteException e) {
+      reply.writeException(e);
+      res = true;
+  } catch (RuntimeException e) {
+      reply.writeException(e);
+      res = true;
+  }
+#+END_SRC
+- writeException()
+#+BEGIN_SRC c
+  int code = 0;
+  if (e instanceof SecurityException) {
+      code = EX_SECURITY;
+  } else if (e instanceof BadParcelableException) {
+      code = EX_BAD_PARCELABLE;
+  } else if (e instanceof IllegalArgumentException) {
+      code = EX_ILLEGAL_ARGUMENT;
+  } else if (e instanceof NullPointerException) {
+      code = EX_NULL_POINTER;
+  } else if (e instanceof IllegalStateException) {
+      code = EX_ILLEGAL_STATE;
+  }
+  writeInt(code);
+  if (code==0) throw new RuntimeException();
+#+END_SRC
+- Binder.stub.onTransact()
+#+BEGIN_SRC c
+  case TRANSACTION_foo:
+  {
+      data.enforceInterface(DESCRIPTOR);
+      int _result = this.foo();
+      reply.writeNoException();
+      reply.writeInt(_result);
+      return true;
+  }
+#+END_SRC
 **** local exceptions
-      `local exceptions` stands for `exceptions occurred other than stub.onTransact(), e.g. binder error`
-#+BEGIN_EXAMPLE
-      try {
-        _data.writeInterfaceToken(DESCRIPTOR);
-	mRemote.transact(Stub.TRANSACTION_foo, _data, _reply, 0); // binder's own exceptions may be thrown here .
-	  BinderPorxy.transact()
-	    android_os_BinderProxy_transact() // native here
-	      err=BpBinder.transact()
-	        err=IPCTheadState.transact()
-		  err=waitForResponse()
-		    .. talk with driver, may return err for errors like FAILED_EXCEPTION, DEAD_OBJECT, NO_MEMORY, PERMISSION_DENIED ...
-	      signalExceptionForError(err);
-	        switch err:
-		  case EPERM: jniThrowException("java/lang/SecurityException")
-		  case FAILED_TRANSACTION: LOGE("!!! FAILED BINDER TRANSACTION !!!"); // doesn't throw exceptions!
-		  ...
-	_reply.readException(); // stub initiated exceptions may be thrown here
-	_result = _reply.readInt();
-      }
-#+END_EXAMPLE
+`local exceptions` stands for `exceptions occurred other than stub.onTransact(), e.g. binder error`
+#+BEGIN_SRC text
+  try {
+    _data.writeInterfaceToken(DESCRIPTOR);
+    mRemote.transact(Stub.TRANSACTION_foo, _data, _reply, 0); // binder's own exceptions may be thrown here .
+      BinderPorxy.transact()
+        android_os_BinderProxy_transact() // native here
+          err=BpBinder.transact()
+            err=IPCTheadState.transact()
+              err=waitForResponse()
+                .. talk with driver, may return err for errors like FAILED_EXCEPTION, DEAD_OBJECT, NO_MEMORY, PERMISSION_DENIED ...
+          signalExceptionForError(err);
+            switch err:
+              case EPERM: jniThrowException("java/lang/SecurityException")
+              case FAILED_TRANSACTION: LOGE("!!! FAILED BINDER TRANSACTION !!!"); // doesn't throw exceptions!
+              ...
+    _reply.readException(); // stub initiated exceptions may be thrown here
+    _result = _reply.readInt();
+  }
+#+END_SRC
 **** To summarize
       - binder.stub.proxy need to invoke Parcel.readException() to manually detect whether exceptions occurred in the stub side.
       - only 5 RuntimeException occurred in stub.onTransact can be eventually caught by stub and send to proxy (RemoteException is caught by execTransact,
@@ -747,47 +753,47 @@ IPCThreadState need to use ProcessState to interact with binder driver
         IBinder to do proxy works. e.g. Call ibinder->transact.
      IXx.asInterface(ibinder) actually call IXx.stub.proxy(ibinder) to convert the ibinder as an proxy interface.
 ** Java Binder vs. C++ binder
-    java binder is just an encapsulation of c++ binder
-    Binder,BinderProxy vs. JavaBBinder, BpBinder
+java binder is just an encapsulation of c++ binder
+Binder,BinderProxy vs. JavaBBinder, BpBinder
 *** binder proxy in java
 #+BEGIN_EXAMPLE
-     IBinder.transact()   // binder proxy in java is BinderProxy
-       BinderProxy.transact() // native
-         android_os_BinderProxy_transact() // in android_util_Binder.cpp
-	   IBinder* target = env->GetIntField(obj, gBinderProxyOffsets.mObject); //target is a BpBinder
-	     err=BpBinder->transact()->IPCThreadState->transact()
-	       ...
-	     signalExceptionForError(env, obj, err);
+  IBinder.transact()   // binder proxy in java is BinderProxy
+    BinderProxy.transact() // native
+      android_os_BinderProxy_transact() // in android_util_Binder.cpp
+        IBinder* target = env->GetIntField(obj, gBinderProxyOffsets.mObject); //target is a BpBinder
+          err=BpBinder->transact()->IPCThreadState->transact()
+            ...
+          signalExceptionForError(env, obj, err);
 #+END_EXAMPLE
 *** binder stub in java
-     - initialization
+- initialization
 #+BEGIN_EXAMPLE
-       Binder() // ctor
-         init(); // native
-           android_os_Binder_init()
-	     JavaBBinderHolder(env, clazz); // JavaBBinderHolder is a lazy holder for JavaBBinder
-	     // lazy evaluation of JavaBBinderHolder.get() will init JavaBBinder and set to gBinderOffsets.mObject
-	     env->SetIntField(clazz, gBinderOffsets.mObject, (int)jbh);
+  Binder() // ctor
+    init(); // native
+      android_os_Binder_init()
+        JavaBBinderHolder(env, clazz); // JavaBBinderHolder is a lazy holder for JavaBBinder
+        // lazy evaluation of JavaBBinderHolder.get() will init JavaBBinder and set to gBinderOffsets.mObject
+        env->SetIntField(clazz, gBinderOffsets.mObject, (int)jbh);
 #+END_EXAMPLE
-     - writeStrongBinder
+- writeStrongBinder
 #+BEGIN_EXAMPLE
-       Parcel.writeStrongBinder() // native
-         android_os_Parcel_writeStrongBinder()
-	   parcel->writeStrongBinder(ibinderForJavaObject(env, object));
-	     if (env->IsInstanceOf(obj, gBinderProxyOffsets.mClass)): // binder is proxy
-	       env->GetIntField(obj, gBinderProxyOffsets.mObject);
-	     else if (env->IsInstanceOf(obj, gBinderOffsets.mClass)): // binder is stub
-	       env->GetIntField(obj, gBinderOffsets.mObject); // binder initialization will set this field
+  Parcel.writeStrongBinder() // native
+    android_os_Parcel_writeStrongBinder()
+      parcel->writeStrongBinder(ibinderForJavaObject(env, object));
+        if (env->IsInstanceOf(obj, gBinderProxyOffsets.mClass)): // binder is proxy
+          env->GetIntField(obj, gBinderProxyOffsets.mObject);
+        else if (env->IsInstanceOf(obj, gBinderOffsets.mClass)): // binder is stub
+          env->GetIntField(obj, gBinderOffsets.mObject); // binder initialization will set this field
 #+END_EXAMPLE
-     - onTransact
-#+BEGIN_EXAMPLE
-       JavaBBinder.onTransact() // c++
-         env->CallBooleanMethod(mObject, gBinderOffsets.mExecTransact, ...)
-	   Binder.execTransact()
-	     Binder.onTransact()
-         excep = env->ExceptionOccurred();
-	 report_exception(env, excep,...)
-#+END_EXAMPLE
+- onTransact
+#+BEGIN_SRC text
+  JavaBBinder.onTransact() // c++
+    env->CallBooleanMethod(mObject, gBinderOffsets.mExecTransact, ...)
+      Binder.execTransact()
+        Binder.onTransact()
+    excep = env->ExceptionOccurred();
+    report_exception(env, excep,...)
+#+END_SRC
 
 ** misc
 *** Parcelable VS. Serializable

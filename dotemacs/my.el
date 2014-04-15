@@ -510,3 +510,9 @@ details on the language and supported extensions."
 		 (nreverse artlist)))
 	     groups))))))
   )
+
+
+(defun sw/ansi-color-region (beg end)
+  "interactive version of func"
+  (interactive "r")
+  (ansi-color-apply-on-region beg end))
