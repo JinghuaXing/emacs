@@ -452,32 +452,75 @@ CardTable 实际就是一个 write barrier, GC Heap 被分割为固定大小的 
 card 被标记为 dirty. 如此一来, 重新标记时只需要考虑这些 dirty 的 card
 对应的内存中的对象. 
 #+BEGIN_SRC text
-  scanDirtyCards
-    HeapBitmap *markBits = ctx->bitmap;
-    const u1 *card = start, *prevAddr = NULL;
-    while (card < end):
-      if (*card != GC_CARD_DIRTY):
-        return card;
-      while (ptr < limit):
-        // 所谓的 gray object, 是指该 object 已经扫描到, 但没有后续进一步扫描
-        // dalvic GC mark 部分代码频繁提到 black, white, gray, 应该是指 dalvik
-        // 使用了 tri-color marking (三色标记算法)
-        // 重新标记的目的不是为了把已经 mark 的 unmark, 而是
-        // 将新产生的可达的 object 重新 mark, 确保没有正在使用
-        // 的对象被 GC
-        Object *obj = nextGrayObject(ptr, limit, markBits);
-          // nextGrayObject 的过程是在 dirty card 表示的内存的范围内
-          // 对每一个 8 bytes 对齐的地址在 markBits 中查找, 看看是不是一个
-          // 对象.
-          for (ptr = base; ptr < limit; ptr += HB_OBJECT_ALIGNMENT) {
-            if (dvmHeapBitmapIsObjectBitSet(markBits, ptr)):
-              return (Object *)ptr;
-        scanObject(obj, ctx);
-        ptr = (u1*)obj + ALIGN_UP(objectSize(obj), HB_OBJECT_ALIGNMENT);
-       
-      if (ptr < limit) {
-      /* Ended within the current card, advance to the next card. */
-        ++card;
+    scanDirtyCards
+      HeapBitmap *markBits = ctx->bitmap;
+      const u1 *card = start, *prevAddr = NULL;
+      while (card < end):
+        if (*card != GC_CARD_DIRTY):
+          return card;
+        while (ptr < limit):
+          // 所谓的 gray object, 是指该 object 已经扫描到, 但没有后续进一步扫描
+          // dalvic GC mark 部分代码频繁提到 black, white, gray, 应该是指 dalvik
+          // 使用了 tri-color marking (三色标记算法)
+          // 重新标记的目的不是为了把已经 mark 的 unmark, 而是
+          // 将新产生的可达的 object 重新 mark, 确保没有正在使用
+          // 的对象被 GC
+          // Additionally, although the
+          // collector guarantees to identify all live objects during a
+          // marking phase, some objects may become garbage during that phase
+          // and they will not be reclaimed until the next old
+          // generation collection. Such objects are referred to as floating garbage.
+          Object *obj = nextGrayObject(ptr, limit, markBits);
+            // nextGrayObject 的过程是在 dirty card 表示的内存的范围内
+            // 对每一个 8 bytes 对齐的地址在 markBits 中查找, 看看是不是一个
+            // 对象.
+            for (ptr = base; ptr < limit; ptr += HB_OBJECT_ALIGNMENT) {
+              if (dvmHeapBitmapIsObjectBitSet(markBits, ptr)):
+                return (Object *)ptr;
+          scanObject(obj, ctx);
+          ptr = (u1*)obj + ALIGN_UP(objectSize(obj), HB_OBJECT_ALIGNMENT);
+         
+        if (ptr < limit) {
+        /* Ended within the current card, advance to the next card. */
+          ++card;
 #+END_SRC
 
 
+** Copying GC
+上面提到的都是关于 MarkSweep GC 的, 包含 markBits, liveBits,
+Concurrent GC 等都是和 MarkSweep GC 相关. 因为 android 默认的就是
+MarkSweep GC. 
+
+实际上, android 还实现了一个 Copying GC, 还两种 GC 对外都是实现了
+HeapSource 这一接口, 例如 dvmHeapSourceAlloc 这个负责分配内存的函数在
+HeapSource.cpp (对应 MarkSweep) 和 Copying.cpp (对应 Copying) 中都有实
+现. 编译时只会编译某一个进行 (否则会发生重复定义), 所以两者只能在编译
+时确定使用哪个, 无法动态切换. 
+
+*** dvmHeapSourceAlloc
+因为 Copying GC 能保证所有对象在 GC 后是 compact 的, 所以分配函数非常
+简单: 记录一个指向堆顶的指针, 每次分配时在移动指针即可.
+
+*** dvmScavengeRoots
+与 MarkSweep 把 GC 分为 mark 阶段和 sweep 阶段不同, copying 只有一个
+scavenge 阶段. 
+
+Copying GC 与 MarkSweep 一样, 都是通过 Heap.cpp 的
+dvmCollectGarbageInternal 开始 GC 的
+
+#+BEGIN_SRC text
+  dvmCollectGarbageInternal
+    dvmHeapMarkRootSet();
+      /* do nothing */
+    dvmHeapScanMarkedObjects();
+      dvmScavengeRoots
+    dvmHeapProcessReferences();
+      /* do nothing */
+    dvmHeapSweepUnmarkedObjects();
+      /* do nothing */
+    // ...
+#+END_SRC
+
+可见, 为了把后写的 Copying GC 放到之前按照 MarkSweep 实现的框架了,
+Copying GC 写了许多空的 stub 函数. 最终只有一个 dvmScavengeRoots 是有
+用的. 
