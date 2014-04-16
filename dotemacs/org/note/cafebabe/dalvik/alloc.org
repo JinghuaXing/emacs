@@ -497,9 +497,35 @@ HeapSource.cpp (对应 MarkSweep) 和 Copying.cpp (对应 Copying) 中都有实
 现. 编译时只会编译某一个进行 (否则会发生重复定义), 所以两者只能在编译
 时确定使用哪个, 无法动态切换. 
 
+Copying GC 把整个 GC Heap 分为大小为 512 Bytes 的 block, 并且通过一个
+blockSpace 数组来记录各个 block 的状态, 目前定义了四种状态:
+- BLOCK_FREE
+- BLOCK_FROM_SPACE
+- BLOCK_TO_SPACE
+- BLOCK_CONTINUED
+
+即, Copying GC 并没有像传统的 Copying GC 那样, 把 heap 分为两个固定大
+小的空间, 也没有像 hot spot 那样分为一个 Eden 和两个 survivor. 
+
+
 *** dvmHeapSourceAlloc
-因为 Copying GC 能保证所有对象在 GC 后是 compact 的, 所以分配函数非常
-简单: 记录一个指向堆顶的指针, 每次分配时在移动指针即可.
+初始状态下所有 block 都为 free, 当每次调用 dvmHeapSourceAlloc 时,
+Copying GC 会通过两个指针记录当前正在"使用"的 block:
+
+#+BEGIN_SRC text
+  /* Start of free space in the current block. */
+  u1 *allocPtr;
+  /* Exclusive limit of free space in the current block. */
+  u1 *allocLimit;
+#+END_SRC
+
+若要分配的对象大小还能放在当前正在"使用"的 block 中, 则直接通过
+advance allocPtr 的方法来分配. 
+
+若当前 block 大小不够了, 则通过 allocateBlocks(heapSource, blocks) 分
+配一个或多个新的连续 block, 然后把这些 block 在 blockSpace 中标记为
+BLOCK_TO_SPACE, 并且修改 allocPtr 和 allocLimit, 把当前正在"使用" 的
+block 指向新的 block.
 
 *** dvmScavengeRoots
 与 MarkSweep 把 GC 分为 mark 阶段和 sweep 阶段不同, copying 只有一个
@@ -524,3 +550,147 @@ dvmCollectGarbageInternal 开始 GC 的
 可见, 为了把后写的 Copying GC 放到之前按照 MarkSweep 实现的框架了,
 Copying GC 写了许多空的 stub 函数. 最终只有一个 dvmScavengeRoots 是有
 用的. 
+
+
+dvmScavengeRoots 需要解决几个问题:
+1. 把对象从 BLOCK_FROM_SPACE 的 block 复制到 BLOCK_TO_SPACE
+2. 修改引用关系
+3. 对 `pinning` 的对象要特殊处理
+4. 处理 hashcode
+
+#+BEGIN_SRC text
+  dvmScavengeRoots
+    dvmHeapSourceFlip();
+      // 把类型为 BLOCK_TO_SPACE 的 block 变为 BLOCK_FROM_SPACE
+      // 因为 dvmHeapSourceAlloc 分配的对象都放在 BLOCK_TO_SPACE 中
+      
+    /*
+    ,* Promote blocks with stationary objects.
+    ,*/
+    pinThreadList();
+    pinReferenceTable(&gDvm.jniGlobalRefTable);
+    pinReferenceTable(&gDvm.jniPinRefTable);
+    pinHashTableEntries(gDvm.loadedClasses);
+    pinHashTableEntries(gDvm.dbgRegistry);
+    pinPrimitiveClasses();
+    pinInternedStrings();
+  
+    // 重置 allocPtr 和 allocLimit
+    gDvm.gcHeap->heapSource->allocPtr = allocateBlocks(gDvm.gcHeap->heapSource, 1);
+    gDvm.gcHeap->heapSource->allocLimit = gDvm.gcHeap->heapSource->allocPtr + BLOCK_SIZE;
+  
+    scavengeThreadList();
+    scavengeReference(&gDvm.outOfMemoryObj);
+    scavengeReference(&gDvm.internalErrorObj);
+    scavengeReference(&gDvm.noClassDefFoundErrorObj);
+    scavengeInternedStrings();
+
+    scavengeBlockQueue();
+
+    preserveSoftReferences(&gDvm.gcHeap->softReferences);
+    clearWhiteReferences(&gDvm.gcHeap->weakReferences);
+    processFinalizableReferences();
+    clearWhiteReferences(&gDvm.gcHeap->softReferences);
+    clearWhiteReferences(&gDvm.gcHeap->weakReferences);
+    clearWhiteReferences(&gDvm.gcHeap->phantomReferences);
+    clearFromSpace(gcHeap->heapSource);
+#+END_SRC
+与 MarkSweep 采用一个 markStack 来迭代 mark 类似, Copying GC 使用一个
+blockQueue 进行迭代式的 scavenge.
+
+在上面的函数中, scavengeBlockQueue 之前的各种 scavangeXxx 类似于
+MarkSweep 的 scanRootSet, 这些函数会负责对 GC root 进行初步的
+scavange, 主要是通过 allocateGray 在 BLOCK_TO_SPACE 生成 GC ROOT 的
+copy. 这个新对象被称为 gray object, 是因为它们还需要后续的处理: 
+
+1. 它引用到的其他对象还没处理
+2. 它引用的对象的指针需要被调整
+
+以下面的对象为例:
+#+BEGIN_SRC java
+  class A {
+      B b;
+      C c;
+  }
+  
+  class B {
+      int x;
+  }
+  
+  class C {
+      B b2;
+  }
+#+END_SRC
+
+假设 A 对象有 GC root, 则 
+1. scavange a, blockQueue 为 {a'}, 但其 a'.b, a'.c 都指向旧的 b,c 的地址.
+2. scavange a', 导致 b,c 被 copy 到 b',c', 此时 blockQueue 为 {b',c'}
+3. scavange b'
+4. scavange c', blockQueue 为 {b2'}
+5. scavange b2'
+
+可见, scavange 过程是一个 BFS 过程.
+
+BFS 中对每个节点的处理, 主要是 scavengeObject
+
+#+BEGIN_SRC text
+  scavengeObject
+    scavengeDataObject
+      scavengeReference((Object **) obj);
+      for every field:
+        Object **ref = (Object **)((u1 *)obj + offset);
+        scavengeReference(ref);
+#+END_SRC
+
+最主要的代码是在 scavengeReference, 当我们对 a'->b 调用scavengeReference 时,
+会导致:
+1. a'->b 被复制到 b' 
+2. a'->b 这个引用被修改为 a'->b'
+3. b' 被加入 blockQueue 中
+
+#+BEGIN_SRC text
+  scavengeReference(Object ** obj)
+    // toSpaceContains, 说明 *obj 已经是复制后的对象, 且上层引用的也是新
+    // 的对象了, 直接返回
+    if (toSpaceContains(*obj)):
+      LOG_SCAV("scavengeReference skipping pinned object @ %p", *obj);
+      return;
+    if (isForward(*obj)):
+      // 说明 a'->b 指向还是旧的 b 对象, 但是旧的 b 对象已经被标记为 forward
+      // 即 b' 已经生成, 通过 getForward 可以拿到这个 b'
+      ,*obj = (Object *)getForward(*obj);
+      return;
+    // a'->b 还没经过 copy
+    toObj = transportObject(fromObj);
+      assert(fromSpaceContains(fromObj));
+      toObj = allocateGray(allocSize);
+        addr = dvmHeapSourceAlloc(size);
+        block = addressToBlock(heapSource, (const u1 *)addr);
+        // 新的 gray object 进行 blockQueue
+        enqueueBlock(heapSource, block);
+      memcpy(toObj, fromObj, copySize);
+    setForward(toObj, fromObj);
+      ,*(unsigned long *)fromObj = (uintptr_t)toObj | 0x1;
+    ,*obj = (Object *)toObj;    
+      
+#+END_SRC
+
+**** forward
+getForward, isForward, setForward 这三个函数是用来实现对象移动后指针的
+重定位的. 
+例如, 假设 a->b 和 c->b2 本来指向的是同一个 B 对象. 当 scavenge a 的过
+程中, b 被复制到 b', 那么 scavenge c 时, 如果把 c'->b2 指向 b'?
+
+当 b 被复制到 b' 时, 会调用 setForward(b',b), 即
+
+#+BEGIN_SRC text
+    *(unsigned long *)b = (uintptr_t)b' | 0x1;
+#+END_SRC
+
+可见, setForward 后, 原来的 b 对象不再是一个有效的 java 对象, 因为它的
+每一个 long 会被改写为 b' 的地址加一个 0x1 的标记 (这种 b' | 0x1 是有
+效的, 因为 b' 保证是 8 bytes 对齐的), 这种改写虽然破坏了 b 对象, 但信
+息通过 b' 已经保存了下来, 没有什么问题. 
+
+当 scavenge c' 时, 通过对 c'->b2 执行 isForward 判断, 可以知道 b2' 是
+否存在, 若已经存在, 则直接通过 getForward 从 b2 中获得 b2' 地址即可. 
