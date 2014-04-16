@@ -505,7 +505,7 @@ blockSpace 数组来记录各个 block 的状态, 目前定义了四种状态:
 - BLOCK_CONTINUED
 
 即, Copying GC 并没有像传统的 Copying GC 那样, 把 heap 分为两个固定大
-小的空间, 也没有像 hot spot 那样分为一个 Eden 和两个 survivor. 
+小的空间, 也没有像 hotspot 那样分为一个 eden 和两个 survivor. 
 
 
 *** dvmHeapSourceAlloc
@@ -547,9 +547,8 @@ dvmCollectGarbageInternal 开始 GC 的
     // ...
 #+END_SRC
 
-可见, 为了把后写的 Copying GC 放到之前按照 MarkSweep 实现的框架了,
-Copying GC 写了许多空的 stub 函数. 最终只有一个 dvmScavengeRoots 是有
-用的. 
+可见, 为了把后写的 Copying GC 放到之前按照 MarkSweep 实现的框架,Copying
+GC 写了许多空的 stub 函数. 最终只有一个 dvmScavengeRoots 是有用的.
 
 
 dvmScavengeRoots 需要解决几个问题:
@@ -698,4 +697,24 @@ getForward, isForward, setForward 这三个函数是用来实现对象移动后�
 息通过 b' 已经保存了下来, 没有什么问题. 
 
 当 scavenge c' 时, 通过对 c'->b2 执行 isForward 判断, 可以知道 b2' 是
-否存在, 若已经存在, 则直接通过 getForward 从 b2 中获得 b2' 地址即可. 
+否存在, 若已经存在, 则直接通过 getForward 从 b2 中获得 b2' 地址即可.
+
+**** hashcode
+#+BEGIN_SRC text
+  Object *transportObject(const Object *fromObj)
+    if (LW_HASH_STATE(fromObj->lock) != LW_HASH_STATE_UNHASHED):
+      /*
+      ,* The object has been hashed or hashed and moved.  We must
+      ,* reserve an additional word for a hash code.
+      ,*/
+      allocSize += sizeof(u4);
+    toObj = allocateGray(allocSize);
+    if (LW_HASH_STATE(fromObj->lock) == LW_HASH_STATE_HASHED):
+      /*
+      ,* The object has had its hash code exposed.  Append it to the
+      ,* instance and set a bit so we know to look for it there.
+      ,*/
+      ,*(u4 *)(((char *)toObj) + copySize) = (u4)fromObj >> 3;
+      toObj->lock |= LW_HASH_STATE_HASHED_AND_MOVED << LW_HASH_STATE_SHIFT;
+  
+#+END_SRC
