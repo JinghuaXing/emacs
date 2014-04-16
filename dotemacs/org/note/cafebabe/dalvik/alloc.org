@@ -574,6 +574,11 @@ dvmScavengeRoots 需要解决几个问题:
     pinHashTableEntries(gDvm.dbgRegistry);
     pinPrimitiveClasses();
     pinInternedStrings();
+      // 所谓的 pin, 就是把一个 object 所在的 block 由 BLOCK_FROM_SPACE
+      // 变为 BLOCK_TO_SPACE
+      promoteBlockByAddr(*addr)
+        heapSource->blockSpace[block] = BLOCK_TO_SPACE;
+        enqueueBlock(heapSource, block);
   
     // 重置 allocPtr 和 allocLimit
     gDvm.gcHeap->heapSource->allocPtr = allocateBlocks(gDvm.gcHeap->heapSource, 1);
@@ -584,9 +589,9 @@ dvmScavengeRoots 需要解决几个问题:
     scavengeReference(&gDvm.internalErrorObj);
     scavengeReference(&gDvm.noClassDefFoundErrorObj);
     scavengeInternedStrings();
-
+  
     scavengeBlockQueue();
-
+  
     preserveSoftReferences(&gDvm.gcHeap->softReferences);
     clearWhiteReferences(&gDvm.gcHeap->weakReferences);
     processFinalizableReferences();
@@ -650,8 +655,8 @@ BFS 中对每个节点的处理, 主要是 scavengeObject
 
 #+BEGIN_SRC text
   scavengeReference(Object ** obj)
-    // toSpaceContains, 说明 *obj 已经是复制后的对象, 且上层引用的也是新
-    // 的对象了, 直接返回
+    // toSpaceContains, 说明 *obj 已经是复制后的对象(或者该对象是 pin 状
+    // 态),且上层引用的也是新的对象了, 直接返回
     if (toSpaceContains(*obj)):
       LOG_SCAV("scavengeReference skipping pinned object @ %p", *obj);
       return;
