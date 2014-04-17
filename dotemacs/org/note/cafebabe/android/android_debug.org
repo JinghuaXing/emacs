@@ -51,9 +51,9 @@ SIG_ABORT 等信号时, 会因为 debugger.c 的原因向 debuggerd.c 发送通�
 debuggerd.c 负责 dump tombstone 文件, dump 完成后向原进程再次发送同样
 的信号, 这时进程才真正退出. 
 
-*** debugger.c
+*** debugger.cpp
 
-debugger.c 由 bionic 的 linker 负责嵌入到每一个 elf 文件的 _start 段,
+debugger.cpp 由 bionic 的 linker 负责嵌入到每一个 elf 文件的 _start 段,
 所以每一个进程都会自动执行该代码. 它的作用主要是 catch 住所有会导致退
 出的信号, 例如 SIG_ABRT, SIG_SEGV 等 (但不包括 SIG_KILL). 对应的
 signal handler 就是向 debuggerd.c 发送消息, 请求 dump tombstone, 同时,
@@ -63,6 +63,8 @@ handler 置为 default.
 因为 SIG_KILL 无法被 catch, 所以 tombstone 无法处理 java crash, 因为
 java crash 是通过 dalvik 向自己发送 SIG_KILL 实现的.
 
+*** 手动生成 tombstone
+通过 debuggerd -b <pid> 可以直接生成 pid 对应进程的 tombstone
 ** watchdog
 ** anr trace
 *** AMS 发送 SIGQUIT (3)
@@ -92,3 +94,114 @@ SIG_QUIT 的 handler 如下:
 #+END_SRC
 
 参考: dalvik thread suspend
+*** 手动生成 trace
+kill -3 <pid>
+** UncaughtHandler 打印的 trace
+除了 debuggerd/anr trace 外, java 程序因为 UncaughtHandler 退出时也会
+打印 trace
+
+#+BEGIN_SRC java
+  try {
+      // Bring up crash dialog, wait for it to be dismissed
+      ActivityManagerNative.getDefault().handleApplicationCrash(
+          mApplicationObject, new ApplicationErrorReport.CrashInfo(e));
+  } catch (Throwable t2) {
+  
+  } finally {
+      // Try everything to make sure this process goes away.
+      Process.killProcess(Process.myPid());
+      System.exit(10);
+  }
+#+END_SRC
+可见, 在 killProcess 之前, AMS.handleApplicationCrash 会被调用, 而
+handleApplicationCrash 会调用某些 controller 例如 monkey 的相应代码,
+在进程被 kill 之前打印出异常的信息. 
+
+** 程序中生成 c++ trace
+
+C++也是支持异常处理的，异常处理库中，已经包含了获取backtrace的接口，
+Android也是利用这个接口来打印堆栈信息的。在Android的C++中，已经集成了一
+个工具类CallStack，在libutils.so中。使用方法：
+
+#+BEGIN_SRC c++
+  #include <utils/CallStack.h>  
+  CallStack stack;  
+  stack.update();  
+  stack.dump();  
+#+END_SRC
+** 程序中使用 libcorkscrew 生成 c trace
+
+http://blog.csdn.net/freshui/article/details/9456889
+
+实际上 debuggerd 就是用 libcorkscrew 生成的 c trace
+
+#+BEGIN_SRC c
+  #define MAX_DEPTH                       31  
+  #define MAX_BACKTRACE_LINE_LENGTH   800  
+  #define PATH "/system/lib/libcorkscrew.so"  
+    
+  typedef ssize_t (*unwindFn)(backtrace_frame_t*, size_t, size_t);  
+  typedef void (*unwindSymbFn)(const backtrace_frame_t*, size_t, backtrace_symbol_t*);  
+  typedef void (*unwindSymbFreeFn)(backtrace_symbol_t*, size_t);  
+    
+  static void *gHandle = NULL;  
+    
+  static int getCallStack(void){  
+      ssize_t i = 0;  
+      ssize_t result = 0;  
+      ssize_t count;  
+      backtrace_frame_t mStack[MAX_DEPTH];  
+      backtrace_symbol_t symbols[MAX_DEPTH];  
+    
+      unwindFn unwind_backtrace = NULL;  
+      unwindSymbFn get_backtrace_symbols = NULL;  
+      unwindSymbFreeFn free_backtrace_symbols = NULL;  
+    
+      // open the so.  
+      if(gHandle == NULL) gHandle = dlopen(PATH, RTLD_NOW);  
+    
+      // get the interface for unwind and symbol analyse  
+      if(gHandle != NULL) unwind_backtrace = (unwindFn)dlsym(gHandle, "unwind_backtrace");  
+      if(gHandle != NULL) get_backtrace_symbols = (unwindSymbFn)dlsym(gHandle, "get_backtrace_symbols");  
+      if(gHandle != NULL) free_backtrace_symbols = (unwindSymbFreeFn)dlsym(gHandle, "free_backtrace_symbols");  
+    
+      if(!gHandle ||!unwind_backtrace ||!get_backtrace_symbols || !free_backtrace_symbols  ){  
+          ALOGE("Error! cannot get unwind info: handle:%p %p %p %p",  
+                gHandle, unwind_backtrace, get_backtrace_symbols, free_backtrace_symbols );  
+          return result;  
+      }  
+    
+      count= unwind_backtrace(mStack, 1, MAX_DEPTH);  
+      get_backtrace_symbols(mStack, count, symbols);  
+    
+      for (i = 0; i < count; i++) {  
+          char line[MAX_BACKTRACE_LINE_LENGTH];  
+    
+          const char* mapName = symbols[i].map_name ? symbols[i].map_name : "<unknown>";  
+          const char* symbolName =symbols[i].demangled_name ? symbols[i].demangled_name : symbols[i].symbol_name;  
+          size_t fieldWidth = (MAX_BACKTRACE_LINE_LENGTH - 80) / 2;  
+            
+          if (symbolName) {  
+              uint32_t pc_offset = symbols[i].relative_pc - symbols[i].relative_symbol_addr;  
+              if (pc_offset) {  
+                  snprintf(line, MAX_BACKTRACE_LINE_LENGTH, "#%02d  pc %08x  %.*s (%.*s+%u)",  
+                           i, symbols[i].relative_pc, fieldWidth, mapName,  
+                           fieldWidth, symbolName, pc_offset);  
+              } else {  
+                  snprintf(line, MAX_BACKTRACE_LINE_LENGTH, "#%02d  pc %08x  %.*s (%.*s)",  
+                           i, symbols[i].relative_pc, fieldWidth, mapName,  
+                           fieldWidth, symbolName);  
+              }  
+          } else {  
+              snprintf(line, MAX_BACKTRACE_LINE_LENGTH, "#%02d  pc %08x  %.*s",  
+                       i, symbols[i].relative_pc, fieldWidth, mapName);  
+          }  
+    
+          ALOGD("%s", line);  
+      }  
+    
+      free_backtrace_symbols(symbols, count);  
+    
+      return result;  
+  }  
+#+END_SRC
