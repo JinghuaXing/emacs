@@ -11,7 +11,6 @@ JIT 的入口是 common_updateProfile
     // 若 threshold 已经为 0, 说明该代码是 hot 的, 然后会跳到 common_Profile 进行 jit 相关操作. 否则直接
     // 通过 GOTO_NEXT 继续执行 interp
     common_Profile:
-      GET_JIT_THRESHOLD rIBASE rINST  # leaves rSELF in %ecx
       // 根据 pc 查找该 trace 是否已经被编译      
       call   dvmJitGetTraceAddrThread  # (pc, self)
       // 若还没有被编译出来
@@ -71,5 +70,4 @@ byte code 的解释基本都是一样的, 例如:
         // trace build 结束, 提交给 compiler 编译
           dvmCompilerWorkEnqueue
 #+END_SRC
-** hotness 判断
 * AOT

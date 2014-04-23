@@ -214,3 +214,72 @@ dvmCallMethodV -> interp -> jni -> dvmCallMethodV -> interp
 这些函数调用之间必须把 fp 保存下来, 而无法把 fp 做为一个简单的函数内部
 的局部变量. 所以 dalvik 选择用 thread->interpSave 在函数调用之间保存
 fp, 否则用参数在各个函数间传来传去太麻烦了...
+** breakFrame 与异常处理
+
+当 native 函数通过 dvmCallMethodV 调用其他函数时 (native 或 interp),会
+先 push 一个 break frame, 然后再 push 一个真正的 frame. 这个 break
+frame 的作用是为了处理异常. 因为异常发生时, 正常情况下会通过不断的
+unrolling stack frame 的方式来找到真正的 catcher. 若 stack frame 中某个
+frame 代表着 native 函数, 则 stack frame 的 unrolling 必须停止并停止对
+异常的处理: 因为 native 函数本身一定有一个 ExceptionOccurred 的函数会来
+检查是否有异常.
+
+#+BEGIN_SRC text
+  HANDLE_OPCODE(OP_THROW /*vAA*/)
+    dvmSetException(self, obj);
+    GOTO_exceptionThrown();
+  
+  GOTO_TARGET(exceptionThrown)
+    /* We need to unroll to the catch block or the nearest "break"
+    ,* frame.
+    ,*
+    ,* A break frame could indicate that we have reached an intermediate
+    ,* native call, or have gone off the top of the stack and the thread
+    ,* needs to exit.  Either way, we return from here, leaving the
+    ,* exception raised.
+    ,*
+    ,* If we do find a catch block, we want to transfer execution to
+    ,* that point.
+    ,*/
+    catchRelPc = dvmFindCatchBlock(self, pc - curMethod->insns,exception, false, (void**)(void*)&fp);
+      while (true):
+        StackSaveArea* saveArea = SAVEAREA_FROM_FP(fp);
+        catchAddr = findCatchInMethod(self, saveArea->method, relPc, exception->clazz);
+          /*
+          ,* Search the method's list of exceptions for a match.
+          ,* Returns the offset of the catch block on success, or -1 on failure.
+          ,*/
+          // 通过查找 method 的异常表来确定 exceptions->clazz 是否能被
+          // saveArea->method catch
+        if (catchAddr >= 0)
+          break;
+        if (dvmIsBreakFrame((u4*)saveArea->prevFrame)):
+          // 当前方法中没有找到对应的 catcher, 且 prevFrame 是 break
+          // frame, 则无法继续 unrolling, 返回 -1
+          break;
+        // unrolling
+        else:
+          fp = saveArea->prevFrame;
+          // 获得上一个函数中对应的 relPc
+          relPc = saveArea->savedPc - SAVEAREA_FROM_FP(fp)->method->insns;
+      // while end  
+    // 找到了 catchAddr
+    if (catchRelPc < 0):
+      // 没找到 catcher, 直接退出 interpeter
+      // interpeter 退出后, native 代码会负责清理 stack frame
+      // 在退出之前需要调用 dvmSetException, 因为 native 代码的
+      // ExceptionOccurred 依赖这个调用
+      dvmSetException(self, exception);
+      GOTO_bail();
+    else:
+      // self->interpSave.curFrame 在 dvmFindCatchBlock 时已经被赋为正确
+      // 的值
+      curMethod = SAVEAREA_FROM_FP(fp)->method;
+      self->interpSave.method = curMethod;
+      //methodClass = curMethod->clazz;
+      methodClassDex = curMethod->clazz->pDvmDex;
+      pc = curMethod->insns + catchRelPc;
+      FINISH(0);
+  
+  
+#+END_SRC
