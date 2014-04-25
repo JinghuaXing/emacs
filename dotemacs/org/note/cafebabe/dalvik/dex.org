@@ -226,6 +226,36 @@ encoded_method 中包含一个 code_off 的指针, 指向真正的 code_item
       ushort insns[insns_size];   /*  真正的 byte code*/
   };
 #+END_SRC
+如果 tries_size 不为 0, 则 insns 后还会有另两部分和 exception 相关的内
+容:
+1. try_item_list
+2. encoded_catch_handler_list
+
+这两个 list 对应着 exception table.
+
+其中 tries_item 为:
+#+BEGIN_SRC c
+  struct try_item {
+      // catcher 对应的 start_addr
+      uint start_addr;
+      // catcher 对应的 end_addr 为 start_addr + insn_count
+      ushort insn_count;
+      // catcher 的位置. 以上三个值都是当前 method 中的相对地址
+      ushort handler_off;
+  }
+#+END_SRC
+
+根据 handler_off 可以找到 encoded_catch_handler, encoded_catch_handler
+结构比较啰嗦, 但基本信息为:
+#+BEGIN_SRC c
+  struct encoded_type_addr_pair {
+      // catcher 要 catch 的异常的类型
+      uleb128 type_idx;
+      // catcher 的代码, 也是相对地址
+      uleb128 addr;
+  };
+#+END_SRC
+
 *** dex map list
 #+BEGIN_SRC c
   struct map_list_type {
