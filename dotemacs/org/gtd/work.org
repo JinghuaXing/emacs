@@ -574,3 +574,7 @@ CLOSED: [2014-01-30 Thu 08:29] SCHEDULED: <2014-01-29 Wed>
 [2014-04-21 Mon 10:17]
 * TODO android bootchart                                               :work:
 [2014-04-22 Tue 17:58]
+* TODO bug track: 304128                                                     :work:
+[2014-04-25 Fri 16:03]
+* TODO bug: 305379                                                     :work:
+[2014-04-28 Mon 19:17]
