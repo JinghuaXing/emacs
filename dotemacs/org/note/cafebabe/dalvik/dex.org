@@ -377,7 +377,7 @@ Java 层和 ClassLoader 相关的类主要有:
 #+END_EXAMPLE
 
 
-*** 双亲委派
+*** 双亲委派 loadClass
 ClassLoader 这个基类主要作用是实现双亲委派
 
 #+BEGIN_SRC java
@@ -399,7 +399,17 @@ ClassLoader 这个基类主要作用是实现双亲委派
   }
 #+END_SRC
 
-除非特别指定, app 使用的 PathClassLoader 的 parent 都是
+ClassLoader 通过 parent 指针可以形成一棵树, BootClassLoader 是树根.
+
+在 dalvik 底层代码中并没有 BootClassLoader 这个东西: dalvik 通过把
+clazz->classLoader 置为 NULL 表示该 class 是由 BootClassLoader 加载的.
+
+#+BEGIN_SRC text
+/* defining class loader, or NULL for the "bootstrap" system loader */
+Object*         classLoader;
+#+END_SRC
+
+简单起见, 我们假设 BaseDexClassLoader 的 parent 都是
 BootClassLoader, 所以 PathClassLoader 的 loadClass 会先调用
 BootClassLoader 的 loadClass:
 
@@ -430,7 +440,7 @@ BootClassLoader 的 loadClass:
 无论是 VMClassLoader 或是 DexFile, 最终都通过 native 的
 findClassNoInit 进行 dex 的加载
 
-**** BaseDexClassLoader 根据双亲委派加载 class
+**** ClassLoader 的具体工作过程
 
 dvmResolveClass 是 byte code 中加载 class 的入口
 
@@ -443,6 +453,7 @@ dvmResolveClass 是 byte code 中加载 class 的入口
       // 所以会调用 findClassFromLoaderNoInit
       if (loader != NULL):
         return findClassFromLoaderNoInit(descriptor, loader);
+          // ClassLoader 开始工作
           // 调用 ClassLoader.java 的 loadClass 函数
           const Method* loadClass =
             loader->clazz->vtable[gDvm.voffJavaLangClassLoader_loadClass];
@@ -462,3 +473,20 @@ dvmResolveClass 是 byte code 中加载 class 的入口
       else:
         dvmFindSystemClassNoInit(descriptor);
 #+END_SRC
+
+*** 总结
+
+通过 dvmResolveClass 或其它方法加载类时, 若当前操作的类是通过某个
+ClassLoader 加载的, 则调用那个 ClassLoader 的 loadClass 来加载. 否则,
+直接通过 dvmFindSystemClassNoInit 在 bootstrap class path 中加载. 
+
+通过 ClassLoader 加载时, 双亲委派会优先使用 BootClassLoader 来加载,
+BootClassLoader 最终会通过 dvmFindSystemClassNoInit 来加载.
+
+若 BootClassLoader 没有加载成功, 则 BaseDexClassLoader 的 findClass 会
+负责通过 dvmDefineClass(pDvmDex, descriptor, loader) 在 app 自己的 dex
+中加载类. 
+
+但不管怎么加载, 最终 dex 都是通过 findClassNoInit 加载进来的. 
+
+
