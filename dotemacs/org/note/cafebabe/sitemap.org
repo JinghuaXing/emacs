@@ -1,12 +1,12 @@
 #+TITLE: Sitemap for project cafebabe
 
    + dalvik
-     + [[file:dalvik/alloc.org][Alloc]]
      + [[file:dalvik/dex.org][Dex]]
-     + [[file:dalvik/stack.org][Stack]]
      + [[file:dalvik/oo.org][OO]]
-     + [[file:dalvik/mterp.org][Mterp]]
+     + [[file:dalvik/stack.org][Stack]]
      + [[file:dalvik/jit_aot.org][JIT And AOT]]
+     + [[file:dalvik/alloc.org][Alloc]]
+     + [[file:dalvik/mterp.org][Mterp]]
      + [[file:dalvik/jni.org][Jni]]
      + [[file:dalvik/sync.org][Sync]]
      + [[file:dalvik/indirect_ref_table.org][Indirect Ref Table]]
@@ -14,11 +14,11 @@
      + [[file:dalvik/jni_bridge.org][JniBridge]]
      + [[file:dalvik/dalvik.org][Dalvik]]
    + android
-     + [[file:android/android_binder.org][Android Binder]]
+     + [[file:android/android_security.org][Android Security]]
      + [[file:android/android_debug.org][Android Debug]]
+     + [[file:android/android_binder.org][Android Binder]]
      + [[file:android/android.org][Android]]
      + [[file:android/android_wms.org][Android WindowManager]]
-     + [[file:android/android_security.org][Android Security]]
      + [[file:android/android_save_state.org][Android Save State]]
      + [[file:android/android_root.org][Android Root]]
      + [[file:android/android_resource.org][Android Resource]]
