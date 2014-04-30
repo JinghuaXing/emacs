@@ -197,7 +197,7 @@ java 类加载的过程包含一般包括加载, 解析, 初始化等过程.  �
    由使用 symbolic references 的方式变为使用 direct pointer 或 offset
    的方式. 所以, 即使有 odex, dvmLinkClass 时还是需要做 resolve 的动作. 
 
-Class Loading 的入口是 findClassNoInit
+Class Loading 的入口是 dvmResolveClass->findClassNoInit
 
 findClassNoInit:
 #+BEGIN_SRC text

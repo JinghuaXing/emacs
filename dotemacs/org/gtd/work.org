@@ -9,12 +9,6 @@ CLOSED: [2012-09-02 周日 21:42] SCHEDULED: <2012-04-18 Wed>
 CLOSED: [2012-04-27 周五 00:14]
 * DONE AsyncQueryHandler && loader                                     :work:
 CLOSED: [2012-09-07 Fri 11:59] SCHEDULED: <2012-09-03 Mon>
-* WAITING 文学编程 与 org-babel                                        :work:
-- State "WAITING"    from "TODO"       [2013-07-19 Fri 15:45]
-:PROPERTIES:
-:ID:       89f342d8-f1a3-47d3-9c55-8f97f58f492c
-:END:
-http://www.jstatsoft.org/v46/i03/paper
 * DONE sticky broadcast                                                :work:
 CLOSED: [2012-07-03 Tue 15:32] SCHEDULED: <2012-06-21 Thu>
 * DONE android killed-app detection                                    :work:
@@ -39,16 +33,6 @@ CLOSED: [2012-09-14 Fri 13:13] SCHEDULED: <2012-09-13 Thu>
 according to JLS, YES
 * DONE unciode, java utf-16, surrogate pair                            :work:
 CLOSED: [2012-09-12 Wed 13:40] SCHEDULED: <2012-09-11 Tue>
-* TODO how to deltect GC reason                                        :work:
-:PROPERTIES:
-:ID:       1588189a-9e3a-420a-90c9-49e2079575a3
-:END:
-* TODO scala actor pattern                                             :work:
-- State "TODO"       from "WAITING"    [2013-01-29 Tue 21:53]
-- State "WAITING"    from "TODO"       [2012-11-17 周六 22:12]
-:PROPERTIES:
-:ID:       d4730067-ec50-4cfc-b00b-b88c82c665ba
-:END:
 * DONE gerrit                                                          :work:
 CLOSED: [2012-09-18 Tue 16:02] SCHEDULED: <2012-09-14 Fri>
 CLOCK: [2012-09-18 Tue 14:54]--[2012-09-18 Tue 16:01] =>  1:07
@@ -78,11 +62,6 @@ thread, which will typically alter adapter data.
 CLOSED: [2012-10-23 Tue 19:15]
 - State "DONE"       from "TODO"       [2012-10-23 Tue 19:15]
 [2012-10-17 Wed 19:07]
-* TODO write note about android ActionBar                              :work:
-:PROPERTIES:
-:ID:       d7416216-0060-40d2-b7be-7fc31b429430
-:END:
-[2012-10-18 Thu 14:58]
 * TODO 9-patch PNG                                                     :work:
 :PROPERTIES:
 :ID:       b7d7beef-c310-484d-b7c9-8e509ee3359d
@@ -92,10 +71,6 @@ CLOSED: [2012-10-23 Tue 19:15]
 CLOSED: [2012-10-23 Tue 19:15]
 - State "DONE"       from "TODO"       [2012-10-23 Tue 19:15]
 [2012-10-23 Tue 11:32]
-* TODO how does ImageView scale it's drawable? how is the background scaled? :work:
-:PROPERTIES:
-:ID:       383b8a6d-7a5a-4156-9dcf-9b68780c9313
-:END:
 * TODO ImageView                                                       :work:
 :PROPERTIES:
 :ID:       265a902d-d7e3-4b5f-be6f-c7d7856ca354
@@ -156,11 +131,6 @@ care of it: the PARENT_SAVE_DISABLED_MASK
 CLOSED: [2013-02-25 Mon 15:25]
 - State "DONE"       from "TODO"       [2013-02-25 Mon 15:25]
 [2013-02-05 Tue 19:41]
-* TODO android networking                                              :work:
-:PROPERTIES:
-:ID:       24fdef08-d1c4-4211-9cbc-3993a62694e0
-:END:
-[2013-02-20 Wed 20:06]
 * DONE keytool and openssl                                             :work:
 CLOSED: [2013-07-29 Mon 10:42]
 - State "DONE"       from "TODO"       [2013-07-29 Mon 10:42]
@@ -232,11 +202,6 @@ CLOSED: [2013-07-29 Mon 10:42]
 :ID:       9d22c209-2353-4b7c-a345-887bf602e8d0
 :END:
 [2013-04-18 Thu 17:15]
-* TODO android memory                                                  :work:
-:PROPERTIES:
-:ID:       4e84457a-67a6-47cd-8688-c34b921ca359
-:END:
-[2013-04-19 Fri 13:56]
 * TODO ptmalloc                                                        :work:
 :PROPERTIES:
 :ID:       31ea015e-14bd-4aa1-8ab3-f39c82909bbd
@@ -291,20 +256,10 @@ CLOSED: [2013-09-25 Wed 16:31]
 :ID:       2e78ece3-b8b0-4926-b321-f52d2c9cd2d0
 :END:
 [2013-05-09 Thu 18:13]
-* TODO android 坐标                                                    :work:
-:PROPERTIES:
-:ID:       38f8937a-b4fb-49f2-b71c-01455ca9bda6
-:END:
-[2013-05-10 Fri 18:07]
 * CANCELLED exchange auto_discovery                                    :work:
 CLOSED: [2013-06-17 Mon 16:54]
 - State "CANCELLED"  from "TODO"       [2013-06-17 Mon 16:54]
 [2013-05-13 Mon 19:51]
-* TODO TextChangedListener                                             :work:
-:PROPERTIES:
-:ID:       2c3b9c18-f1b9-4816-aba3-2412420e48ea
-:END:
-[2013-05-14 Tue 11:22]
 * TODO Http the definitive guide                                       :work:
 :PROPERTIES:
 :ID:       d15ad6bd-da89-454b-a4ad-54f63f18e755
@@ -410,11 +365,6 @@ CLOSED: [2013-07-02 Tue 12:11]
 CLOSED: [2013-07-04 Thu 11:58]
 - State "DONE"       from "TODO"       [2013-07-04 Thu 11:58]
 [2013-07-02 Tue 12:11]
-* TODO listview fling 时有后退的错觉?                                  :work:
-:PROPERTIES:
-:ID:       3cc1a22e-2de7-418f-89f5-c5f34f6b9ade
-:END:
-[2013-07-04 Thu 15:45]
 * DONE how menu and overflow menu is saved and restored during configurationChange? :work:
 CLOSED: [2013-07-05 Fri 11:46]
 - State "DONE"       from "TODO"       [2013-07-05 Fri 11:46]
@@ -535,8 +485,6 @@ CLOSED: [2013-12-31 Tue 18:12]
    - weak-reachable and phantom-reachable
 2. Reference.clear()?
 [2013-12-24 Tue 18:33]
-* TODO how to put a process in a specific group                        :work:
-[2014-01-03 Fri 18:02]
 * TODO write a command line to generate trace file                     :work:
 [2014-01-09 Thu 18:54]
 * DONE try zeal for offline documentation browsing                     :work:
@@ -552,29 +500,17 @@ CLOSED: [2014-01-14 Tue 15:53]
 * TODO launch_activity and performTraversals  :work:
 why performTraversals is called so many times (traceview)
 [2014-01-17 Fri 20:10]
-* TODO IO performance: uui vs prime                                    :work:
-[2014-01-21 Tue 21:19]
-* TODO preload class native crash                                      :work:
-[2014-01-21 Tue 21:20]
 * DONE TJ_PLD All-hands Meeting Invitation                             :work:
 CLOSED: [2014-01-30 Thu 08:29] SCHEDULED: <2014-01-29 Wed>
 - State "DONE"       from "TODO"       [2014-01-30 Thu 08:29]
 [2014-01-26 Sun 19:30]
 * TODO AssetAtlasService                                                        :work:
 [2014-02-12 Wed 19:36]
-* TODO android debugerd 原理 (tombstone) 与及 ANR trace 原理           :work:
-[2014-02-19 Wed 10:43]
 * TODO quadtree (四叉树)                                               :work:
 [2014-02-24 Mon 14:10]
-* TODO android watchdog                                                :work:
-[2014-02-24 Mon 19:31]
 * TODO sqlite locale                                                   :work:
 [2014-03-27 Thu 19:32]
 * TODO oprofile                                                        :work:
 [2014-04-21 Mon 10:17]
 * TODO android bootchart                                               :work:
 [2014-04-22 Tue 17:58]
-* TODO bug track: 304128                                                     :work:
-[2014-04-25 Fri 16:03]
-* TODO bug: 305379                                                     :work:
-[2014-04-28 Mon 19:17]

@@ -17,7 +17,7 @@ dex 文件主要由一个 dex header, 多个表(ids, defs)和数据 (data) 部�
 2. dex string ids
 3. dex type ids
 4. dex field ids
-5. dex method ids
+5. dex method ids                 o
 6. dex class defs
 7. data
 8. dex map list
@@ -53,7 +53,7 @@ dex header 中主要下面提到的各个 ids, defs 的 size 和 offset, 以便�
       uint data_size;
       uint data_off;              /* data_off 可能主要用来检查 */
   };
-  
+
 #+END_SRC
 
 *** dex string ids
@@ -63,7 +63,7 @@ dex header 中主要下面提到的各个 ids, defs 的 size 和 offset, 以便�
           uint string_data_off;
       } [string_ids_size];
   };
-  
+
 #+END_SRC
 
 通过这个 string_data_off, 可以在 data 部分找到这个 string 对应的
@@ -77,7 +77,7 @@ string_item 结构.
           uint descriptor_idx;    /* => string_id_item */
       } [type_ids_size];
   };
-  
+
 #+END_SRC
 
 *** dex proto ids
@@ -126,7 +126,7 @@ type_item_list 结构
           uint name_idx;              /* => string_id_item */
       } [method_ids_size];
   };
-  
+
 #+END_SRC
 
 *** dex class defs
@@ -145,7 +145,7 @@ class defs 是这些表中是复杂的一个表.
           uint static_value_off;
       } [class_defs_size];
   };
-  
+
 #+END_SRC
 
 与 string_id_item 中的 string_data_off 及 proto_id_item 中的
@@ -158,7 +158,7 @@ parameters_off 类似, class_def_item 中包含四项 off 也存在到 data 部�
          uint size;
          struct type_item[size];
      };
-     
+
      struct type_item {
          ushort type_index;          /* => type_id_item */
      };
@@ -167,7 +167,7 @@ parameters_off 类似, class_def_item 中包含四项 off 也存在到 data 部�
 **** static_value_off
 
 **** class_data_off
-class_data_off 是 class_def_item 中最复杂的. 
+class_data_off 是 class_def_item 中最复杂的.
 
 #+BEGIN_SRC c
   struct class_data_item {
@@ -175,7 +175,7 @@ class_data_off 是 class_def_item 中最复杂的.
       uleb128 instance_fields_size;
       uleb128 direct_methods_size;
       uleb128 virtual_methods_size;
-  
+
       struct encoded_field_list {
           struct encoded_field {
               /* field_idx_diff 与前面提到的 xxx_idx 不同:
@@ -184,14 +184,14 @@ class_data_off 是 class_def_item 中最复杂的.
               uleb128 field_idx_diff; /* => field_id_item */
           } [static_fields_size];
       } static_fields;
-  
+
       struct encoded_field_list {
           struct encoded_field {
               uleb128 field_idx_diff; /* => field_id_item */
               uleb128 access_flags;
           } [instance_fields_size];
       } instance_fields;
-  
+
       struct encoded_methods_list {
           struct encoded_method {
               uleb128 method_idx_diff; /* => method_id_item */
@@ -199,7 +199,7 @@ class_data_off 是 class_def_item 中最复杂的.
               uleb128 code_off;
           } [direct_methods_size];
       } direct_methods;
-    
+
       struct encoded_methods_list {
           struct encoded_method {
               uleb128 method_idx_diff; /* => method_id_item */
@@ -302,7 +302,7 @@ odex 文件对 dex 做了如下的修改:
 *** classLookup
 *** registerMap
 register map 主要用来帮助 dvm 知道当前各个寄存器中哪些保存着 java 对象.
-以便 GC 时这些会被做为 GC Root. 
+以便 GC 时这些会被做为 GC Root.
 ** class 文件结构
 ** DexFile 与 DvmDex
 dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍. parse
@@ -323,7 +323,7 @@ dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍.
 
 3. 生成 DvmDex 结构
 
-   这个结构实际就是 procmem 时显示的 "dalvik-aux-structure". 
+   这个结构实际就是 procmem 时显示的 "dalvik-aux-structure".
    这是一个辅助的数据结构: 因为 DexFile 基本是直接映射了 odex 文件, 里
    面的内容都是一些 "ID", 但实际执行时程序需要的通常不是 "ID", 而是真
    正的内容, 这时 DvmDex 相当于一个将 "ID" 映射为真正内容的一个 cache.
@@ -337,6 +337,128 @@ dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍.
        if (resClass != NULL):
          return resClass;
    #+END_SRC
+** dex 与 ClassLoader
+ClassLoader 并不是一定要在 native 实现的, 有些 ClassLoader 是完全用
+Java 写的. 但 dalvik 的 ClassLoader 因为底层都依赖于 dex, 所以都是通过
+native 层的 DexFile, DvmDex 实现的.
 
-   
+Java 层和 ClassLoader 相关的类主要有:
 
+1. VMClassLoader
+2. ClassLoader
+3. BootClassLoader
+4. BaseDexClassLoader
+5. PathClassLoader
+
+
+#+BEGIN_EXAMPLE
+
+                              -+-------------+
+                               | ClassLoader |
+                              -+-----+-------+
+                                     |
+                                     |
+                       -+------------+-----------------+
+                        |                              |
+                        |                              |
+                 -+-----+-----------+          -+------+-------------+
+                  | BootClassLoader |           | BaseDexClassLoader |
+                 -+-----+-----------+          -+------+-------------+
+                        |                              |
+              comp      |                       comp   |
+             -+---------+-----+                -+------+---+
+              | VMClassLoader |                 | DexFile  |
+             -+---------+-----+                -+------+---+
+                        |                              |
+                        |                              |
+                    native                         native
+
+
+#+END_EXAMPLE
+
+
+*** 双亲委派
+ClassLoader 这个基类主要作用是实现双亲委派
+
+#+BEGIN_SRC java
+  protected Class<?> loadClass(String className) {
+      Class<?> clazz = findLoadedClass(className);
+  
+      if (clazz == null) {
+          try {
+              clazz = parent.loadClass(className, false);
+          } catch (ClassNotFoundException e) {
+              // Don't want to see this.
+          }
+  
+          if (clazz == null) {
+              clazz = findClass(className);
+          }
+      }
+      return clazz;
+  }
+#+END_SRC
+
+除非特别指定, app 使用的 PathClassLoader 的 parent 都是
+BootClassLoader, 所以 PathClassLoader 的 loadClass 会先调用
+BootClassLoader 的 loadClass:
+
+#+BEGIN_SRC text
+  BootClassLoader.loadClass
+    BootClassLoader.findClass
+      VMClassLoader.loadClass(name, false);
+        // native, 其中 null 表示 ClassLoader 为 null, 以
+        // 便从 bootstrap class 中查找
+        clazz = dvmFindClassByName(nameObj, NULL, resolve);
+          dvmFindClassNoInit
+            dvmFindSystemClassNoInit
+              findClassNoInit(descriptor, null);
+#+END_SRC
+
+若 BootClassLoader 没有找到 class, 则使用 BaseDexClassLoader 有加载
+
+#+BEGIN_SRC text
+  BaseDexClassLoader.findClass(String name)
+    Class c = pathList.findClass(name, suppressedExceptions);
+      Class clazz = dex.loadClassBinaryName(name, definingContext, suppressed);
+        DexFile.defineClassNative(name, loader, cookie);
+          // native
+          clazz = dvmDefineClass(pDvmDex, descriptor, loader);
+            findClassNoInit(descriptor, loader);
+#+END_SRC
+
+无论是 VMClassLoader 或是 DexFile, 最终都通过 native 的
+findClassNoInit 进行 dex 的加载
+
+**** BaseDexClassLoader 根据双亲委派加载 class
+
+dvmResolveClass 是 byte code 中加载 class 的入口
+
+#+BEGIN_SRC text
+  dvmResolveClass
+    // referrer->classLoader 调用该代码的对象使用的 BaseDexClassLoader
+    // jvm spec 规定了若 A 由 cl 加载, 则 A->B 时也要由 cl 负责加载 B
+    dvmFindClassNoInit(className, referrer->classLoader);
+      // 此时 loader 不为空, 它对应的是 app 的 BaseDexClassLoader,
+      // 所以会调用 findClassFromLoaderNoInit
+      if (loader != NULL):
+        return findClassFromLoaderNoInit(descriptor, loader);
+          // 调用 ClassLoader.java 的 loadClass 函数
+          const Method* loadClass =
+            loader->clazz->vtable[gDvm.voffJavaLangClassLoader_loadClass];
+          dvmCallMethod(self, loadClass, loader, &result, nameObj);
+            // 双亲委派导致 ClassLoader.loadClass 被调用
+            // BootClassLoader 导致 dvmFindClassNoInit 再次被调用, 但是
+            // loader 参数为 null
+            ClassLoader.loadClass
+              BootClassLoader.loadClass
+                dvmFindClassNoInit(className, null);
+                  return dvmFindSystemClassNoInit(descriptor);
+              // 若 BootClassLoader.loadClass 失败, 说明这个类是 BaseDexClassLoader
+              // 定义的, 双亲委派会调用 BaseDexClassLoader.findClass
+              BaseDexClassLoader.findClass
+                pathList.findClass(name);
+                  dvmFindClassNoInit(className, loader);
+      else:
+        dvmFindSystemClassNoInit(descriptor);
+#+END_SRC
