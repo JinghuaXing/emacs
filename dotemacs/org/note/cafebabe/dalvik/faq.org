@@ -1,0 +1,20 @@
+#+TITLE: FAQ
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* FAQ
+** 为什么说 dalvik 是基于寄存器的虚拟机
+** dalvik 的 GC 算法是怎样的? 与 hotspot 有何异同
+** dalvik 的 stack frame 如何组织?  native stack 和 java stack 是否是共用的
+** dalvik 的 dex 格式与 class 格式的异同? odex 又是什么
+** 一个 dalvik 进程通常有哪些线程在运行?
+1. 主线程 (dvmCallMethod)
+2. HeapWorker
+3. Binder
+4. ReferenceQueueDaemon
+5. FinalizerWatchdogDaemon
+6. FinalizerDaemon
+7. SignalCatcher
+8. JDWP
+9. compiler
+** davlik 的锁实现与 hotspot 的异同
+

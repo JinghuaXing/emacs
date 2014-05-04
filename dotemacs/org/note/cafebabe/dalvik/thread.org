@@ -13,6 +13,7 @@ dvmSuspendAllThreads 会负责将每一个 thread 的 suspendCount 置 1,
 
 1. status 为 RUNNING 的 thread 将来运行到 safepoint 时会调用
    dvmCheckSuspendPending(self), 进而被 suspend, 变为 SUSPEND 状态.
+   所谓的 safe point, 是指 OP_GOTO, OP_RETURN, OP_THROW 等跳转指令. 
    
 2. status 为 MONITOR, WAIT, SUSPEND  等的 thread 在从 monitor 返回, 从
    WAIT 返回等之前, 会调用 dvmChangeStatus 尝试将status 变成 RUNNING 状
