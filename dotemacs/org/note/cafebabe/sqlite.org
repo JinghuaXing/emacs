@@ -1409,7 +1409,137 @@ atoi("abc")
 - conversion A 不会损失数据精度, 但 conversion B 会
 - conversion A 使用 affinity type 来参与转换, conversion B 不使用
 - 在比较不同的 storage type C 的大小时, 可能会使用到 conversion A
+** sqlite3.c
+*** sqlite3_open_v2
+**** sqlite3_initialize
+#+BEGIN_SRC text
+  sqlite3_initialize
+    // 初始化 mutex 系统
+    sqlite3MutexInit
+      if(!sqlite3GlobalConfig.mutex.xMutexAlloc):
+        // 用户可以通过 sqlite3_config(SQLITE_CONFIG_MUTEX, xxx) 指定一个自
+        // 定义的 mutex 实现 ... 若没有指定, 则根据平台的不同选择一个默认
+        // 的 mutex 实现
+        if(sqlite3GlobalConfig.bCoreMutex):
+          // 若 sqlite 的编译时选项指定了 sqlite 为 SINGLETHREAD,
+          // 或者通过 sqlite3_config 指定了 SQLITE_CONFIG_SINGLETHREAD 则 bCoreMutex
+          // 会为空, 这时整个 mutex 系统会不起作用: 不论是 core mutex 还是
+          // 和 db->mutex 相关的 full mutex
+          pFrom = sqlite3DefaultMutex();
+          // sqlite3DefaultMutex 在编译时会根据平台选择合适的版本
+        else:
+          pFrom = sqlite3NoopMutex();
+          // sqlite3NoopMutex 中所有函数都为空操作.
+        memcpy(&sqlite3GlobalConfig.mutex, pFrom, offsetof(sqlite3_mutex_methods, xMutexAlloc));
+  
+    // 初始化 malloc 系统 
+    sqlite3MallocInit();
+      // 用户可以通过 sqlite_config(SQLITE_CONFIG_MALLOC,xxx)
+      // 指定一个自定义的 malloc 实现
+      if(sqlite3GlobalConfig.m.xMalloc==0):
+          // 平台相关的默认实现
+          sqlite3MemSetDefault();
+  
+    // 初始化各种自定义函数, 如 sum, like ..., 把这些函数通过
+    // sqlite3FuncDefInsert 加入到一个全局的 hash map 中, 这些函数包括:
+    // trim, min, max, typeof, length, substr, round, upper, lower,
+    // hex, random, nullif, sqlite_version, sqlite_log, last_insert_rowid,
+    // sum, total, avg, like, 等
+    sqlite3RegisterGlobalFunctions();
+  
+    // 初始化 pcache
+    sqlite3PcacheInitialize();
+    // 用户可以通过 sqlite_config 指定一个自定义 pcache 实现
+    if(sqlite3GlobalConfig.pcache2.xInit==0):
+      // 设置 pcache 相关的函数为默认的函数, 如 pcache1Init,
+      // pcache1Truncate, xxx
+      sqlite3PCacheSetDefault();
+      
+    // 初始化平台相关的函数, 主要是和文件系统相关, 例如 xRead, xOpen, xDelete
+    // 等, 也有少量和 vfs 无关的函数, 例如 xSleep, xCurrentTime 等
+    sqlite3OsInit();
+#+END_SRC
 
+总结:
+
+sqlite3_initialize 会初始化 malloc, mutex, pcache, 这三个子系统都是可以
+通过 sqlite3_config 设置为一个用户自定义实现的. 另外还要初始化平台相关
+的 vfs 实现. 因为初始化时需要修改一些全局的变量, 所以需要 mutex 子系统
+必须先初始化成功. 若当前模式为 SINGLETHREAD, 则会因为 bCoreMutex 为假导
+致 mutex 系统没有初始化, 进行导致上层应用无法正常在两个线程中同时打开数
+据库.
+
+**** 初始化 db
+#+BEGIN_SRC text
+  openDatabase
+    sqlite3_initialize
+    // 根据 mutex 的配置决定是否启用 db 相关的 db->mutex
+    // 最终的结果是: 若 sqlite3_config 指定了 SERIALIZED
+    // 或者 sqlite3_open_v2 时指定了 FULLMUTEX 选项, 则
+    // db->mutex 会被启用.
+    // 根据 sqlite3_config, sqlite3_open_v2 或编译选项不同
+    // bCoreMutex 和 bFullMutex 会被不同的置位.
+    // sqlite 内部有两种 mutex, 一种是通过
+    // sqlite3MutexAlloc(SQLITE_MUTEX_STATIC_MASTER) 这种形式
+    // 建立的静态的锁, 一共有五个, 对应于 sqlite 中几个不同的
+    // critical area 的加锁.  另一种是通过 db->mutex 保存的和
+    // 单个 db 有关的锁.
+    // 若 bCoreMutex 无效, 则所有 mutex 都无效, 不能有多个线程同时执行
+    // sqlite 相关的代码, 对应于 SINGLETHREAD 的情 况.
+    // 若 bCoreMutex 有效, bFullMutex 无效, 则那几个静态的锁有效,
+    // 表示可以有多个线程同时操作不同的 db connection, 对应于
+    // MULTITHREAD .若 bCoreMutex 有效, bFullMutex 有效, 则
+    // db->mutex 也是有锁保护的, 同一个 db connection 可以在不同的
+    // thread 中同时使用, 对应于 SERIALIZED.
+    
+    if(sqlite3GlobalConfig.bCoreMutex==0):
+      isThreadsafe = 0;
+    else if(flags & SQLITE_OPEN_NOMUTEX):
+      isThreadsafe = 0;
+    else if(flags & SQLITE_OPEN_FULLMUTEX):
+      isThreadsafe = 1;
+    else:
+      isThreadsafe = sqlite3GlobalConfig.bFullMutex;
+    if(isThreadsafe):
+      db->mutex = sqlite3MutexAlloc(SQLITE_MUTEX_RECURSIVE);
+  
+    // 设置默认的 collation
+    createCollation(db, "BINARY", SQLITE_UTF8, 0, binCollFunc, 0);
+    createCollation(db, "RTRIM", SQLITE_UTF8, (void*)1, binCollFunc, 0);
+    createCollation(db, "NOCASE", SQLITE_UTF8, 0, nocaseCollatingFunc, 0);
+  
+    // 默认 collation 为 BINARY
+    db->pDfltColl = sqlite3FindCollSeq(db, SQLITE_UTF8, "BINARY", 0);
+  
+    // 初始化 btree 模块
+    sqlite3BtreeOpen(db->pVfs, zOpen, db, &db->aDb[0].pBt, 0, flags |  SQLITE_OPEN_MAIN_DB);
+  
+    // sqlite 支持通过 attach 的方法在一个 db connection 中打开多个 db.
+    // 这些 db 都放在 aDb 数据中. 默认初始时有两个 db, 一个 main, 代表
+    // sqlite 启动时找开的 db, 还有一个 temp 表示临时 db, 例如通过
+    // create temp table 建立的表都放在 temp db 中.
+    // 例如:
+    // select * from main.test == select * from test;
+    // create temp table test2 (name TEXT);
+    // select * from temp.test2;
+    db->aDb[0].zName = "main";
+    db->aDb[0].safety_level = 3;
+    db->aDb[1].zName = "temp";
+    db->aDb[1].safety_level = 1;
+  
+    // 自动加载一个 extension, 参考 http://www.sqlite.org/loadext.html
+    sqlite3AutoLoadExtensions(db);
+
+    // 初始化一些扩展模块: fts, icu, r-tree
+    sqlite3Fts1Init(db);
+    sqlite3IcuInit(db);
+    sqlite3RtreeInit(db);
+  
+    // 在 openDatabase 过程中并没有任何的数据读取的动作.
+    // sqlite 会把它推迟到第一次读写数据库时.
+#+END_SRC
+*** sqlite3_prepare
+*** sqlite3_step
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
