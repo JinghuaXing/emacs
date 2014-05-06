@@ -1511,8 +1511,16 @@ sqlite3_initialize 会初始化 malloc, mutex, pcache, 这三个子系统都是�
     // 默认 collation 为 BINARY
     db->pDfltColl = sqlite3FindCollSeq(db, SQLITE_UTF8, "BINARY", 0);
   
-    // 初始化 btree 模块
-    sqlite3BtreeOpen(db->pVfs, zOpen, db, &db->aDb[0].pBt, 0, flags |  SQLITE_OPEN_MAIN_DB);
+    // 初始化 btree 模块, 打开数据库文件
+    sqlite3BtreeOpen(db->pVfs, zOpen, db, &db->aDb[0].pBt, 0, flags |SQLITE_OPEN_MAIN_DB);
+      // 真正打开文件
+      sqlite3PagerOpen(pVfs, &pBt->pPager, zFilename, ..)
+      // 读取文件头, 获得 page size 等, 注意 SHORT_READ 不算错误.
+      sqlite3PagerReadFileheader(pBt->pPager,sizeof(zDbHeader),zDbHeader);
+      // 设置默认的 busy handler
+      sqlite3PagerSetBusyhandler(pBt->pPager, btreeInvokeBusyHandler, pBt);
+      // 若上一步成功读到了文件头, 则根据文件头设置 page size
+      sqlite3PagerSetPagesize(pBt->pPager, &pBt->pageSize, nReserve);
   
     // sqlite 支持通过 attach 的方法在一个 db connection 中打开多个 db.
     // 这些 db 都放在 aDb 数据中. 默认初始时有两个 db, 一个 main, 代表
@@ -1529,16 +1537,33 @@ sqlite3_initialize 会初始化 malloc, mutex, pcache, 这三个子系统都是�
   
     // 自动加载一个 extension, 参考 http://www.sqlite.org/loadext.html
     sqlite3AutoLoadExtensions(db);
-
+  
     // 初始化一些扩展模块: fts, icu, r-tree
     sqlite3Fts1Init(db);
     sqlite3IcuInit(db);
     sqlite3RtreeInit(db);
-  
-    // 在 openDatabase 过程中并没有任何的数据读取的动作.
-    // sqlite 会把它推迟到第一次读写数据库时.
 #+END_SRC
+
+**** 总结
+sqlite3_open_v2 的过程:
+1. 会初始化 malloc, mutex, pcache 等相关的回调函数, 根据平台的不同注册
+   一些 vfs 相关的回调函数
+2. 初始化 mutex, 注册一些 min,max, sum 等内部函数, 注册 collation 函数.
+3. 然后打开 btree 和 pager 模块, 使用 pager 从文件头中读取 page size 设置到 pager.
+4. 加载其他 extension, 初始化 fts, icu, r-tree 模块.
+
+在 pager 初始化时, 会真正打开数据库文件并读取文件头, 其他的内容例如
+schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数据库时会
+读取 schema (即 sqlite_master 表)
 *** sqlite3_prepare
+#+BEGIN_SRC text
+  sqlite3LockAndPrepare
+    // prepare 时需要 lock 住 db->mutex, 即 bFullMutex 模式
+    // 因为只有 SERIALIZED 模式下 db->mutex 才起作用, 
+    // 所以非 SERIALIZED 模式下不能在不同线程同时调用 sqlite3_prepare,
+    // 否则会出错
+    sqlite3_mutex_enter(db->mutex);
+#+END_SRC
 *** sqlite3_step
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保

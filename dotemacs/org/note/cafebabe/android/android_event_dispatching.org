@@ -197,7 +197,7 @@ To summarize:
                                              +-------+---------------------------------------------------+
                                                      | 1. find the InputChannel that has focus or touched
                                                      |    (findTouchedWindowAtLocked | findFocusedWindowTargetsLocked)
-                                                     | 2. wake up the related looper
+                                                     | 2. wake up the related looper (通过 pipe)
                                                      | 3. Looper.handleEvent will notify the InputEventReceiver
                                             +--------+------------------------+
                                             | InputEventReceiver.onInputEvent |
