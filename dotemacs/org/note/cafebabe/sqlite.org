@@ -1410,6 +1410,25 @@ atoi("abc")
 - conversion A 使用 affinity type 来参与转换, conversion B 不使用
 - 在比较不同的 storage type C 的大小时, 可能会使用到 conversion A
 ** sqlite3.c
+
+下面使用的测试语句及 byte code 如下:
+#+BEGIN_SRC text
+  sqlite> explain select * from test;
+  0|Trace|0|0|0||00|
+  1|Goto|0|9|0||00|
+  2|OpenRead|0|3|0|1|00|test
+  3|Rewind|0|7|0||00|
+  4|Column|0|0|1||00|test.name
+  5|ResultRow|1|1|0||00|
+  6|Next|0|4|0||01|
+  7|Close|0|0|0||00|
+  8|Halt|0|0|0||00|
+  9|Transaction|0|0|0||00|
+  10|VerifyCookie|0|1|0||00|
+  11|TableLock|0|3|0|test|00|
+  12|Goto|0|2|0||00|
+#+END_SRC
+
 *** sqlite3_open_v2
 **** sqlite3_initialize
 #+BEGIN_SRC text
@@ -1563,8 +1582,69 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
     // 所以非 SERIALIZED 模式下不能在不同线程同时调用 sqlite3_prepare,
     // 否则会出错
     sqlite3_mutex_enter(db->mutex);
+    sqlite3Prepare(db, zSql, nBytes, saveSqlFlag, pOld, ppStmt, pzTail);
+      sqlite3RunParser(pParse, zSqlCopy, &zErrMsg);
+        // the main parser program
+        sqlite3Parser();
+          do{
+            yy_reduce(yypParser,yyact-YYNSTATE);
+              switch( yyruleno ):
+                case 112: /* cmd ::= select */
+                  sqlite3Select(pParse, yymsp[0].minor.yy159, &dest);
+                    sqlite3SelectPrep(pParse, p, 0);
+                      sqlite3SelectExpand(pParse, p);
+                        sqlite3WalkSelect(&w, pSelect);
+                          sqlite3LocateTable()
+                            // 在 parse 阶段需要 read schema
+                            sqlite3ReadSchema();
+                case xxx:
+                  // xxx
+  
+      ,*ppStmt = (sqlite3_stmt*)pParse->pVdbe;    
 #+END_SRC
 *** sqlite3_step
+#+BEGIN_SRC text
+  sqlite3_step(stmt)
+    sqlite3_mutex_enter(db->mutex);
+    sqlite3Step(stmt)
+      sqlite3VdbeExec(vdbe);
+      // sqlite3VdbeExec 相当于一个解释器, 内部实现就是一个 while (true)
+      // {swich} 循环
+        for(pc=p->pc; rc==SQLITE_OK; pc++){
+          OP_GOTO:
+         
+          OP_Transaction:
+            sqlite3BtreeBeginTrans(u.at.pBt, pOp->p2);
+            // 获取 shared lock
+            sqlite3PagerSharedLock
+          OP_OpenRead:
+            allocateCursor(p, pOp->p1, u.aw.nField, u.aw.iDb, 1);
+          sqlite3BtreeCursor(u.aw.pX, ...);
+          OP_Rewind:
+            sqlite3BtreeFirst(u.bl.pCrsr, &u.bl.res);
+            moveToRoot(pCur);
+          OP_Column:
+         
+          OP_ResultRow:
+             // 这一句 byte code 正常会返回 SQLITE_ROW, 而不是 SQLITE_OK,
+             // 导致最外层 for 返回, 整个 sqlite3_step 结束
+             // 下次 step 将以 p->pc 为起点, 即 OP_Next
+             p->pc = pc + 1;
+             rc = SQLITE_ROW;
+             goto vdbe_return;
+          OP_Halt:
+            sqlite3VdbeHalt(p);
+            if autoCommit == 1:
+              vdbeCommit(db, p);
+                // 获得 exclusive lock
+                sqlite3PagerExclusiveLock(sqlite3BtreePager(pBt));
+                sqlite3BtreeCommitPhaseOne
+                sqlite3BtreeCommitPhaseTwo
+                  btreeEndTransaction
+                    releasePage
+                      // 释放锁
+                      pagerUnlockAndRollback
+#+END_SRC
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
