@@ -185,8 +185,8 @@ To summarize:
               +--------------------+        +--------+---+--------+      |
               | ViewRoot.addWindow |        |  InputReaderThread  +------+
               +------+-------------+        +--------+------------+
-                     |                               |   +----------------+
-                     v                               |   v looper.poll    |
+                     |                 notify_key... |   +----------------+
+                     v              notify_motion... v   v looper.poll    |
          +-----------+--------------+       +--------+---+-----------+    |
          | WMS.registerInputChannel +-------+  InputDispatcherThread +----+
          +--------------------------+       +--------+---------------+
@@ -195,10 +195,15 @@ To summarize:
                                              +-------+---------------------------------------------------+
                                              | PhoneWindowManager.interceptKeyBeforeQueueing/Dispatching |
                                              +-------+---------------------------------------------------+
-                                                     | 1. find the InputChannel that has focus or touched
-                                                     |    (findTouchedWindowAtLocked | findFocusedWindowTargetsLocked)
-                                                     | 2. wake up the related looper (通过 pipe)
-                                                     | 3. Looper.handleEvent will notify the InputEventReceiver
+                                                     | find the InputChannel that has focus or touched
+                                    write to pipe    |    (findTouchedWindowAtLocked | findFocusedWindowTargetsLocked)
+                                                     | 唤醒应用一侧的 looper (通过向 pipe 一端写入数据)
+                                             +-------+------------+
+                                             | Looper in ViewRoot |<--+
+                                             +-------+------------+   | looper.poll
+                                                     |                |
+                                                     +----------------+
+                                                     | NativeInputEventReceiver::handleEvent (NativeInputEventReceiver 是 loop 的 callback)
                                             +--------+------------------------+
                                             | InputEventReceiver.onInputEvent |
                                             +---------------------------------+
@@ -217,7 +222,7 @@ To summarize:
 *** Java
 **** InputManagerService
 **** InputEventReceiver & InputChannel
-InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点. 
+InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
 **** InputMonitor
 **** InputFilter
 
@@ -248,7 +253,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
   1. InputReader 通过 pollOnce 在 EventHub 上监听事件
   2. InputReader 和 InputDispatcher 通过一个 looper 进行生产/消费的通知
   3. ViewRootImpl 一侧通过 InputEventReceiver 注册的本进程的 looper 来
-     响应 InputChannel 的通知, 处理事件. 
+     响应 InputChannel 的通知, 处理事件.
 
 ** Event Dispatching ANR
 ** 再看 Looper
@@ -284,7 +289,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
 
 - Java looper 与 C++ looper 的唯一联系, 是 MessageQueue <--->
   NativeMessageQueue, 但 Java MessageQueue 与 NativeMessageQueue 的功
-  能也很有限, 只是借用了 C++ looper 高效的 pollOnce 和 wake 机制. 
+  能也很有限, 只是借用了 C++ looper 高效的 pollOnce 和 wake 机制.
 
 *** C++ Looper
 **** Looper.sendMessage
@@ -295,7 +300,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
       int result = 0;
       for (;;) {
           // 首先, 先返回上一次 for (;;) 循环 处理过的其他通过 addFd() 添加的 fd
-          // 上的事件, 一次返回一件. 
+          // 上的事件, 一次返回一件.
           while (mResponseIndex < mResponses.size()) {
               const Response& response = mResponses.itemAt(mResponseIndex++);
               int ident = response.request.ident;
@@ -314,7 +319,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
                   return ident;
               }
           }
-          
+
           // result != 0 的判断可以使用 pollInner 执行且只执行一次
           if (result != 0) {
               // 这里表示所有 addFd 添加的 fd 上的事件都报告完毕, 现在报
@@ -327,20 +332,20 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
               if (outData != NULL) *outData = NULL;
               return result;
           }
-  
+
           // 上面的代码都只是向上层已处理的事件. pollInner 才是真正处理
           // 事件
           result = pollInner(timeoutMillis);
       }
   }
-  
+
   int Looper::pollInner(int timeoutMillis) {
       // Adjust the timeout based on when the next message is due.
       // pollOnce 被调用时通常会指定一个很大的 timeout (例如
       // LONG_LONG_MAX), 此时会根据 mNextMessageUptime (最近的一个
       // message 的 uptime)调整一下 timeout, 以便通过 epoll 超时来及时的
       // 处理 pending message
-      
+
       if (timeoutMillis != 0 && mNextMessageUptime != LLONG_MAX) {
           nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
           int messageTimeoutMillis = toMillisecondTimeoutDelay(now, mNextMessageUptime);
@@ -349,24 +354,24 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
               timeoutMillis = messageTimeoutMillis;
           }
       }
-  
+
       // Poll.
       int result = ALOOPER_POLL_WAKE;
       mResponses.clear();
       mResponseIndex = 0;
-  
+
       struct epoll_event eventItems[EPOLL_MAX_EVENTS];
       int eventCount = epoll_wait(mEpollFd, eventItems, EPOLL_MAX_EVENTS, timeoutMillis);
-  
+
       // Acquire lock.
       mLock.lock();
-  
+
       // Check for poll timeout. 超时
       if (eventCount == 0) {
           result = ALOOPER_POLL_TIMEOUT;
           goto Done;
       }
-  
+
       for (int i = 0; i < eventCount; i++) {
           int fd = eventItems[i].data.fd;
           uint32_t epollEvents = eventItems[i].events;
@@ -379,7 +384,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
                   }
               } else {
                   // 是被 addFd 中 fd 唤醒的, 则构造一个 response 放到
-                  // mResponse 中, Done 时会处理.  
+                  // mResponse 中, Done 时会处理.
                   ssize_t requestIndex = mRequests.indexOfKey(fd);
                   if (requestIndex >= 0) {
                       int events = 0;
@@ -395,15 +400,14 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
               }
           }
   Done: ;
-  
-      // Invoke pending message callbacks.
+
       // 先处理所有 pending message
       mNextMessageUptime = LLONG_MAX;
       while (mMessageEnvelopes.size() != 0) {
           nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
           const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(0);
           // mMessageEnvelopes 是一个 vector, 但是是按照 uptime 来排序的.
-          // 所有uptime 小于 now 的会被处理 (handleMessage), 
+          // 所有uptime 小于 now 的会被处理 (handleMessage),
           if (messageEnvelope.uptime <= now) {
               // Remove the envelope from the list.
               // We keep a strong reference to the handler until the call to handleMessage
@@ -415,14 +419,14 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
                   mMessageEnvelopes.removeAt(0);
                   mSendingMessage = true;
                   mLock.unlock();
-  
+
                   #if DEBUG_POLL_AND_WAKE || DEBUG_CALLBACKS
                                                  ALOGD("%p ~ pollOnce - sending message: handler=%p, what=%d",
                                                        this, handler.get(), message.what);
                   #endif
                       handler->handleMessage(message);
               } // release handler
-  
+
               mLock.lock();
               mSendingMessage = false;
               result = ALOOPER_POLL_CALLBACK;
@@ -434,10 +438,10 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
               break;
           }
       }
-  
+
       // Release lock.
       mLock.unlock();
-  
+
       // 处理所有 reponse (handleEvent)
       // Invoke all response callbacks.
       for (size_t i = 0; i < mResponses.size(); i++) {
@@ -462,7 +466,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
       }
       return result;
   }
-  
+
 #+END_SRC
 ***** wake
 #+BEGIN_SRC java
@@ -471,7 +475,7 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
       do {
           nWrite = write(mWakeWritePipeFd, "W", 1);
       } while (nWrite == -1 && errno == EINTR);
-  
+
       if (nWrite != 1) {
           if (errno != EAGAIN) {
               ALOGW("Could not write wake signal, errno=%d", errno);
@@ -497,14 +501,14 @@ InputEventReceiver.onInputEvent() 是 ViewRoot 一侧 event dispatch 的起点.
 syncBarrier 实际上就是一种特殊的 Message: 它的 tagetHandler 为 null,
 当 MessageQueue 处理到这种 Message 时, 会停顿下来, 直到该 Message 被
 removeSyncBarrier 移除. 但 asynchronous 的 Message 不受 syncBarrier 的
-限制. 
+限制.
 **** Message.setAsynchronous
 Asynchronous Message 和 通信系统的 OOB 消息类似, 可以通知一些紧急情况,
 因为它不受 syncBarrier 的限制, 可以保证在指定的时间一定会被处理. 但与
 OOB 不同的是, 它并没有单独的通道, 即它要和其他 Message 一起排队.
 
 * Footnotes
-[fn:1] 
+[fn:1]
 
 每次 WMS 的 WindowState 有变化时, 它就会调用:
 
@@ -520,5 +524,3 @@ Input windows 被设置后, InputDispatcher 的
 findFocusedWindowTargetsLocked 或 findTouchedWindowAtLocked 会根据
 input windows 的状态, 选择合适的 InputWindowHandle, 最终找到对应的
 InputChannel.
-
- 
