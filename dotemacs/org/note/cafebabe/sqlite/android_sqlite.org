@@ -1,0 +1,294 @@
+#+TITLE: Android Sqlite
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Android Sqlite
+
+#+BEGIN_EXAMPLE
+
+                                                   +----------------+
+                                                   | SQLiteDatabase |                         +------------------+
+                                                   +-+----------+---+                  +----->+ SQLiteConnection-+-<---+
+                                                     |          |                      |      +------------------+     |
+                                                     |          v                      |      +------------------+     |
+                       +--------------------+--------+     +----+------------------+   +----->+ SQLiteConnection |     |
+                       |                    |              | SQLiteConnection Pool-+---+      +-----+-----+------+     |
+                       v thread_1           v thread_2     +-------+---------------+                |     ^            |
+                  +----+----------+    +----+----------+           ^                                |     |            |
+                  | SQLiteSession |    | SQLiteSession-+-----------+      +----------------------+  |     |            |
+                  +----+-------+--+    +------+--+-----+           |      |PreparedStatementCache+<-+     |            |
+                       |       |              |                    |      +----------------------+        |            |
+                       |       +--------------+--------------------+                                      |            |
+                       |                      |                                                           |            |
+                       |                      +-----------------------------------------------------------+            |
+                       |                                                                                               |
+                       +-----------------------------------------------------------------------------------------------+
+#+END_EXAMPLE
+
+** SQLiteDatabase & SQLiteDatabase (c)
+*** addCustomFunction
+** SQLiteStatement (c)
+Note that `SQLiteStatement' has nothing to do with the native
+`prepared statement', it nothing but a `helper class' to store:
+- sql string
+- bind args
+- db connection (session)
+  
+In fact, there is ONE class named `PreparedStatement', defined in the
+`SQLiteConnection', which corresponds to the `native prepared
+statement', and also there is `PreparedStatementCache' in
+SQLiteConnection to avoid redundant statement preparations. So, cache
+`SQLiteStatement' manually may make no sense? so I really doubt that
+`android providers should use DatabaseUtils.InsertHelper to cache
+SQLiteStatement', as mentioned in:
+
+[[http://www.outofwhatbox.com/blog/2010/12/android-using-databaseutils-inserthelper-for-faster-insertions-into-sqlite-database/#comment-2685][android-using-databaseutils-inserthelper-for-faster-insertions-into-sqlite-database/]]
+
+** SQLiteSession
+** SQLiteConnection & SQLiteConnectionPool
+*** Yield
+*** WAL (Write-ahead Logging)
+http://sqlite.org/wal.html
+** SQLiteProgram & SQLiteQuery & SQLiteQueryBuilder
+** Cursor & CursorWindow
+*** SQLiteCursorDriver
+*** CursorFactory
+*** Cursor
+**** Cursor Class Hierarchy
+
+#+BEGIN_EXAMPLE
+                                    -+----------+
+                                     | Cursor/I |
+                                    -+----+-----+
+                                          |
+                                          |
+                               -+---------+-----------+
+                                | CrossProcessCursor/I|
+                               -+----+----+-----------+
+                                          |
+                                          |
+                                -+-----+--+---------+
+                                 | AbstractCursor/A |
+                                -+--------+---------+
+                                          |
+                      -+------------------+---------------+----------------------+
+                       |                                  |                      |
+          -+-----------+--------------+          -+-------+------+       -+------+------+
+           | AbstractWindowedCursor/A |           | MatrixCursor |        | MergeCursor |
+          -+-----------+--------------+          -+--------------+       -+-------------+
+                       |
+                      -+----------------------------+
+                       |                            |
+              -+-------+------+      -+-------------+-------------+
+               | SqliteCursor |       | BulkCursorToCursorAdaptor |
+              -+--------------+      -+---------------------------+
+#+END_EXAMPLE
+***** Cursor across process
+
+When Cursor in the remote process need to be returned to local process, the
+remote Cursor will be wrapped into a binder object named
+`CursorToBulkCursorAdaptor`, which is not a cursor, but implements methods like
+`onMove`, `getWindow`, etc.
+
+When the local process received the `CursorToBulkCursorAdaptor` binder, it
+again will be wrapped into a local cursor object named
+`BulkCursorToCursorAdaptor`, which is a `AbstractWindowedCursor`
+
+
+#+BEGIN_EXAMPLE
+               -+------------------------+
+                | AbstractWindowedCursor |
+               -+----------+-------------+
+                           |
+                           |
+             -+------------+--------------+
+              | BulkCursorToCursorAdaptor |
+             -+------------+--------------+
+                           |
+                           |
+                  -+-------+------+        local process (e.g. app)
+   --------------- |  BulkCursor  | -------------------
+                  -+-------+------+        remote process (e.g. provider)
+                           |
+                           |
+             -+------------+--------------+
+              | CursorToBulkCursorAdaptor |
+             -+------------+--------------+
+                           |
+                           |
+                    -+----------+
+                     |  Cursor  |
+                    -+----------+
+#+END_EXAMPLE
+
+**** Code Snippet
+***** moveToFirst
+#+BEGIN_SRC text
+  AbstractCursor.moveToFirst
+    AbstractCursor.moveToPosition(0)
+      ret=SqliteCursor.onMove(origPos,0)
+        if mWindow==null || newPosition < mWindow.getStartPosition()
+           || newPosition >= mWindow.getStartPosition()+ mWindow.getNumRows():
+           SqliteCursor.fillWindow(newPosition)
+             mWindow.setStartPosition(newPosition)
+             getQuery().fillWindow(newPosition)
+               SQLiteQuery.nativeFillWindow(nHandle, nStatement, window.mWindowPtr,
+                          startPos, mOffsetIndex);
+                 // Bind the offset parameter, telling the program which row to start with
+                 sqlite3_bind_int(statement, offsetParam, startPos);
+                 while (!windowFull):
+                   sqlite3_step(statement);
+                   window->allocRow();
+                   for (int i = 0; i < numColumns; i++):
+                     int type = sqlite3_column_type(statement, i);
+                     if (type == SQLITE_TEXT):
+                       const char* text = reinterpret_cast<const char*>(sqlite3_column_text(statement, i));
+                       window->putString(addedRows, i, text, sizeIncludingNull);
+                     elif: // other type
+                   // end for
+                 // end while
+                 sqlite3_reset(statement);
+      if ret:
+        mPos=newPos;
+#+END_SRC
+***** getString
+#+BEGIN_SRC text
+  Cursor.getString(pos)
+    AbstractWindowedCursor.getString(pos)
+      mWindow.getString(pos)
+        nativeGetString(pos)
+#+END_SRC
+**** SQLiteCursor
+- SQLiteCursorDriver
+  used to create the SqliteCursor
+- SQLiteQuery
+  used to invoke `nativefillWindow`
+**** To summarize
+1. Cursor by itself is not `CrossProcess`, but with the help of `BulkCursor`
+   ,`BulkCursorToCursorAdaptor` and `CursorToBulkCursorAdaptor`, Cursor can be
+   `CrossProcess`
+2. The most important methods of the `Cursor` object:
+   1) fillWindow
+      
+      `nativefillWindow` will execute the real query, and fill the result set to
+      the `CursorWindow`.  ps. `getCount` will invoke `fillWindow` implicitly.
+      
+   2) onMove
+      
+      `fillWindow` is during `onMove`, e.g. `moveToFirst`, `moveToNext`, ...
+      
+*** CursorWindow
+`CursorWindow` is parcelable, it represents a `window` of sqlite query
+data. The underlying data of a Java CursorWindow object is managed by
+CursorWindow c++ object, in both of the server side and the client
+side.
+
+**** init
+#+BEGIN_SRC text
+  onMove
+    fillWindow
+      clearOrCreateWindow
+        mWindow = new CursorWindow(name);
+          // sCursorWindowSize specifies the window size in kb, e.g. 2048 Kb
+          mWindowPtr = CursorWindow.nativeCreate(name, sCursorWindowSize);
+#+END_SRC
+
+**** how CursorWindow is passed across process
+
+Because `CursorWindow` is only a parcelable (not a binder), so the remote
+`CursorWindow` need to be fetched by the local process again and again,
+e.g. during local `onMove`
+
+#+BEGIN_SRC text
+  BulkCursorToCursorAdaptor.onMove
+    if (mWindow == null
+        || newPosition < mWindow.getStartPosition()
+        || newPosition >= mWindow.getStartPosition() + mWindow.getNumRows()):
+      setWindow(mBulkCursor.getWindow(newPosition));
+        // remote process
+        CursorToBulkCursorAdaptor.getWindow(newPosition)
+          mCursor.moveToPosition(startPos)
+          return mCursor.getWindow()
+            // SQLiteCursor
+            mCursor.fillWindow(position, window);
+              mQuery.fillWindow(position,window);
+                getSession().executeForCursorWindow();
+                  SQLiteConnection.nativeExecuteForCursorWindow(start, requiredRow)
+                  // native
+                    while (window not full):
+                      sqlite3_step(stmt);
+                      copy_row(window)
+                    sqlite3_reset(stmt)
+                  nativeFinalizeStatement(stmt);
+#+END_SRC
+
+***** 关于 CursorWindow 的一个 bug (or feature)
+
+每次 onMove (包括 cursor.moveToPosition 等) 都会导致底层的 statement 实
+际上会重新查询 .... 所以这种设计会导致这个 bug (or feature?)
+
+#+BEGIN_SRC java
+  private void query() {
+      SQLiteDatabase db = SQLiteDatabase.openDatabase("/storage/sdcard1/test.db", null,SQLiteDatabase.OPEN_READWRITE, null);
+      Cursor cursor=db.query("test", new String[] {"name","count"}, null,null, null, null, "name");
+      Log.e("sunway","query:get count:"+cursor.getCount());
+      cursor.moveToFirst();
+      Log.e("sunway","moveToFirst: data:"+cursor.getString(0));
+      cursor.moveToLast();
+      Log.e("sunway","moved to last");
+      Log.e("sunway","insert a row");
+
+      db.beginTransaction();
+      db.execSQL("INSERT INTO test VALUES (\"aaa\",1)");
+      Log.e("sunway","done");
+      db.setTransactionSuccessful();
+      db.endTransaction();
+
+      cursor.moveToFirst();
+      Log.e("sunway","moveToFirst again: data:"+cursor.getString(0));
+      cursor.close();
+  }
+#+END_SRC
+
+当原有数据足够多时 (保证 moveToLast 会调用 fillWindow 替换掉当前
+window), 对同一 cursor 调用两次 moveToFirst 查询的结果不同 .... 若要避
+免这个情况, 要么底层的 cursor window 足够大, 能容纳所有的内容, 要么
+cursor 查询返回后不 finalized statement, 这样可以保证 read transaction
+持有 shared lock, 那么其他 write transaction 会因为无法获得 exclusive
+lock 而无法修改数据库.
+
+**** CursorWindow and `ashmem'
+
+The underlying data of a Java CursorWindow is managed by CursorWindow
+c++ object, and is stored using `ashmem'
+
+#+BEGIN_SRC c++
+    status_t CursorWindow::writeToParcel(Parcel* parcel) {
+        status_t status = parcel->writeString8(mName);
+        if (!status) {
+            status = parcel->writeDupFileDescriptor(mAshmemFd);
+        }
+        return status;
+    }
+
+  status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow** outCursorWindow) {
+      String8 name = parcel->readString8();
+
+      status_t result;
+      int ashmemFd = parcel->readFileDescriptor();
+      // ...
+  }
+#+END_SRC
+
+So, CursorWindow parceling is quite efficient using `ashmem', and
+that why CursorWindow could deliver more than 1MB data using binder.
+
+#+BEGIN_EXAMPLE
+
+~@sunway-x230> adb shell procmem 642|grep "CursorWindow"
+     0K       0K       0K       0K       0K       0K       0K       0K  /dev/ashmem/CursorWindow:
+     0K       0K       0K       0K       0K       0K       0K       0K  /dev/ashmem/CursorWindow:
+     4K       4K       2K       0K       0K       4K       0K       0K  /dev/ashmem/CursorWindow:
+     0K       0K       0K       0K       0K       0K       0K       0K  /dev/ashmem/CursorWindow:
+     4K       4K       4K       4K       0K       0K       4K       0K  /dev/ashmem/CursorWindow:
+
+#+END_EXAMPLE

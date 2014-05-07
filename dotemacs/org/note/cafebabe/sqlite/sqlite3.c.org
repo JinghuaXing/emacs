@@ -1,0 +1,314 @@
+#+TITLE: Sqlite3.C
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* sqlite3.c
+** query
+下面使用的测试语句及 byte code 如下:
+#+BEGIN_SRC text
+  sqlite> explain select * from test;
+  0|Trace|0|0|0||00|
+  1|Goto|0|9|0||00|
+  2|OpenRead|0|3|0|1|00|test
+  3|Rewind|0|7|0||00|
+  4|Column|0|0|1||00|test.name
+  5|ResultRow|1|1|0||00|
+  6|Next|0|4|0||01|
+  7|Close|0|0|0||00|
+  8|Halt|0|0|0||00|
+  9|Transaction|0|0|0||00|
+  10|VerifyCookie|0|1|0||00|
+  11|TableLock|0|3|0|test|00|
+  12|Goto|0|2|0||00|
+#+END_SRC
+
+*** sqlite3_open_v2
+**** sqlite3_initialize
+#+BEGIN_SRC text
+  sqlite3_initialize
+    // 初始化 mutex 系统
+    sqlite3MutexInit
+      if(!sqlite3GlobalConfig.mutex.xMutexAlloc):
+        // 用户可以通过 sqlite3_config(SQLITE_CONFIG_MUTEX, xxx) 指定一个自
+        // 定义的 mutex 实现 ... 若没有指定, 则根据平台的不同选择一个默认
+        // 的 mutex 实现
+        if(sqlite3GlobalConfig.bCoreMutex):
+          // 若 sqlite 的编译时选项指定了 sqlite 为 SINGLETHREAD,
+          // 或者通过 sqlite3_config 指定了 SQLITE_CONFIG_SINGLETHREAD 则 bCoreMutex
+          // 会为空, 这时整个 mutex 系统会不起作用: 不论是 core mutex 还是
+          // 和 db->mutex 相关的 full mutex
+          pFrom = sqlite3DefaultMutex();
+          // sqlite3DefaultMutex 在编译时会根据平台选择合适的版本
+        else:
+          pFrom = sqlite3NoopMutex();
+          // sqlite3NoopMutex 中所有函数都为空操作.
+        memcpy(&sqlite3GlobalConfig.mutex, pFrom, offsetof(sqlite3_mutex_methods, xMutexAlloc));
+  
+    // 初始化 malloc 系统 
+    sqlite3MallocInit();
+      // 用户可以通过 sqlite_config(SQLITE_CONFIG_MALLOC,xxx)
+      // 指定一个自定义的 malloc 实现
+      if(sqlite3GlobalConfig.m.xMalloc==0):
+          // 平台相关的默认实现
+          sqlite3MemSetDefault();
+  
+    // 初始化各种自定义函数, 如 sum, like ..., 把这些函数通过
+    // sqlite3FuncDefInsert 加入到一个全局的 hash map 中, 这些函数包括:
+    // trim, min, max, typeof, length, substr, round, upper, lower,
+    // hex, random, nullif, sqlite_version, sqlite_log, last_insert_rowid,
+    // sum, total, avg, like, 等
+    sqlite3RegisterGlobalFunctions();
+  
+    // 初始化 pcache
+    sqlite3PcacheInitialize();
+    // 用户可以通过 sqlite_config 指定一个自定义 pcache 实现
+    if(sqlite3GlobalConfig.pcache2.xInit==0):
+      // 设置 pcache 相关的函数为默认的函数, 如 pcache1Init,
+      // pcache1Truncate, xxx
+      sqlite3PCacheSetDefault();
+      
+    // 初始化平台相关的函数, 主要是和文件系统相关, 例如 xRead, xOpen, xDelete
+    // 等, 也有少量和 vfs 无关的函数, 例如 xSleep, xCurrentTime 等
+    sqlite3OsInit();
+#+END_SRC
+
+总结:
+
+sqlite3_initialize 会初始化 malloc, mutex, pcache, 这三个子系统都是可以
+通过 sqlite3_config 设置为一个用户自定义实现的. 另外还要初始化平台相关
+的 vfs 实现. 因为初始化时需要修改一些全局的变量, 所以需要 mutex 子系统
+必须先初始化成功. 若当前模式为 SINGLETHREAD, 则会因为 bCoreMutex 为假导
+致 mutex 系统没有初始化, 进行导致上层应用无法正常在两个线程中同时打开数
+据库.
+
+**** 初始化 db
+#+BEGIN_SRC text
+  openDatabase
+    sqlite3_initialize
+    // 根据 mutex 的配置决定是否启用 db 相关的 db->mutex
+    // 最终的结果是: 若 sqlite3_config 指定了 SERIALIZED
+    // 或者 sqlite3_open_v2 时指定了 FULLMUTEX 选项, 则
+    // db->mutex 会被启用.
+    // 根据 sqlite3_config, sqlite3_open_v2 或编译选项不同
+    // bCoreMutex 和 bFullMutex 会被不同的置位.
+    // sqlite 内部有两种 mutex, 一种是通过
+    // sqlite3MutexAlloc(SQLITE_MUTEX_STATIC_MASTER) 这种形式
+    // 建立的静态的锁, 一共有五个, 对应于 sqlite 中几个不同的
+    // critical area 的加锁.  另一种是通过 db->mutex 保存的和
+    // 单个 db 有关的锁.
+    // 若 bCoreMutex 无效, 则所有 mutex 都无效, 不能有多个线程同时执行
+    // sqlite 相关的代码, 对应于 SINGLETHREAD 的情 况.
+    // 若 bCoreMutex 有效, bFullMutex 无效, 则那几个静态的锁有效,
+    // 表示可以有多个线程同时操作不同的 db connection, 对应于
+    // MULTITHREAD .若 bCoreMutex 有效, bFullMutex 有效, 则
+    // db->mutex 也是有锁保护的, 同一个 db connection 可以在不同的
+    // thread 中同时使用, 对应于 SERIALIZED.
+    
+    if(sqlite3GlobalConfig.bCoreMutex==0):
+      isThreadsafe = 0;
+    else if(flags & SQLITE_OPEN_NOMUTEX):
+      isThreadsafe = 0;
+    else if(flags & SQLITE_OPEN_FULLMUTEX):
+      isThreadsafe = 1;
+    else:
+      isThreadsafe = sqlite3GlobalConfig.bFullMutex;
+    if(isThreadsafe):
+      db->mutex = sqlite3MutexAlloc(SQLITE_MUTEX_RECURSIVE);
+  
+    // 设置默认的 collation
+    createCollation(db, "BINARY", SQLITE_UTF8, 0, binCollFunc, 0);
+    createCollation(db, "RTRIM", SQLITE_UTF8, (void*)1, binCollFunc, 0);
+    createCollation(db, "NOCASE", SQLITE_UTF8, 0, nocaseCollatingFunc, 0);
+  
+    // 默认 collation 为 BINARY
+    db->pDfltColl = sqlite3FindCollSeq(db, SQLITE_UTF8, "BINARY", 0);
+  
+    // 初始化 btree 模块, 打开数据库文件
+    sqlite3BtreeOpen(db->pVfs, zOpen, db, &db->aDb[0].pBt, 0, flags |SQLITE_OPEN_MAIN_DB);
+      // 真正打开文件
+      sqlite3PagerOpen(pVfs, &pBt->pPager, zFilename, ..)
+      // 读取文件头, 获得 page size 等, 注意 SHORT_READ 不算错误.
+      sqlite3PagerReadFileheader(pBt->pPager,sizeof(zDbHeader),zDbHeader);
+      // 设置默认的 busy handler
+      sqlite3PagerSetBusyhandler(pBt->pPager, btreeInvokeBusyHandler, pBt);
+      // 若上一步成功读到了文件头, 则根据文件头设置 page size
+      sqlite3PagerSetPagesize(pBt->pPager, &pBt->pageSize, nReserve);
+  
+    // sqlite 支持通过 attach 的方法在一个 db connection 中打开多个 db.
+    // 这些 db 都放在 aDb 数据中. 默认初始时有两个 db, 一个 main, 代表
+    // sqlite 启动时找开的 db, 还有一个 temp 表示临时 db, 例如通过
+    // create temp table 建立的表都放在 temp db 中.
+    // 例如:
+    // select * from main.test == select * from test;
+    // create temp table test2 (name TEXT);
+    // select * from temp.test2;
+    db->aDb[0].zName = "main";
+    db->aDb[0].safety_level = 3;
+    db->aDb[1].zName = "temp";
+    db->aDb[1].safety_level = 1;
+  
+    // 自动加载一个 extension, 参考 http://www.sqlite.org/loadext.html
+    sqlite3AutoLoadExtensions(db);
+  
+    // 初始化一些扩展模块: fts, icu, r-tree
+    sqlite3Fts1Init(db);
+    sqlite3IcuInit(db);
+    sqlite3RtreeInit(db);
+#+END_SRC
+
+**** 总结
+sqlite3_open_v2 的过程:
+1. 会初始化 malloc, mutex, pcache 等相关的回调函数, 根据平台的不同注册
+   一些 vfs 相关的回调函数
+2. 初始化 mutex, 注册一些 min,max, sum 等内部函数, 注册 collation 函数.
+3. 然后打开 btree 和 pager 模块, 使用 pager 从文件头中读取 page size 设置到 pager.
+4. 加载其他 extension, 初始化 fts, icu, r-tree 模块.
+
+在 pager 初始化时, 会真正打开数据库文件并读取文件头, 其他的内容例如
+schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数据库时会
+读取 schema (即 sqlite_master 表)
+*** sqlite3_prepare
+#+BEGIN_SRC text
+  sqlite3LockAndPrepare
+    // prepare 时需要 lock 住 db->mutex, 即 bFullMutex 模式
+    // 因为只有 SERIALIZED 模式下 db->mutex 才起作用, 
+    // 所以非 SERIALIZED 模式下不能在不同线程同时调用 sqlite3_prepare,
+    // 否则会出错
+    sqlite3_mutex_enter(db->mutex);
+    sqlite3Prepare(db, zSql, nBytes, saveSqlFlag, pOld, ppStmt, pzTail);
+      sqlite3RunParser(pParse, zSqlCopy, &zErrMsg);
+        // the main parser program
+        sqlite3Parser();
+          do{
+            yy_reduce(yypParser,yyact-YYNSTATE);
+              switch( yyruleno ):
+                case 112: /* cmd ::= select */
+                  sqlite3Select(pParse, yymsp[0].minor.yy159, &dest);
+                    sqlite3SelectPrep(pParse, p, 0);
+                      sqlite3SelectExpand(pParse, p);
+                        sqlite3WalkSelect(&w, pSelect);
+                          sqlite3LocateTable()
+                            // 在 parse 阶段需要 read schema
+                            sqlite3ReadSchema();
+                case xxx:
+                  // xxx
+  
+      ,*ppStmt = (sqlite3_stmt*)pParse->pVdbe;    
+#+END_SRC
+*** sqlite3_step
+#+BEGIN_SRC text
+  sqlite3_step(stmt)
+    sqlite3_mutex_enter(db->mutex);
+    sqlite3Step(stmt)
+      sqlite3VdbeExec(vdbe);
+      // sqlite3VdbeExec 相当于一个解释器, 内部实现就是一个 while (true)
+      // {swich} 循环
+        for(pc=p->pc; rc==SQLITE_OK; pc++){
+          OP_GOTO:
+         
+          OP_Transaction:
+            sqlite3BtreeBeginTrans(u.at.pBt, pOp->p2);
+            // 获取 shared lock
+            sqlite3PagerSharedLock
+              pager_wait_on_lock(pPager, SHARED_LOCK);
+              // 检测是否有 hot journal
+              if hasHotJournal():
+                pagerLockDb(pPager, EXCLUSIVE_LOCK);
+                pagerSyncHotJournal(pPager);
+              
+          OP_OpenRead:
+            allocateCursor(p, pOp->p1, u.aw.nField, u.aw.iDb, 1);
+            sqlite3BtreeCursor(u.aw.pX, ...);
+          OP_Rewind:
+            sqlite3BtreeFirst(u.bl.pCrsr, &u.bl.res);
+            moveToRoot(pCur);
+              getAndInitPage;
+                btreeGetPage;
+                  sqlite3PagerAcquire;
+                    sqlite3PcacheFetch
+                    readDbPage;
+                      sqlite3OsRead
+          OP_Column:
+            // 从 cursor 中取出数据放在 vdbe->aMem 中
+          OP_ResultRow:
+             // 这一句 byte code 正常会返回 SQLITE_ROW, 而不是 SQLITE_OK,
+             // 导致最外层 for 返回, 整个 sqlite3_step 结束
+             // 下次 step 将以 p->pc 为起点, 即 OP_Next
+             p->pc = pc + 1;
+             rc = SQLITE_ROW;
+             goto vdbe_return;
+          OP_Next:
+            sqlite3BtreeNext(u.bm.pCrsr, &u.bm.res);
+              moveToChild;
+                getAndInitPage;
+          OP_Halt:
+            sqlite3VdbeHalt(p);
+            if autoCommit == 1:
+              vdbeCommit(db, p);
+                // 获得 exclusive lock
+                sqlite3PagerExclusiveLock(sqlite3BtreePager(pBt));
+                sqlite3BtreeCommitPhaseOne
+                sqlite3BtreeCommitPhaseTwo
+                  btreeEndTransaction
+                    releasePage
+                      // 释放锁
+                      pagerUnlockAndRollback;
+  
+#+END_SRC
+**** 总结
+1. OP_Transaction 时 sqlite3BtreeBeginTrans 会获得 shared lock
+2. OP_Halt 时 btreeEndTransaction 需要释放锁
+3. sqlite3PagerAcquire 会调用 pcache 和 pager 来获得 page 的数据. 发生
+   的时机是 btree 移动时(例如 OP_Rewind, OP_Next)
+4. OP_Transaction 会检测 hot journal 并 sync journal
+*** journal 操作
+**** pager_write
+pager_wirte 会导致 journal file 被写入
+**** syncJournal
+在 sqlite3PagerCommitPhaseOne 时, syncJournal 被调用确保 journal 被
+sync 到磁盘
+**** hasHotJournal
+在 OP_Transaction (sqlite3PagerSharedLock) 时, 检测 hot journal 是否存
+在
+**** pagerSyncHotJournal
+在 hot journal 存在, 则调用该方法 sync hot journal
+** insert
+#+BEGIN_SRC text
+  sqlite> explain insert into test values ("a");
+  0|Trace|0|0|0||00|
+  1|Goto|0|9|0||00|
+  2|OpenWrite|0|3|0|1|00|test
+  3|NewRowid|0|2|0||00|
+  4|String8|0|3|0|a|00|
+  5|MakeRecord|3|1|4|a|00|
+  6|Insert|0|4|2|test|1b|
+  7|Close|0|0|0||00|
+  8|Halt|0|0|0||00|
+  9|Transaction|0|1|0||00|
+  10|VerifyCookie|0|1|0||00|
+  11|TableLock|0|3|1|test|00|
+  12|Goto|0|2|0||00|
+#+END_SRC
+*** sqlite3_step
+#+BEGIN_SRC text
+  OP_NewRowid:
+    // NewRowid 需要为该新记录生成一个唯一的 rowid,
+    // 根据 schema 的不同分为两种情况:
+    // 1. 假设记录中使用了 integer primary key autoincrement 类型的字段 _id, 这
+    // 时 rowid 内部实现上直接使用这个 _id 字段, _id 不仅需要唯一: 还需
+    // 要自增. sqlite 通过 sqlite_sequence 这张表来控制这种情况下 _id 的生成
+    // 2. schema 中并没指定 autoincrement 这种类型的字段. 这时 NewRowid
+    // 需要生成一个唯一的 rowid, sqlite 定义了两种算法:
+    // 1) 扫描全表, 找到已经使用的最大 rowid +1, 得到新的 rowid
+    // 2) 随机生成一个 rowid, 通过查表确定是否冲突, 若冲突再重新生成一个
+    // 不论哪种算法, 扫描全表都是必须的. 
+
+  OP_Insert:
+    sqlite3BtreeInsert(u.bh.pC->pCursor, 0, u.bh.iKey,...)
+      // 找到对应的 page
+      btreeMoveto(pCur, pKey, nKey, appendBias, &loc);
+      // 写到 cell 中
+      fillInCell(pPage, newCell, pKey, nKey, pData, nData, nZero,&szNew);
+      // sqlite3PagerWrite 会导致 journal 被写入
+      sqlite3PagerWrite(pPage->pDbPage);
+  
+#+END_SRC

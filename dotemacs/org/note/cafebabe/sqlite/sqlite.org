@@ -1,0 +1,599 @@
+#+TITLE: SQLite
+* SQLite
+** sqlite3_analyzer
+** sqlite command
+*** .output
+*** .mode
+list|column|insert|line|tabs|tcl|csv
+*** .dump
+*** .read
+*** .tables
+*** .separator
+*** .schema
+*** .headers [on|off]
+*** explain query plan
+see also [[http://www.sqlite.org/queryplanner.html][queryplanner]]
+#+BEGIN_SRC sql
+explain query plan select * from foo;
+#+END_SRC
+*** explain
+#+BEGIN_SRC sql
+explain select * from foo;
+#+END_SRC
+*** vacuum
+** sqlite SQL
+*** attach database
+attach database "foo.db" as db2;
+select * from db2.tbl_1;
+detach database db2;
+*** create table
+**** storage class
+使用 select typeof (xx) 来查看 storage class
+
+- integer
+61
+- real
+61.0
+- text
+"a"
+- blob
+x'61'
+
+**** constrains
+***** column-level constrains
+- not null
+- unique
+- primary key
+- foreign key
+- check
+#+BEGIN_SRC sql
+  create temp table foo(
+  x integer,
+  y integer check (y>x),
+  z integer check (z>abs(y)),
+  );
+#+END_SRC
+see also `trigger`
+- collate
+  - binary
+  - nocase
+- default
+- autoincrement
+***** table-level constrains
+- primary key
+#+BEGIN_SRC sql
+  CREATE TABLE xxx (
+  data1 text,
+  data2 text,
+  primary key (data1, data2)
+  );
+#+END_SRC
+- unique
+#+BEGIN_SRC sql
+  CREATE TABLE xxx (
+  _id integer primary key,
+  data1 text,
+  data2 text,
+  unique (data1, data2)
+  );
+#+END_SRC
+- check
+*** trigger
+#+BEGIN_SRC sql
+  create [temp|temporary] trigger name
+  [before|after|instead of] [insert|delete|update|update of columns] on table
+  [for each row] [when expr]
+  begin
+  action
+  end;
+#+END_SRC
+- using trigger to update view
+#+BEGIN_SRC sql
+  create trigger on_update_foods_view
+  instead of update on foods_view
+  for each row
+  begin
+     update foods set name=new.fname where id=new.fid;
+     update food_types set name=new.tname where id=new.tid;
+  end;
+#+END_SRC
+注: sqlite 的 trigger 不支持 `for each statement`, 只支持 `for each row`
+*** transaction
+- begin [ deferred | immediate | exclusive ] [transaction] 
+- commit
+- rollback
+- savepoint
+#+BEGIN_SRC sql
+  begin transaction;
+  insert into xxx;
+  ...
+  savepoint test
+  ...
+  rollback to test
+  ...
+  commit
+#+END_SRC
+  insert into xxx;
+  save
+*** confict resolution
+- replace
+- ignore
+  忽略本次错误, 继续执行
+- fail
+  结束, 但不回滚
+- abort
+  default
+  回滚, 然后结束
+- rollback
+  回滚, 但不结束
+
+confict resolution can be specified in
+- table or view defination
+#+BEGIN_SRC sql
+create temp table cast(name text unique on conflict rollback);
+#+END_SRC
+- in `insert`, `update`
+#+BEGIN_SRC sql
+insert or replace into table values (xxx);
+#+END_SRC
+- trigger
+*** join
+- inner join
+join
+- left outer join
+left out join
+- right outer join
+not supported
+- full outer join
+not supported
+- cross
+select from tbl1, tbl2
+*** index
+refers [[explain query plan]] to delete whether index is used for optimization
+
+- index
+- unique index
+- covering index
+  covering index 是指同一个 index 中有多个字段, 查找时直接从 index 中
+  取得了数据, 而不是从 index 取得主键, 再到主表获取数据. 例如:
+
+  create index m3_index on foo(x,y);
+  explain query plan select y from foo where x="a";
+
+0|0|0|SEARCH TABLE foo USING COVERING INDEX m3_index (x=?) (~10 rows)
+
+Note:
+- collate 会影响 index, 例如若 select 时或建表时使用的 collate 与建立
+  index 时指定的 collate 不一致时, index 无法起作用.
+- create index 可以指定多个字段 (以利于形成 covering index), 但多个字
+  段是联合在一起索引的, 例如 (x,y,z), 则使用 x, x and y, x and y and
+  z 时索引起作用, 但使用 y and z, z 时不起作用.
+
+*** view
+- using trigger to update view
+*** insert
+*** update
+*** select
+
+#+BEGIN_EXAMPLE
+
+          -+-------------------------------------------------------------------------------------+
+           |       -+-----------------------------------------------------------+                |        result
+           |        |                        -+---------------+                 |                |          ^
+           |        |                         |               |                 |                |          |
+SELECT DISTINCT heading FROM tables WHERE predicate GROUP BY columns HAVING predicate ORDER BY columns LIMIT init,int;
+           | 6      | 5         | 1           | 2             | 3               | 4              | 7        | 8
+           |        |           |             |               |                 |                |          |
+          -+--------+          -+-------------+              -+-----------------+               -+----------+
+
+#+END_EXAMPLE
+**** distinct
+distinct 可以同时修饰多个字段
+#+BEGIN_SRC sql
+select distinct id, name from xxx;
+#+END_SRC
+表示只有 (id,name) 都相同时才算相同
+**** where
+**** group by
+**** having
+**** order by
+**** limit
+**** sub-query
+- for `select`
+#+BEGIN_SRC sql
+  select _id, (select name from xx where _id=f._id ) from xx as f;
+#+END_SRC
+- for `from`
+#+BEGIN_SRC sql
+  select _id from (select _id,name from xxx);
+#+END_SRC
+- for `order by`
+#+BEGIN_SRC sql
+  select _id from xxx as f order by (select score from xxx where _id=f._id);
+#+END_SRC
+- for `where'
+#+BEGIN_SRC sql
+select _id from xxx where _id in (select _id from xxx);
+#+END_SRC
+
+Note:
+- sub-query 几乎可以用在任何地方
+- sub-query 通常需要设置别名
+- sub-query 只能返回一列.
+- sub-query 有时需要返回一行 (例如在 order by 的场合), 这时若返回多行,
+  则系统只会使用第一行.
+**** compound query
+compound query 要求各个查询返回相同的例, 且只能在 compound query 最后
+有一个 order by
+***** union [all]
+a | b
+***** intercept
+a & b
+***** except
+a - b
+**** conditional result
+used to transform column values
+#+BEGIN_SRC sql
+  case value
+    when x then value_x
+    when y then value_y
+    when z then value_z
+    else default_value
+  end
+#+END_SRC
+#+BEGIN_SRC sql
+  select name,(select
+                case
+                when count(*) > 4 then 'Very High'
+                when count(*) = 4 then 'High'
+                when count(*) in (2,3) then 'Moderate'
+                else 'Low'
+                end
+                from foods_episodes
+                where food_id=f.id) as frequency
+  from foods f
+  where frequency like '%High'
+
+#+END_SRC
+*** functions
+**** core functions
+- LAST_INSERT_ROWID()
+- coalesce (x, y, z, ...)
+  return the first not null value, or null
+
+  e.g. coalesce (null, 1, 2, null) returns 1
+- ifnull (x, y)
+  ifnull (x, y) <==> coalesce(x, y)
+- nullif (x, y)
+  若 x,y 相同返回 null, 否则返回 x.
+- glob
+- like
+- substr
+- trim
+- ltrim
+- rtrim
+- instr
+- quote
+- length
+- lower
+- upper
+- abs
+- max
+- min
+- random
+- replace
+- hex
+- round
+- date
+**** aggregation function
+- avg
+- sum
+- total
+- max
+- min
+- count (x)
+- count (*)
+*** fts
+*** Summary
+**** cross-join != full-outer-join
+例如, 若 A 表为 3 条, 其中 _id 分别为 1,2,3. B 表为 4 条, _id 分别为
+5,6,7,8, 则:
+- select * from A, B where A._id = B._id 返回 0 条
+- select * from A full outer join B on A._id = B._id 返回 7 条 (此处为
+  假设 full-outer-join 是支持的)
+**** having 与 where 的区别
+- haveing 发生在 group by 之后, 而 where 发生在 group by 之前;
+- 可以使用 aggregation 函数
+**** aggregation 函数只可以使用在 select 之后和 having 之后
+**** 使用两个 left-outer-join 模拟 full-outer-join
+#+BEGIN_SRC sql
+  select * from A left outer join B on A._id = B._id
+  UNION
+  select * from B left outer join A on A._id = B._id
+#+END_SRC
+**** distinct 可以使用 group by 来模拟
+**** compound query 只允许在最后使用一个 order-by, 不过可以用 sub-query 来跳过这一限制
+**** sub-query 几乎可以使用在任何地方, 不过只允许返回一列, 但可以返回多行 (虽然有时只有第一行有效)
+**** sqlite 允许在有 group by 中查询中 select group-by 之外的字段, 只是结果是不可靠的. 例如:
+
+#+BEGIN_SRC sql
+select name, id from xxx group by id;
+#+END_SRC
+
+同理适用于 aggregation functions, 例如:
+
+#+BEGIN_SRC sql
+select *, count(*) from xxx;
+#+END_SRC
+
+**** integer primary key => autoincrement (but with filling-gaps)
+**** autoincrement 会导致后续的值一定比之前的大 (不会有 filling-gaps 效果), 当到达最大值后, 返回 data is full error
+这一点需要与 integer primary key 区别
+**** autoincrement 必须在 integer primary key 后使用
+**** storage class vs. sort
+storage class 与列的定义无关, 它取决了输入的数据的格式:
+61, 61,0, "a", x'61', null 的 storage class 分别为 integer, real,
+text, blob, null
+
+不同的 storage class 的排序规则:
+null < integer = real < text < blob
+
+see also [[type affinity]]
+**** sqlite 的 view 是不可修改的, 但可以用 trigger 来模拟实现可修改的 view
+**** index 可以同时指定多个字段, 以便使用 covering index, 但要注意查询条件, 例如
+(x,y,z)三个字段的索引,使用 x, x and y, x and y and z 会使用索引, 但
+y, y and z, z 不会.
+**** 一次查询可能会使用多个索引, 例如使用 or 的情况下:
+create index m1_index on foo(x);
+create index m1_index on foo(y);
+select x from foo where x="a" or y="a";
+0|0|0|SEARCH TABLE foo USING INDEX m1_index (x=?) (~10 rows)
+0|0|0|SEARCH TABLE foo USING INDEX m2_index (y=?) (~10 rows)
+**** unique index
+**** 有些情况下 index 无法使用, 例如
+- glob "a*"
+- like (测试了下似乎 sqlite 并不会对 like 进行优化, 可能和版本有关?)
+- 多列索引时有些情况
+- select xx from xx where length(x)=5, 等
+**** savepoint & rollback to
+**** conflict resolution
+**** attach database
+** sqlite limitation
+- right and full outer join
+- complete ALTER TABLE support
+- completing TRIGGER support
+- writing to VIEWs
+- GRAND and REVOKE
+** sqlite pragma
+*** auto_vacuum = 0/1
+*** cache_size
+cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最多
+能 cache 多少修改.
+
+*** default_cache_size
+*** case_sensitive_like = 0/1
+*** count_change = 0/1
+*** encoding = "UTF-8"
+*** page_size = bytes
+*** synchronous = FULL/NORMAL/OFF
+synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
+
+特别的,在 WAL 模式下, synchronous 为 NORMAL 时 commit 也不再写数据库,
+只有checkout 时才刷新.
+*** vdbe_trace=ON/OFF
+** optimization
+*** 使用索引
+*** 避免 transient table (subquery)
+许多 sqlite 操作例如 order by, aggregation, subquery 等需要使用到
+transient table 来暂存中间结果, 尤其是 subquery. 这些 transient table主
+要的问题是无法使用 index.
+- 使用显式的 temp table 并使用索引?
+*** automatic index
+*** view 与 subquery 类似, 无法使用索引
+*** join 的顺序
+*** 使用 limit
+** references
+[[http://www.sqlite.org/syntaxdiagrams.html][Syntax Diagrams For SQLite]]
+** Other
+*** WAL
+Write Ahead Logging (WAL) 是与 sqlite 默认的 rollback journal (或
+delete journal, shadow paging) 完全不同的一种 journal mode. 通过 WAL,
+数据库可以做到读和写互相完全不干扰, 并且减少 IO 操作.
+
+**** How WAL works
+当 commit 一个 write transaction 时, rollback journal 的作法是先刷新所
+有修改到 journal, 然后再刷新 cache 到数据库. 而 WAL 的作法是只将修
+改刷新到 wal journal 中, 而不修改数据库. 只有当用户调用 pragma
+wal_checkpoint 或 超过 1000 页被修改时, wal journal 中的修改才会
+被写回到数据库.
+
+为了使 read transaction 能读到最新的数据, 每个 read transaction 开始时
+会扫描 wal journal, 并在 wal file 中记下一个 mark point, 在读数据库时,
+根据一个 wal index shm 判断要读的 page 是否在 wal journal 中, 若存在,
+并且不超过 mark point, 则使用 wal journal 中的数据, 否则使用数据库中的
+数据. 这样可以使得读写不用互相等待. (但这样有一点问题, 就是无法保证读到
+最新的数据, 因为有可能在读的过程中, 又有新的数据追加到 wal journal
+file 中 makr point 之后)
+
+***** WAL 的优点
+
+- 读写互不影响
+- 降低了IO的使用
+
+  commit 只需要写 wal journal file, 不需要写数据库. 特别的, 若 WAL 模式
+  下设置 pragma synchronous 为 NORMAL 的话,则 commit 根本不会导致 IO 操
+  作,只有 checkpoint 才会.  因此, 在 wal 模式下, commit 不进行 IO 可能
+  会导致异常重启后数据丢失, 但不会造成数据库崩溃.
+
+  checkpoint 进行的 IO 操作包括:
+  1. 写 wal 到磁盘
+  2. 写 wal 到数据库
+  3. 重置 wal
+
+***** WAL 的缺点
+
+- 可能无法读到"最新"的数据, 因为 read transaction 无法 block write
+  transaction
+- 过大的 read transaction 会阻止 checkpoint (当 read transaction 正在进
+  行时, 虽然允许 write transaction 追加数据到 wal journal, 但不允许清空,
+  因为 read transaction 已经在journal 中标记了 mark point), 进而导致
+  wal journal 过大, 从而使 read transaction 变慢
+
+***** WAL 的配置
+- pragma journal_mode=wal 开启 wal 模式
+- pragma journal_mode=delete 关闭 wal 模式
+- wal 模式的配置是 persistent 的
+- pragma wal_autocheckpoint=1000 设置 autocheckpoint 的 thresh-hold
+  特别的, 这个值越大, 则写的性能越高, 这个值越小, 则读的性能越好.
+
+**** 关于 WAL journal file 的一个实验
+#+BEGIN_SRC sql
+  -- these are auto-committed
+  insert into test values ("a", 1);
+  insert into test values ("a", 1);
+  insert into test values ("a", 1);
+  -- 现在, 记录应该存在 test.db-wal 中, 但还没有写到数据库中
+  -- case A: 不调用 pragma wal_checkpoint
+    -- kill sqlite3_process
+    -- case A1: 先删除 test.db-wal, 再打开 test.db
+      select count(*) from test where name="a";
+      0
+    -- case A2: 不删除 test.db-wal, 找开 test.db
+      select count(*) from test where name="a";
+      3
+  -- case B: 调用 pragma wal_checkpoint
+    -- kill sqlite3_process
+    -- 无论是否删除 test.db-wal, 打开 test.db
+      select count(*) from test where name="a";
+      3
+#+END_SRC
+
+*** FTS
+FTS (Full Text Search), 即全文检索,主要有以下几个方面:
+
+- stemming (词根)
+- tokenizer &  word segregation (分词)
+- inverted index (倒排索引)
+
+**** stemming
+http://en.wikipedia.org/wiki/Stemming
+
+A stemmer for English, for example, should identify the string "cats" (and
+possibly "catlike", "catty" etc.) as based on the root "cat".and "stemmer",
+"stemming", "stemmed" as based on "stem".
+
+A stemming algorithm reduces the words "fishing", "fished", "fish", and "fisher"
+to the root word, "fish". On the other hand, "argue", "argued", "argues",
+"arguing", and "argus" reduce to the stem "argu"
+
+android contacts provider 就是使用的一种叫做 porter 的 stemmer 算法, 所以用 cat
+可以查找到名为 catty 的人也是正常的.
+**** tokenizer and word segregation (分词)
+全文检索是基于`关键字`匹配的检索, 与传统的 grep 等检索方法不同, 全文检索需要先建
+立索引文件, 建立索引文件的第一步就是将全文分解为一系列的关键字. 例如:
+
+"A stemmer for English, for example, should identify the string "cats" (and
+possibly "catlike", "catty" etc.) as based on the root "cat""
+
+这句话可能会被分解为以下的关键字:
+
+stem, english, example, identify, string, cat, possible, base, root
+
+tokenize 的过程主要分为三步:
+1. 分词, 对英文来说, 基本就是以空格来分词
+2. 抛弃一些 stop words, 如 a, for, should, and ,etc, as, on 等
+3. 对剩下的非 stop words 使用 stemming 算法, 例如 cats->cat, stemmer->stem
+
+***** 分词
+英文分词比较简单,就是以空格来分词, 对于中文或其他一些语言就麻烦的多, 以中文为例,
+主要有以下几种分词方法:
+
+1. N元分词
+   就是简单的每N个字算一个词,
+   - 1元分词:
+   英/文/分/词/比/较/简/单
+
+   - 2元交叉为例:
+   英文/文分/分词/词比/比较/较简/简单
+
+2. 基于词典匹配的分词
+   - 正向最大匹配
+     "市场/中国/有/企业/才能/发展"
+   - 逆向最大匹配
+     "市场/中/国有/企业/才能/发展"
+   - 双向最大匹配
+3. 基于统计的分词
+
+
+从目前存在的项目看, 综合N元分词与基于词典匹配的分词是主流的方法, 以 Apache
+Lucene 为例: 它包含以下几种中文分词算法:
+http://blog.csdn.net/chaocy/article/details/5938741
+
+- StandardAnalyzer & ChineseAnalyzer (一元分词)
+
+2008/年/8/月/8/日/晚/举/世/瞩/目/的/北/京/第/二/十/九/届/奥/林/匹/克/运/动/会/开
+/幕/式/在/国/家/体/育/场/隆/重/举/行
+
+- CJKAnalyzer (交叉二元分词)
+
+2008/年/8/月/8/日晚/举世/世瞩/瞩目/目的/的北/北京/京第/第二/二十/十九/九届/届奥/
+奥林/林匹/匹克/克运/运动/动会/会开/开幕/幕式/式在/在国/国家/家体/体育/育场/场隆/
+隆重/重举/举行/
+
+- MIK_CAnalyzer  (最大匹配+二元交叉)
+
+2008年/8月/8日/晚/举世瞩目/目的/北京/第二十九届/奥林匹克运动会/开
+幕式/在国/国家/体育场/隆重举行/
+
+- etc
+
+sqlite3 中因为支持 FTS, 所以也支持几种分词算法:
+- simple
+  针对英文, 根据空格分词
+- porter
+  针对英文, 使用 port stemmer
+- icu
+  使用 icu 库进行简单分词, 没有看懂 fts_icu 的源码, 从分词结果看类似于一元分词
+  (待确定)
+
+**** inverted index (倒排索引)
+通过分词算法确定关键词后, FTS 会使用倒排索引建立索引, 例如全文有两句话:
+
+`今天天气怎么样.
+今天天气不错. `
+
+- 分词的结果
+
+  今天/天气/怎么样/今天/天气/不错
+
+- 倒排索引结果
+
+  今天->1,0;2,0
+  天气->1,2;2,2
+  怎么样->1,4
+  不错->2,4
+
+倒排索引的结果通常会以一种高效的利于查找的形式保存到索引文件中, 例如根据关键字排
+序, 或使用 B 树
+**** 查找过程
+根据索引文件格式的不同, 查找的过程有所区别, 以 B 树为例, 查找过程就是以查找字符
+串为KEY在B树中查找该关键字,查到的VALUE就是该关键字在文档中的行列位置.
+
+全文查找速度很快,但有一个明显的缺点: 检索的效果依赖于关键字的选择.
+
+例如,
+- 使用 "tty" 无法检索到 " hello kitty "这句话
+- 使用 "天天" 可能无法检索到 "今天天气不错"
+
+**** FTS in sqlite3
+- create virtual table search_index using fts3(content TEXT, tokenize=porter);
+  tokenize 可以为 simple, porter, icu, 但默认情况下 icu tokenizer 功能没有被编译
+  到 sqlite3 中
+- select * from search_index where content match "token1 token2"
+- select * from search_index where content match "tok*"
+
+*** ICU
+*** R-Tree
+*** SQLite Optimization FAQ
+
+http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html
