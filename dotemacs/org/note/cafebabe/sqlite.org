@@ -1410,7 +1410,7 @@ atoi("abc")
 - conversion A 使用 affinity type 来参与转换, conversion B 不使用
 - 在比较不同的 storage type C 的大小时, 可能会使用到 conversion A
 ** sqlite3.c
-
+*** query
 下面使用的测试语句及 byte code 如下:
 #+BEGIN_SRC text
   sqlite> explain select * from test;
@@ -1429,8 +1429,8 @@ atoi("abc")
   12|Goto|0|2|0||00|
 #+END_SRC
 
-*** sqlite3_open_v2
-**** sqlite3_initialize
+**** sqlite3_open_v2
+***** sqlite3_initialize
 #+BEGIN_SRC text
   sqlite3_initialize
     // 初始化 mutex 系统
@@ -1488,7 +1488,7 @@ sqlite3_initialize 会初始化 malloc, mutex, pcache, 这三个子系统都是�
 致 mutex 系统没有初始化, 进行导致上层应用无法正常在两个线程中同时打开数
 据库.
 
-**** 初始化 db
+***** 初始化 db
 #+BEGIN_SRC text
   openDatabase
     sqlite3_initialize
@@ -1563,7 +1563,7 @@ sqlite3_initialize 会初始化 malloc, mutex, pcache, 这三个子系统都是�
     sqlite3RtreeInit(db);
 #+END_SRC
 
-**** 总结
+***** 总结
 sqlite3_open_v2 的过程:
 1. 会初始化 malloc, mutex, pcache 等相关的回调函数, 根据平台的不同注册
    一些 vfs 相关的回调函数
@@ -1574,7 +1574,7 @@ sqlite3_open_v2 的过程:
 在 pager 初始化时, 会真正打开数据库文件并读取文件头, 其他的内容例如
 schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数据库时会
 读取 schema (即 sqlite_master 表)
-*** sqlite3_prepare
+**** sqlite3_prepare
 #+BEGIN_SRC text
   sqlite3LockAndPrepare
     // prepare 时需要 lock 住 db->mutex, 即 bFullMutex 模式
@@ -1602,7 +1602,7 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
   
       ,*ppStmt = (sqlite3_stmt*)pParse->pVdbe;    
 #+END_SRC
-*** sqlite3_step
+**** sqlite3_step
 #+BEGIN_SRC text
   sqlite3_step(stmt)
     sqlite3_mutex_enter(db->mutex);
@@ -1625,7 +1625,7 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
               
           OP_OpenRead:
             allocateCursor(p, pOp->p1, u.aw.nField, u.aw.iDb, 1);
-          sqlite3BtreeCursor(u.aw.pX, ...);
+            sqlite3BtreeCursor(u.aw.pX, ...);
           OP_Rewind:
             sqlite3BtreeFirst(u.bl.pCrsr, &u.bl.res);
             moveToRoot(pCur);
@@ -1660,26 +1660,65 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
                     releasePage
                       // 释放锁
                       pagerUnlockAndRollback;
-
+  
 #+END_SRC
-**** 总结
+***** 总结
 1. OP_Transaction 时 sqlite3BtreeBeginTrans 会获得 shared lock
 2. OP_Halt 时 btreeEndTransaction 需要释放锁
 3. sqlite3PagerAcquire 会调用 pcache 和 pager 来获得 page 的数据. 发生
    的时机是 btree 移动时(例如 OP_Rewind, OP_Next)
 4. OP_Transaction 会检测 hot journal 并 sync journal
-*** journal 操作
-**** pager_write
+**** journal 操作
+***** pager_write
 pager_wirte 会导致 journal file 被写入
-**** syncJournal
+***** syncJournal
 在 sqlite3PagerCommitPhaseOne 时, syncJournal 被调用确保 journal 被
 sync 到磁盘
-**** hasHotJournal
+***** hasHotJournal
 在 OP_Transaction (sqlite3PagerSharedLock) 时, 检测 hot journal 是否存
 在
-**** pagerSyncHotJournal
+***** pagerSyncHotJournal
 在 hot journal 存在, 则调用该方法 sync hot journal
-
+*** insert
+#+BEGIN_SRC text
+  sqlite> explain insert into test values ("a");
+  0|Trace|0|0|0||00|
+  1|Goto|0|9|0||00|
+  2|OpenWrite|0|3|0|1|00|test
+  3|NewRowid|0|2|0||00|
+  4|String8|0|3|0|a|00|
+  5|MakeRecord|3|1|4|a|00|
+  6|Insert|0|4|2|test|1b|
+  7|Close|0|0|0||00|
+  8|Halt|0|0|0||00|
+  9|Transaction|0|1|0||00|
+  10|VerifyCookie|0|1|0||00|
+  11|TableLock|0|3|1|test|00|
+  12|Goto|0|2|0||00|
+#+END_SRC
+**** sqlite3_step
+#+BEGIN_SRC text
+  OP_NewRowid:
+    // NewRowid 需要为该新记录生成一个唯一的 rowid,
+    // 根据 schema 的不同分为两种情况:
+    // 1. 假设记录中使用了 integer primary key autoincrement 类型的字段 _id, 这
+    // 时 rowid 内部实现上直接使用这个 _id 字段, _id 不仅需要唯一: 还需
+    // 要自增. sqlite 通过 sqlite_sequence 这张表来控制这种情况下 _id 的生成
+    // 2. schema 中并没指定 autoincrement 这种类型的字段. 这时 NewRowid
+    // 需要生成一个唯一的 rowid, sqlite 定义了两种算法:
+    // 1) 扫描全表, 找到已经使用的最大 rowid +1, 得到新的 rowid
+    // 2) 随机生成一个 rowid, 通过查表确定是否冲突, 若冲突再重新生成一个
+    // 不论哪种算法, 扫描全表都是必须的. 
+  OP_Insert:
+    sqlite3BtreeInsert(u.bh.pC->pCursor, 0, u.bh.iKey,...)
+      // 找到对应的 page
+      btreeMoveto(pCur, pKey, nKey, appendBias, &loc);
+      // 写到 cell 中
+      fillInCell(pPage, newCell, pKey, nKey, pData, nData, nZero,&szNew);
+      // sqlite3PagerWrite 会导致 journal 被写入
+      sqlite3PagerWrite(pPage->pDbPage);
+  
+#+END_SRC
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
