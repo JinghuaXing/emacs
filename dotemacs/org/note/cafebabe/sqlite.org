@@ -1617,14 +1617,22 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
             sqlite3BtreeBeginTrans(u.at.pBt, pOp->p2);
             // 获取 shared lock
             sqlite3PagerSharedLock
+              sqlite3OsOpen
+              sqlite3OsRead
           OP_OpenRead:
             allocateCursor(p, pOp->p1, u.aw.nField, u.aw.iDb, 1);
           sqlite3BtreeCursor(u.aw.pX, ...);
           OP_Rewind:
             sqlite3BtreeFirst(u.bl.pCrsr, &u.bl.res);
             moveToRoot(pCur);
+              getAndInitPage;
+                btreeGetPage;
+                  sqlite3PagerAcquire;
+                    sqlite3PcacheFetch
+                    readDbPage;
+                      sqlite3OsRead
           OP_Column:
-         
+            // 从 cursor 中取出数据放在 vdbe->aMem 中
           OP_ResultRow:
              // 这一句 byte code 正常会返回 SQLITE_ROW, 而不是 SQLITE_OK,
              // 导致最外层 for 返回, 整个 sqlite3_step 结束
@@ -1632,6 +1640,10 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
              p->pc = pc + 1;
              rc = SQLITE_ROW;
              goto vdbe_return;
+          OP_Next:
+            sqlite3BtreeNext(u.bm.pCrsr, &u.bm.res);
+              moveToChild;
+                getAndInitPage;
           OP_Halt:
             sqlite3VdbeHalt(p);
             if autoCommit == 1:
@@ -1643,8 +1655,16 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
                   btreeEndTransaction
                     releasePage
                       // 释放锁
-                      pagerUnlockAndRollback
+                      pagerUnlockAndRollback;
+                        sqlite3OsClose;
 #+END_SRC
+**** 总结
+1. OP_Transaction 时 sqlite3BtreeBeginTrans 会获得 shared lock, 此时需要打开文件
+2. OP_Halt 时 btreeEndTransaction 需要释放锁, 此时会关闭文件. 所以数据
+   库文件不是在 openDatabase 时一直打开的.
+3. sqlite3PagerAcquire 会调用 pcache 和 pager 来获得 page 的数据. 发生
+   的时机是 btree 移动时(例如 OP_Rewind, OP_Next)
+
 ** Benchmark
 分别使用c,java 程序插入10w条记录, 设置 synchronous 为 full 或 off, 保
 存数据库文件到 sdcard 或 mtd 设备. java 程序使用 execSQL 或
