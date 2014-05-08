@@ -156,6 +156,9 @@ page 与 free page), 有的只有孤零零一个在那儿 (lock byte page) ...
 1. pager 即 page cache, 负责所有 IO 操作, 并使用 cache 加快 IO.
 2. pager 是 sqlite 实现 ACID 的核心, 除了数据库文件的IO, pager 还负责
    journal 以及 lock 相关的操作.
+*** sector_size, page_size, powersafe overwrite (PSOW) and zero-damage mode
+http://www.sqlite.org/psow.html
+
 ** lock
 sqlite 在不同的层次上定义了三种锁
 *** shared cache mode lock

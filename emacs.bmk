@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("github.io"
+(("sqlite3.c"
+ (filename . "~/source/sprdroid4.4/external/sqlite/dist/sqlite3.c")
+ (front-context-string . "and error condit")
+ (rear-context-string . "simulate faults ")
+ (position . 67831))
+("github.io"
  (filename . "~/.github.pages/")
  (front-context-string . "cafebabe\n  drwxr")
  (rear-context-string . " 4 Feb  6 12:47 ")

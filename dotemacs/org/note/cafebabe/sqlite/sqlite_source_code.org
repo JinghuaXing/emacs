@@ -1,7 +1,80 @@
-#+TITLE: Sqlite3.C
+#+TITLE: Sqlite Source Code
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * sqlite3.c
+sqlite3.c 分为以下几个模块:
+1. parser
+2. vdbe
+3. btree
+4. pager
+5. pcache
+** data structure
+*** sqlite3
+*** sqlite3_vfs
+e.g. sqlite3->pVfs
+
+#+BEGIN_SRC c
+  struct sqlite3_vfs {
+      // vfs 中 xOpen 的参数 sqlite3_file 的"子类"代表了不同平台上的
+      // file, 例如 unixFile, winFile, ..., 每个"子类"的成员和大小都不同,
+      // 例如 unixFile 会包含 unixInodeInfo, unixShm 这些和 unix 相关的
+      // 成员, 当使用 xOpen 时, 调用者需要根据 szOsFile 初始化相应大小的
+      // 内存以容纳 unixFile 或者 winFile
+      int szOsFile;            /* Size of subclassed sqlite3_file */
+  
+      // sqlite3OsInit 时会通过 sqlite3_vfs_register 注册多个
+      // sqlite3_vfs, 例如 "unix_nolock" -> unixVfs, 这里的 vfs 的区别并
+      // 不是指不同的平台例如 unix, win (平台的不同会通过编译宏来区分),而
+      // 不是指同一个平台上不同的实现.
+  
+      // 这些 vfs 通过 pNext 组织起来. vfs_register 只会在第一次调用
+      // sqlite3OsInit 时被调用一次sqlite3OsInit 后, 以后每次调用
+      // sqlite3_open_v2 时, 会根据传入的zVfs 参数通过 sqlite3_vfs_find
+      // 找到对应的 sqlite3_vfs, 并赋给sqlite3->pVfs
+      sqlite3_vfs *pNext;      /* Next registered VFS */
+      
+      const char *zName;       /* Name of this virtual file system */
+      void *pAppData;          /* Pointer to application-specific data
+                                ,* */
+  
+      // xOpen 用来打开文件 (包括 db, journal, wal 文件), 无论打开文件是
+      // 否成功, sqlite3_file 的 sqlite3_io_methods 都需要被赋值. 以
+      // sqlite3PagerOpen 为例, sqlite3PagerOpen 会把 sqlite3_file 赋给
+      // pPager->fd
+      int (*xOpen)(sqlite3_vfs*, const char *zName, sqlite3_file*,
+                   int flags, int *pOutFlags);
+      
+      int (*xDelete)(sqlite3_vfs*, const char *zName, int syncDir);
+      int (*xAccess)(sqlite3_vfs*, const char *zName, int flags, int *pResOut);
+      int (*xFullPathname)(sqlite3_vfs*, const char *zName, int nOut, char *zOut);
+      void *(*xDlOpen)(sqlite3_vfs*, const char *zFilename);
+      void (*xDlError)(sqlite3_vfs*, int nByte, char *zErrMsg);
+      void (*(*xDlSym)(sqlite3_vfs*,void*, const char *zSymbol))(void);
+      void (*xDlClose)(sqlite3_vfs*, void*);
+      int (*xRandomness)(sqlite3_vfs*, int nByte, char *zOut);
+      int (*xSleep)(sqlite3_vfs*, int microseconds);
+      int (*xCurrentTime)(sqlite3_vfs*, double*);
+      int (*xCurrentTimeInt64)(sqlite3_vfs*, sqlite3_int64*);
+      int (*xSetSystemCall)(sqlite3_vfs*, const char *zName, sqlite3_syscall_ptr);
+      sqlite3_syscall_ptr (*xGetSystemCall)(sqlite3_vfs*, const char *zName);
+      const char *(*xNextSystemCall)(sqlite3_vfs*, const char *zName);
+  }
+#+END_SRC
+*** sqlite3_file
+e.g. Pager->fd
+
+sqlite3_file 是 xOpen 要返回的结果, 代表一个打开了的文件, 其"子类"包括
+1. unixFile, winFile, os2File ...
+2. JournalFile, MemJournal
+   
+sqlite3_file 这个"父类"只规定了一个字段 sqlite3_io_methods, 不同的子类
+需要实现相应的 io method, 例如 xRead, xWrite, xClose ..., 除此之外, 子
+类还定义了和自身相关的字段, 例如 unixFile 会定义 inode 信息.
+
+Pager 就是通过 pager->fd 这个 sqlite3_file 来读取 db 文件的. 
+
+*** sqlite3_io_methods
+e.g. sqlite3_file->pMethods
 ** query
 下面使用的测试语句及 byte code 如下:
 #+BEGIN_SRC text
@@ -66,8 +139,11 @@
       // pcache1Truncate, xxx
       sqlite3PCacheSetDefault();
       
-    // 初始化平台相关的函数, 主要是和文件系统相关, 例如 xRead, xOpen, xDelete
+    // 初始化平台相关的函数, 主要是和文件系统相关, 例如 xOpen, xDelete
     // 等, 也有少量和 vfs 无关的函数, 例如 xSleep, xCurrentTime 等
+    // 注意, io 相关的方法如 xRead, xWrite 等不属于 vfs 相关, 也不
+    // 由 sqlite3OsInit 有初始化: xOpen 会负责把相应的 sqlite3_io_methods
+    // 设置到 sqlite3_file->pMethods 上
     sqlite3OsInit();
 #+END_SRC
 
