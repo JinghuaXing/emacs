@@ -359,11 +359,14 @@ select x from foo where x="a" or y="a";
 **** conflict resolution
 **** attach database
 ** sqlite limitation
-- right and full outer join
-- complete ALTER TABLE support
-- completing TRIGGER support
-- writing to VIEWs
-- GRAND and REVOKE
+- 不支持 right/full outer join
+- 不完全的 alter table 支持
+- 不完全的触发器支持
+- 视图是只读的
+- 不支持物化的视图
+- 不支持 GRAND and REVOKE
+- 不支持表/行级别的锁
+- 不支持存储过程
 ** sqlite pragma
 *** auto_vacuum = 0/1
 *** cache_size
