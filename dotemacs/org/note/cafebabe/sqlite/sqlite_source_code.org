@@ -75,6 +75,81 @@ Pager 就是通过 pager->fd 这个 sqlite3_file 来读取 db 文件的.
 
 *** sqlite3_io_methods
 e.g. sqlite3_file->pMethods
+*** struct sqlite3_mem_methods 
+e.g. sqlite3GlobalConfig->m
+
+通过 sqlite3_config 可以提供一个自定义的 sqlite3_mem_methods, 负责内存
+的分配与释放.  与一般的 malloc 不同的是, sqlite3_mem_methods 提供了一
+个 xSize 方法用来获取一个指针所对应的已分配内存的大小. 具体的实现是
+xMalloc 时把内存大小信息写到了内存的前一个 int64 的位置. 
+
+#+BEGIN_SRC c
+  struct sqlite3_mem_methods {
+      void *(*xMalloc)(int);         /* Memory allocation function */
+      void (*xFree)(void*);          /* Free a prior allocation */
+      void *(*xRealloc)(void*,int);  /* Resize an allocation */
+      int (*xSize)(void*);           /* Return the size of an allocation */
+      int (*xRoundup)(int);          /* Round up request size to allocation size */
+      int (*xInit)(void*);           /* Initialize the memory allocator */
+      void (*xShutdown)(void*);      /* Deinitialize the memory allocator */
+      void *pAppData;                /* Argument to xInit() and xShutdown() */
+  };
+#+END_SRC
+** 内存分配
+sqlite 会使用三个函数来分配内存:
+*** sqlite3Malloc
+   
+   当给 page 分配内存 (page_size 大小的内存, 例如 1K) 时, 会使用
+   sqlite3Malloc, 这个函数会确定的使用 malloc 来分配内存
+   
+*** sqlite3DbMalloc
+   
+   当给其他对象分配内存时, 例如给 parser, vdbe 等, 会使用
+   sqlite3DbMalloc, 它使用了两种不同的内存分配方式, 来满足不同的分配需
+   求:
+
+   1. malloc
+      malloc
+
+   2. lookaside
+     类似于一个简化版的 slab 分配器 (slot 大小是固定的), 默认配置为 128
+     bytes * 500, 主要用来分配一些小的内存. 
+      
+   #+BEGIN_SRC text
+     void *sqlite3DbMallocRaw(sqlite3 *db, int n)
+       // 若 n 比 lookaside 的 slot 大, 则无法用 lookaside 分配
+       // 通过 anStat[1]++ 加一些 log 信息
+       if( n>db->lookaside.sz ):
+         db->lookaside.anStat[1]++;
+       else if( (pBuf = db->lookaside.pFree)==0 ):
+         // 大小合适但 slot 用完了, lookaside 分配失败
+         db->lookaside.anStat[2]++;
+       else:
+         // 取出一个 slot
+         db->lookaside.pFree = pBuf->pNext;
+         // checkout slot 数 +1
+         db->lookaside.nOut++;
+         db->lookaside.anStat[0]++;
+         return (void*)pBuf;
+       // lookaside 分配失败, 使用 malloc 分配  
+       p = sqlite3Malloc(n);
+     
+   #+END_SRC
+
+   lookaside malloc 在 openDatabase 被初始化:
+   #+BEGIN_SRC text
+     openDatabase()
+       // 默认配置下, szLookaside 为 128 bytes, nLookaside 为 500
+       setupLookaside(db, 0, sqlite3GlobalConfig.szLookaside, sqlite3GlobalConfig.nLookaside);
+   #+END_SRC
+
+*** sqlite3ScratchMalloc
+scratch malloc 的作用是 alloca 类似, 对某些对象可以分配在栈上的, 会使
+用这个函数.
+
+*** Other
+通过 adb shell dumpsys meminfo pid 可以 dump 出来 sqlite 内存分配相关
+的信息
 ** query
 下面使用的测试语句及 byte code 如下:
 #+BEGIN_SRC text

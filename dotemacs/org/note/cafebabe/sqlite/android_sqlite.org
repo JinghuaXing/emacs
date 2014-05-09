@@ -49,6 +49,7 @@ SQLiteStatement', as mentioned in:
 *** WAL (Write-ahead Logging)
 http://sqlite.org/wal.html
 ** SQLiteProgram & SQLiteQuery & SQLiteQueryBuilder
+** SQLiteDebug
 ** Cursor & CursorWindow
 *** SQLiteCursorDriver
 *** CursorFactory
@@ -292,3 +293,25 @@ that why CursorWindow could deliver more than 1MB data using binder.
      4K       4K       4K       4K       0K       0K       4K       0K  /dev/ashmem/CursorWindow:
 
 #+END_EXAMPLE
+** Other
+*** adb shell dumpsys meminfo pid
+#+BEGIN_SRC text
+   SQL
+           MEMORY_USED:      992
+    PAGECACHE_OVERFLOW:      255          MALLOC_SIZE:       62
+   
+   DATABASES
+        pgsz     dbsz   Lookaside(b)          cache  Dbname
+           4      300            460       56/65/25  /data/user/0/com.android.providers.contacts/databases/contacts2.db
+           1        9                         0/0/0    (attached) presence_db
+           4      300            498       39/54/24  /data/user/0/com.android.providers.contacts/databases/profile.db
+           1        9                         0/0/0    (attached) presence_db
+           1       19             44        39/30/5  :memory:
+  
+#+END_SRC
+
+1. pgsz 是 page_size, 单位 KB.
+2. dbsz 是 db 文件大小, KB
+3. lookaside 是已经 checkout 的 lookaside slot 的个数 (http://www.sqlite.org/c3ref/c_dbstatus_lookaside_used.html)
+4. cache 是 pcache 的 hit/miss/num_pages
+
