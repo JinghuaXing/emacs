@@ -372,3 +372,8 @@
 
 (require 'visual-regexp)
 (global-set-key (kbd "M-%") 'vr/query-replace)
+
+(require 'rainbow-delimiters)
+(global-rainbow-delimiters-mode)
+
+
