@@ -14,7 +14,9 @@
 ** sqlite3_rollback_hook
 ** sqlite3_busy_handler
 ** sqlite3_busy_timeout
+** sqlite3_profile
 ** sqlite3_trace
+** sqlite3_limit
 ** sqlite3_status
 ** sqlite3_config
 ** sqlite3_db_config
@@ -22,8 +24,11 @@
 - SQLITE_DBCONFIG_ENABLE_FKEY
 - SQLITE_DBCONFIG_ENABLE_TRIGGER
 ** sqlite3_memory_used
+** sqlite3_memory_highwater
 ** sqlite3_last_insert_rowid
+** sqlite3_set_authorizer
 ** sqlite3_changes
+** sqlite3_get_tables
 ** sqlite3_finalize
 在 auto-commit 模式下, sqlite3_finalize 相当于 commit 的作用:
 - 释放锁

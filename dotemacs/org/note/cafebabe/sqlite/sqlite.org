@@ -378,6 +378,7 @@ cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最�
 *** count_change = 0/1
 *** encoding = "UTF-8"
 *** page_size = bytes
+*** max_page_count
 *** synchronous = FULL/NORMAL/OFF
 synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 
