@@ -845,8 +845,10 @@ CLOSED: [2012-09-14 Fri 10:37]
 - [X] LruCache
 - [X] Pair
 - SparseArray
-  SparseArray 查找的性能和 AVL 树类似, 但构造的性能太差 (AVL 插入或删
-  除节点时为 O(logn), 而 SparseArray 插入或删除时需要 O(logn)+O(n))
+  1. SparseArray 查找的性能比 AVL 树稍慢,  因为它多了一次二分查找的过程.
+  2. 构造性能比 AVL 差很多, AVL 插入或删除节点时为 O(logn), 而
+     SparseArray 插入或删除时需要 O(logn)+O(n), 因为需要移动数据元素.
+  
 - [X] TimingLogger
 ** vold
    :PROPERTIES:
