@@ -95,6 +95,25 @@ xMalloc 时把内存大小信息写到了内存的前一个 int64 的位置.
       void *pAppData;                /* Argument to xInit() and xShutdown() */
   };
 #+END_SRC
+*** PgHdr
+#+BEGIN_SRC c
+  struct PgHdr {
+      sqlite3_pcache_page *pPage;    /* Pcache object page handle */
+      void *pData;                   /* Page data */
+      void *pExtra;                  /* Extra content */
+      PgHdr *pDirty;                 /* Transient list of dirty pages */
+      Pager *pPager;                 /* The pager this page is part of */
+      Pgno pgno;                     /* Page number for this page */
+      u32 pageHash;                  /* Hash of page content */  
+      /* flags 可能为 dirty, need_sync, need_read, dont_write 等 */
+      u16 flags;                     /* PGHDR flags defined below */
+  
+      i16 nRef;                      /* Number of users of this page */
+      PCache *pCache;                /* Cache that owns this page */
+      PgHdr *pDirtyNext;             /* Next element in list of dirty pages */
+      PgHdr *pDirtyPrev;             /* Previous element in list of dirty pages */
+  }
+#+END_SRC
 ** 内存分配
 sqlite 会使用三个函数来分配内存:
 *** sqlite3Malloc

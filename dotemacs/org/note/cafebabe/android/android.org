@@ -844,7 +844,9 @@ pm getInstallLocation
 CLOSED: [2012-09-14 Fri 10:37]
 - [X] LruCache
 - [X] Pair
-- [X] SparseArray
+- SparseArray
+  SparseArray 查找的性能和 AVL 树类似, 但构造的性能太差 (AVL 插入或删
+  除节点时为 O(logn), 而 SparseArray 插入或删除时需要 O(logn)+O(n))
 - [X] TimingLogger
 ** vold
    :PROPERTIES:
