@@ -10,6 +10,115 @@ sqlite3.c 分为以下几个模块:
 5. pcache
 ** data structure
 *** sqlite3
+#+BEGIN_SRC c
+  struct sqlite3 {
+      sqlite3_vfs *pVfs;            /* OS Interface */
+      struct Vdbe *pVdbe;           /* List of active virtual machines */
+      CollSeq *pDfltColl;           /* The default collating sequence (BINARY) */
+      sqlite3_mutex *mutex;         /* Connection mutex */
+      Db *aDb;                      /* All backends */
+      int nDb;                      /* Number of backends currently in use */
+      int flags;                    /* Miscellaneous flags. See below */
+      i64 lastRowid;                /* ROWID of most recent insert (see above) */
+      unsigned int openFlags;       /* Flags passed to sqlite3_vfs.xOpen() */
+      int errCode;                  /* Most recent error code (SQLITE_*) */
+      int errMask;                  /* & result codes with this before returning */
+      u8 autoCommit;                /* The auto-commit flag. */
+      u8 temp_store;                /* 1: file 2: memory 0: default */
+      u8 mallocFailed;              /* True if we have seen a malloc failure */
+      u8 dfltLockMode;              /* Default locking-mode for attached dbs */
+      signed char nextAutovac;      /* Autovac setting after VACUUM if >=0 */
+      u8 suppressErr;               /* Do not issue error messages if true */
+      u8 vtabOnConflict;            /* Value to return for s3_vtab_on_conflict() */
+      u8 isTransactionSavepoint;    /* True if the outermost savepoint is a TS */
+      int nextPagesize;             /* Pagesize after VACUUM if >0 */
+      u32 magic;                    /* Magic number for detect library misuse */
+      int nChange;                  /* Value returned by sqlite3_changes() */
+      int nTotalChange;             /* Value returned by sqlite3_total_changes() */
+      int aLimit[SQLITE_N_LIMIT];   /* Limits */
+      struct sqlite3InitInfo {      /* Information used during initialization */
+          int newTnum;                /* Rootpage of table being initialized */
+          u8 iDb;                     /* Which db file is being initialized */
+          u8 busy;                    /* TRUE if currently initializing */
+          u8 orphanTrigger;           /* Last statement is orphaned TEMP trigger */
+      } init;
+      int activeVdbeCnt;            /* Number of VDBEs currently executing */
+      int writeVdbeCnt;             /* Number of active VDBEs that are writing */
+      int vdbeExecCnt;              /* Number of nested calls to VdbeExec() */
+      int nExtension;               /* Number of loaded extensions */
+      void **aExtension;            /* Array of shared library handles */
+      void (*xTrace)(void*,const char*);        /* Trace function */
+      void *pTraceArg;                          /* Argument to the trace function */
+      void (*xProfile)(void*,const char*,u64);  /* Profiling function */
+      void *pProfileArg;                        /* Argument to profile function */
+      void *pCommitArg;                 /* Argument to xCommitCallback() */   
+      int (*xCommitCallback)(void*);    /* Invoked at every commit. */
+      void *pRollbackArg;               /* Argument to xRollbackCallback() */   
+      void (*xRollbackCallback)(void*); /* Invoked at every commit. */
+      void *pUpdateArg;
+      void (*xUpdateCallback)(void*,int, const char*,const char*,sqlite_int64);
+  #ifndef SQLITE_OMIT_WAL
+      int (*xWalCallback)(void *, sqlite3 *, const char *, int);
+      void *pWalArg;
+  #endif
+      void(*xCollNeeded)(void*,sqlite3*,int eTextRep,const char*);
+      void(*xCollNeeded16)(void*,sqlite3*,int eTextRep,const void*);
+      void *pCollNeededArg;
+      sqlite3_value *pErr;          /* Most recent error message */
+      char *zErrMsg;                /* Most recent error message (UTF-8 encoded) */
+      char *zErrMsg16;              /* Most recent error message (UTF-16 encoded) */
+      union {
+          volatile int isInterrupted; /* True if sqlite3_interrupt has been called */
+          double notUsed1;            /* Spacer */
+      } u1;
+      Lookaside lookaside;          /* Lookaside malloc configuration */
+  #ifndef SQLITE_OMIT_AUTHORIZATION
+      int (*xAuth)(void*,int,const char*,const char*,const char*,const char*);
+      /* Access authorization function */
+      void *pAuthArg;               /* 1st argument to the access auth function */
+  #endif
+  #ifndef SQLITE_OMIT_PROGRESS_CALLBACK
+      int (*xProgress)(void *);     /* The progress callback */
+      void *pProgressArg;           /* Argument to the progress callback */
+      int nProgressOps;             /* Number of opcodes for progress callback */
+  #endif
+  #ifndef SQLITE_OMIT_VIRTUALTABLE
+      int nVTrans;                  /* Allocated size of aVTrans */
+      Hash aModule;                 /* populated by sqlite3_create_module() */
+      VtabCtx *pVtabCtx;            /* Context for active vtab connect/create */
+      VTable **aVTrans;             /* Virtual tables with open transactions */
+      VTable *pDisconnect;    /* Disconnect these in next sqlite3_prepare() */
+  #endif
+      FuncDefHash aFunc;            /* Hash table of connection functions */
+      Hash aCollSeq;                /* All collating sequences */
+      BusyHandler busyHandler;      /* Busy callback */
+      Db aDbStatic[2];              /* Static space for the 2 default backends */
+      Savepoint *pSavepoint;        /* List of active savepoints */
+      int busyTimeout;              /* Busy handler timeout, in msec */
+      int nSavepoint;               /* Number of non-transaction savepoints */
+      int nStatement;               /* Number of nested statement-transactions  */
+      i64 nDeferredCons;            /* Net deferred constraints this transaction. */
+      int *pnBytesFreed;            /* If not NULL, increment this in DbFree() */
+  
+  #ifdef SQLITE_ENABLE_UNLOCK_NOTIFY
+      /* The following variables are all protected by the STATIC_MASTER 
+      ,** mutex, not by sqlite3.mutex. They are used by code in notify.c. 
+      ,**
+      ,** When X.pUnlockConnection==Y, that means that X is waiting for Y to
+      ,** unlock so that it can proceed.
+      ,**
+      ,** When X.pBlockingConnection==Y, that means that something that X tried
+      ,** tried to do recently failed with an SQLITE_LOCKED error due to locks
+      ,** held by Y.
+      ,*/
+      sqlite3 *pBlockingConnection; /* Connection that caused SQLITE_LOCKED */
+      sqlite3 *pUnlockConnection;           /* Connection to watch for unlock */
+      void *pUnlockArg;                     /* Argument to xUnlockNotify */
+      void (*xUnlockNotify)(void **, int);  /* Unlock notify callback */
+      sqlite3 *pNextBlocked;        /* Next in list of all blocked connections */
+  #endif
+  }
+#+END_SRC
 *** sqlite3_vfs
 e.g. sqlite3->pVfs
 
@@ -114,58 +223,122 @@ xMalloc 时把内存大小信息写到了内存的前一个 int64 的位置.
       PgHdr *pDirtyPrev;             /* Previous element in list of dirty pages */
   }
 #+END_SRC
+*** Schema
+#+BEGIN_SRC c
+  struct Schema {
+      int schema_cookie;   /* Database schema version number for this file */
+      int iGeneration;     /* Generation counter.  Incremented with each change */
+      Hash tblHash;        /* All tables indexed by name */
+      Hash idxHash;        /* All (named) indices indexed by name */
+      Hash trigHash;       /* All triggers indexed by name */
+      Hash fkeyHash;       /* All foreign keys by referenced table name */
+      Table *pSeqTab;      /* The sqlite_sequence table used by AUTOINCREMENT */
+      u8 file_format;      /* Schema format version for this file */
+      u8 enc;              /* Text encoding used by this database */
+      u16 flags;           /* Flags associated with this schema */
+      int cache_size;      /* Number of pages to use in the cache */
+  };
+#+END_SRC
+*** lookaside
+#+BEGIN_SRC c
+  struct Lookaside {
+      u16 sz;                 /* Size of each buffer in bytes */
+      u8 bEnabled;            /* False to disable new lookaside allocations */
+      u8 bMalloced;           /* True if pStart obtained from sqlite3_malloc() */
+      int nOut;               /* Number of buffers currently checked out */
+      int mxOut;              /* Highwater mark for nOut */
+      int anStat[3];          /* 0: hits.  1: size misses.  2: full misses */
+      LookasideSlot *pFree;   /* List of available buffers */
+      void *pStart;           /* First byte of available memory space */
+      void *pEnd;             /* First byte past end of available space */
+  };
+#+END_SRC
 ** 内存分配
-sqlite 会使用三个函数来分配内存:
-*** sqlite3Malloc
+*** alloc
+sqlite 会使用以下函数来分配内存:
+**** sqlite3Malloc
+对 malloc 的封装, 并且加上了 size 的支持 (可以通过 sqlite3MallocSize
+获得 malloc 分配的大小).
+
+另外, sqlite3Malloc 也是后面提到的 scratch, lookaside, pcache 三种分配
+方式的 fallback.
+
+
+实际上 sqlite3Malloc 可以使用多个版本的 memory system:
+
+1. SQLITE_SYSTEM_MALLOC
+
+   默认的 malloc 实现
+
+2. SQLITE_MEMDEBUG
+
+   这个版本的 sqlite3MemMalloc 会包含一些 memory debug 信息, 例如
+   backtrace, FOREGUARD, REARGUARD 等.
+
+3. SQLITE_ENABLE_MEMSYS3 
+
+   一个基于 memory pool 的分配器
+
+4. SQLITE_ENABLE_MEMSYS5 
+
+   一个与 buddy 系统类似的分配器
    
-   当给 page 分配内存 (page_size 大小的内存, 例如 1K) 时, 会使用
-   sqlite3Malloc, 这个函数会确定的使用 malloc 来分配内存
+**** sqlite3PageMalloc
+对 pcache 的封装, 用来给 page 分配内存. 
+
+**** sqlite3DbMalloc
+
+当给其他对象分配内存时, 例如给 parser, vdbe 等, 会使用
+sqlite3DbMalloc, 它会优先使用 lookside 这种分式来分配内存
+
+ookaside 类似于一个简化版的 slab 分配器 (slot 大小是固定的), 默认配置为
+  128 bytes * 500, 主要用来分配一些小的内存.
    
-*** sqlite3DbMalloc
-   
-   当给其他对象分配内存时, 例如给 parser, vdbe 等, 会使用
-   sqlite3DbMalloc, 它使用了两种不同的内存分配方式, 来满足不同的分配需
-   求:
+#+BEGIN_SRC text
+  void *sqlite3DbMallocRaw(sqlite3 *db, int n)
+    // 若 n 比 lookaside 的 slot 大, 则无法用 lookaside 分配
+    // 通过 anStat[1]++ 加一些 log 信息
+    if( n>db->lookaside.sz ):
+      db->lookaside.anStat[1]++;
+    else if( (pBuf = db->lookaside.pFree)==0 ):
+      // 大小合适但 slot 用完了, lookaside 分配失败
+      db->lookaside.anStat[2]++;
+    else:
+      // 取出一个 slot
+      db->lookaside.pFree = pBuf->pNext;
+      // checkout slot 数 +1
+      db->lookaside.nOut++;
+      db->lookaside.anStat[0]++;
+      return (void*)pBuf;
+    // lookaside 分配失败, 使用 malloc 分配  
+    p = sqlite3Malloc(n);
+  
+#+END_SRC
 
-   1. malloc
-      malloc
+lookaside malloc 在 openDatabase 被初始化:
+#+BEGIN_SRC text
+  openDatabase()
+    // 默认配置下, szLookaside 为 128 bytes, nLookaside 为 500
+    setupLookaside(db, 0, sqlite3GlobalConfig.szLookaside, sqlite3GlobalConfig.nLookaside);
+#+END_SRC
 
-   2. lookaside
-     类似于一个简化版的 slab 分配器 (slot 大小是固定的), 默认配置为 128
-     bytes * 500, 主要用来分配一些小的内存. 
-      
-   #+BEGIN_SRC text
-     void *sqlite3DbMallocRaw(sqlite3 *db, int n)
-       // 若 n 比 lookaside 的 slot 大, 则无法用 lookaside 分配
-       // 通过 anStat[1]++ 加一些 log 信息
-       if( n>db->lookaside.sz ):
-         db->lookaside.anStat[1]++;
-       else if( (pBuf = db->lookaside.pFree)==0 ):
-         // 大小合适但 slot 用完了, lookaside 分配失败
-         db->lookaside.anStat[2]++;
-       else:
-         // 取出一个 slot
-         db->lookaside.pFree = pBuf->pNext;
-         // checkout slot 数 +1
-         db->lookaside.nOut++;
-         db->lookaside.anStat[0]++;
-         return (void*)pBuf;
-       // lookaside 分配失败, 使用 malloc 分配  
-       p = sqlite3Malloc(n);
-     
-   #+END_SRC
-
-   lookaside malloc 在 openDatabase 被初始化:
-   #+BEGIN_SRC text
-     openDatabase()
-       // 默认配置下, szLookaside 为 128 bytes, nLookaside 为 500
-       setupLookaside(db, 0, sqlite3GlobalConfig.szLookaside, sqlite3GlobalConfig.nLookaside);
-   #+END_SRC
-
-*** sqlite3ScratchMalloc
+**** sqlite3ScratchMalloc
 scratch malloc 的作用是 alloca 类似, 对某些对象可以分配在栈上的, 会使
 用这个函数.
+*** status
+**** sqlite3_memory_highwater
+**** sqlite3_memory_used
+**** sqlite3HeapNearlyFull
+*** setting
+**** sqlite3_soft_heap_limit64
 
+若设置了 soft_heap_limit, 则后续通过 sqlite3Malloc 时, 若通过 mem0发现
+已分配内存将接近 soft limit, 则通过 sqlite3MallocAlarm 方法触发
+softHeapLimitEnforcer 这个 alarm, 后者会调用 sqlite3_release_memory,进
+行调用 sqlite3PcacheReleaseMemory 释放 pcache 的内存.
+*** lookaside
+*** scratch
+*** pcache
 *** Other
 通过 adb shell dumpsys meminfo pid 可以 dump 出来 sqlite 内存分配相关
 的信息
