@@ -4,9 +4,9 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("sqlite3.c"
  (filename . "~/source/sprdroid4.4/external/sqlite/dist/sqlite3.c")
- (front-context-string . "**      %S      ")
- (rear-context-string . " Insert a token\n")
- (position . 842611))
+ (front-context-string . "  if( pHead ){\n ")
+ (rear-context-string . " pHead = 0;\n  }\n")
+ (position . 872100))
 ("github.io"
  (filename . "~/.github.pages/")
  (front-context-string . "cafebabe\n  drwxr")

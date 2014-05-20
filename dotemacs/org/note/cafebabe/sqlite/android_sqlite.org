@@ -313,5 +313,6 @@ that why CursorWindow could deliver more than 1MB data using binder.
 1. pgsz 是 page_size, 单位 KB.
 2. dbsz 是 db 文件大小, KB
 3. lookaside 是已经 checkout 的 lookaside slot 的个数 (http://www.sqlite.org/c3ref/c_dbstatus_lookaside_used.html)
-4. cache 是 pcache 的 hit/miss/num_pages
+4. cache 是 android 使用的 statement cache 的 hit/miss/num_pages (和
+   pcache 无关...)
 
