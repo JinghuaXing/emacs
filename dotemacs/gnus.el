@@ -278,24 +278,14 @@ wei.sun(孙伟)
 
 (setq mm-w3m-safe-url-regexp ".*")
 
-(defalias 'm 'sw/elscreen-gnus)
-
+(defalias 'm 'sw/gnus)
 (setq sw/in-gnus nil)
-(defun sw/elscreen-gnus ()
+(defun sw/gnus ()
   (interactive)
   (setq sw/in-gnus t)
-  (let ((buffer (get-buffer "*Group*")))
-    (if buffer
-	(elscreen-find-and-goto-by-buffer (get-buffer "*Group*") 'create)
-      (progn
-	(elscreen-create)
-	(gnus)
-	)
-      )
-    )
+  (gnus)
   )
 
-(add-hook 'gnus-suspend-gnus-hook 'elscreen-kill)
 (add-hook 'gnus-suspend-gnus-hook '(lambda()
 				     (gnus-group-save-newsrc t)
 				     (setq sw/in-gnus nil)

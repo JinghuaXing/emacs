@@ -385,6 +385,14 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 特别的,在 WAL 模式下, synchronous 为 NORMAL 时 commit 也不再写数据库,
 只有checkout 时才刷新.
 *** vdbe_trace=ON/OFF
+*** temp_store
+临时文件保存在内存(1)还是磁盘(2)或者由编译时指定(0).临时文件包括各种临
+时表(视图, 子查询), 临时索引(order by, group by, distinct ...), 临时数
+据库 (temp table), statement journal.
+
+即使选择用磁盘保存临时文件, sqlite 也会通过 pcache 优先将它暂时保存在
+内存里而避免写磁盘. 
+
 ** optimization
 *** 使用索引
 *** 避免 transient table (subquery)
@@ -392,6 +400,17 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 transient table 来暂存中间结果, 尤其是 subquery. 这些 transient table主
 要的问题是无法使用 index.
 - 使用显式的 temp table 并使用索引?
+- sqlite 本身可以对一些 subquery 进行扁平化 (flattening), 例如:
+  #+BEGIN_SRC sql
+    SELECT * FROM ex1 WHERE ex1.a IN (SELECT b FROM ex2);
+  #+END_SRC
+
+  可能被扁平化为
+
+  #+BEGIN_SRC sql
+    SELECT ex1.*, ex2.b FROM ex1 JOIN ex2 ON ex2.b=ex1.a;
+  #+END_SRC
+
 *** automatic index
 *** view 与 subquery 类似, 无法使用索引
 *** join 的顺序

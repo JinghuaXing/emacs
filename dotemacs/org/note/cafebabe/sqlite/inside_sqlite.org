@@ -117,11 +117,14 @@ lock byte page 实际是用来实现文件锁的一个区域, 这个区域被设
 之所以这个 page 规定为 512 字节, 是为了实现 sqlite 的多阶段文件锁,
 sqlite 把这个 512 字节的区域又分为 3 的区域, 其中一个字节用来支持一个
 reserved lock , 一个字段用来支持一个 pending lock , 剩下的 510 的字节用
-来支持多个 shared lock 和一个 exclusive lock. (注: 对于 linux, shared
-lock 是对 整个510 个字节区域的 read lock, 可以有无数个, exclusive 是对
-这 510 个字节区域的 right lock , 只能有一个；对于 windows, 因为它只支
-持 write lock , 所以 shared lock 是对 510 个字节中的某一个字节的 write
-lock, 所以最多有 510 个)
+来支持多个 shared lock 和一个 exclusive lock. (注: 对于 linux/winnt,
+shared lock 是对 整个510 个字节区域的 read lock, 可以有无数个,
+exclusive 是对这 510 个字节区域的 write lock, 只能有一个；对于 windows
+ce/95/98, 因为它只支持 write lock , 所以 shared lock 是对 510 个字节中
+的某一个字节的 write lock, 所以最多有 510 个(sqlite3 在 win98 上加
+shared lock 时是使用了一个随机的方法去随机的锁定 510 字节的某一个, 有可
+能与其它进程的 shared lock 冲突, 导致 shared lock 无法锁定, 参考这个函
+数: int getReadLock(winFile *pFile))
 
 *** trunk page 与 free page
 在 sqlite 文件头中有一个 free page list 的指针, 指向第一个 trunk

@@ -253,6 +253,11 @@ xMalloc 时把内存大小信息写到了内存的前一个 int64 的位置.
       void *pEnd;             /* First byte past end of available space */
   };
 #+END_SRC
+*** 总结
+
+- Db ->Btree -> BtShared -> Pager -> pcache, 以上各个结构体都对应了一个数据库文件.
+- BtShared 包含多个 BtCursor, 代表正在操作的各个表. 
+
 ** 内存分配
 *** alloc
 sqlite 会使用以下函数来分配内存:
