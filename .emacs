@@ -218,7 +218,7 @@
 (setq backup-inhibited t)
 
 (require 'auto-highlight-symbol)
-(global-auto-highlight-symbol-mode t)
+;;(global-auto-highlight-symbol-mode t)
 (setq ahs-default-range (quote ahs-range-beginning-of-defun))
 (require 'popup-ruler)
 (defalias 'ruler 'popup-ruler)

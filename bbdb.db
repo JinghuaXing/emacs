@@ -105,6 +105,7 @@
 ["赵景珠" nil ("Yelianna Zhao") nil nil nil ("Yelianna.Zhao@spreadtrum.com") ((creation-date . "2014-05-06") (timestamp . "2014-05-06")) nil]
 ["路志勇" nil ("Robert Lu") nil nil nil ("Robert.Lu@spreadtrum.com") ((creation-date . "2014-03-07") (timestamp . "2014-03-07")) nil]
 ["邓京" nil ("Jing Deng") nil nil nil ("Jing.Deng@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
+["邵雨竹" nil (#("Yuzhu Shao" 0 5 (fontified nil) 5 6 (fontified nil) 6 10 (fontified nil))) nil nil nil (#("Yuzhu.Shao@spreadtrum.com" 0 25 (fontified nil))) ((creation-date . "2014-05-27") (timestamp . "2014-05-27")) nil]
 ["陈琳" nil ("Lin Chen") nil nil nil ("Lin.Chen@spreadtrum.com") ((creation-date . "2014-03-10") (timestamp . "2014-03-10")) nil]
 ["陈高鹏" nil ("Roc Chen") nil nil nil ("Roc.Chen@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
 ["陶亚楠" nil ("Yanan Tao") nil nil nil ("Yanan.Tao@spreadtrum.com") ((creation-date . "2014-01-28") (timestamp . "2014-02-26")) nil]

@@ -21,6 +21,7 @@
   (local-set-key (kbd "C-h C-h") 'sourcepair-load)
   ;; (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)
+  (auto-highlight-symbol-mode t)
   (hs-hide-initial-comment-block)
   (hide-ifdef-mode t)
   ;; (setq hide-ifdef-initially t)

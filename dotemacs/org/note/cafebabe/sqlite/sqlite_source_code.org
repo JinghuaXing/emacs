@@ -253,6 +253,33 @@ xMalloc 时把内存大小信息写到了内存的前一个 int64 的位置.
       void *pEnd;             /* First byte past end of available space */
   };
 #+END_SRC
+*** unixInodeInfo
+#+BEGIN_SRC c
+  struct unixInodeInfo {
+      struct unixFileId fileId;       /* The lookup key */
+      int nShared;                    /* Number of SHARED locks held */
+      unsigned char eFileLock;        /* One of SHARED_LOCK, RESERVED_LOCK etc. */
+      unsigned char bProcessLock;     /* An exclusive process lock is held */
+      int nRef;                       /* Number of pointers to this structure */
+      unixShmNode *pShmNode;          /* Shared memory associated with this inode */
+      int nLock;                      /* Number of outstanding file locks */
+      UnixUnusedFd *pUnused;          /* Unused file descriptors to close */
+      unixInodeInfo *pNext;           /* List of all unixInodeInfo objects */
+      unixInodeInfo *pPrev;           /*    .... doubly linked */
+  }
+#+END_SRC
+
+由于 posix 的文件锁实现对于多线程是有问题的 (参考源码中 Posix Advisory
+Locking 部分), 所以 sqlite 使用了一个 unixInodeInfo 记录一个进程中对同
+一个 inode 的加锁情况. 
+
+同一个进程的多个线程可能会打开同一个 db 文件多次, 对应多少 unixFile,
+但因为这些 unixFile 对应同一个 inode, 所以 unixFile->pInode 指向同一个
+unixInodeInfo 结构.  
+
+这样当同一个进程的某个线程对某 unixFile 获得了 shared lock 时, 另一个
+线程再想对同一个 inode 的另一个 unixFile 加 shared lock 时, 不再需要调
+用 unixFileLock 真正加锁, 而是通过 nShared + 1 获得 shared lock.
 *** 总结
 
 - Db ->Btree -> BtShared -> Pager -> pcache, 以上各个结构体都对应了一个数据库文件.
@@ -349,12 +376,14 @@ softHeapLimitEnforcer 这个 alarm, 后者会调用 sqlite3_release_memory,进
 的信息
 ** 文件锁
 *** shared_lock
-所有 vdbe 执行时, 都会最先在 OP_Transaction 时, 而通过
-sqlite3PagerSharedLock 获取 shared_lock. 此时还会包含检测 hot-journal
-的动作
+所有 vdbe 执行时, 都会最先在 OP_Transaction 时通过
+sqlite3PagerSharedLock 获取 shared_lock. 此时还会包含检测 hot-journal的
+动作
+
 *** reserved_lock
 OP_Transaction 使用了 wrflag = 1 时, 表示该 vdbe 会写数据库, 这时会通
 过 sqlite3BtreeBeginTrans -> sqlite3PagerBegin 获得 reserved_lock
+
 *** exclusive_lock
 OP_Halt 时, vdbeCommit 会获得 exclusive_lock
 
