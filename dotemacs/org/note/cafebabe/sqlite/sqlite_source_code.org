@@ -347,6 +347,17 @@ softHeapLimitEnforcer 这个 alarm, 后者会调用 sqlite3_release_memory,进
 *** Other
 通过 adb shell dumpsys meminfo pid 可以 dump 出来 sqlite 内存分配相关
 的信息
+** 文件锁
+*** shared_lock
+所有 vdbe 执行时, 都会最先在 OP_Transaction 时, 而通过
+sqlite3PagerSharedLock 获取 shared_lock. 此时还会包含检测 hot-journal
+的动作
+*** reserved_lock
+OP_Transaction 使用了 wrflag = 1 时, 表示该 vdbe 会写数据库, 这时会通
+过 sqlite3BtreeBeginTrans -> sqlite3PagerBegin 获得 reserved_lock
+*** exclusive_lock
+OP_Halt 时, vdbeCommit 会获得 exclusive_lock
+
 ** query
 下面使用的测试语句及 byte code 如下:
 #+BEGIN_SRC text
@@ -554,14 +565,18 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
           OP_GOTO:
          
           OP_Transaction:
+            lockBtree
+              sqlite3PagerSharedLock
+                pager_wait_on_lock(pPager, SHARED_LOCK);
+                // 检测是否有 hot journal
+                if hasHotJournal():
+                  pagerLockDb(pPager, EXCLUSIVE_LOCK);
+                  pagerSyncHotJournal(pPager);
             sqlite3BtreeBeginTrans(u.at.pBt, pOp->p2);
-            // 获取 shared lock
-            sqlite3PagerSharedLock
-              pager_wait_on_lock(pPager, SHARED_LOCK);
-              // 检测是否有 hot journal
-              if hasHotJournal():
-                pagerLockDb(pPager, EXCLUSIVE_LOCK);
-                pagerSyncHotJournal(pPager);
+              // if write mode
+              sqlite3PagerBegin(pBt->pPager,wrflag>1,sqlite3TempInMemory(p->db));
+                // 获得 reserved_lock
+                pagerLockDb(pPager, RESERVED_LOCK);
               
           OP_OpenRead:
             allocateCursor(p, pOp->p1, u.aw.nField, u.aw.iDb, 1);
