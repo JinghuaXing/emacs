@@ -27,7 +27,7 @@
   ;; (setq hide-ifdef-initially t)
   ;; (hide-ifdefs)
   (auto-fill-mode 1)
-  (linum-mode 1)
+  ;; (linum-mode 1)
   (flyspell-prog-mode)
   (local-set-key (kbd "C-c C-c") 'droid)
 

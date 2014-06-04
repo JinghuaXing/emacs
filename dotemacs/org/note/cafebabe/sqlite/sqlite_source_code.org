@@ -8,6 +8,7 @@ sqlite3.c 分为以下几个模块:
 3. btree
 4. pager
 5. pcache
+
 ** data structure
 *** sqlite3
 #+BEGIN_SRC c
@@ -284,6 +285,101 @@ unixInodeInfo 结构.
 
 - Db ->Btree -> BtShared -> Pager -> pcache, 以上各个结构体都对应了一个数据库文件.
 - BtShared 包含多个 BtCursor, 代表正在操作的各个表. 
+
+** pcache
+通过 sqlite3_pcache_methods2 结构体, 用户可以通过 sqlite3_config 指定
+一个自定义的 pcache 实现. sqlite3 使用 pcache1 做为默认的 pcache 实现. 
+
+*** sqlite3PcacheFetch
+pager 负责调用 sqlite3PcacheFetch (通过 sqlite3PagerAcquire)
+#+BEGIN_SRC text
+  int sqlite3PcacheFetch(
+      PCache *pCache,       /* Obtain the page from this cache */
+      Pgno pgno,            /* Page number to obtain */
+      int createFlag,       /* If true, create page if it does not exist already */
+      PgHdr **ppPage        /* Write the page here */
+    ):
+    // 通过 pcach1 获得一个 page
+    pPage = sqlite3GlobalConfig.pcache2.xFetch(pCache->pCache, pgno, eCreate);
+    // 若 pcach1 无法分配一个 page: 例如 pcache1 满了而 lru list 为空
+    if( !pPage && eCreate==1 ):
+      // 从 pcache 自己维护的 pDirty 中找到一个 dirty 的但 nRef 为 0 的 page
+      // pDirty 中的 page 一定不存在于 pcach1 的 lru list 中.
+      for(pPg=pCache->pDirtyTail; pPg && pPg->nRef; pPg=pPg->pDirtyPrev);
+      // 调用 pagerStress, 把 pPg 这个空闲的 dirty page 刷新到数据库中
+      // 刷新后会调用 pPg
+      rc = pCache->xStress(pCache->pStress, pPg);
+        sqlite3PcacheMakeClean(pPg);
+          pcacheRemoveFromDirtyList(p);
+          // unpin 会导致这个 page 被放入 lru list
+          pcacheUnpin(p);
+      // 再次调用 pcache1Fetch
+      pPage = sqlite3GlobalConfig.pcache2.xFetch(pCache->pCache, pgno, 2);
+    // page 的 nRef + 1
+    pPgHdr->nRef++;
+      
+#+END_SRC
+*** pcache1Fetch
+#+BEGIN_SRC text
+  // p 是 pcache 实例
+  // iKey 实际上是 pgno
+  // pcache 模块本身涉及到 dirty, 
+  static sqlite3_pcache_page *pcache1Fetch(       
+         sqlite3_pcache *p, 
+         unsigned int iKey, 
+         int createFlag):
+    // 通过 pcache1 的 apHash 查找, apHash 中可能包含了所有的 cached
+    // page, 包含 pinned (不存在于 lru list), unpinned (存在于 lru list)
+    // 以及 dirty 的等
+    /* Step 1: Search the hash table for an existing entry. */
+    if( pCache->nHash>0 ):
+      unsigned int h = iKey % pCache->nHash;
+      for(pPage=pCache->apHash[h]; pPage&&pPage->iKey!=iKey; pPage=pPage->pNext);
+    // 若 pPage 找到, 则返回这个 pPage, 但返回之前先通过 pcache1PinPage
+    // 确保这个 page 不存在于 lru list 中, 因为这个 lru list 的意义是一
+    // 个对象缓存, 存放着那些已经没有意义的对象
+    if( pPage || createFlag==0 ):
+      pcache1PinPage(pPage);
+      goto fetch_out;
+  
+    /* Step 3: Abort if createFlag is 1 but the cache is nearly full */
+    // 若 createFlag==1, 但 pcache1 已经快满了, 则返回空
+    if( createFlag==1 && (
+      nPinned>=pGroup->mxPinned
+      || nPinned>=pCache->n90pct
+      || pcache1UnderMemoryPressure(pCache)
+      ):
+      goto fetch_out;
+  
+    /* Step 4. Try to recycle a page. */
+    if( pCache->bPurgeable && pGroup->pLruTail && (
+      (pCache->nPage+1>=pCache->nMax)
+      || pGroup->nCurrentPage>=pGroup->nMaxPage
+      || pcache1UnderMemoryPressure(pCache)
+      )):
+      // 尝试从 lru list 中获得一个无用的 page
+      // 从 lru list 的队尾获取一个 page
+      pPage = pGroup->pLruTail;
+      // 从 apHash 中去掉这个 page, 因为过一会儿这个 page 的内容都重写后
+      // 其 key 与 value 不再对应. 
+      pcache1RemoveFromHash(pPage);
+      // 把 page 从 lru list 中移除
+      pcache1PinPage(pPage);
+  
+    /* Step 5. If a usable page buffer has still not been found, 
+    ,** attempt to allocate a new one. 
+    ,*/
+    if( !pPage ):
+      // 分配一个新的 page, 并加入于 apHash 中
+      pPage = pcache1AllocPage(pCache);
+      pCache->apHash[h] = pPage;
+         
+#+END_SRC
+
+*** 总结
+1. pcache 的 dirty list
+2. pcache1 的 lru list
+3. pcache1 的 apHash
 
 ** 内存分配
 *** alloc

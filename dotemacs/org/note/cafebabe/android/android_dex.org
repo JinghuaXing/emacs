@@ -220,6 +220,7 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
    AMS启动应用之前
 3. dvmRawDexFileOpen
    ClassLoader 初始化时
+4. app 被安装时
 *** odex 如何被 ClassLoader 加载
 **** context class loader
 当 PathClassLoader 初始化时, 会初始化 DexFile, 相当的会设置对应的 odex 的路
