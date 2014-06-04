@@ -378,8 +378,35 @@ pager 负责调用 sqlite3PcacheFetch (通过 sqlite3PagerAcquire)
 
 *** 总结
 1. pcache 的 dirty list
+
+   dirty list 不仅在 fetch 时可以用来刷新 page 到 db 以便获得更多的
+   free page, 更重要的是在 commit 阶段可以根据这个 list 知道哪些
+   pcache 需要被刷新到 db 文件中
+
 2. pcache1 的 lru list
+
+   lru list 是一个对象缓存, 通过 pcache1Unpin 可以把一个无用的 page 放
+   到 lru list 中. 凡是存在于 lru list 的 page 其 nRef 都为 0, 表示无
+   人使用. 
+
+   dirty list 和 lru list 没有交集. 
+
 3. pcache1 的 apHash
+
+   apHash 中的 page 可能存在于 dirty list 中, 也可能存在于 lru list 中
+
+** RowSet
+RowSet 是 sqlite3 的一个用来支持 RowSet 相关 OP code 的数据结构. 
+RowSet 相关的 OP code 包括:
+
+1. RowSetAdd
+2. RowSetRead
+3. RowSetTest
+
+主要用来实现 `delete where`, `update where` 等功能: 因为 btree 无法在
+遍历的同时执行 delete, update 等操作, 所以需要用 RowSet 来暂存遍历的结
+果. 
+
 
 ** 内存分配
 *** alloc
