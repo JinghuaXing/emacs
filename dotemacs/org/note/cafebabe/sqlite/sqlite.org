@@ -257,7 +257,7 @@ used to transform column values
 #+END_SRC
 *** functions
 **** core functions
-- LAST_INSERT_ROWID()
+- last_insert_rowid()
 - coalesce (x, y, z, ...)
   return the first not null value, or null
 
@@ -372,10 +372,9 @@ select x from foo where x="a" or y="a";
 *** cache_size
 cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最多
 能 cache 多少修改.
-
 *** default_cache_size
 *** case_sensitive_like = 0/1
-*** count_change = 0/1
+*** count_changes = 0/1
 *** encoding = "UTF-8"
 *** page_size = bytes
 *** max_page_count
@@ -384,14 +383,29 @@ synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 
 特别的,在 WAL 模式下, synchronous 为 NORMAL 时 commit 也不再写数据库,
 只有checkout 时才刷新.
-*** vdbe_trace=ON/OFF
+*** vdbe_trace=on/off
+*** vdbe_listing=on/off
+*** parser_trace=on/off
 *** temp_store
 临时文件保存在内存(1)还是磁盘(2)或者由编译时指定(0).临时文件包括各种临
 时表(视图, 子查询), 临时索引(order by, group by, distinct ...), 临时数
 据库 (temp table), statement journal.
 
 即使选择用磁盘保存临时文件, sqlite 也会通过 pcache 优先将它暂时保存在
-内存里而避免写磁盘. 
+内存里而避免写磁盘.
+
+*** locking_mode=normal/exclusive
+
+在 NORMAL 模式下， (默认值), 一个数据库连接会在每次完成读或写时释放数据
+库文件锁。 当锁模式设为 EXCLUSIVE 时，数据库连接永远不会释放文件锁。 在
+该模式下，当第一次读数据库文件时，会获得并持有一个共享锁。 当第一次向数
+据库写时，将获得并持有一个排它锁。在 EXCLUSIVE 模式下获得的锁可以通过关
+闭数据库连接来释放， 也可以通过使用该 pragma 将锁模式改为 NORMAL，并且
+再次访问（读或写） 数据库来释放。仅仅将锁模式置为 NORMAL 是不够的， 直
+到下一次访问数据库文件时才会释放已持有的锁。有两种原因要求设置
+EXCLUSIVE 锁模式。 一是一个应用程序确实不希望其它进程访问数据库文件。
+二是在这种模式下可以使用优化器，它可以节省少量的磁盘文件操作。 这在嵌入
+式系统中可能非常重要
 
 ** optimization
 *** 使用索引
