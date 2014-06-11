@@ -51,7 +51,8 @@ DEADLINE: <2014-06-07 Sat +7d -1d>
 :ID:       ef1ba461-c0d6-461e-b229-ef4de704ace4
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
-DEADLINE:  <2014-06-03 Tue +1m -10d>
+DEADLINE:  <2014-07-03 Thu +1m -10d>
+- State "DONE"       from "TODO"       [2014-06-09 Mon 10:41]
 - State "DONE"       from "TODO"       [2014-04-28 Mon 11:16]
 - State "DONE"       from "TODO"       [2014-04-01 Tue 11:37]
 - State "DONE"       from "TODO"       [2014-02-24 Mon 12:40]
@@ -75,7 +76,7 @@ DEADLINE:  <2014-06-03 Tue +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2014-04-28 Mon 11:16]
+:LAST_REPEAT: [2014-06-09 Mon 10:41]
 :ID:       3bc05d4e-7815-452d-a5e7-a8c9a88b7846
 :END:
 * TODO 招行信用卡还款日                                          :life:habit:
@@ -108,7 +109,8 @@ DEADLINE: <2014-06-23 Mon +1m -6d>
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                            :life:habit:
-DEADLINE:  <2014-06-14 Sat +1m -10d>
+DEADLINE:  <2014-07-14 Mon +1m -10d>
+- State "DONE"       from "TODO"       [2014-06-10 Tue 16:49]
 - State "DONE"       from "TODO"       [2014-05-09 Fri 15:47]
 - State "DONE"       from "TODO"       [2014-04-10 Thu 19:27]
 - State "DONE"       from "TODO"       [2014-03-11 Tue 16:15]
@@ -130,7 +132,7 @@ DEADLINE:  <2014-06-14 Sat +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2014-05-09 Fri 15:47]
+:LAST_REPEAT: [2014-06-10 Tue 16:49]
 :END:
 
 * DONE 理发                                                            :life:
@@ -157,6 +159,7 @@ CLOSED: [2013-08-02 Fri 08:40] SCHEDULED: <2013-08-02 Fri>
 CLOSED: [2014-05-26 Mon 11:45] DEADLINE: <2014-05-31 Sat>
 - State "DONE"       from "TODO"       [2014-05-26 Mon 11:45]
 [2014-05-12 Mon 09:58]
-* TODO 车年检                                                          :life:
-DEADLINE: <2014-05-31 Sat>
+* DONE 车年检                                                          :life:
+CLOSED: [2014-06-10 Tue 16:49] DEADLINE: <2014-05-31 Sat>
+- State "DONE"       from "TODO"       [2014-06-10 Tue 16:49]
 [2014-05-12 Mon 09:59]

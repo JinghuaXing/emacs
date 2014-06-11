@@ -407,6 +407,78 @@ RowSet 相关的 OP code 包括:
 遍历的同时执行 delete, update 等操作, 所以需要用 RowSet 来暂存遍历的结
 果. 
 
+而且 RowSet 本身有排序的功能,  RowSetRead OP code 每次都返回最小的一个
+值.
+
+** WAL
+若使用 WAL journal mode, 则在 commit 之前, 对数据库的修改操作只会导致
+pcache 的变化, wal journal 不会受任何影响 (若使用delete journal, 则在
+commit 之前, 任何修改数据库的操作就会通过 sqlite3PagerWrite 导致
+delete journal 被修改)
+
+在 commit 时, 被修改的 pcache 会被写入到 wal journal (通过
+sqlite3WalFrames)
+
+#+BEGIN_SRC text
+  sqlite3PagerCommitPhaseOne
+    pagerWalFrames(pPager, pList, pPager->dbSize, 1);
+      sqlite3WalFrames(  Wal *pWal,                      /* Wal handle to write to */
+        int szPage,                     /* Database page-size in bytes */
+        PgHdr *pList,                   /* List of dirty pages to write */
+        Pgno nTruncate,                 /* Database size after this commit */
+        int isCommit,                   /* True if this is a commit */
+        int sync_flags                  /* Flags to pass to OsSync() (or 0) */pPager)
+        // pList 是所有 dirty 的 pcache 页
+        iFrame = pWal->hdr.mxFrame;
+        // mxFrame 是 wal 中当前最大的 frame 号, 若 mxFrame 为 0, 说明 wal 日志为空
+        if( iFrame==0 ):
+          // 写 wal 头到日志
+          sqlite3OsWrite(pWal->pWalFd, aWalHdr, sizeof(aWalHdr), 0);
+        /* Write all frames into the log file exactly once */
+        for(p=pList; p; p=p->pDirty){
+          walWriteOneFrame(&w, p, nDbSize, iOffset);
+  
+        // 对每一个新写入的 frame, 更新 wal index
+        for(p=pList; p && rc==SQLITE_OK; p=p->pDirty){
+          walIndexAppend(pWal, iFrame, p->pgno);
+#+END_SRC
+
+wal 日志中, 每次 commit 都会导致日志中对应 dirty page 的新 iframe 被添
+加, 所以, 若同一个 page 在多次 commit 中都被修改了, 则 wal 中会包含对
+应这个 page 的多个 iframe, 相当于该 page 在不同 commit 时间的
+snapshot. 所以 wal 日志相对于 delete journal 会占用更多的空间.
+
+wal 文件在数据库连接关闭时会被删除:
+#+BEGIN_SRC text
+  sqlite3PagerClose
+    sqlite3WalClose
+      sqlite3WalCheckpoint
+      walIndexClose(pWal, isDelete);
+      sqlite3OsClose(pWal->pWalFd);
+      sqlite3OsDelete(pWal->pVfs, pWal->zWalName, 0);
+#+END_SRC
+
+另外, 每次 commit 之后, 若 wal journal 过大 (当前 mxFrame 指示的大小当
+于真正的文件大小, 说明文件后面一部分实际是无用的), 则会通过
+walLimitSize 尝试把文件大小 truncate 为 journal_size_limit 这个 pragma
+指定的大小. 
+
+注意的是 journal_size_limit 并不能限制日志文件的最大大小, 只是说在某些
+情况下需要把文件 truncate 到这个大小. 
+
+若 wal 在使用时, 进程异常终止, 而磁盘会遗留一个 wal 文件, 而下一次使用
+wal 日志时, sqlite3 会调用 walIndexRecover 来根据 wal 日志重建 wal
+index.
+
+wal index 本意是一个共享内存, 多个 sqlite 进程都可以通过这个 index 获
+得当前 wal 日志的信息, 实际实现上, 这个共享内存只是对 xxx-shm 文件的
+mmap. 
+
+wal index 是为了解决这样一个问题: 
+
+某个 connection 在打开 wal 时, 当时最大的 iFrame 是 X, 则对于 wal 中所
+有 <= X 的 iFrame, 与 pgno 对应的最大的iFrame 是哪个? 即 iFrame = Hash(pgno, X)
+
 
 ** 内存分配
 *** alloc
