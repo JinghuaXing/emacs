@@ -376,4 +376,4 @@
 (require 'rainbow-delimiters)
 (global-rainbow-delimiters-mode)
 
-
+(blink-cursor-mode 0)

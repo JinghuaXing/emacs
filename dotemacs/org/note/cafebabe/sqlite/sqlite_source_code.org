@@ -452,6 +452,10 @@ wal 文件在数据库连接关闭时会被删除:
 #+BEGIN_SRC text
   sqlite3PagerClose
     sqlite3WalClose
+      // 需要先获得对 db 文件的 exclusive lock
+      // 而在 wal 模式下, shared lock 在 commit 时并不会释放, 所以
+      // 这里实际上会导致最后一个连接关闭时才删除 wal 文件
+      sqlite3OsLock(pWal->pDbFd, SQLITE_LOCK_EXCLUSIVE);
       sqlite3WalCheckpoint
       walIndexClose(pWal, isDelete);
       sqlite3OsClose(pWal->pWalFd);
@@ -479,6 +483,11 @@ wal index 是为了解决这样一个问题:
 某个 connection 在打开 wal 时, 当时最大的 iFrame 是 X, 则对于 wal 中所
 有 <= X 的 iFrame, 与 pgno 对应的最大的iFrame 是哪个? 即 iFrame = Hash(pgno, X)
 
+
+wal 本身维持着多个锁, 例如 WAL_READ_LOCK, WAL_WRITE_LOCK,
+WAL_CKPT_LOCK 等, 这些锁彼此之间一般没有关联, 例如 walCheckpoint 时要求
+获得对 WAL_CKPT_LOCK 的 exclusive lock, 防止多个 checkpoint 同时进行,
+这时可以允许有其他连接持有 WAL_READ_LOCK 对 wal 进行读取. 
 
 ** 内存分配
 *** alloc

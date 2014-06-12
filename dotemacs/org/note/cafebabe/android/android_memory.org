@@ -2,7 +2,7 @@
 * Android Memory
 ** tools
 *** mat
-*** valgrind
+*** valgrind / callgrind / kcachegrind
 *** dumpsys meminfo
 *** cat /proc/pid/smaps
 *** procmem
