@@ -381,6 +381,13 @@ cache_size 表示 writer 在真正 flush 日志文件和 page cache 之前, 最�
 *** synchronous = FULL/NORMAL/OFF
 synchronous 表示 write 在 commit 或 cache 满后如何 flush 日志文件.
 
+FULL 一定不会导致 playback 出错: 在 syncJournal 时, sqlite 会先将数据 sync, 然后
+再 sync journal 头, 包括 (nRec 字段)
+
+NORMAL 可能会导致 playback 出错, 因为 syncJournal 时, sqlite 会先将
+header 添加到日志中, 然后一次性 sync 到磁盘, 此时掉电有可能导致
+journal 头显示这是一个 hot-journal, 但后续的数据确是错的. 
+
 特别的,在 WAL 模式下, synchronous 为 NORMAL 时 commit 也不再写数据库,
 只有checkout 时才刷新.
 *** vdbe_trace=on/off

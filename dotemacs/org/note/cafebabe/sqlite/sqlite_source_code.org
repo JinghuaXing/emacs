@@ -489,6 +489,41 @@ WAL_CKPT_LOCK 等, 这些锁彼此之间一般没有关联, 例如 walCheckpoint
 获得对 WAL_CKPT_LOCK 的 exclusive lock, 防止多个 checkpoint 同时进行,
 这时可以允许有其他连接持有 WAL_READ_LOCK 对 wal 进行读取. 
 
+** Rollback Journal
+*** hasHotJournal
+检测一个 journal 是否是 hot journal 很简单: 若 journal header 不为空,
+则为 hot journal. 
+
+要手工生成 hot journal 是很困难的. 因为 hot journal 只在以下情况下才能
+产生:
+1. 在 synchronous 为 FULL/NORMAL 的情况下, CommitPhaseOne 通过
+   syncJournal 将 journal sync 成功 sync 到磁盘, 但在 CommitPhaseTwo 时
+   因为掉电等原因没有将日志 delete (或 truncate, persist)
+2. 在 synchronous 为 NORMAL 的情况下, 在 syncJournal 因为掉电没有完全
+   成功 (只有 journal header 被写到磁盘)
+
+*** syncJournal
+在一个 transaction commit 之前, sqlite3PagerWrite 会不断的将原始的
+page 加入到 journal 中. 但此时 journal header 是空白的, 以防将来误认为
+是一个 hot journal.
+
+#+BEGIN_SRC text
+  syncJournal
+    // 构造 zHeader, 包含 magic 和 nRec
+    u8 zHeader[sizeof(aJournalMagic)+4];
+    memcpy(zHeader, aJournalMagic, sizeof(aJournalMagic));
+    put32bits(&zHeader[sizeof(aJournalMagic)], pPager->nRec);
+    if( pPager->fullSync):
+      // 若为 fullSync 模式, 将在写 header 到 journal 之前, 先将 journal
+      // sync
+      sqlite3OsSync(pPager->jfd, pPager->syncFlags);
+    // 将 header 写到日志
+    sqlite3OsWrite(pPager->jfd, zHeader, sizeof(zHeader), pPager->journalHdr);
+    // 再 sync 一次, 此后日志变为 hot journal
+    sqlite3OsSync(pPager->jfd, ...)
+    pPager->eState = PAGER_WRITER_DBMOD;
+#+END_SRC
+*** pager_playback
 ** 内存分配
 *** alloc
 sqlite 会使用以下函数来分配内存:
