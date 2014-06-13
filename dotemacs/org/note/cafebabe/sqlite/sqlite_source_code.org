@@ -524,6 +524,60 @@ page 加入到 journal 中. 但此时 journal header 是空白的, 以防将来�
     pPager->eState = PAGER_WRITER_DBMOD;
 #+END_SRC
 *** pager_playback
+pager_playback 发生在两个时机:
+1. rollback
+2. 打开数据库时 sqlite3PagerSharedLock 通过 hasHotJournal 检测到 hot
+   journal 后, 调用 pager_playback
+
+#+BEGIN_SRC text
+  int pager_playback(Pager *pPager, int isHot):
+    // 获得 journal 文件大小, 后面可能会使用这个值来确定 journal 中有几
+    // 个 page
+    sqlite3OsFileSize(pPager->jfd, &szJ);
+    // 从 journal header 中读到 nRec, mxPg.
+    // 对于 hot journal, nRec 在 journal header 是有记录的, 但对于
+    // 通过 rollback 发起的 playback, 此时 journal 并没有 sync 到磁盘,
+    // 其 nRec 也是没有值的 (0)
+    readJournalHdr(pPager, isHot, szJ, &nRec, &mxPg);
+  
+    // 若 nRec 没有值, 说明不是 hot journal, 通过 szJ 计算 nRec
+    /* If nRec is 0 and this rollback is of a transaction created by this
+    ,** process and if this is the final header in the journal, then it means
+    ,** that this part of the journal was being filled but has not yet been
+    ,** synced to disk.  Compute the number of pages based on the remaining
+    ,** size of the file.
+  
+    if( nRec==0 && !isHot &&
+      pPager->journalHdr+JOURNAL_HDR_SZ(pPager)==pPager->journalOff ):
+      nRec = (int)((szJ - pPager->journalOff) / JOURNAL_PG_SZ(pPager));
+  
+    for(u=0; u<nRec; u++):
+      // 对 journal 中每一个 page 进行 playback.
+      // 但实际上, 并不是每个 page 都会被 playback,
+      // 例如, persist 模式的 journal 中实际会包含一些旧的, 并非
+      // 本次 transaction 修改过的 page, 这些是不能被 playback 的
+      // pager_playback_one_page 会通过 journal header 的 checksum 与
+      // journal 中各个 page 的 checksum 来决定这个 page 是否需要 playback
+      // 每次通过 pager_write -> pager_open_journal 时, journal header
+      // 的 checksum 会被初始化一个随机数, 确定每次 transaction 时这个值
+      // 都是不同的
+      pager_playback_one_page(pPager,&pPager->journalOff,0,1,0);
+        read32bits(jfd, (*pOffset)-4, &cksum);
+        if pager_cksum(pPager, (u8*)aData)!=cksum:
+          // 这个 SQLITE_DONE 导致上层函数退出循环, playback 结束
+          return SQLITE_DONE;
+        // 找到 对应的 pcache, 若不存在, 说明该 pgno 在 pcache 中没有对
+        // 应. 
+        pPg = pager_lookup(pPager, pgno);
+        // 若 eState 显示该 pager 已经 sync 过, 则需要写数据库文件
+        if (pPager->eState>=PAGER_WRITER_DBMOD || pPager->eState==PAGER_OPEN):
+          sqlite3OsWrite(pPager->fd, (u8*)aData, pPager->pageSize, ofst);
+        if( pPg ):
+          // pcache 中存在这个 page, 则修改 pcache 的值
+          pData = pPg->pData;
+          memcpy(pData, (u8*)aData, pPager->pageSize);
+          sqlite3PcacheMakeClean(pPg);
+#+END_SRC
 ** 内存分配
 *** alloc
 sqlite 会使用以下函数来分配内存:
