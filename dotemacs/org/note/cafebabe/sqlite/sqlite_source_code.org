@@ -286,7 +286,7 @@ unixInodeInfo 结构.
 - Db ->Btree -> BtShared -> Pager -> pcache, 以上各个结构体都对应了一个数据库文件.
 - BtShared 包含多个 BtCursor, 代表正在操作的各个表. 
 
-** pcache
+** Pcache
 通过 sqlite3_pcache_methods2 结构体, 用户可以通过 sqlite3_config 指定
 一个自定义的 pcache 实现. sqlite3 使用 pcache1 做为默认的 pcache 实现. 
 
@@ -411,6 +411,18 @@ RowSet 相关的 OP code 包括:
 值.
 
 ** WAL
+*** sqlite3WalBeginReadTransaction
+#+BEGIN_SRC text
+  sqlite3PagerSharedLock -> pagerBeginReadTransaction -> sqlite3WalBeginReadTransaction
+#+END_SRC
+
+sqlite3WalBeginReadTransaction 相当对当前的 wal journal 打开一个 read
+snapshot: 获得一把 WAL_READ_LOCK, 设定一个相应的 read mark. 
+
+这些 READ_LOCK 和 read mark 可以确保 walCheckpoint 时只将合适的部分
+wal journal 内容写回数据库文件. 
+
+*** sqlite3WalFrames
 若使用 WAL journal mode, 则在 commit 之前, 对数据库的修改操作只会导致
 pcache 的变化, wal journal 不会受任何影响 (若使用delete journal, 则在
 commit 之前, 任何修改数据库的操作就会通过 sqlite3PagerWrite 导致
@@ -448,6 +460,7 @@ wal 日志中, 每次 commit 都会导致日志中对应 dirty page 的新 ifram
 应这个 page 的多个 iframe, 相当于该 page 在不同 commit 时间的
 snapshot. 所以 wal 日志相对于 delete journal 会占用更多的空间.
 
+*** sqlite3WalClose
 wal 文件在数据库连接关闭时会被删除:
 #+BEGIN_SRC text
   sqlite3PagerClose
@@ -474,6 +487,7 @@ walLimitSize 尝试把文件大小 truncate 为 journal_size_limit 这个 pragma
 wal 日志时, sqlite3 会调用 walIndexRecover 来根据 wal 日志重建 wal
 index.
 
+*** WAL Index
 wal index 本意是一个共享内存, 多个 sqlite 进程都可以通过这个 index 获
 得当前 wal 日志的信息, 实际实现上, 这个共享内存只是对 xxx-shm 文件的
 mmap. 
@@ -578,6 +592,41 @@ pager_playback 发生在两个时机:
           memcpy(pData, (u8*)aData, pPager->pageSize);
           sqlite3PcacheMakeClean(pPg);
 #+END_SRC
+** Pager
+*** pager_write
+*** pager_playback
+*** readDbPage
+*** syncJournal
+
+在 sqlite3PagerCommitPhaseOne 时, 若当前没有使用 wal, 则会调用
+syncJournal 将 journal sync 到磁盘.
+
+#+BEGIN_SRC text
+  if( NOT <in-memory journal> ){
+    // 若 synchronous == FULL, 则在 update journal header 之前 (主要是
+    // nRec 和 magic number), 先执行一次 sync 将 journal 内容先写进磁盘
+    // 因为这时 magic 部分为空, 所以这时的 journal 还不是 hot journal
+    if( <full-sync mode> ) xSync(<journal file>);
+    // 根据 pager->nRec 更新 journal 的 nRec, 并添加 magic
+    <update nRec field>
+    // 再 sync 一次 journal 文件, 这时包括文件头
+    // 可见, synchronous == FULL 时会比 synchronous == NORMAL 时多一次
+    // sync 操作
+    xSync(<journal file>);
+  }
+#+END_SRC
+*** pager_write_pagelist
+
+在 sqlite3PagerCommitPhaseOne 时, syncJournal 完成后, 通过
+pager_write_pagelist 把 dirty pages 写到数据库
+*** sqlite3PagerAcquire
+*** sqlite3PagerShrink
+*** pager_open_journal
+*** sqlite3PagerSharedLock
+*** sqlite3PagerBegin
+*** sqlite3PagerCommitPhaseOne
+*** sqlite3PagerRollback
+*** sqlite3PagerClose
 ** 内存分配
 *** alloc
 sqlite 会使用以下函数来分配内存:
