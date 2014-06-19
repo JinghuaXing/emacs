@@ -593,9 +593,25 @@ pager_playback 发生在两个时机:
           sqlite3PcacheMakeClean(pPg);
 #+END_SRC
 ** Pager
-*** pager_write
 *** pager_playback
 *** readDbPage
+readDbPage 负责从数据库中读取某个 page 对应的内容用来填充从 pcache 获
+取的新的 page. 调用路径是 
+
+sqlite3PagerAcquire -> sqlite3PcacheFetch -> pcache1Fetch ->
+readDbPage
+
+实现上 readDbPage 并不一定从 db 文件中获取数据: 若使用 wal, 则可能从
+wal 中获取数据. 
+
+#+BEGIN_SRC text
+  int readDbPage(PgHdr *pPg):
+    if pagerUseWal(pPager):
+      /* Try to pull the page from the write-ahead log. */
+      sqlite3WalRead(pPager->pWal, pgno, &isInWal, pgsz, pPg->pData);
+    else:
+      sqlite3OsRead(pPager->fd, pPg->pData, pgsz, iOffset);
+#+END_SRC
 *** syncJournal
 
 在 sqlite3PagerCommitPhaseOne 时, 若当前没有使用 wal, 则会调用
@@ -620,6 +636,8 @@ syncJournal 将 journal sync 到磁盘.
 在 sqlite3PagerCommitPhaseOne 时, syncJournal 完成后, 通过
 pager_write_pagelist 把 dirty pages 写到数据库
 *** sqlite3PagerSync
+把 db sync 到磁盘. 在 sqlite3PagerCommitPhaseOne 时 pager_write_pagelist 后被调
+用.
 *** pagerStress
 pagerStress 是一个回调函数, 在 sqlite3PagerOpen 时, 通过
 sqlite3PcacheOpen 把 pagerStress 注册到 pCache->xStress. 
@@ -635,6 +653,10 @@ pcache1 的 LRU list)
 pagerStress 要做的实际就是在 pcache 满了以后将某个 dirty page 写到 db,
 因为要改写 db, 所以 journal 也需要被 sync. 整个过程和 commit 一类似的. 
 *** sqlite3PagerAcquire
+sqlite3PagerAcquire 是对 sqlite3PcacheFetch 以及 pcache1Fetch 的封装,
+主要负责调用 pcache 获得一个 page, 若这个 page 是新的, 则用 readDbPage
+把这个 page 的内容读进来. 并更新 nPage->nHit, nPage->nMiss 这些统计信
+息. 
 *** sqlite3PagerShrink
 *** pager_open_journal
 *** sqlite3PagerSharedLock
@@ -645,9 +667,84 @@ sqlite3PagerSharedLock 是所有 transaction 开始的第一步: OP_Transaction 
 进行 pager_playback. 对于 wal journal mode, 会获得一个 WAL_READ_LOCK,
 通过 walTryBeginRead 获得一个 snapshot, 并检测是否需要 walIndexRecover
 
+#+BEGIN_SRC text
+  if !pagerUseWal(pPager):
+    pager_wait_on_lock(pPager, SHARED_LOCK);
+    hasHotJournal(pPager, &bHotJournal);
+    if bHotJournal:
+      pagerLockDb(pPager, EXCLUSIVE_LOCK);
+      pagerSyncHotJournal(pPager);
+      pager_playback(pPager, 1);
+  if pagerUseWal(pPager):
+    pagerBeginReadTransaction(pPager);
+      sqlite3WalBeginReadTransaction
+        walTryBeginRead
+          walIndexReadHdr
+            walIndexRecover
+          walLockShared
+#+END_SRC
 *** sqlite3PagerBegin
+sqlite3PagerBegin 是获取 RESERVED_LOCK 的入口函数. 其调用路径是:
+
+OP_Transaction (WRITE_MODE) -> sqlite3BtreeBeginTrans -> sqlite3PagerBegin
+
+sqlite3PagerBegin 主要作用就是获得 RESERVED_LOCK, 表示要开始一个写操作. 
+
+insert/delete/update 这个语句都会被 parser 编译为
+OP_Transaction(WRITE_MODE) 语句, 这就是 insert/delete/update 语句执行
+时会获得 RESERVED_LOCK 的原因. 
+
+若当前没使用 wal, 则对 db 获得 RESERVED_LOCK, 若使用 wal, 则通过
+sqlite3WalBeginWriteTransaction 获到 wal 的 WRITE_LOCK. 所以在 wal 模
+式下, 也不能同时有两个 writer 的.
+*** sqlite3PagerWrite && pager_write
+当 btree 决定要修改某个 page (pcache) 之前, 例如 sqlite3BtreeInsert,
+必须先调用 sqlite3PagerWrite 将这个 page 的原始内容写到日志中. 当然这
+只有对 rollback journal 才会有这个步骤, 因为 wal journal 并不需要这样
+做. 
+
+pager_write 一次写一个 page 到 rollback journal 中. 但
+sqlite3PagerWrite 会根据 sector 的大小考虑更多:
+例如, 若 sector 为 4k 而 page 为 1K, 因为磁盘控制器每次总是以 sector
+为单位写, 所以 sqlite 必须把连续 4 个 page 写入到一个 sector 中, 否则
+若只写一个 page, 其他三个 page 的内容可能被写成0.
+
+不过因为 sector 大小通常都为 512, 所以实际上 sqlite3PagerWrite 和
+pager_wirte 基本是一样的, 即每次只会写一个 page.
+
+另外, 虽然每次 btreeXXX 要对 page 进行修改时都需要调用 pager_write, 但
+pager_write 并不需要每次都写 page 到 rollback journal: 若 rollback
+journal 中已经包含这个 page 的原始内容 (pageInJournal), 则这个
+pager_write 是不需要执行的.
+
 *** sqlite3PagerCommitPhaseOne
+sqlite3PagerCommitPhaseOne 是 commit 的第一个阶段, 主要任务是 sync 日
+志和数据库文件
+
+#+BEGIN_SRC text
+  sqlite3PagerCommitPhaseOne
+    /* If no database changes have been made, return early. */
+    if (pPager->eState<PAGER_WRITER_CACHEMOD) return SQLITE_OK;
+    if( MEMDB ) return SQLITE_OK;
+    if( pagerUseWal(pPager) ):
+      // 若是 wal, 则只通过 pagerWalFrames 修改 wal 日志
+      pagerWalFrames(pPager, pList, pPager->dbSize, 1);
+    else:
+      pager_incr_changecounter(pPager, 1);
+      syncJournal(pPager, 0);
+      pager_write_pagelist(pPager,sqlite3PcacheDirtyList(pPager->pPCache));
+      // 此时所有 pcache 中的 page 与 db 都是一致的了, 把 dirty list 置
+      // 空, 并且 nRef 为 0 的 page 进入 lru list
+      sqlite3PcacheCleanAll(pPager->pPCache);
+      sqlite3PagerSync(pPager);
+#+END_SRC
+
+*** sqlite3PagerCommitPhaseTwo
+sqlite3PagerCommitPhaseTwo 主要用来清理 rollback journal. 或者对于 wal
+来说, drop write_lock
+
 *** sqlite3PagerRollback
+对 pager_playback 的封装
 *** sqlite3PagerOpen
 *** sqlite3PagerClose
 ** 内存分配
