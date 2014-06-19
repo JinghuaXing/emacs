@@ -4,9 +4,9 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("sqlite3.c"
  (filename . "~/source/sprdroid4.4/external/sqlite/dist/sqlite3.c")
- (front-context-string . "   }\n  }\n  retur")
- (rear-context-string . "N_SUBJOURNAL);\n ")
- (position . 1564049))
+ (front-context-string . "** The following")
+ (rear-context-string . " is a no-op.\n**\n")
+ (position . 1588032))
 ("github.io"
  (filename . "~/.github.pages/")
  (front-context-string . "cafebabe\n  drwxr")

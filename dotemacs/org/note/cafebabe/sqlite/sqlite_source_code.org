@@ -619,13 +619,36 @@ syncJournal 将 journal sync 到磁盘.
 
 在 sqlite3PagerCommitPhaseOne 时, syncJournal 完成后, 通过
 pager_write_pagelist 把 dirty pages 写到数据库
+*** sqlite3PagerSync
+*** pagerStress
+pagerStress 是一个回调函数, 在 sqlite3PagerOpen 时, 通过
+sqlite3PcacheOpen 把 pagerStress 注册到 pCache->xStress. 
+
+pCache->xStress 在 sqlite3PagerAcquire-> sqlite3PcacheFetch 会被调用:
+首先调用 pcache1Fetch(createFlag==0) 尝试获取从 pcache1 中获得一个
+page, 若 pcache1 本身的 LRU list 已经没有空闲了, 并且 pCache dirty
+list 中包含一个 dirty 的, 但 nRef 为 0 的 page, 则这个 page 是可以通过
+写回到数据库而释放的. 所以 pcache 会调用 xStress 来写回这个 page, 然后
+再次调用 pcache1Fetch (上一步的 xStress 必然会导致有一个 page 被加入到
+pcache1 的 LRU list)
+
+pagerStress 要做的实际就是在 pcache 满了以后将某个 dirty page 写到 db,
+因为要改写 db, 所以 journal 也需要被 sync. 整个过程和 commit 一类似的. 
 *** sqlite3PagerAcquire
 *** sqlite3PagerShrink
 *** pager_open_journal
 *** sqlite3PagerSharedLock
+sqlite3PagerSharedLock 是所有 transaction 开始的第一步: OP_Transaction 会通
+过 lockBtree 调用 sqlite3PagerSharedLock.
+
+获得 shared lock, 对于 rollback journal mode, 会检查 hot journal 以及
+进行 pager_playback. 对于 wal journal mode, 会获得一个 WAL_READ_LOCK,
+通过 walTryBeginRead 获得一个 snapshot, 并检测是否需要 walIndexRecover
+
 *** sqlite3PagerBegin
 *** sqlite3PagerCommitPhaseOne
 *** sqlite3PagerRollback
+*** sqlite3PagerOpen
 *** sqlite3PagerClose
 ** 内存分配
 *** alloc
