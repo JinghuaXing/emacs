@@ -420,7 +420,13 @@ sqlite3WalBeginReadTransaction 相当对当前的 wal journal 打开一个 read
 snapshot: 获得一把 WAL_READ_LOCK, 设定一个相应的 read mark. 
 
 这些 READ_LOCK 和 read mark 可以确保 walCheckpoint 时只将合适的部分
-wal journal 内容写回数据库文件. 
+wal journal 内容写回数据库文件.
+*** walCheckpoint
+walCheckpoint 并不是把 wal journal 所有的内容都写回到 db 中: 因为此时
+有可能有 wal reader 正在使用 wal. 例如, 若当前有三个 reader, 其 read
+mark 分别为 4,6,8, 则 walCheckpoint 可能只会把 4 之前的内容写回到 db,
+因为若此时将 5 写回, 后续 reader 1 可能从 db 中读到修改过的 5, 而这是
+违反了数据库的隔离性的. 
 
 *** sqlite3WalFrames
 若使用 WAL journal mode, 则在 commit 之前, 对数据库的修改操作只会导致
@@ -486,6 +492,12 @@ walLimitSize 尝试把文件大小 truncate 为 journal_size_limit 这个 pragma
 若 wal 在使用时, 进程异常终止, 而磁盘会遗留一个 wal 文件, 而下一次使用
 wal 日志时, sqlite3 会调用 walIndexRecover 来根据 wal 日志重建 wal
 index.
+
+*** walLimitSize
+在 sqlite3WalFrames 时, 若当前设置了 journal_size_limit, 则会根据这个
+值将 wal journal truncate. 与 wal 不同的是, rollback journal 的
+truncate 是发生在 sqlite3BtreeCommitPhaseTwo -> pager_end_transaction
+-> zeroJournalHdr 时.
 
 *** WAL Index
 wal index 本意是一个共享内存, 多个 sqlite 进程都可以通过这个 index 获
