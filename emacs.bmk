@@ -4,9 +4,9 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("sqlite3.c"
  (filename . "~/source/sprdroid4.4/external/sqlite/dist/sqlite3.c")
- (front-context-string . "\n** This is a ma")
- (rear-context-string . "Lock BtLock;\n\n/*")
- (position . 1800620))
+ (front-context-string . "eePageLookup(BtS")
+ (rear-context-string . "tic MemPage *btr")
+ (position . 1880572))
 ("github.io"
  (filename . "~/.github.pages/")
  (front-context-string . "cafebabe\n  drwxr")

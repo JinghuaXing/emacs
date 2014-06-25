@@ -284,6 +284,9 @@ unixInodeInfo 结构.
 *** MemPage
 Btree 眼中的 page, 包括一个对 DbPage 的引用, 以及 page 内部的信息, 例
 如 cell, overflow 等
+*** Btree
+*** BtShared
+*** BtCursor
 *** 总结
 
 - Db ->Btree -> BtShared -> Pager -> pcache, 以上各个结构体都对应了一个数据库文件.
@@ -1071,18 +1074,18 @@ schema 在 sqlite3_open_v2 过程中暂时不会读取: 后面第一次访问数
           OP_GOTO:
          
           OP_Transaction:
-            lockBtree
-              sqlite3PagerSharedLock
-                pager_wait_on_lock(pPager, SHARED_LOCK);
-                // 检测是否有 hot journal
-                if hasHotJournal():
-                  pagerLockDb(pPager, EXCLUSIVE_LOCK);
-                  pagerSyncHotJournal(pPager);
             sqlite3BtreeBeginTrans(u.at.pBt, pOp->p2);
-              // if write mode
-              sqlite3PagerBegin(pBt->pPager,wrflag>1,sqlite3TempInMemory(p->db));
-                // 获得 reserved_lock
-                pagerLockDb(pPager, RESERVED_LOCK);
+              lockBtree
+                sqlite3PagerSharedLock
+                  pager_wait_on_lock(pPager, SHARED_LOCK);
+                  // 检测是否有 hot journal
+                  if hasHotJournal():
+                    pagerLockDb(pPager, EXCLUSIVE_LOCK);
+                    pagerSyncHotJournal(pPager);
+                // if write mode
+                sqlite3PagerBegin(pBt->pPager,wrflag>1,sqlite3TempInMemory(p->db));
+                  // 获得 reserved_lock
+                  pagerLockDb(pPager, RESERVED_LOCK);
               
           OP_OpenRead:
             allocateCursor(p, pOp->p1, u.aw.nField, u.aw.iDb, 1);
