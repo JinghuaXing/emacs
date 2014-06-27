@@ -287,6 +287,7 @@ Btree 眼中的 page, 包括一个对 DbPage 的引用, 以及 page 内部的信
 *** Btree
 *** BtShared
 *** BtCursor
+*** Mem
 *** 总结
 
 - Db ->Btree -> BtShared -> Pager -> pcache, 以上各个结构体都对应了一个数据库文件.
@@ -765,6 +766,12 @@ sqlite3PagerCommitPhaseTwo 主要用来清理 rollback journal. 或者对于 wal
 对 pager_playback 的封装
 *** sqlite3PagerOpen
 *** sqlite3PagerClose
+** Btree
+*** Btree
+*** BtShared
+*** BtCursor
+** VDBE
+*** Mem
 ** 内存分配
 *** alloc
 sqlite 会使用以下函数来分配内存:
