@@ -4,7 +4,7 @@
 ["Cuicui" "Chen" nil nil nil nil ("Cuicui.Chen@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-01-24")) nil]
 ["Zhongjun" "Chen" nil nil nil nil ("Zhongjun.Chen@spreadtrum.com") ((creation-date . "2014-02-10") (timestamp . "2014-02-10")) nil]
 ["Admin" "Division" nil nil nil nil ("Admin.Division@spreadtrum.com") ((creation-date . "2014-02-11") (timestamp . "2014-02-11")) nil]
-["HR" "Division" nil nil nil nil ("HR.Division@spreadtrum.com") ((creation-date . "2014-01-29") (timestamp . "2014-01-29")) nil]
+["HR" "Division" (#("HR Division (人力资源部)" 0 19 (fontified nil))) nil nil nil ("HR.Division@spreadtrum.com") ((creation-date . "2014-01-29") (timestamp . "2014-06-30")) nil]
 ["ehr" "" nil nil nil nil ("ehr@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-01-26")) nil]
 ["yanbin" "fang" nil nil nil nil ("yanbin.fang@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-01-26")) nil]
 ["jack" "gu" nil nil nil nil ("jack.gu@spreadtrum.com") ((creation-date . "2014-02-13") (timestamp . "2014-02-13")) nil]
