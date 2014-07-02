@@ -2,6 +2,21 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Mterp
+** dalvik byte code
+dalvik byte code 是以 16 bits 为单位的, 即一个 byte code 至少 16
+bits. 其中前 8 bits 是 opcode, 后面的部分根据 opcode 不同而有不同的意
+义. 所以 dalvik 最多可以支持 256 个 opcode (目前使用的范围是 00-e2).
+
+例如:
+- NOP 指令是 0000, 其中前两个 00 是 opcode, 后面的 00 是占位符
+- MOVE 指令是 01AB, 其中 01 是 opcode, A 表示一个 4 bits 的目的寄存器,
+  B 表示一个 4 bits 的源寄存器
+- MOVE/FROM16 指令是 02AA BBBB, 02 是 opcode, AA 表示 8 bits 的目的寄存
+  器, BBBB 表示一个 16 bits 的源寄存器. 这个指令一共是 32 bits.
+- MOVE/16 指令是 0300 AAAA BBBB, 03 是 opcode, 00 表示占位符, AAAA 表示
+  16 bits 的目的寄存器, BBBB 表示 16 bits 的源寄存器. 这个指令一共 48
+  bits.
+
 ** 指令分发
 最简单的指令分发可能是这样的:
 #+BEGIN_SRC text

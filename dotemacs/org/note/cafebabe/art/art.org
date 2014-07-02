@@ -1,0 +1,11 @@
+#+TITLE: ART
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* ART
+** ART 启动
+ART 的启动与 dalvik 是相同的, 都是通过 dalvikvm.cc 中的 dalvikvm 启动,
+不同的是, JniInvocation 会从 dlopen(libart.so), 从里面用 dlsym 找到
+ART 版本的 JNI_CreateJavaVM 等函数, 进而再通过这个函数的调用找到 ART
+版本的 JNIEnv 和 JavaVM 实现, 进而找到这两个类中定义的各种 JNI 回调函
+数.
+*** JNICreateJavaVM
