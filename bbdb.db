@@ -62,7 +62,7 @@
 ["奚辰晨" nil ("Chenchen Xi") nil nil nil ("Chenchen.Xi@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-24")) nil]
 ["孙伟" nil ("wei sun") nil nil nil ("wei.sun") ((creation-date . "2014-01-26") (timestamp . "2014-02-26")) nil]
 ["安绍岩" nil ("Ace An") nil nil nil ("ace.an@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-02-17")) nil]
-["康纪滨" nil nil nil nil nil ("Steve.Kang@spreadtrum.com") ((creation-date . "2014-02-14") (timestamp . "2014-02-17")) nil]
+["康纪滨" nil (#("Steve Kang" 0 5 (fontified nil) 5 6 (fontified nil) 6 10 (fontified nil))) nil nil nil ("Steve.Kang@spreadtrum.com") ((creation-date . "2014-02-14") (timestamp . "2014-07-02")) nil]
 ["张德芳" nil ("Defang Zhang") nil nil nil ("Defang.Zhang@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-19")) nil]
 ["张扬" nil ("tim zhang") nil nil nil ("tim.zhang@spreadtrum.com") ((creation-date . "2014-01-28") (timestamp . "2014-02-17")) nil]
 ["彭磊" nil ("Lei Peng") nil nil nil ("Lei.Peng@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-19")) nil]
