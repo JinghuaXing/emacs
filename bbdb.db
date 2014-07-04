@@ -94,7 +94,7 @@
 ["田倩倩" nil ("Qianqian Tian") nil nil nil ("Qianqian.Tian@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
 ["田磊" nil nil nil nil nil ("tianlei@spreadst.com") ((creation-date . "2014-02-10") (timestamp . "2014-03-06")) nil]
 ["白文晓" nil ("Wenxiao Bai") nil nil nil ("Wenxiao.Bai@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-03-11")) nil]
-["石磊" nil ("Lei Shi") nil nil nil ("Lei.Shi@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-03-07")) nil]
+["石磊" nil (#("Lei Shi (石磊)" 0 12 (fontified nil)) "Lei Shi") nil nil nil ("Lei.Shi@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-07-04")) nil]
 ["纪彬彬" nil ("Bill Ji") nil nil nil ("Bill.Ji@spreadtrum.com") ((creation-date . "2014-02-14") (timestamp . "2014-02-19")) nil]
 ["肖小毛" nil (#("Xiaomao Xiao (肖小毛)" 0 18 (fontified nil)) "Xiaomao Xiao") nil nil nil ("Xiaomao.Xiao@spreadtrum.com") ((creation-date . "2014-03-03") (timestamp . "2014-06-26")) nil]
 ["肖峰" nil ("Feng Xiao") nil nil nil ("feng.xiao@spreadtrum.com") ((creation-date . "2014-02-11") (timestamp . "2014-03-04")) nil]
