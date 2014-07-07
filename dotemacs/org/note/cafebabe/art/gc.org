@@ -2,3 +2,9 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Gc
+** AllocObject
+#+BEGIN_SRC text
+  Heap::AllocObject(Thread* self, mirror::Class* c, size_t byte_count) @ heap.cc
+  
+   
+#+END_SRC
