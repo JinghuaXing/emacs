@@ -171,3 +171,5 @@
 (setq org-html-style-default "<link rel=\"stylesheet\" type=\"text/css\" href=\"/stylesheets/main.css\" media=\"screen\" />")
 
 (require 'org-gnus)
+
+(add-hook 'org-src-mode-hook '(lambda() (auto-fill-mode -1)))

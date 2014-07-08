@@ -2,7 +2,7 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * GC
-** 关于 space
+** Space
 ART 的 space 类似于 dalvik 中的 HeapSource->heap[], 代表一块可以用来分配
 的内存区域. 
 
@@ -22,6 +22,17 @@ zygote pre-fork 时初始化一个新的 GC heap, 主要是为了防止后续 ja
 2. DlMallocSpace
    dalvik 上的 heap[] 相当于 DlMallocSpace, 即它是用 dlmalloc 来实现对
    象分配的. 
+
+   ART 上一般包含两个 DlMallocSpace: 
+
+   1. ZygoteSpace
+      这个 ZygoteSpace 保存在 continuous_spaces_ 数组中, zygote
+      pre-fork 后不再使用它分配内存
+   2. alloc_space_
+      这个也保存在 continuous_spaces_ 数组中, zygote pre-fork 后会使用
+      它来分配内存, 因为很常用, 所以有一个单独的 alloc_space_ 变量引用
+      着它. 
+
 3. LargeObjectSpace
    dalvik 中不存在类似概念, ART 使用 LargeObjectSpace 来分配大型
    primitive 数组. 该对象有两个子类: FreeListSpace 和 LargeObjectMapSpace
@@ -37,6 +48,25 @@ table 来标识对象.
 DiscontinuousSpace 因为空间大小不定, 无法使用 SpaceBitmap 来标识对象,
 它使用 SpaceSetMap 来标识对象, SpaceSetMap 是使用 std::set 实现的 bitmap.
 
+*** 关于 ZygoteSpace
+在最初的 alloc_space_ 在 zygote pre-fork 时被转换为 ZygoteSpace 时, 会
+调用这个函数:
+#+BEGIN_SRC c++
+  zygote_space->SetGcRetentionPolicy(space::kGcRetentionPolicyFullCollect);
+#+END_SRC
+
+所谓的 GcRetentionPolicy 有三种选择:
+
+1. kGcRetentionPolicyNeverCollect,
+   这种 space 中的对象永远不会被 GC. 例如 ImageSpace
+
+2. kGcRetentionPolicyAlwaysCollect,
+   任何类型的 GC (Partial, Full) 都会 GC 这个 space 中的对象. 
+   例如 LargeObjectSpace, DlMallocSpace 中的非 ZygoteSpace (例如 alloc_space_)
+
+3. kGcRetentionPolicyFullCollect,
+   只有在进行 FULL GC 时才对这个 space 的对象进行 GC. 例如 ZygoteSpace
+
 ** AllocObject
 #+BEGIN_SRC text
   Heap::AllocObject(Thread* self, mirror::Class* c, size_t byte_count) @ heap.cc
@@ -44,6 +74,248 @@ DiscontinuousSpace 因为空间大小不定, 无法使用 SpaceBitmap 来标识�
     // art 有两种 large_object_space_ 实现: FreeListSpace 和 LargeObjectMapSpace, 前者在一块大的 mmap 空间上使用 free list 来分配
     // 后者用 mmap 直接分配. 目前只使用 LargeObjectMapSpace
     bool large_object_allocation = byte_count >= large_object_threshold_ && have_zygote_space_ && c->IsPrimitiveArray();
+    if (UNLIKELY(large_object_allocation)):
+      obj = Allocate(self, large_object_space_, byte_count, &bytes_allocated);
+    else:
+      obj = Allocate(self, alloc_space_, byte_count, &bytes_allocated);
+        // ART 的 allocate 与 dalvik 类似, 也是一个多次尝试的过程, 中间伴随着
+        // GC, 处理 SoftReferences, GC heap footprint grow 等过程.
+        Object* Heap::Allocate(Thread* self, T* space, size_t alloc_size,...)
+          ptr = TryToAllocate(self, space, alloc_size, false, bytes_allocated);
+            if (UNLIKELY(IsOutOfMemoryOnAllocation(alloc_size, grow))):
+              // >>> IsOutOfMemoryOnAllocation
+              if (UNLIKELY(new_footprint > growth_limit_)):
+                return true;
+              // ART 默认会使用 concurrent_gc, 所以 concurrent_gc_ 一般
+              // 为真, 所以后面的代码基本不会跑到...而 dalvik 会跑到类似下面
+              // 的代码. 所以 concurrent_gc_ 是不考虑 grow 参数的. 
+              if (!concurrent_gc_):
+                if (!grow):
+                  return true;
+                else:
+                  max_allowed_footprint_ = new_footprint;
+              // <<< IsOutOfMemoryOnAllocation  
+              return NULL;
+              
+          if (ptr != NULL):
+            return ptr;
+          return AllocateInternalWithGc(self, space, alloc_size, bytes_allocated);
+            last_gc = WaitForConcurrentGcToComplete(self);
+            if (last_gc != collector::kGcTypeNone):
+              ptr = TryToAllocate(self, space, alloc_size, false, bytes_allocated);
+              if (ptr != NULL) return ptr;
+            // last_gc 反映的是最近一次 concurrent gc 进行的是哪种 gc
+            // 值越小表现越轻量级. 现在一共有三种 gc, 从轻到重依次是
+            // sticky -> partial -> full
+            // sticky 表示只回收上一次 gc 以来新分配的对象
+            // partial 表示不回收 zygote space
+            // full 表示完全回收所有对象
+            // for 循环的起点是 last_gc+1, 表示使用比最近一次 concurrent gc
+            // 使用的 gc type 更重量级的 collector
+            for (size_t i = static_cast<size_t>(last_gc) + 1;
+              i < static_cast<size_t>(collector::kGcTypeMax); ++i):
+              // 尝试调用每一种 collector, 但事先需要满足一定的条件
+              collector::GcType gc_type = static_cast<collector::GcType>(i);
+              switch (gc_type):
+                case collector::kGcTypeSticky:
+                  // 当可用内存很少时不使用 sticky gc
+                  run_gc = alloc_space_size > min_alloc_space_size_for_sticky_gc_ &&
+                              alloc_space_->Capacity() - alloc_space_size >= min_remaining_space_for_sticky_gc_;
+                case collector::kGcTypePartial:
+                  // 只有在有 zygote space 时使用 partial gc 才有意义
+                  run_gc = have_zygote_space_;
+                case collector::kGcTypeFull:
+                  run_gc = true;
+            // end for
+            if run_gc:
+              CollectGarbageInternal(gc_type, kGcCauseForAlloc, false);
+              TryToAllocate(self, space, alloc_size, false, bytes_allocated);
+            // 如果上一步仍没有分配到内存, 再调用一次 TryToAllocate, 但将
+            // grow 置为 true. (但在 concurrent_gc_ 条件下, 这一参数是不起作用的...)
+            ptr = TryToAllocate(self, space, alloc_size, true, bytes_allocated);
+            // 若还是不行, 回收 SoftReferences
+            CollectGarbageInternal(collector::kGcTypeFull, kGcCauseForAlloc, true);
+            TryToAllocate(self, space, alloc_size, true, bytes_allocated);
+#+END_SRC
+
+** CollectGarbageInternal
+CollectGarbageInternal 是进行 GC 的入口, 无论 ConcurrentGC 线程, 还是
+AllocObject 导致的 GC, 或者强制进行的 GC, 最终都调用该接口. 
+
+#+BEGIN_SRC text
+  // gc_type 代表要进行何种 gc: sticky, partial, full
+  // gc_cause 表示 gc 的原因: alloc, concurrent, explicit
+  // clear_soft_references: 是否清除 soft reference
+  // 由于 ART 一般使用 concurrent_gc_, 所以实际上这个函数的某些参数组合
+  // 是不存在的, 例如:
+  // 1. 若 gc_cause 为 concurrent, 则 gc_type 只能是 sticky 或 partial
+  // 2. 若 gc_cause 为 explicit, 则 gc_type 只能是 full
+  collector::GcType Heap::CollectGarbageInternal(collector::GcType gc_type, GcCause gc_cause,bool clear_soft_references):
+    bool start_collect = false;
+    // 获得 gc_complete_lock_, 防止有其他的 gc 同时进行
+    // 若无法获得锁, 则等待 concurrent_gc 完成
+    while (!start_collect):
+      MutexLock mu(self, *gc_complete_lock_);
+      if (!is_gc_running_)"
+        is_gc_running_ = true;
+        start_collect = true;
+      if (!start_collect):
+        WaitForConcurrentGcToComplete(self);
   
-   
+    // 根据 gc_type 选择 collector, mark_sweep_collectors_ 是与 Heap 一
+    // 起初始化的, 包含六个 collector:
+    // 1. full no concurrent
+    // 2. partial no concurrent
+    // 3. sticky no concurrent
+    // 4. full concurrent
+    // 5. partial concurrent
+    // 6. sticky concurrent
+  
+    // 根据 gc_type 选择对应的 collector
+    for (const auto& cur_collector : mark_sweep_collectors_) {
+      if (cur_collector->IsConcurrent() == concurrent_gc_
+          && cur_collector->GetGcType() == gc_type):
+        collector = cur_collector;
+        break;
+        
+    collector->clear_soft_references_ = clear_soft_references;
+    collector->Run();
+  
+    // 释放 gc_complete_lock_, 通知其他等待 gc 的线程
+    MutexLock mu(self, *gc_complete_lock_);
+    is_gc_running_ = false;
+    last_gc_type_ = gc_type;
+    // Wake anyone who may have been waiting for the GC to complete.
+    gc_complete_cond_->Broadcast(self);
+        
+     
+#+END_SRC
+** Collector
+#+BEGIN_SRC text
+  void GarbageCollector::Run() @ garbage_collector.cc
+    ThreadList* thread_list = Runtime::Current()->GetThreadList();
+    InitializePhase(); @ mark_sweep.cc
+      mark_stack_ = heap_->mark_stack_.get();
+      // 这些 reference list 在 gc 过程中会被赋值
+      soft_reference_list_ = nullptr;
+      weak_reference_list_ = nullptr;
+      finalizer_reference_list_ = nullptr;
+      phantom_reference_list_ = nullptr;
+      cleared_reference_list_ = nullptr;
+      FindDefaultMarkBitmap();
+    // 若 concurrent_gc_ 为 false, 则使用 stop-the-world 方式:
+    // suspend->mark->sweep->resume  
+    if (!IsConcurrent()):
+      thread_list->SuspendAll();
+      MarkingPhase();
+      ReclaimPhase();
+      thread_list->ResumeAll();
+    else:
+      ReaderMutexLock mu(self, *Locks::mutator_lock_);
+      MarkingPhase();
+      thread_list->SuspendAll();
+      HandleDirtyObjectsPhase();
+      thread_list->ResumeAll();
+      ReclaimPhase();
+    FinishPhase();    
+#+END_SRC
+*** MarkingPhase
+#+BEGIN_SRC text
+  MarkingPhase @ mark_sweep.cc
+    // 所谓 BindBitmaps, 实际指的是 bind mark bitmaps, 即在扫描之前就
+    // 把一些满足条件的对象在 mark bitmaps 中置位, 例如:
+    // 1. 若一个 space 属于 kGcRetentionPolicyNeverCollect, 则该 space
+    // 中的所有 live bitmaps 中的对象都被放到 mark bitmaps 中
+    // 2. 若当前的 collector 为 partial_mark_sweep, 则 zygote space 的
+    // live bitmaps 会被复制到 mark bitmaps, 表示 zygote space 在
+    // partial_mark_sweep 时不会被回收
+    // 3. 若当前为 sticky_mark_sweep, 则 DlMallocSpace 中的 live bitmaps
+    // 也会被复制到 mark bitmaps, 这个看起来有些奇怪: live bitmaps 中不
+    // 一定都是被 mark 的对象啊...
+    // 与 dalvik 不同的是, 新分配的对象不保存在 live bitmaps, 而是先保存
+    // 在 allocation stack 中, 所以 live bitmaps 代表的实际上是上一次 GC
+    // 结束时的 mark bitmaps. sticky_mark_sweep 为了加快 mark 与 sweep
+    // 的过程, 假设上一次 GC 结束时的 mark bitmaps 在这一次 GC 时还是有
+    // 效的, 即上一次 GC 时的对象都不会被释放: sticky_mark_sweep 只会扫
+    // 描那些新增的对象
+    // 为了优化 GC, collector 可以做一些假设, 但它只可以假设某对象被
+    // mark, 而不能假设某对象没有被 mark.
+    BindBitmaps();
+    FindDefaultMarkBitmap();
+    // Process dirty cards and add dirty cards to mod union tables.
+    heap_->ProcessCards(timings_);
+  
+    // SwapStacks 是将 allocation_stack_ 与 live_stack_ 交换, 从此以后,
+    // 新分配的对象会被 push 到新的 allocation_stack_ 中, 而之前
+    // allocation_stack_ 的内容现在位于 live_stack_ 中.
+    // 后续 sticky_mark_sweep 会使用 live_stack_ 来查找最近新分配的对象
+    heap_->SwapStacks();
+  
+    if (Locks::mutator_lock_->IsExclusiveHeld(self)):
+      // If we exclusively hold the mutator lock, all threads must be suspended.
+      MarkRoots();
+    else:  
+      MarkThreadRoots(self);
+        MarkNonThreadRoots();
+    MarkConcurrentRoots();
+  
+    // 至此, gc root 都已经被 mark, 下面要扫描 mark stack 来 mark 所有可
+    // 达的对象
+    MarkReachableObjects();
+      // 对于 mark_sweep
+      // 将 live_stack_ 中的对象加入到 live_bitmap_ 中
+      accounting::ObjectStack* live_stack = heap_->GetLiveStack();
+      heap_->MarkAllocStack(heap_->alloc_space_->GetLiveBitmap(),
+          heap_->large_object_space_->GetLiveObjects(), live_stack);
+      live_stack->Reset();
+      RecursiveMark();
+  
+      // 对于 sticky_mark_sweep
+      // mark_stack 被 clear ...
+      // 因为 sticky_mark_sweep 的目标是清除那些新分配的对象 (位于
+      // live_stack_中), 若使用上一次的 mark_bitmap_ + 当前的 CardTable
+      // + 当前的 live_stack_, 其实是可以保证 live_stack_ 中正在使用的对象
+      // 被 mark 的.
+      mark_stack_->Reset();
+      RecursiveMarkDirtyObjects(false, accounting::CardTable::kCardDirty - 1);
+        // 扫描 CardTable 中修改的对象
+        ScanGrayObjects(paused, minimum_age);
+        ProcessMarkStack(paused);
+  
+#+END_SRC
+*** ReclaimPhase
+#+BEGIN_SRC text
+  ReclaimPhase
+    if (!IsConcurrent()):
+      ProcessReferences(self);
+    if (IsConcurrent()):
+      // 将 allocation_stack_ 中的对象从 mark_bitmap_ 中移除...
+      // 首先, 将 allocation_stack_ 中的对象从 mark_bitmap_ 中移除并不会
+      // 导致后面在 sweep 时错误的将对象删除, 因为 allocation_stack_ 中
+      // 的对象是在本次 GC 开始到现在分配的新对象, 这些对象在
+      // live_bitmap_ 中并没有记录. (live_bitmap_ 在 GC 最后阶段通过
+      // swap 才会赋值)
+      // 另外, 当前的 allocation_stack_ 即是下次的 live_stack_, 当前的
+      // mark_bitmap_ 即是下次的 live_bitmap_, 而对于下次 sticky_mark_sweep
+      // 来说, live_bitmap_ 会被直接复制到 mark_bitmap_, 所以, 若当前
+      // allocation_stack_ 中的对象在 mark_bitmap_ 有记录, 则下次
+      // sticky_mark_sweep 时它肯定无法被 GC, 但是, 如果把这个对象从当前
+      // mark_bitmap_ 中移除, 并不影响下次 sticky_mark_sweep 的正确性:
+      // 如果这个对象真的仍被引用着, 则下次 sticky_mark_sweep 时还是能通过
+      // MarkingPhase mark 到它. 
+      
+      for (mirror::Object** it = allocation_stack->Begin(); it != end; ++it) {
+        const Object* obj = *it;
+        if (obj != NULL):
+          UnMarkObjectNonNull(obj);
+  
+      Sweep(false);
+        // 对于 mark_sweep 来说, 直接根据 live_bitmap_ 和
+        // mark_bitmap_ 来 sweep
+         
+        // 对于 sticky_mark_sweep 来说, 则是根据 live_stack_ 和
+        // mark_bitmap_ 来 sweep: 只有 live_stack_ 中的对象才可能被
+        // sweep
+      SwapBitmaps();
+      UnBindBitmaps();
 #+END_SRC
