@@ -1,10 +1,49 @@
-#+TITLE: Gc
+#+TITLE: GC
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
-* Gc
+* GC
+** 关于 space
+ART 的 space 类似于 dalvik 中的 HeapSource->heap[], 代表一块可以用来分配
+的内存区域. 
+
+在 dalvik 中 HeapSource->heap[] 只有两项: 在 zygote 启动期间, heap[]只
+有一项 heap[0], 用来做为 zygote 启动时的 GC heap. zygote 启动完毕,
+fork 新的 java 进程前, zygote 使用的 heap[0] 会被移动到heap[1], 然后
+dalvik 会再初始化一块内存做为新的 heap[0], 用来做为后续 java 进程的 GC
+heap. 在任何时候, dalvik 都只使用 heap[0] 做为 GC heap 来分配对象.
+
+zygote pre-fork 时初始化一个新的 GC heap, 主要是为了防止后续 java 进程
+再写那块旧的 GC heap: 这会导致大量的 copy on write 开销. 
+
+在 ART 也有类似的机制, 不过 ART 设计的更好一些: 它抽象出几个 space:
+
+1. ImageSpace
+   和 AOT 相关
+2. DlMallocSpace
+   dalvik 上的 heap[] 相当于 DlMallocSpace, 即它是用 dlmalloc 来实现对
+   象分配的. 
+3. LargeObjectSpace
+   dalvik 中不存在类似概念, ART 使用 LargeObjectSpace 来分配大型
+   primitive 数组. 该对象有两个子类: FreeListSpace 和 LargeObjectMapSpace
+
+另外, 根据 space 是否是连续的, 又分为 ContinuousSpace 和
+DiscontinuousSpace, 所谓连续, 是指整个 space 是否有一个固定的大小, 所有
+空间都从这个固定大小的空间里分配. 例如, ImageSpace, DlMallocSpace 是
+ContinuousSpace, 而 LargeObjectSpace 是 DiscontinuousSpace.
+
+ContinuousSpace 因为空间有固定的大小,所以可以使用 SpaceBitmap 和 card
+table 来标识对象.
+
+DiscontinuousSpace 因为空间大小不定, 无法使用 SpaceBitmap 来标识对象,
+它使用 SpaceSetMap 来标识对象, SpaceSetMap 是使用 std::set 实现的 bitmap.
+
 ** AllocObject
 #+BEGIN_SRC text
   Heap::AllocObject(Thread* self, mirror::Class* c, size_t byte_count) @ heap.cc
+    // 对于大型的 primitive 数组, 会被分配到 large_object_space_ 中
+    // art 有两种 large_object_space_ 实现: FreeListSpace 和 LargeObjectMapSpace, 前者在一块大的 mmap 空间上使用 free list 来分配
+    // 后者用 mmap 直接分配. 目前只使用 LargeObjectMapSpace
+    bool large_object_allocation = byte_count >= large_object_threshold_ && have_zygote_space_ && c->IsPrimitiveArray();
   
    
 #+END_SRC
