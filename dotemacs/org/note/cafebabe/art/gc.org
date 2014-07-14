@@ -49,7 +49,7 @@ DiscontinuousSpace 因为空间大小不定, 无法使用 SpaceBitmap 来标识�
 它使用 SpaceSetMap 来标识对象, SpaceSetMap 是使用 std::set 实现的 bitmap.
 
 *** 关于 ZygoteSpace
-在最初的 alloc_space_ 在 zygote pre-fork 时被转换为 ZygoteSpace 时, 会
+在最初的 alloc_space_ 在 PreZygoteFork 时被转换为 ZygoteSpace 时, 会
 调用这个函数:
 #+BEGIN_SRC c++
   zygote_space->SetGcRetentionPolicy(space::kGcRetentionPolicyFullCollect);
@@ -144,7 +144,7 @@ AllocObject 导致的 GC, 或者强制进行的 GC, 最终都调用该接口.
 
 #+BEGIN_SRC text
   // gc_type 代表要进行何种 gc: sticky, partial, full
-  // gc_cause 表示 gc 的原因: alloc, concurrent, explicit
+  // gc_cause 表示 gc 的原因: alloc, background(concurrent), explicit
   // clear_soft_references: 是否清除 soft reference
   // 由于 ART 一般使用 concurrent_gc_, 所以实际上这个函数的某些参数组合
   // 是不存在的, 例如:
@@ -318,4 +318,39 @@ AllocObject 导致的 GC, 或者强制进行的 GC, 最终都调用该接口.
         // sweep
       SwapBitmaps();
       UnBindBitmaps();
+#+END_SRC
+** GC Daemon
+dalvik 在初始化时会通过 gcDaemonThread 函数启动一个名为 "GC" 的线程负
+责 concurrent gc. 
+
+ART 中也存在类似的线程, 但它是一个 java daemon, 不是一个 native 的 thread.
+
+#+BEGIN_SRC text
+  StartDaemonThreads @ runtime.cc
+    Daemons.start @ daemons.java
+      ReferenceQueueDaemon.INSTANCE.start();
+      FinalizerDaemon.INSTANCE.start();
+      FinalizerWatchdogDaemon.INSTANCE.start();
+      // 后面两个是 ART 新增的 daemon
+      HeapTrimmerDaemon.INSTANCE.start();
+      GCDaemon.INSTANCE.start();
+        while (count == 0):
+          wait();
+        --count;
+        VMRuntime.getRuntime().concurrentGC();
+          Runtime::Current()->GetHeap()->ConcurrentGC(self);
+            if (WaitForConcurrentGcToComplete(self) == collector::kGcTypeNone): @ heap.cc
+              CollectGarbageInternal(next_gc_type_, kGcCauseBackground, false);
+#+END_SRC
+
+至于 GCDaemon 被唤醒的条件, 与 dalvik 是一致的: 当前内存低于某个阀值时,
+runtime 会通过 RequestConcurrentGC 唤醒 GCDaemon, 进行 concurrentGC.
+
+#+BEGIN_SRC text
+  Heap::AllocObject @ heap.cc
+    if (UNLIKELY(static_cast<size_t>(num_bytes_allocated_) >= concurrent_start_bytes_)):
+      RequestConcurrentGC(self);
+        GCDaemon.requestGC @ Daemons.java
+          ++count;
+          notify();
 #+END_SRC

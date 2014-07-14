@@ -25,7 +25,7 @@ ART 版本的 JNI_CreateJavaVM 等函数, 进而再对通过这个函数的调�
               options->conc_gc_threads_,
               // ..);
         // heap 初始化时会负责初始化 mark_bitmap_, live_bitmap_,
-        // card_table_, mark_stack_, live_stack_, 以及各种 collector
+        // card_table_, mark_stack_, allocation_stack_, live_stack_, 以及各种 collector
         // 通过 sigprocmask 阻止当前进程的所有线程收到 SIGPIPE 和 SIGUSER1
         // 后面 signal catcher 线程会负责处理这两个信号
         BlockSignals();
