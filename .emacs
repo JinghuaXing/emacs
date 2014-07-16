@@ -377,3 +377,6 @@
 (global-rainbow-delimiters-mode)
 
 (blink-cursor-mode 0)
+
+(require 'nlinum)
+(global-nlinum-mode)

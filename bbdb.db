@@ -78,7 +78,7 @@
 ["李小梅" nil ("Xiaomei Li") nil nil nil ("Xiaomei.Li@spreadtrum.com") ((creation-date . "2014-03-14") (timestamp . "2014-03-14")) nil]
 ["李慎威" nil ("Bravo Lee") nil nil nil ("Bravo.Lee@spreadtrum.com") ((creation-date . "2014-05-06") (timestamp . "2014-05-06")) nil]
 ["李文栋" nil nil nil nil nil ("liwd@spreadst.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
-["李杰" nil ("Gerry Li") "FAE" nil nil ("Gerry.Li@spreadtrum.com") ((creation-date . "2014-02-12") (timestamp . "2014-02-18")) nil]
+["李杰" nil (#("Gerry Li (李杰)" 0 13 (fontified nil)) "Gerry Li") "FAE" nil nil ("Gerry.Li@spreadtrum.com") ((creation-date . "2014-02-12") (timestamp . "2014-07-15")) nil]
 ["李江游" nil ("Jiangyou Li") nil nil nil ("Jiangyou.Li@spreadtrum.com") ((creation-date . "2014-01-30") (timestamp . "2014-02-17")) nil]
 ["杨东明" nil ("Dongming Yang") nil nil nil ("Dongming.Yang@spreadtrum.com") ((creation-date . "2014-02-11") (timestamp . "2014-02-18")) nil]
 ["殷岂龙" nil ("qilong yin") nil nil nil ("qilong.yin@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
