@@ -378,5 +378,5 @@
 
 (blink-cursor-mode 0)
 
-(require 'nlinum)
-(global-nlinum-mode)
+;; (require 'nlinum)
+;; (global-nlinum-mode)
