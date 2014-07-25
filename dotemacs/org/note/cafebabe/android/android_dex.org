@@ -214,13 +214,17 @@ dexopt is located in dalvik/dexopt/OptMain.cpp
    the same as (2), except it takes file names instead of file
    descriptors.
 *** dex 何时被 dexopt
-1. PMS.performBootDexOpt
+
+1. zygote 启动时
+   zygote 启动时会负责 boot class 的 dexopt (通过 dvmClassStartup ->
+   prepareCpe -> dvmRawDexFileOpen)
+2. PMS.performBootDexOpt
    PMS 启动时
-2. AMS.ensurePackageDexOpt
+3. AMS.ensurePackageDexOpt
    AMS启动应用之前
-3. dvmRawDexFileOpen
+4. dvmRawDexFileOpen
    ClassLoader 初始化时
-4. app 被安装时
+5. app 被安装时
 *** odex 如何被 ClassLoader 加载
 **** context class loader
 当 PathClassLoader 初始化时, 会初始化 DexFile, 相当的会设置对应的 odex 的路
@@ -301,3 +305,38 @@ ClassLoader -> DexPathList -> DexFile -> RawDexFile -> DvmDex
           DvmDex* pDvmDex = dvmGetRawDexFileDex(pDexOrJar->pRawDexFile);
           clazz = dvmDefineClass(pDvmDex, descriptor, loader);
 #+END_SRC
+*** 关于 verify
+http://www.netmite.com/android/mydroid/dalvik/docs/verifier.html
+http://www.netmite.com/android/mydroid/dalvik/docs/dexopt.html
+http://www.netmite.com/android/mydroid/dalvik/docs/embedded-vm-control.html
+
+verify 的发生有两种场合:
+1. pre-verify
+2. dvmVerifyClass
+
+**** pre-verify
+pre-verify 实际上指的就是 dexopt 时进行的 verify. 在默认配制下, dexopt
+会先对 dex 进行 verify, 然后再进行 optimization. 实际上, dexopt 要求必
+须先 verify 以后才能进行 optimization. 所以 pre-verify 发生的时机就是
+dexopt 发生的时机: 例如通过 zygote 的 dvmClassStartup. 
+
+通过 dexopt 的 pre-verify, odex 中的 class 对象的 CLASS_ISPREVERIFIED
+标志会被置位, 这个标记会阻止后续 dvminitclass 时的 dvmVerifyClass 调用. 
+
+实际上, pre-verify, dexopt 合起来做为 dex 的 prepare
+
+**** dvmVerifyClass
+通过 setprop dalvik.vm.verify-bytecode false, 可以禁用整个 dex prepare
+过程 (包括 pre-verify 和 dexopt). 若开机启动时因为这个 prop 没有进行
+verify, 但运行时通过 setprop dalvik.vm.verify-bytecode true 或直接通过
+dalvik 的启动参数 (-Xverify:all 或 -Xverify:remote) 重新启用了 verify,
+则在 class 初始化时, 会调用 dvmVerifyClass 进行 verify. 这种运行时的
+verify 会导致应用加载明显变慢 (可能 40% 以上)
+
+Xverify 参数接受三种值:
+1. all
+   所有 class 被需要被 verify
+2. remote
+   boot class 以外的 class 需要被 verify
+3. none   
+   任何 class 都不会被 verify

@@ -180,12 +180,13 @@ dvmResolveString:
 ** Class Loading
 java 类加载的过程包含一般包括加载, 解析, 初始化等过程.  特别的, dvm 加
 载类的过程基本上就是:
-1. 加载
+
+1. 加载 -- dvmfindclassnoinit
 
    从 odex 中加载类 (loadClassFromDex), 此后 ClassObject 的多数成员已经
    被初始化
 
-2. 解析 (link)
+2. 解析 (link) -- dvmLinkClass
 
    通过 dvmLinkClass, 将 ClassObject 中的存在的 symbolic references
    resolve 为 direct pointer (对于 vtable, superclass, iftable 等) 或
@@ -195,7 +196,9 @@ java 类加载的过程包含一般包括加载, 解析, 初始化等过程.  �
    转换为 odex, 这时会做一些类似于 resolve 的工作, 但这些工作影响的主
    要是 dex 中的代码部分: 即 xxx 指令会被转换为 xxx_quick 指令, 使代码
    由使用 symbolic references 的方式变为使用 direct pointer 或 offset
-   的方式. 所以, 即使有 odex, dvmLinkClass 时还是需要做 resolve 的动作. 
+   的方式. 所以, 即使有 odex, dvmLinkClass 时还是需要做 resolve 的动作.
+
+3. 初始化 -- dvminitclass 与 验证 -- dvmVerifyClass
 
 Class Loading 的入口是 dvmResolveClass->findClassNoInit
 
