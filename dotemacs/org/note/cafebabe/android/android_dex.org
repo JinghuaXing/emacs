@@ -24,7 +24,7 @@ adb shell dalvikvm -cp /data/Test.apk Hello
 ** dex
 *** dex 基于寄存器
 
-java -jar smali.jar classes.dex
+java -jar baksmali.jar classes.dex -o ./
 
 #+BEGIN_EXAMPLE
   .class public LHelloWorld;
