@@ -58,6 +58,18 @@ dalvikvm 是一个由 dalvikvm.cc 编译出来的可执行文件, 与 java 命�
       vm->DestroyJavaVM();
 #+END_SRC
 
+**** dalvikvm 与 app_process 的区别
+dalvikvm 与 app_process 类似, 都可以启动 dvm. 但 app_process 做的事情
+更多一些:
+1. app_process 通过一个封装的 AndroidRuntime 类来启动 dvm.
+   AndroidRuntime 会:
+   - 读取一些 system properties 来启动 dvm
+   - 设置一个用来生成 trace 的 UncaughtHandler
+   - ...
+2. app_process 可以用来启动 zygote 和 system_server
+3. app_process 会启动 ThreadPool 等和 binder 相关的东西.
+4. ...
+
 *** JNI_CreateJavaVM
 JNI_CreateJavaVM 是 libdvm.so 提供的一个函数, 负责:
 1. 生成 JavaVM 及 JNIEnv, 做为上层调用后续 jni 调用的接口. 
