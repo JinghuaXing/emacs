@@ -1,0 +1,34 @@
+#+TITLE: Micro Benchmark
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Micro Benchmark
+** califer (and vogar)
+http://code.google.com/p/caliper/
+
+califer 是 google 开始的一个 java 的 micro benchmark 框架, 可以在 pc
+和 android 手机上运行. 
+
+android 的 libcore/benchmark 上自带了 califer.jar 和一系列用 califer
+框架开发的 java 的 micro benchmark 代码, 例如
+FieldAccessBenchmark.java, IntConstantDivisionBenchmark.java 等.
+
+*** 在手机上运行基于 califer 的 micro benchmark 
+以 libcore/benchmark/src/FieldAccessBenchmark.java 为例:
+1. 在 pc 上编译 FieldAccessBenchmark.java
+   
+   javac -cp califer.jar FieldAccessBenchmark.java
+
+2. 把 califer.jar 和 FieldAccessBenchmark.class 打包为 dex
+   
+   dx --dex --output=test.dex califer.jar califer.jar FieldAccessBenchmark.class
+
+3. 把 test.dex push 到手机
+
+4. 在手机上运行:
+
+   dalvikvm -cp test.dex com.google.caliper.Runner FieldAccessBenchmark
+
+*** 在 pc 上运行 caliper
+
+1. javac -cp caliper.jar FieldAccessBenchmark.java
+2. java -cp caliper.jar com.google.caliper.Runner FieldAccessBenchmark

@@ -83,7 +83,7 @@
 ["杨东明" nil ("Dongming Yang") nil nil nil ("Dongming.Yang@spreadtrum.com") ((creation-date . "2014-02-11") (timestamp . "2014-02-18")) nil]
 ["殷岂龙" nil ("qilong yin") nil nil nil ("qilong.yin@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
 ["毛会斌" nil (#("Huibin Mao (毛会斌)" 0 16 (fontified nil)) "Huibin Mao") nil nil nil ("Huibin.Mao@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-06-25")) nil]
-["池元武" nil ("Bruce Chi") nil nil nil ("Bruce.Chi@spreadtrum.com") ((creation-date . "2014-01-27") (timestamp . "2014-02-24")) nil]
+["池元武" nil (#("Bruce Chi (池元武)" 0 15 (fontified nil)) "Bruce Chi") nil nil nil ("Bruce.Chi@spreadtrum.com") ((creation-date . "2014-01-27") (timestamp . "2014-07-29")) nil]
 ["游万灿" nil ("Wancan You") nil nil nil ("Wancan.You@spreadtrum.com") ((creation-date . "2014-02-10") (timestamp . "2014-02-24")) nil]
 ["王明国" nil ("Mingguo Wang") nil nil nil ("Mingguo.Wang@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-03-03")) nil]
 ["王星星" nil ("Xingxing Wang") nil nil nil ("Xingxing.Wang@spreadtrum.com") ((creation-date . "2014-02-12") (timestamp . "2014-02-25")) nil]
