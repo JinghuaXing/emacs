@@ -26,7 +26,12 @@ FieldAccessBenchmark.java, IntConstantDivisionBenchmark.java 等.
 
 4. 在手机上运行:
 
-   dalvikvm -cp test.dex com.google.caliper.Runner FieldAccessBenchmark
+   dalvikvm -cp test.dex com.google.caliper.Runner
+   FieldAccessBenchmark -Jpara=-Xint:portable
+
+   由于 caliper 运行时实际上对每个 trial 都调用 app_process 来启动一个
+   dvm 来测试, 所以 dalvikvm 启动时使用的 vm 参数对各个 trial 是无效
+   的: 需要用 -Jpara=xxx 来指定 xxx 做为 app_process 的参数
 
 *** 在 pc 上运行 caliper
 
