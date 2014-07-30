@@ -473,3 +473,7 @@ replaceFailingInstruction 的, 因为:
       }
   }
 #+END_SRC
+
+replaceFailingInstruction 需要修改 odex 映射的内存, 而不是 odex 本身.
+因为 odex 都是以只读方式进行 mmap 的, 所以 replaceFailingInstruction
+需要先修改 mmap 区域的权限, 再进行写操作, 这会导致额外的内存开销.  
