@@ -437,7 +437,8 @@ class 中的 main 函数直接访问 Test2 的私有成员), 我们可以这样�
    通过 replaceFailingInstruction 进行指令替换, 否则直接报错
 4. 默认情况下 Xverify = all, Xdexopt = verified, 所以, 若一个类有问题,
    则会在运行时报错 (通过 replaceFailingInstruction), 而不是在 verify
-   阶段 (pre-verify 或 late verify) 报错. 
+   阶段 (pre-verify 或 late verify) 报错. 抛开 pre-verify, dexopt 这些
+   不谈, java 的 verify 的功能本质上就是 replaceFailingInstruction
 
 ***** 关于 replaceFailingInstruction
 
