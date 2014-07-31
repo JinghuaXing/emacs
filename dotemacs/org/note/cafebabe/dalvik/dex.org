@@ -340,7 +340,8 @@ dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍.
 ** dex 与 ClassLoader
 ClassLoader 并不是一定要在 native 实现的, 有些 ClassLoader 是完全用
 Java 写的. 但 dalvik 的 ClassLoader 因为底层都依赖于 dex, 所以都是通过
-native 层的 DexFile, DvmDex 实现的.
+native 层的 DexFile (代表 dex), RawDexFile (代表 odex), DvmDex (代表
+auxiliary cache) 实现的.
 
 Java 层和 ClassLoader 相关的类主要有:
 
@@ -441,44 +442,109 @@ BootClassLoader 的 loadClass:
 findClassNoInit 进行 dex 的加载
 
 **** ClassLoader 的具体工作过程
+和类加载相关的入口主要有:
+1. findClassNoInit
+2. dvmResolveClass
+3. java 层的 classForName
 
-dvmResolveClass 是 byte code 中加载 class 的入口
+***** findClassNoInit
+findClassNoInit 最底层的加载类的方法, 它需要指定一个字符串来表示要加载
+的类, 以及一个 ClassLoader.
+
+后面提到的 dvmResolveClass 实际上就是把 ref 转换为字符串, 并且根据
+referrer 找到调用者的 ClassLoader 后直接调用 findClassNoInit. 而
+classForName 因为本身就使用字符串表示要加载的类, 所以它只需要找到调用
+者的 ClassLoader 后就可以直接调用 findClassNoInit
 
 #+BEGIN_SRC text
-  dvmResolveClass
-    // referrer->classLoader 调用该代码的对象使用的 BaseDexClassLoader
-    // jvm spec 规定了若 A 由 cl 加载, 则 A->B 时也要由 cl 负责加载 B
-    dvmFindClassNoInit(className, referrer->classLoader);
-      // 此时 loader 不为空, 它对应的是 app 的 BaseDexClassLoader,
-      // 所以会调用 findClassFromLoaderNoInit
-      if (loader != NULL):
-        return findClassFromLoaderNoInit(descriptor, loader);
-          // ClassLoader 开始工作
-          // 调用 ClassLoader.java 的 loadClass 函数
-          const Method* loadClass =
-            loader->clazz->vtable[gDvm.voffJavaLangClassLoader_loadClass];
-          dvmCallMethod(self, loadClass, loader, &result, nameObj);
-            // 双亲委派导致 ClassLoader.loadClass 被调用
-            // BootClassLoader 导致 dvmFindClassNoInit 再次被调用, 但是
-            // loader 参数为 null
-            ClassLoader.loadClass
-              BootClassLoader.loadClass
-                dvmFindClassNoInit(className, null);
-                  return dvmFindSystemClassNoInit(descriptor);
-              // 若 BootClassLoader.loadClass 失败, 说明这个类是 BaseDexClassLoader
-              // 定义的, 双亲委派会调用 BaseDexClassLoader.findClass
-              BaseDexClassLoader.findClass
-                pathList.findClass(name);
-                  dvmFindClassNoInit(className, loader);
-      else:
-        dvmFindSystemClassNoInit(descriptor);
+  dvmFindClassNoInit(className, referrer->classLoader);
+    // 此时 loader 不为空, 它对应的是 app 的 BaseDexClassLoader,
+    // 所以会调用 findClassFromLoaderNoInit
+    if (loader != NULL):
+      return findClassFromLoaderNoInit(descriptor, loader);
+        // ClassLoader 开始工作
+        // 调用 ClassLoader.java 的 loadClass 函数
+        const Method* loadClass =
+          loader->clazz->vtable[gDvm.voffJavaLangClassLoader_loadClass];
+        dvmCallMethod(self, loadClass, loader, &result, nameObj);
+          // 双亲委派导致 ClassLoader.loadClass 被调用
+          // BootClassLoader 导致 dvmFindClassNoInit 再次被调用, 但是
+          // loader 参数为 null
+          ClassLoader.loadClass
+            BootClassLoader.loadClass
+              dvmFindClassNoInit(className, null);
+                return dvmFindSystemClassNoInit(descriptor);
+            // 若 BootClassLoader.loadClass 失败, 说明这个类是 BaseDexClassLoader
+            // 定义的, 双亲委派会调用 BaseDexClassLoader.findClass
+            BaseDexClassLoader.findClass
+              pathList.findClass(name);
+                dvmFindClassNoInit(className, loader);
+    else:
+      dvmFindSystemClassNoInit(descriptor);
+  
 #+END_SRC
+***** dvmResolveClass 是 byte code 中加载 class 的入口 (因为它使用 ref 指示 class
+而且不是 class 名)
 
+#+BEGIN_SRC text
+  HANDLE_OPCODE(OP_NEW_INSTANCE /*vAA, class@BBBB*/)
+    clazz = dvmResolveClass(curMethod->clazz, ref, false);
+      dvmResolveClass(referrer, ref, init)
+        // referrer->classLoader 调用该代码的对象使用的 BaseDexClassLoader
+        // jvm spec 规定了若 A 由 cl 加载, 则 A->B 时也要由 cl 负责加载 B
+        dvmFindClassNoInit(className, referrer->classLoader);
+#+END_SRC
+***** classForName
+classForName 即 Class.forName(str, classLoader), 若不指定 classLoader,
+根据 jvm 规范, 当前方法所属的 class 的 classLoader 负责加载这个类. 即
+像 dvmResolveClass 中展示的那样: curMethod->clazz->classLoader.
+
+这里有个问题: 若 Class.forName 在 java 层不指定 classLoader, 而要求
+jni 层像 dvmResolveClass 那样自己获得 curMethod->clazz->classLoader 是否可
+行? 不可行, 因为:
+
+若 classForName 对应的 native 函数 Dalvik_java_lang_Class_classForName
+方法调用 curMethod, curMethod代表是当前 jni 方法, 而它的 clazz 是
+Class 类, 最终会使用BootClassLoader 来加载, 这不是我们想要的.
+
+因此, java 层调用 classForName 时, 需要提交获得
+curMethod->clazz->classLoader, 并做为参数传给 findClassNoInit. 
+
+而 java 层获得当前的 classLoader 是使用 native
+VMStack.getCallingClassLoader
+
+#+BEGIN_SRC text
+  VMStack.getCallingClassLoader
+    static void Dalvik_dalvik_system_VMStack_getCallingClassLoader
+      ClassObject* clazz = dvmGetCaller2Class(dvmThreadSelf()->interpSave.curFrame);
+        // dvmGetCaller2Class:  Get the caller's caller's class.  Pass in the current fp.
+        // 所谓的 caller's caller's class, 是这么回事:
+        // 第一个 caller 是指 调用 VMStack 的 getCallingClassLoader 这个方法的方法, 即
+        // Class.forName 方法, 显然不是我们想要的. 
+        // caller's caller 是调用 Class.forName 的那个方法, 是我们想要的.
+  
+        // 当前的 frame 对应的是 getCallingClassLoader 这个 jni 方法,
+        // prevFrame 对应 Class.forName 方法
+        void* caller = SAVEAREA_FROM_FP(curFrame)->prevFrame;
+        callerCaller = dvmGetCallerFP(caller);
+          void* caller = SAVEAREA_FROM_FP(curFrame)->prevFrame;
+          if (dvmIsBreakFrame((u4*)caller)):
+            caller = SAVEAREA_FROM_FP(caller)->prevFrame;
+          return caller;                  
+        return SAVEAREA_FROM_FP(callerCaller)->method->clazz;
+  
+#+END_SRC
 *** 总结
 
-通过 dvmResolveClass 或其它方法加载类时, 若当前操作的类是通过某个
-ClassLoader 加载的, 则调用那个 ClassLoader 的 loadClass 来加载. 否则,
-直接通过 dvmFindSystemClassNoInit 在 bootstrap class path 中加载. 
+对于 dvmResolveClass 和 classForName 都需要提交根据
+curMethod->clazz->classLoader 获得`定义当前 method 的 class 使用的
+classLoader`, 并使用这个 classLoader 调用 dvmFindClassNoInit, 这是 jvm
+规范要求的. 
+
+dvmFindClassNoInit load class 时, 要 classLoader 不为空, 则使用
+classLoader 来加载, 否则使用 dvmFindSystemClassNoInit 从 bootstrap
+classpath 中加载 (即从 `BootClassLoader` 中加载)
+
 
 通过 ClassLoader 加载时, 双亲委派会优先使用 BootClassLoader 来加载,
 BootClassLoader 最终会通过 dvmFindSystemClassNoInit 来加载.
