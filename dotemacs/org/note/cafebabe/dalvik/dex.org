@@ -301,8 +301,14 @@ odex 文件对 dex 做了如下的修改:
 3. 在文件末尾加入两个数据结构: classLookup 与 registerMapPool
 *** classLookup
 *** registerMap
-register map 主要用来帮助 dvm 知道当前各个寄存器中哪些保存着 java 对象.
-以便 GC 时这些会被做为 GC Root.
+register map 主要用来帮助 dvm 知道在每个函数的第个 GC Point 处当前各个寄存器中哪些保存着 java 对象.
+以便进行 exact GC.
+
+若没有这个 map, 那么 GC 时 dvm 只能假设当前所有寄存器中都保存着对象引
+用, 从而导致一些本来已经是 garbage 的对象没有被回收. (例如 r1 本来保存
+着一个整数 0xxxxx, 但这个整数刚好对应着某个已经不可达的对象的地址, 那
+么这个对象就会被重新标记为可达)
+
 ** class 文件结构
 ** DexFile 与 DvmDex
 dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍. parse
@@ -337,7 +343,65 @@ dalvik 在扫描 class path 时, 会负责将所有的 odex 文件 parse 一遍.
        if (resClass != NULL):
          return resClass;
    #+END_SRC
-** dex 与 ClassLoader
+** dexopt
+dexopt is located in dalvik/dexopt/OptMain.cpp
+*** dexopt 的作用
+- verification
+  
+- optimization
+  /dalvik/vm/analysis/Optimize.cpp::optimizeMethod
+  
+  1. quick替换 与 符号解析
+     
+     将本来 java 在类加载时完成的符号解析的工作拿出来,提前将符号解析出
+     来, 并且使用相应的 `quick' 指令代替原来的基于常量池符号引用的指令,
+     例如: 将之前的
+     
+     #+BEGIN_EXAMPLE
+     invoke-virtual {v0,v1},Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+     #+END_EXAMPLE
+     
+     替换为
+     
+     #+BEGIN_EXAMPLE
+     invoke-virtual-quick {v0,v1},vtable #0x3b
+     #+END_EXAMPLE
+     
+  2. inline method
+     
+  3. ...
+     
+- register map
+  
+*** There are three ways to launch dexopt
+
+1. From the VM.  This takes a dozen args, one of which is a file
+   descriptor that acts as both input and output.  This allows us to
+   remain ignorant of where the DEX data originally came from.
+   
+2. From installd or another native application.  Pass in a file
+   descriptor for a zip file, a file descriptor for the output, and a
+   filename for debug messages.  Many assumptions are made about
+   what's going on (verification + optimization are enabled, boot
+   class path is in BOOTCLASSPATH, etc).
+   
+3. On the host during a build for preoptimization. This behaves almost
+   the same as (2), except it takes file names instead of file
+   descriptors.
+*** dex 何时被 dexopt
+
+1. zygote 启动时
+   zygote 启动时会负责 boot class 的 dexopt (通过 dvmClassStartup ->
+   prepareCpe -> dvmRawDexFileOpen)
+2. PMS.performBootDexOpt
+   PMS 启动时
+3. AMS.ensurePackageDexOpt
+   AMS启动应用之前
+4. dvmRawDexFileOpen
+   ClassLoader 初始化时
+5. app 被安装时
+** load 
+*** ClassLoader
 ClassLoader 并不是一定要在 native 实现的, 有些 ClassLoader 是完全用
 Java 写的. 但 dalvik 的 ClassLoader 因为底层都依赖于 dex, 所以都是通过
 native 层的 DexFile (代表 dex), RawDexFile (代表 odex), DvmDex (代表
@@ -377,8 +441,73 @@ Java 层和 ClassLoader 相关的类主要有:
 
 #+END_EXAMPLE
 
+**** PathClassLoader
+当 PathClassLoader 初始化时, 会初始化 DexFile, 相当的会设置对应的 odex 的路
+径.
 
-*** 双亲委派 loadClass
+1. ContextImpl.getClassLoader 最终返回的是一个 PathClassLoader
+   
+2. PathClassLoader的构造函数
+   #+BEGIN_SRC java
+     public PathClassLoader(String dexPath, ClassLoader parent) {
+         super(dexPath, null, null, parent);
+     }
+   #+END_SRC
+   
+   其中, 基类的第一个参数表示 apk/jar, 第二个参数表示
+   optimizedDirectory, 表示 odex 放置在哪里, 以后查找和生成 odex 时会使用
+   该目录, 若该参数为 null, 则表示使用默认的 `/data/dalvik-cache/`
+   
+3. PathClassLoader 的基类: BaseDexClassLoader 的构造函数
+   #+BEGIN_SRC java
+     public BaseDexClassLoader(String dexPath, File optimizedDirectory,
+                               String libraryPath, ClassLoader parent) {
+         super(parent);
+         this.originalPath = dexPath;
+         this.pathList =
+             new DexPathList(this, dexPath, libraryPath, optimizedDirectory);
+     }
+
+   #+END_SRC
+   
+   其中 optimizedDirectory 为 null, 表示使用默认的 `/data/dalvik-cache/`
+   
+4. DexPathList 构造函数
+   
+   #+BEGIN_SRC text
+     this.dexElements = makeDexElements(splitDexPath(dexPath), optimizedDirectory);
+       dex = loadDexFile(file, optimizedDirectory);
+         if (optimizedDirectory == null):
+           return new DexFile(file);
+             mCookie = openDexFile(sourceName, outputName, flags);
+               Dalvik_dalvik_system_DexFile_openDexFile(const u4* args,)
+                 dvmRawDexFileOpen(sourceName, outputName, &pRawDexFile,)
+                   if (odexOutputName == NULL):
+                     // 生成 odex 对应的文件名.
+                     cachedName = dexOptGenerateCacheFileName(fileName,  NULL);
+                   optFd = dvmOpenCachedDexFile(fileName, cachedName, modTime,);
+                   ...
+         else:
+           String optimizedPath = optimizedPathFor(file, optimizedDirectory);
+           return DexFile.loadDex(file.getPath(), optimizedPath, 0);
+
+   #+END_SRC
+
+**** BootClassLoader
+#+BEGIN_SRC text
+  app_process.main()
+    AndroidRuntime::start
+      AndroidRuntime::startVM
+        JNI_CreateJavaVM
+          dvmStartup
+            dvmClassStartup()
+              // bootClassPathStr 包括 core.jar, bouncycastle.jar ...
+              processClassPath(gDvm.bootClassPathStr, true);
+                foreach entry in bootClassPathStr:
+                  prepareCpe(&entry, isBootstrap);
+                    dvmRawDexFileOpen(cpe->fileName, NULL, &pRawDexFile, isBootstrap);
+#+END_SRC
+*** 双亲委派
 ClassLoader 这个基类主要作用是实现双亲委派
 
 #+BEGIN_SRC java
@@ -441,13 +570,13 @@ BootClassLoader 的 loadClass:
 无论是 VMClassLoader 或是 DexFile, 最终都通过 native 的
 findClassNoInit 进行 dex 的加载
 
-**** ClassLoader 的具体工作过程
+*** 类的加载
 和类加载相关的入口主要有:
 1. findClassNoInit
 2. dvmResolveClass
 3. java 层的 classForName
 
-***** findClassNoInit
+**** findClassNoInit
 findClassNoInit 最底层的加载类的方法, 它需要指定一个字符串来表示要加载
 的类, 以及一个 ClassLoader.
 
@@ -483,7 +612,7 @@ classForName 因为本身就使用字符串表示要加载的类, 所以它只�
       dvmFindSystemClassNoInit(descriptor);
   
 #+END_SRC
-***** dvmResolveClass 是 byte code 中加载 class 的入口 (因为它使用 ref 指示 class
+**** dvmResolveClass 是 byte code 中加载 class 的入口 (因为它使用 ref 指示 class
 而且不是 class 名)
 
 #+BEGIN_SRC text
@@ -494,7 +623,7 @@ classForName 因为本身就使用字符串表示要加载的类, 所以它只�
         // jvm spec 规定了若 A 由 cl 加载, 则 A->B 时也要由 cl 负责加载 B
         dvmFindClassNoInit(className, referrer->classLoader);
 #+END_SRC
-***** classForName
+**** classForName
 classForName 即 Class.forName(str, classLoader), 若不指定 classLoader,
 根据 jvm 规范, 当前方法所属的 class 的 classLoader 负责加载这个类. 即
 像 dvmResolveClass 中展示的那样: curMethod->clazz->classLoader.
@@ -553,6 +682,177 @@ BootClassLoader 最终会通过 dvmFindSystemClassNoInit 来加载.
 负责通过 dvmDefineClass(pDvmDex, descriptor, loader) 在 app 自己的 dex
 中加载类. 
 
-但不管怎么加载, 最终 dex 都是通过 findClassNoInit 加载进来的. 
+但不管怎么加载, 最终 dex 都是通过 findClassNoInit 加载进来的.
+** verify
+http://www.netmite.com/android/mydroid/dalvik/docs/verifier.html
+http://www.netmite.com/android/mydroid/dalvik/docs/dexopt.html
+http://www.netmite.com/android/mydroid/dalvik/docs/embedded-vm-control.html
 
+verify 的发生有两种场合:
+1. pre-verify
+2. dvmVerifyClass
+   
+*** pre-verify
+pre-verify 实际上指的就是 dexopt 时进行的 verify. 在默认配制下, dexopt
+会先对 dex 进行 verify, 然后再进行 optimization. 实际上, 默认配制下
+dexopt 要求必须先 verify 以后才能进行 optimization. 所以 pre-verify 发
+生的时机就是dexopt 发生的时机: 例如通过 zygote 的 dvmClassStartup.
+
+通过 dexopt 的 pre-verify, odex 中的 class 对象的 CLASS_ISPREVERIFIED
+标志会被置位, 这个标记会阻止后续 dvminitclass 时的 dvmVerifyClass 调用. 
+
+实际上, pre-verify, dexopt 合起来做为 dex 的 prepare
+
+*** dvmVerifyClass
+通过 setprop dalvik.vm.verify-bytecode false, 可以禁用整个 dex prepare
+过程 (包括 pre-verify 和 dexopt). 若开机启动时因为这个 prop 没有进行
+verify, 但运行时通过 setprop dalvik.vm.verify-bytecode true 或直接通过
+dalvik 的启动参数 (-Xverify:all 或 -Xverify:remote) 重新启用了 verify,
+则在 class 初始化时, 会调用 dvmVerifyClass 进行 verify. 这种运行时的
+verify 会导致应用加载明显变慢 (可能 40% 以上)
+
+Xverify 参数接受三种值:
+1. all
+   所有 class 被需要被 verify
+2. remote
+   boot class 以外的 class 需要被 verify
+3. none   
+   任何 class 都不会被 verify
+   
+*** 关于 verify 和 dexopt 的实验
+这里有一个 java 文件:
+#+BEGIN_SRC java
+  class Test2 {
+      private static int a = 10;
+  }
+  
+  public class Test {
+      public static void main(String[] args) {
+          System.out.println("hello: "+Test2.a);
+      }
+  }
+#+END_SRC
+
+但这个 java 文件是编译不过, 为了让 javac 能生成这个语义的 class 文件(让
+class 中的 main 函数直接访问 Test2 的私有成员), 我们可以这样操作:
+
+1. 把 private 暂时改为 public, javac Test.java
+2. 把生成的 Test.class 保存起来
+3. 把 public 变回 private, 但把 System.out.println 一行去掉, 然后
+   javac Test.java, 把 Test2.class 保存起来
+4. 把两次保存的 Test.class 和 Test2.class 打包为 Test.dex. 这样
+   Test.dex 中就会包含 Test 访问 Test2 的私有变量这样的非法代码. 
+   
+在手机上用 dalvikvm 命令执行, 分别指定不同的 Xverify 和 Sexpot 参数:
+
+1. dalvikvm -Xverify:none -Xdexopt:all -cp Test.dex Test
+   - dalvik-cache 下有 odex 生成, 且 Test 确实被优化了 (invoke-virtual
+     被替换为 invoke-virtual-quick)
+   - 程序正常输出 10
+     
+2. dalvikvm -Xverify:all -Xdexopt:all -cp Test.dex Test
+   - dalvik-cache 下有 odex 生成, 且 Test 被优化
+   - 程序报错:
+     #+BEGIN_SRC text
+       root@scx15_sp7715ga:/data # dalvikvm -Xverify:all -Xdexopt:all -cp Test.dex Te>
+       Unable to find static main(String[]) in 'Test'
+       java.lang.VerifyError: Test
+               at dalvik.system.NativeStart.main(Native Method)
+       java.lang.VerifyError: Test
+               at dalvik.system.NativeStart.main(Native Method)
+     #+END_SRC
+     
+     这里报错是因为: Xverify:all 会导致 dexopt 时进行 pre-verify, 但
+     这里 verify 会失败, 所以 class 不会被标记为 PREVERIFIED, 但因为
+     Xdexopt:all, 所以虽然 pre-verify 失败了, dexopt 还是会进行优化,
+     最终 odex 中包括的 Test 类是优化后的结果. 
+     
+     dvminitclass @ Class.cpp 中的这段代码:
+     
+     #+BEGIN_SRC c++
+       if (clazz->status < CLASS_VERIFIED) {
+           // ...
+           if (IS_CLASS_FLAG_SET(clazz, CLASS_ISOPTIMIZED)) {
+               ALOGW("Class '%s' was optimized without verification; "
+                     "not verifying now",
+                     clazz->descriptor);
+               ALOGW("  ('rm /data/dalvik-cache/*' and restart to fix this)");
+               // verify_failed 处会抛出异常
+               goto verify_failed;
+           }
+       }
+     #+END_SRC
+     
+     会抛出上面的异常. 
+     
+     即: 若 class 没有通过 verify 就被 dexopt, 则在 dvmInitClass 的阶段,
+     dalvik 就会主动抛出异常. 这样做的原因可能是: 因为 code 已经被
+     dexopt, 这里可能无法再 replaceFailingInstruction
+     
+3. dalvikvm -Xverify:all -Xdexopt:none -cp Test.dex Test
+   - dalvik-cache 下有 odex 生成, 但 Test 没有被优化
+   - 程序报错:
+     #+BEGIN_SRC text
+       root@scx15_sp7715ga:/data # dalvikvm -Xverify:all -Xdexopt:none -cp Test.dex T>
+       java.lang.IllegalAccessError: tried to access field Test2.a from class Test
+               at Test.main(Test.java:6)
+               at dalvik.system.NativeStart.main(Native Method)
+     #+END_SRC
+     
+     这里报错是因为:
+     Xverify:all 会导致 pre-verify, 但 pre-verify 会失败, 导致后续
+     dvmInitClass 还会再次调用 dvmVerifyClass 进行 late verify. (因为
+     Xdexopt 为 none, 所以不会发生 case 2 的问题). late verify 时还是
+     会失败, 这里会通过 replaceFailingInstruction 将原来的指令 (sget)
+     替换为一个抛出异常的指令, 但这里做的仅仅是指令替换, 并不会直接抛
+     出异常. 当被替换的指令直接执行时, 才会报错. 
+     
+综上:
+1. 无法 Xdexopt 如何指定, odex 总是会生成, 但 Xdexopt 会影响 odex 中的
+   代码是优化过的还是 dex 中的原始代码.
+2. Xverify 会影响 dexopt 时的 pre-verify 和 class 加载时的 late verify
+3. 在 late verify 阶段, 若当前代码并没有被 dexopt 优化, 则会
+   通过 replaceFailingInstruction 进行指令替换, 否则直接报错
+4. 默认情况下 Xverify = all, Xdexopt = verified, 所以, 若一个类有问题,
+   则会在运行时报错 (通过 replaceFailingInstruction), 而不是在 verify
+   阶段 (pre-verify 或 late verify) 报错. 抛开 pre-verify, dexopt 这些
+   不谈, java 的 verify 的功能本质上就是 replaceFailingInstruction
+   
+**** 关于 replaceFailingInstruction
+
+在 pre-verify 阶段, 即使 verify 失败, 也不会进行
+replaceFailingInstruction 的, 因为:
+
+#+BEGIN_SRC c++
+  verifyInstruction @ CodeVerify.cpp
+  // ...
+  if (!VERIFY_OK(failure)) {
+      // 在 pre-verify 阶段, gDvm.optimizing 为 true
+      if (failure == VERIFY_ERROR_GENERIC || gDvm.optimizing) {
+          /* immediate failure, reject class */
+          LOG_VFY_METH(meth, "VFY:  rejecting opcode 0x%02x at 0x%04x",
+                       decInsn.opcode, insnIdx);
+          goto bail;
+      } else {
+          /* replace opcode and continue on */
+          ALOGD("VFY: replacing opcode 0x%02x at 0x%04x",
+                decInsn.opcode, insnIdx);
+          if (!replaceFailingInstruction(meth, insnFlags, insnIdx, failure)) {
+              LOG_VFY_METH(meth, "VFY:  rejecting opcode 0x%02x at 0x%04x",
+                           decInsn.opcode, insnIdx);
+              goto bail;
+          }
+          /* IMPORTANT: meth->insns may have been changed */
+          insns = meth->insns + insnIdx;
+  
+          /* continue on as if we just handled a throw-verification-error */
+          failure = VERIFY_ERROR_NONE;
+          nextFlags = kInstrCanThrow;
+      }
+  }
+#+END_SRC
+
+replaceFailingInstruction 需要修改 odex 映射的内存, 而不是 odex 本身.
+因为 odex 都是以只读方式进行 mmap 的, 所以 replaceFailingInstruction
+需要先修改 mmap 区域的权限, 再进行写操作, 这会导致额外的内存开销.  
 
