@@ -524,3 +524,5 @@ CLOSED: [2014-01-30 Thu 08:29] SCHEDULED: <2014-01-29 Wed>
 [2014-07-28 Mon 18:31]
 * TODO write note about dlmalloc                                       :work:
 [2014-07-31 Thu 16:11]
+* TODO dalvik 及 dlmalloc 对象的对齐                                   :work:
+[2014-08-03 周日 20:43]
