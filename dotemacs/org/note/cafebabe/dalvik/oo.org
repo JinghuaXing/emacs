@@ -726,3 +726,28 @@ index, 这样可以节省一个 dvmResolveMethod 的过程.
 
 但是, invoke-direct, invoke-static 和 invoke-interface 并没有相应的
 quick 版本. 因为这是不可能的...
+** 对齐
+所有 java 对象都是 8 字节对齐的, 包括 Object, ClassObject 等. 
+
+之所以是 8 字节对齐, 是因为默认情况下 dlmalloc 分配的地址是 8 字节对齐
+的. 
+
+#+BEGIN_SRC c
+  #define MALLOC_ALIGNMENT ((size_t)(2 * sizeof(void *)))
+#+END_SRC
+
+另外, dlmalloc 分配的地址按 8 字节对齐, 是指其分配出来的 malloc_chunk
+是 8 字节对齐的, 因为 malloc_chunk 与 malloc 返回的地址刚好相差 8 字节
+(prev+head), 所以 malloc 分配出来的地址也是 8 字节对齐的. 
+
+值得注意的是, dlmalloc 分配的地址是 8 字节对齐的, 但它分配的 chunk 最
+小为 16 字节(因为要包含 head+fd+prev = 12, 按 8 字节对齐就是 16).
+
+以下场景利用了这种对齐 (或者依赖于这种对齐):
+
+1. 各种 bitmap 的每个位对应着 heap 上的 8 个字节.
+2. Object 的 lock word 被 inflate 成 fat lock 时, 其高 29 位对应着
+   monitor 对象的地址, 剩余 3 位标记锁类型 (fat or thin) 以及 hash
+   state. 因为 monitor 对象的地址是 8 字节对齐, 所以可以只用 29 位表示.
+3. 基于 copy 的 GC 中, setForward 利用了对象地址的低三位来记录移动状态.
+4. ...
