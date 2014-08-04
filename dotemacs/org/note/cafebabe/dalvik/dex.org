@@ -301,13 +301,23 @@ odex 文件对 dex 做了如下的修改:
 3. 在文件末尾加入两个数据结构: classLookup 与 registerMapPool
 *** classLookup
 *** registerMap
-register map 主要用来帮助 dvm 知道在每个函数的第个 GC Point 处当前各个寄存器中哪些保存着 java 对象.
-以便进行 exact GC.
+register map 主要用来帮助 dvm 知道在每个函数的每个 GC Point 处当前各个
+寄存器中哪些保存着 java 对象.以便进行 exact GC. register map 导致 odex
+比 dex 大了 9% 左右. 
 
-若没有这个 map, 那么 GC 时 dvm 只能假设当前所有寄存器中都保存着对象引
-用, 从而导致一些本来已经是 garbage 的对象没有被回收. (例如 r1 本来保存
-着一个整数 0xxxxx, 但这个整数刚好对应着某个已经不可达的对象的地址, 那
-么这个对象就会被重新标记为可达)
+在 Hotspot 中, 也有一个类似的结构称为 OopMap
+
+若没有这个 map, 则 GC 只能进行 conservative GC, 即 GC 时 dvm 只能假设当
+前所有寄存器中都保存着对象引用, 从而导致一些本来已经是 garbage 的对象没
+有被回收. (例如 r1 本来保存着一个整数 0xxxxx, 但这个整数刚好对应着某个
+已经不可达的对象的地址, 那么这个对象就会被重新标记为可达).
+
+conservative GC 可能通过堆内存上下界检查, 对齐检查 (java 对象都是 8 字
+节对齐) 等方法过滤掉一些明显不可能是引用的值. 但它相对于 exact GC 还是
+有两方面明显的问题:
+1. 某些对象不会被回收, 导致内存压力
+2. 无法支持 copying GC.
+
 
 ** class 文件结构
 ** DexFile 与 DvmDex
@@ -572,11 +582,12 @@ findClassNoInit 进行 dex 的加载
 
 *** 类的加载
 和类加载相关的入口主要有:
-1. findClassNoInit
+1. dvmFindClassNoInit
+   2. findClassNoInit
 2. dvmResolveClass
 3. java 层的 classForName
 
-**** findClassNoInit
+**** dvmFindClassNoInit
 findClassNoInit 最底层的加载类的方法, 它需要指定一个字符串来表示要加载
 的类, 以及一个 ClassLoader.
 
@@ -591,6 +602,13 @@ classForName 因为本身就使用字符串表示要加载的类, 所以它只�
     // 所以会调用 findClassFromLoaderNoInit
     if (loader != NULL):
       return findClassFromLoaderNoInit(descriptor, loader);
+        // 在调用 class loader 之前, 通过 dvmLookupClass 从 gDvm.loadedClasses 中
+        // 查找要加载的 class 是否已经加载, found 的条件有两个:
+        // 1. loadedClasses 中存在一个 class, class->descriptor 和 class->loader 与
+        // 参数中的值都是一致的.
+        // 2. loadedClasses 中存在一个 class, class->descriptor 是一致的, class->initiatingLoaderList
+        // 中包含参数中的 loader
+        ClassObject* clazz = dvmLookupClass(descriptor, loader, false);
         // ClassLoader 开始工作
         // 调用 ClassLoader.java 的 loadClass 函数
         const Method* loadClass =
@@ -603,11 +621,24 @@ classForName 因为本身就使用字符串表示要加载的类, 所以它只�
             BootClassLoader.loadClass
               dvmFindClassNoInit(className, null);
                 return dvmFindSystemClassNoInit(descriptor);
+                  // 这个和双亲委派无关, 直接使用 dexFile 来真正加载类
+                  findClassNoInit(descriptor, NULL, NULL);
+                    clazz = dvmLookupClass(descriptor, loader, true);
+                    if (clazz == NULL):
+                      // !!! THE HARD WORK !!!
+                      clazz = loadClassFromDex(pDvmDex, pClassDef, loader);
+                      dvmAddClassToHash(clazz);
+                      // 后面的部分参考 <oo.org: findClassNoInit>
             // 若 BootClassLoader.loadClass 失败, 说明这个类是 BaseDexClassLoader
             // 定义的, 双亲委派会调用 BaseDexClassLoader.findClass
             BaseDexClassLoader.findClass
               pathList.findClass(name);
                 dvmFindClassNoInit(className, loader);
+        // findClassFromLoaderNoInit 最后会将 loader 加入到 clazz 的 initiatingLoaderList 中
+        // 所谓的 initiatingLoaderList, 是指当前 class 的加载是由这个 loader 发起的, 因为最终
+        // 负责加载的 loader (clazz->loader) 可能并不是这个 loader. 这个 initiatingLoaderList 在 dvmLookupClass
+        // 会用到. 
+        dvmAddInitiatingLoader(clazz, loader);          
     else:
       dvmFindSystemClassNoInit(descriptor);
   
@@ -665,24 +696,36 @@ VMStack.getCallingClassLoader
 #+END_SRC
 *** 总结
 
-对于 dvmResolveClass 和 classForName 都需要提交根据
-curMethod->clazz->classLoader 获得`定义当前 method 的 class 使用的
-classLoader`, 并使用这个 classLoader 调用 dvmFindClassNoInit, 这是 jvm
-规范要求的. 
+1. 对于 dvmResolveClass 和 classForName 都需要提交根据
+   curMethod->clazz->classLoader 获得`定义当前 method 的 class 使用的
+   classLoader`, 并使用这个 classLoader 调用 dvmFindClassNoInit, 这是
+   jvm 规范要求的. 
 
-dvmFindClassNoInit load class 时, 要 classLoader 不为空, 则使用
-classLoader 来加载, 否则使用 dvmFindSystemClassNoInit 从 bootstrap
-classpath 中加载 (即从 `BootClassLoader` 中加载)
+2. dvmFindClassNoInit 加载类时, 要 classLoader 不为空, 则使用
+   classLoader 来加载, 否则使用 dvmFindSystemClassNoInit 从 bootstrap
+   classpath 中加载 (即从 `BootClassLoader` 中加载)
 
+   通过 ClassLoader 加载时, java 层的双亲委派会优先使用 BootClassLoader 来
+   加载, BootClassLoader 最终会通过 dvmFindSystemClassNoInit 来加载.
+    
+   若 BootClassLoader 没有加载成功, 则 BaseDexClassLoader 的 findClass 会
+   负责通过 dvmDefineClass(pDvmDex, descriptor, loader) 在 app 自己的 dex
+   中加载类. 
+    
+   即 dvmFindClassNoInit 与 java 层的各种 ClassLoader 类实现了 dalvik 的
+   双亲委派模型.
 
-通过 ClassLoader 加载时, 双亲委派会优先使用 BootClassLoader 来加载,
-BootClassLoader 最终会通过 dvmFindSystemClassNoInit 来加载.
+3. 最终 dex 都是通过 findClassNoInit 加载进来的. findClassNoInit 是负责
+   从 ClassLoader 对应的 dexFile (若 ClassLoader 为空则从 boot class
+   path) 中加载类, 它无须再考虑双亲委派.
 
-若 BootClassLoader 没有加载成功, 则 BaseDexClassLoader 的 findClass 会
-负责通过 dvmDefineClass(pDvmDex, descriptor, loader) 在 app 自己的 dex
-中加载类. 
+4. dvmFindClassNoInit 或 findClassNoInit 过程中, 都会用到
+   dvmLookupClass 来避免重复的加载. 
 
-但不管怎么加载, 最终 dex 都是通过 findClassNoInit 加载进来的.
+   dvmLookupClass 进行查找时考虑到 clazz->loader 因为双亲委派的原因可
+   能不是真正发起类加载的那个 ClassLoader, 所以它使用了
+   clazz->initiatingLoaderList 来记录这些信息. 
+
 ** verify
 http://www.netmite.com/android/mydroid/dalvik/docs/verifier.html
 http://www.netmite.com/android/mydroid/dalvik/docs/dexopt.html
