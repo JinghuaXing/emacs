@@ -583,9 +583,10 @@ findClassNoInit 进行 dex 的加载
 *** 类的加载
 和类加载相关的入口主要有:
 1. dvmFindClassNoInit
-   2. findClassNoInit
+   1. findClassNoInit
 2. dvmResolveClass
 3. java 层的 classForName
+4. java 层的 ClassLoader.loadClass
 
 **** dvmFindClassNoInit
 findClassNoInit 最底层的加载类的方法, 它需要指定一个字符串来表示要加载
@@ -694,6 +695,17 @@ VMStack.getCallingClassLoader
         return SAVEAREA_FROM_FP(callerCaller)->method->clazz;
   
 #+END_SRC
+**** ClassLoader.loadClass
+ClassLoader.loadClass 可能比 classForName 快一些. 
+因为 classForName 的调用路径是:
+
+1. 先通过 jni 调用到 Dalvik_java_lang_Class_classForName
+2. 然后调用到 dvmFindClassNoInit
+3. 然后 dvmFindClassNoInit 通过 dvmCallMethod 反过来再调用
+   ClassLoader.loadClass 进行双亲委派
+
+显然, 若直接调用 ClassLoader.loadClass 的话可以跳过前两步.
+
 *** 总结
 
 1. 对于 dvmResolveClass 和 classForName 都需要提交根据
