@@ -40,9 +40,16 @@ i32 port" 命令
 ** monkey
 ** uiautomator
 ** tombstone / debuggerd
+tombstone 主要包含以下信息:
+1. stack trace
+2. 部分内存和寄存器的值
+
+但不包含 coredump 文件 (coredump 是由 kernel 自动生成的, 和 debuggerd
+或 tombstone 无关)
+
 tombstone 的生成由两方面配合: 
 1. 一个 stand-alone 的基于 local socket 的 server: debuggerd.c
-2. bionic 中通过 linker 嵌入到每一个可执行程序的代码: debugger.c
+2. bionic 中通过 linker 嵌入到每一个可执行程序的代码: debugger.cpp
 
 *** debuggerd.c
 
@@ -205,3 +212,60 @@ http://blog.csdn.net/freshui/article/details/9456889
       return result;  
   }  
 #+END_SRC
+** debuggerd
+以 abort 和 segment fault 为例, 说明 debuggerd 的工作过程.
+*** segment fault
+1. 当程序中执行到类似于 *((char*)0) = 'a' 的指令时, 会发生 SIG_SEGV 信号
+2. debuggerd.cpp 中的 debuggerd_signal_handler 负责拦截这个信号, 并向
+   debuggerd 发送 request, request 中包括以下内容:
+   1) 当前线程的 tid, 表示哪个线程发生了异常, 后续 debuggerd 会通过
+      ptrace  attach 到这个 tid 上来打印该 tid 相关的信息 (tombstone)
+   2) request 的类型, 此处为 DEBUGGER_ACTION_CRASH
+   3) abortMessage ()
+
+   值得注意的是这里并不包括 signal 号, 而且 request 中虽然不包括 pid,
+   uid 信息, 但 debuggerd 可能通过 socket 的 getsockopt 获得 pid, uid.
+3. debuggerd 发送完 request 后, 在 socket 上通过 read 阻塞, 等待
+   debuggerd 的反馈.
+4. debuggerd 通过 handle_request 以及 read_request 获得 request 信息.
+5. debuggerd 通过 ptrace(PTRACE_ATTACH, request.tid, 0, 0) attach 到
+   tid 上.  tid 被 attach 后, 还会正常执行 (不会暂停), 但当它调用系统调
+   用前会先通知 debuggerd, 或收到信号时也会通知 debuggerd, 而不会再对这
+   些信号进行进行处理 (exit, core , 忽略或任何自定义动作), ptrace 本身
+   会对 pid 发送一个 SIG_STOP 信号
+6. debuggerd 通过 write(fd, "\0", 1) 使 tid 的 signal handler 继续执行
+7. tid 收到 debuggerd 的反馈后会调用 signal(n, SIG_DFL). 然后对于
+   SIG_ABRT 等信号, 会重新发送一次. 但对于 SIG_SEGV 没有重新发送.
+8. debuggerd 通过 wait_for_signal 等待 tid 上报一个信号.
+9. debuggerd 会收到第 5 步 ptrace attach 中发送的 SIG_STOP 信号. 通过
+   这个信号, debuggerd 可以确保 tid 已经被 attach.
+10. debuggerd 通过 ptrace(PTRACE_CONT, request.tid, 0, 0) 使 tid 继续
+    执行.
+11. 因为之前的 SIG_SEGV 被拦截, 导致 tid 继续执行时会再次发出 SIG_SEGV
+12. 第 8 步的 wait_for_signal 收到第二次的 SIG_SEGV 信号, 开始 dump
+    tombstone 信息
+13. dump 完成后, debuggerd 通过 ptrace(PTRACE_DETACH) 从 tid detach,
+    tid 继续运行, debuggerd 部分功能到底结束.
+14. tid 继续运行, 会第三次发出 SIG_SEGV, 这个信息会最终导致 coredump
+    及进程退出. 
+
+总结:
+发生 SIG_SEGV 时, 需要应用程序一共发生三次 SIG_SEGV 才能最终退出. 
+1. 第一次, 通知 debuggerd
+2. 第二次, 通知 debuggerd 的 wait_for_signal, 进行 tombstone 的 dump
+3. 第三次导致应用异常退出
+*** abort
+abort 与 segment fault 不同, 它不是由于执行了非法指令导致的, 所以它不
+会像 segment fault 那样重复的发出 SIG_SEGV 信号. 
+
+abort() 是 libc 中的一个函数, 它的实现大约是这样的:
+#+BEGIN_SRC text
+  kill(pid, SIG_ABRT);
+  signal(SIG_ABRT, SIG_DFL);
+  kill(pid, SIG_ABRT);
+#+END_SRC
+即它会发两次 SIG_ABRT 而且第二次会强制的忽略任何 signal handler.
+
+abort 与 segment fault 不同的地方在于:
+1. 第七步中, debugger.cpp 会再发一次 SIG_ABRT, 这个信号的作用相当于第二次 SIG_SEGV
+2. 第十四步中, abort 函数会发出第二次 SIG_ABRT (相当于第三次 SIG_SEGV), 导致进程退出.
