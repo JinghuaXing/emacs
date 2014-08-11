@@ -1,6 +1,6 @@
 (require 'deft)
 (setq deft-directory "~/.elisp/dotemacs/org/note")
-
+(define-key deft-mode-map (kbd "C-x k") 'quit-window)
 (require 'org-install)
 (require 'org-agenda)
 ;; (require 'org-export-generic)
