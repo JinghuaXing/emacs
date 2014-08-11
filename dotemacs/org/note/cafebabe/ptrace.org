@@ -1,0 +1,161 @@
+#+TITLE: Ptrace
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Ptrace
+
+[[http://www.exploit-db.com/papers/13061/][ptrace(): A Linux Virus]]
+[[www.linuxjournal.com/article/6100][Playing with ptrace]]
+[[http://linux.die.net/man/2/ptrace][ptrace(2)]]
+[[http://www.2cto.com/Article/201311/257443.html][Android下通过hook技术实现透明加解密保障数据安全]]
+[[http://blog.rchapman.org/post/36801038863/linux-system-call-table-for-x86-64][Linux System Call Table for x86_64]]
+
+** 监控信号
+#+BEGIN_SRC c
+  #include <sys/ptrace.h>
+  #include <sys/reg.h>
+  #include <sys/user.h>
+  #include <sys/wait.h>
+  #include <sys/types.h>
+  #include <unistd.h>
+  #include <stdlib.h>
+  #include <stdio.h>
+  #include <errno.h>
+  #include <string.h>
+  
+  int main() {
+      pid_t child;
+      child = fork();
+      if(child == 0) {
+          ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+          // PTRACE_TRACEME 会导致后续的 execl 调用时父进程会收到
+          // SIG_TRAP 信号, 确保父进程能开始进行 trace
+          execl("/bin/sleep", "sleep", "100", NULL);
+  
+          // 若不调用 execl, 就需要子进程自己发个初始的信号了, 例如:
+          // kill (getpid(), SIG_STOP);
+          // sleep(100);
+      } else {
+          int status;
+          while (1) {
+              waitpid(child, &status, 0);
+              // waitpid 返回的 status 可以通过许多宏来测试:
+              // 1. WIFEXITED, 若子进程退出了, 则这个宏为真, 且通过
+              // WEXITSTATUS 可以获得 exit code
+              // 2. WIFSTOPPED, 若子进程收到信号, 则这个宏为真, 且通过
+              // WSTOPSIG 可以获得 signal code
+              
+              if (WIFEXITED(status)) {
+                  printf("child exit\n");
+                  break;
+              }
+              if (WIFSTOPPED(status)) {
+                  printf("child stopped due to signal: %d\n", WSTOPSIG(status));
+              }
+  
+              // 当子进程被 trace 时, 每次收到信号时都会停止运行, 将控制
+              // 权交给父进程, 父进程通过 PTRACE_CONT 使子进程继续运行,
+              // 其中最后一个参数表示是否将某个信号发送给子进程.
+              // 所以通过 PTRACE_CONT, 可以使子进程无视各种信号
+              // (SIG_KILL 例外)
+              ptrace(PTRACE_CONT, child, NULL, NULL);
+          }
+      }
+      return 0;
+  }
+  
+#+END_SRC
+** 临近系统调用
+#+BEGIN_SRC c
+  #include <sys/ptrace.h>
+  #include <sys/reg.h>
+  #include <sys/user.h>
+  #include <sys/wait.h>
+  #include <sys/types.h>
+  #include <unistd.h>
+  #include <stdlib.h>
+  #include <stdio.h>
+  #include <errno.h>
+  #include <string.h>
+  
+  int do_child(int argc, char **argv);
+  int do_trace(pid_t child);
+  
+  int main(int argc, char **argv) {
+      pid_t child = fork();
+      if (child == 0) {
+          return do_child(argc-1, argv+1);
+      } else {
+          return do_trace(child);
+      }
+  }
+  
+  int do_child(int argc, char **argv) {
+      // 这里会导致父进程拦截到一个 SIG_TRAP
+      ptrace(PTRACE_TRACEME);
+      return execvp(argv[0], argv);
+  }
+  
+  int wait_for_syscall(pid_t child);
+  
+  int do_trace(pid_t child) {
+      struct user_regs_struct regs;
+      int status, syscall, retval;
+      
+      // 这里会收到 SIG_TRAP
+      waitpid(child, &status, 0);
+      // system call 发生时, 父进程收到的实际上是一个 SIG_TRAP 信号, 为
+      // 了将真正的 SIG_TRAP 与 system call 进行区分, 应用可以指定
+      // PTRACE_O_TRACESYSGOOD 选项, 它的作用是:
+      // 对应 system call, 不返回 SIG_TRAP, 而是返回 SIG_TRAP | 0x80 作
+      // 为 signal code (称为 syscall trap)
+      // 注意的是 system call 的类型并不包含在 status 中...需要通过
+      // PTRACE_GETREGS 查找 ORIG_EAX 的值为确定 system call 的类型.
+      
+      ptrace(PTRACE_SETOPTIONS, child, 0, PTRACE_O_TRACESYSGOOD);
+      while(1) {
+          // 对于 system call, wait 一共会发生两次:
+          // 第一次发生在 system call 执行之前, 此时用户可以通过修改内存
+          // 或寄存器的值为达到修改 system call 的目的.
+          // 第二次发生在 system call 执行完毕, 返回之前, 此时用户可以修
+          // 改 system call 的返回值.
+  
+          if (wait_for_syscall(child) != 0) break;
+          // system call 执行之前...
+          ptrace(PTRACE_GETREGS, child, 0, &regs);
+          // orig_eax 中保存着 system call 的类型
+          syscall = regs.orig_rax;
+          fprintf(stderr, "syscall(%d) = ", syscall);
+  
+          if (wait_for_syscall(child) != 0) break;
+          // system call 执行完毕, 但尚未返回
+          ptrace(PTRACE_GETREGS, child, 0, &regs);
+          // regs.rax 保存着 system call 的返回值
+          fprintf(stderr, "%d\n", regs.rax);
+      }
+      return 0;
+  }
+  
+  int wait_for_syscall(pid_t child) {
+      int status = 0;
+      while (1) {
+          // PTRACE_SYSCALL 的功能是:
+          // 1. 与 PTRACE_CONT 功能类似, 使子进程继续执行, 其最后一个参数表示是否发送相应信号给子进程
+          // 2. 发生 system call 相关的事件 (system call 开始, system call 结束) 时子进程需要通知父进程.
+          // 要注意的是每次子进程被暂停后都需要重新调用 PTRACE_SYSCALL 以便下一次的 system call 事件会被
+          // 捕捉到. 
+          ptrace(PTRACE_SYSCALL, child, 0, 0);
+          waitpid(child, &status, 0);
+          if (WIFSTOPPED(status) && WSTOPSIG(status) & 0x80) {
+              return 0;       
+          }
+  
+          if (WIFEXITED(status)) {
+              return 1;
+          }
+          // 这里忽略了所有的信号, 只处理系统调用
+      }
+  }
+#+END_SRC
+** 单步执行
+** 设置断点
+** 执行任意代码
