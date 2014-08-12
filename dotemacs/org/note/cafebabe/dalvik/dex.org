@@ -589,13 +589,19 @@ findClassNoInit 进行 dex 的加载
 4. java 层的 ClassLoader.loadClass
 
 **** dvmFindClassNoInit
-findClassNoInit 最底层的加载类的方法, 它需要指定一个字符串来表示要加载
-的类, 以及一个 ClassLoader.
+dvmFindClassNoInit 较底层的加载类的方法, 它需要指定一个字符串来表示要加载
+的类, 以及一个 ClassLoader, 它作的基本上就是这么一件事:
+1. 若 ClassLoader 为空, 则调用更底层的 findClassNoInit 从 boot class
+   path 中加载类
+2. 若 ClassLoader 不为空, 则通过反射去调用 java 层的
+   ClassLoader.loadClass. 而后者会先通过双亲委派以 NULL 做为
+   ClassLoader 再次调用 dvmFindClassNoInit (对应
+   BootClassLoader.loadClass), 然后会通过 DexFile 调用 findClassNoInit
 
 后面提到的 dvmResolveClass 实际上就是把 ref 转换为字符串, 并且根据
-referrer 找到调用者的 ClassLoader 后直接调用 findClassNoInit. 而
+referrer 找到调用者的 ClassLoader 后直接调用 dvmFindClassNoInit. 而
 classForName 因为本身就使用字符串表示要加载的类, 所以它只需要找到调用
-者的 ClassLoader 后就可以直接调用 findClassNoInit
+者的 ClassLoader 后就可以直接调用 dvmFindClassNoInit
 
 #+BEGIN_SRC text
   dvmFindClassNoInit(className, referrer->classLoader);
@@ -634,12 +640,13 @@ classForName 因为本身就使用字符串表示要加载的类, 所以它只�
             // 定义的, 双亲委派会调用 BaseDexClassLoader.findClass
             BaseDexClassLoader.findClass
               pathList.findClass(name);
-                dvmFindClassNoInit(className, loader);
+                findClassNoInit(className, loader);
         // findClassFromLoaderNoInit 最后会将 loader 加入到 clazz 的 initiatingLoaderList 中
         // 所谓的 initiatingLoaderList, 是指当前 class 的加载是由这个 loader 发起的, 因为最终
         // 负责加载的 loader (clazz->loader) 可能并不是这个 loader. 这个 initiatingLoaderList 在 dvmLookupClass
         // 会用到. 
         dvmAddInitiatingLoader(clazz, loader);          
+        // end of findClassFromLoaderNoInit
     else:
       dvmFindSystemClassNoInit(descriptor);
   
