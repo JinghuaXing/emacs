@@ -379,3 +379,8 @@
 (blink-cursor-mode 0)
 
 (require 'git-timemachine)
+
+(require 'zeal-at-point)
+(add-to-list 'zeal-at-point-mode-alist '(java-mode . "android"))
+(global-set-key (kbd "C-c C-d") 'zeal-at-point)
+

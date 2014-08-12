@@ -19,6 +19,7 @@
   (imenu-add-menubar-index)
   ;; (which-function-mode 1)
   (local-set-key (kbd "C-h C-h") 'sourcepair-load)
+  (local-unset-key (kbd "C-c C-d"))
   ;; (add-to-list 'which-func-modes 'java-mode)
   (hs-minor-mode t)
   (auto-highlight-symbol-mode t)
