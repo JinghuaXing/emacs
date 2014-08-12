@@ -9,7 +9,7 @@
 [[http://www.2cto.com/Article/201311/257443.html][Android下通过hook技术实现透明加解密保障数据安全]]
 [[http://blog.rchapman.org/post/36801038863/linux-system-call-table-for-x86-64][Linux System Call Table for x86_64]]
 
-** 监控信号
+** 监控信号[fn:1]
 #+BEGIN_SRC c
   #include <sys/ptrace.h>
   #include <sys/reg.h>
@@ -28,7 +28,8 @@
       if(child == 0) {
           ptrace(PTRACE_TRACEME, 0, NULL, NULL);
           // PTRACE_TRACEME 会导致后续的 execl 调用时父进程会收到
-          // SIG_TRAP 信号, 确保父进程能开始进行 trace
+          // SIG_TRAP 信号 (实际上是一个 syscall trap), 确保父进程能开始
+          // 进行 trace
           execl("/bin/sleep", "sleep", "100", NULL);
   
           // 若不调用 execl, 就需要子进程自己发个初始的信号了, 例如:
@@ -159,3 +160,10 @@
 ** 单步执行
 ** 设置断点
 ** 执行任意代码
+
+* Footnotes
+
+[fn:1] 网上看到的代码通常都是在 x86 上实现的, 若在 x86_64 上调试, 需要
+有一些小的修改, 例如, eax, ebx, ... 等需要修改为 rax, rbx, ...,
+PEEK_USER 时应该把 4*ORIG_EAX 修改为 8*ORIG_RAX 等
+
