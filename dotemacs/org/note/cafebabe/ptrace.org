@@ -102,8 +102,11 @@
       struct user_regs_struct regs;
       int status, syscall, retval;
       
-      // 这里会收到 SIG_TRAP
+      // 这里会收到 execvp 导致的 syscall trap, 直接被忽略掉了 (
+      // 后续的 wait_for_syscall 会直接通过 PTRACE_SYSCALL 使子进程继续执行)
+      // 所以这个 ministrace 实际上的输出会缺少一次对应于 execvp 的记录 (syscall code: 59)
       waitpid(child, &status, 0);
+
       // system call 发生时, 父进程收到的实际上是一个 SIG_TRAP 信号, 为
       // 了将真正的 SIG_TRAP 与 system call 进行区分, 应用可以指定
       // PTRACE_O_TRACESYSGOOD 选项, 它的作用是:
