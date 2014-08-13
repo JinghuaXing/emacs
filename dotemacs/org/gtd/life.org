@@ -1,5 +1,7 @@
 * TODO 给父母打电话                                              :life:habit:
-DEADLINE: <2014-08-02 Sat +7d -1d>
+DEADLINE: <2014-08-16 Sat +7d -1d>
+- State "DONE"       from "TODO"       [2014-08-13 Wed 14:31]
+- State "DONE"       from "TODO"       [2014-08-13 Wed 14:31]
 - State "DONE"       from "TODO"       [2014-07-28 Mon 18:32]
 - State "DONE"       from "TODO"       [2014-07-24 Thu 10:10]
 - State "DONE"       from "TODO"       [2014-07-24 Thu 10:10]
@@ -55,7 +57,7 @@ DEADLINE: <2014-08-02 Sat +7d -1d>
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 :PROPERTIES:
-:LAST_REPEAT: [2014-07-28 Mon 18:32]
+:LAST_REPEAT: [2014-08-13 Wed 14:31]
 :ID:       ef1ba461-c0d6-461e-b229-ef4de704ace4
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
@@ -121,7 +123,8 @@ DEADLINE: <2014-08-23 Sat +1m -6d>
 :ID:       90a149bc-3f79-492c-bb3b-4a1cfe2d903e
 :END:
 * TODO 建行房贷还款日                                            :life:habit:
-DEADLINE:  <2014-08-14 Thu +1m -10d>
+DEADLINE:  <2014-09-14 Sun +1m -10d>
+- State "DONE"       from "TODO"       [2014-08-13 Wed 14:31]
 - State "DONE"       from "TODO"       [2014-07-11 Fri 15:17]
 - State "DONE"       from "TODO"       [2014-06-10 Tue 16:49]
 - State "DONE"       from "TODO"       [2014-05-09 Fri 15:47]
@@ -145,7 +148,7 @@ DEADLINE:  <2014-08-14 Thu +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2014-07-11 Fri 15:17]
+:LAST_REPEAT: [2014-08-13 Wed 14:31]
 :END:
 
 * DONE 理发                                                            :life:
