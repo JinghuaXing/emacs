@@ -221,7 +221,14 @@ POKETEXT 就会失败了. 这时可以采用类似于 [[http://bbs.pediy.com/sho
    #+END_SRC
 
 2. 在 mmap 出来的这块区域上写入 shellcode
-3. 远程执行这些 shellcode 来完全更复杂的操作, 例如载入一个 so 库等. 
+3. 远程执行这些 shellcode 来完全更复杂的操作, 例如载入一个 so 库等.
+
+** HOOK 其他函数
+
+通过上一步把一个 so 注入到目标进程并执行 so 中的代码, 我们可以对目标进
+程中的任意函数进行 HOOK:
+在注入的 so 的 constructor 中可以通过修改目标进程中其他 so 对应的 GOT
+表就可以达到 HOOK 的目的. 
 
 ** ATTACH
 除了 fork -> PTRACE_TRACEME 方法外, 还可以通过 PTRACE_ATTACH attach 到
