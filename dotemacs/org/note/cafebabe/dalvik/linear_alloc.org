@@ -1,0 +1,39 @@
+#+TITLE: Linear Alloc
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Linear Alloc
+LinearAlloc 是一个线性分配内存的机制, 类似于 sqlite 中的 scratch, libc
+中的 alloca.
+
+之所以说 LinearAlloc 是线性分配, 是指每次分配内存时不需要通过
+best-match, first-match 等算法从整个内存区域中找一个合适的块, 而是说它
+是直接在上一次分配的内存之后分配, 所以这种分配方式很快, 它只需要记住上
+次分配的内存的结尾地址即可 (类似于栈式分配中的 sp 指令)
+
+因为分配是线性的, 所以 LinearAlloc 只能支持最近分配的一个内存块的释放. 
+
+dalvik 中, ClassObject 中的以下成员是分配在 LinearAlloc 区域的:
+
+1. directMethods
+2. virtualMethods
+3. vtable
+4. iftable
+5. interfaces
+6. ifields
+
+注意的是 sfields 并不是用 LinearAlloc 分配的: 它包含在 ClassObject 本身.
+
+因为 LinearAlloc 中分配的内容只和 ClassObject 有关, 而 ClassObject 理
+论上与 ClassLoader 具有相同的生命期, 所以 LinearAlloc 是与 ClassLoader
+绑定在一起的: 
+
+#+BEGIN_SRC text
+  LinearAllocHdr* dvmLinearAllocCreate(Object* classLoader)
+    // DEFAULT_MAX_LENGTH 为 16MB
+    fd = ashmem_create_region("dalvik-LinearAlloc", DEFAULT_MAX_LENGTH);
+    // ...
+#+END_SRC
+
+另外, 由于目前 dalvik 并不支持 Class 的 unload (所有对象都一直保存在
+gDvm.loadedClasses 中), 所以实际上 ClassLoader 以及对应的 LinearAlloc
+区域都会一直存在.
