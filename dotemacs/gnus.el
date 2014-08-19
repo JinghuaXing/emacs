@@ -8,12 +8,11 @@
 ;; (setq gnus-cache-remove-articles nil)
 (setq gnus-large-newsgroup nil)
 (setq gnus-check-new-newsgroups nil)
-(add-to-list 'mail-sources '(imap :server "sci-mail8.spreadtrum.com"
-                                  :user "wei.sun"
-				  :password "123456"
-				  :port 143
-				  :predicate "ALL"
-                                  :stream network))
+(add-to-list 'mail-sources '(pop :server "localhost"
+                                  :user "wei.sun@spreadtrum.com"
+				  :password "78ghGH"
+				  :port 1110
+				  ))
 
 (setq gnus-select-method '(nnml ""))
 ;; (setq gnus-select-method '(nnimap "spreadtrum"
@@ -32,12 +31,10 @@
 						(nnfolder-nov-is-evil t)
 						(nnfolder-inhibit-expiry t))))
 
-(setq message-send-mail-function 'smtpmail-send-it
-      smtpmail-auth-credentials '(("sci-mail8.spreadtrum.com" 25
-				   "wei.sun" "123456"))
-      smtpmail-default-smtp-server "sci-mail8.spreadtrum.com"
-      smtpmail-smtp-server "sci-mail8.spreadtrum.com"
-      smtpmail-smtp-service 25
+(setq smtpmail-smtp-user "wei.sun@spreadtrum.com"
+      smtpmail-default-smtp-server "localhost"
+      smtpmail-smtp-server "localhost"
+      smtpmail-smtp-service 1025
       )
 
 (setq gnus-use-nocem t)
@@ -216,7 +213,7 @@ wei.sun(孙伟)
 										    (propertize " [M:nil]" 'face 'bold))
 										   ))))
 
-(define-key gnus-group-mode-map (kbd "q") 'gnus-group-suspend)
+(define-key gnus-group-mode-map (kbd "q") 'bury-buffer)
 (define-key gnus-summary-mode-map (kbd "f") '(lambda()
 					       (interactive)
 					       (gnus-summary-mail-forward 3)
@@ -283,9 +280,11 @@ wei.sun(孙伟)
 (setq sw/in-gnus nil)
 (defun sw/gnus ()
   (interactive)
-  (setq sw/in-gnus t)
-  (gnus)
-  )
+  (let ((buffer (get-buffer "*Group*")))
+    (if buffer
+	(switch-to-buffer buffer)
+      (gnus)
+      )))
 
 (add-hook 'gnus-suspend-gnus-hook '(lambda()
 				     (gnus-group-save-newsrc t)
