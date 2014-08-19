@@ -154,7 +154,7 @@ wei.sun(孙伟)
 (add-hook 'gnus-started-hook '(lambda()
 				(gnus-demon-add-handler 'gnus-demon-scan-news 30 1)
 				))
-
+(setq gnus-asynchronous t)
 (add-hook 'gnus-after-getting-new-news-hook 'sw/gnus-check-mail-1)
 
 (setq my-gnus-new-mail -1)

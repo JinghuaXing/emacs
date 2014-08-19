@@ -516,3 +516,14 @@ details on the language and supported extensions."
   "interactive version of func"
   (interactive "r")
   (ansi-color-apply-on-region beg end))
+
+(defun calc-region (arg beg end)
+  "Calculate the region and display the result in the echo area.
+With prefix ARG non-nil, insert the result at the end of region."
+  (interactive "P\nr")
+  (let* ((expr (buffer-substring-no-properties beg end))
+         (result (calc-eval expr)))
+    (message "%s = %s" expr result)
+    (goto-char end)
+    (insert (concat " = " result))))
+
