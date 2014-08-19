@@ -524,9 +524,18 @@ CLOSED: [2014-01-30 Thu 08:29] SCHEDULED: <2014-01-29 Wed>
 [2014-07-28 Mon 18:31]
 * TODO write note about dlmalloc                                       :work:
 [2014-07-31 Thu 16:11]
-* TODO dalvik 及 dlmalloc 对象的对齐                                   :work:
+* DONE dalvik 及 dlmalloc 对象的对齐                                   :work:
+CLOSED: [2014-08-20 周三 04:18]
+- State "DONE"       from "TODO"       [2014-08-20 周三 04:18]
 [2014-08-03 周日 20:43]
 * TODO BUS_ADRALN                                                             :work:
 [2014-08-06 Wed 11:10]
-* TODO ptrace                                                          :work:
+* DONE ptrace                                                          :work:
+CLOSED: [2014-08-20 周三 04:18]
+- State "DONE"       from "TODO"       [2014-08-20 周三 04:18]
 [2014-08-07 Thu 17:11]
+* TODO zygote prefork                                                  :work:
+[2014-08-20 周三 04:18]
+* TODO dalvik prelink?                                                 :work:
+[2014-08-20 周三 04:18]
+
