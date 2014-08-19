@@ -98,7 +98,7 @@
 ["纪彬彬" nil ("Bill Ji") nil nil nil ("Bill.Ji@spreadtrum.com") ((creation-date . "2014-02-14") (timestamp . "2014-02-19")) nil]
 ["肖小毛" nil (#("Xiaomao Xiao (肖小毛)" 0 18 (fontified nil)) "Xiaomao Xiao") nil nil nil ("Xiaomao.Xiao@spreadtrum.com") ((creation-date . "2014-03-03") (timestamp . "2014-06-26")) nil]
 ["肖峰" nil ("Feng Xiao") nil nil nil ("feng.xiao@spreadtrum.com") ((creation-date . "2014-02-11") (timestamp . "2014-03-04")) nil]
-["肖韵涛" nil ("Yuntao Xiao") nil nil nil ("Yuntao.Xiao@spreadtrum.com") ((creation-date . "2014-01-28") (timestamp . "2014-02-17")) nil]
+["肖韵涛" nil (#("Yuntao Xiao (肖韵焘)" 0 17 (fontified nil)) "Yuntao Xiao") nil nil nil ("Yuntao.Xiao@spreadtrum.com") ((creation-date . "2014-01-28") (timestamp . "2014-08-19")) nil]
 ["许达兴" nil ("Daxing Xu") nil nil nil ("Daxing.Xu@spreadtrum.com") ((creation-date . "2014-03-11") (timestamp . "2014-03-11")) nil]
 ["贾明军" nil (#("Jimmy Jia (贾明军)" 0 15 (fontified nil)) "Jimmy Jia") nil nil nil ("Jimmy.Jia@spreadtrum.com") ((creation-date . "2014-02-24") (timestamp . "2014-07-21")) nil]
 ["贾洪军" nil ("Hongjun Jia") nil nil nil ("Hongjun.Jia@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-26")) nil]

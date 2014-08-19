@@ -433,7 +433,6 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 (defun gnus-user-format-function-C (header) ;; gnus-group-line-format use %ug to call this func! e.g  "%M%S%p%P%(%-40,40ug%)%-5uy %ud\n"
   (let*  ((from (mail-header-from header))
 	  )
-    ;; Yong Cheng (程勇) <Yong.Cheng@spreadtrum.com>
     (if (string-match ".*(\\(.*\\)).*" from)
 	(format " %s" (match-string 1 from))
       (gnus-user-format-function-B header)
