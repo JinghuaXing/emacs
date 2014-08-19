@@ -247,9 +247,7 @@ wei.sun(孙伟)
 (setq gnus-face-9 'gnus-face-9)
 (setq gnus-summary-make-false-root 'adopt)
 ;; (setq gnus-summary-make-false-root-always nil)
-(setq gnus-summary-dummy-line-format "    %8{│%}   %(%8{│%}                       %7{│%}%) %6{□%}  %S\n"
-      gnus-summary-line-format "%8{%4k│%}%9{%U%R%z%}%8{│%}%*%(%-23,23f%)%7{│%} %6{%B%} %s\n"
-      gnus-sum-thread-tree-indent " "
+(setq gnus-sum-thread-tree-indent " "
       gnus-sum-thread-tree-root "■ "
       gnus-sum-thread-tree-false-root "□ "
       gnus-sum-thread-tree-single-indent "▣ "
@@ -365,7 +363,7 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
       (concat
        "%10{%U%R%z%}" " " "%1{%11,11&user-date;%}"
        "%10{│%}"
-       "%9{%u&A;%}" "%(%-15,15uB %)"
+       "%9{%u&A;%}" "%(%-15,15uC %)"
        "%*"
        "%5k"
        "  " "%10{%B%}"
@@ -431,3 +429,13 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
     (gnus-date-get-time (message-fetch-field "date"))))
 
 (setq nnmail-expiry-target 'sw/gnus-expiry-target)
+
+(defun gnus-user-format-function-C (header) ;; gnus-group-line-format use %ug to call this func! e.g  "%M%S%p%P%(%-40,40ug%)%-5uy %ud\n"
+  (let*  ((from (mail-header-from header))
+	  )
+    ;; Yong Cheng (程勇) <Yong.Cheng@spreadtrum.com>
+    (if (string-match ".*(\\(.*\\)).*" from)
+	(format " %s" (match-string 1 from))
+      (gnus-user-format-function-B header)
+      )
+))
