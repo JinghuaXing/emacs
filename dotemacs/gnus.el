@@ -74,7 +74,7 @@
    "
 wei.sun(孙伟)
 展讯通信(天津)
-分机: 589-683
+分机: 589-1683
 手机: 18630859306
 邮箱: wei.sun@spreadtrum.com
 "
@@ -432,7 +432,7 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 
 (setq nnmail-expiry-target 'sw/gnus-expiry-target)
 
-(defun gnus-user-format-function-C (header) ;; gnus-group-line-format use %ug to call this func! e.g  "%M%S%p%P%(%-40,40ug%)%-5uy %ud\n"
+(defun gnus-user-format-function-C (header)
   (let*  ((from (mail-header-from header))
 	  )
     (if (string-match ".*(\\(.*\\)).*" from)

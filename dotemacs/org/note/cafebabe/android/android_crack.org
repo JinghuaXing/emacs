@@ -1,0 +1,54 @@
+#+TITLE: Android Crack: Injection, Hook, Pack, etc
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Android Crack: Injection, Hook, Pack
+
+** Xposed
+通过改写 app_process 和修改 clazz->method 为自定义的 native function
+对任意 java 函数进行 hook.
+
+** libinject
+通过 ptrace 进行 so injection. 
+
+so injection 是其它形式的 hook 的第一步:
+1. 若要 hook 其它 so 中的函数, 例如 open 调用, 可以通过 so injection
+   后再 目标进程中修改 elf 的 GOT 来完成 hook
+2. 若要 hook 某些 java 调用, 可以通过 so injection 后通过修改一些
+   dalvik 相关的数据来完成 hook, 例如: 直接修改某个 method 的 inst, 或
+   者修改某些对象的引用来自定义的对象等
+
+** 梆梆加固
+对 apk 进行加壳
+[[http://mobile.51cto.com/aprogram-400933_1.htm][Andorid APK反逆向解决方案：梆梆加固原理探寻]]
+
+原理: 
+
+1. 大部分组件, 例如 Application, Activity, Receiver, Service 都是通过
+   LoadedApk.getClassLoader 获得的 ClassLoader 来加载的, 这个
+   ClassLoader 代表了实际的 apk. 但 Provider 比较另类: 如果
+   Application 类被重写了, 则它优化使用 Application.getClassLoader 来
+   加载. 
+2. 对于 Provider, 可以简单的通过重写一个 Application 类来实现
+3. 对于其它组件, 因为都是 LoadedApk 来加载的, 而 LoadedApk 在
+   Application 中有一个引用: Application.mBase.mPackageInfo, 所以我们
+   可以通过反射修改 Application.mBase.mPackageInfo.mClassLoader 来实现. 
+
+因为 Application 初始化比其他任何组件都早, 所以在 Application 实现上述
+做法是很好的方式. 
+
+具体的:
+1. 加固程序会生成一个新的 apk, 这个 apk 的 manifest 与原 apk 类似, 也包
+   含原有的组件声明, 但会修改原程序的 manifest, 填加或修改一个
+   Application 类, 这个类是解壳时的起点.
+2. 新的 apk 的 dex 中会有一块区域嵌入了经过加密的原 odex 文件, 相当于
+   新的 dex 是原 odex 上加了一个壳.
+3. 当 ActivityThread 加载新 apk 的 Application 类时, 这个类的代码会负
+   责将原 odex 解密到内存, 然后调用 c++ 层的 dexFileParse 等函数生成
+   DexFile, 最终通过 jni 生成一个 PathClassLoader
+4. 通过反射等方法用这个 ClassLoader 代替 LoadedApk.mClassLoader, 后续
+   加载其他组件时都会用这个 ClassLoader.
+
+
+
+
+
