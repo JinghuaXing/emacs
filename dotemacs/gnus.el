@@ -8,11 +8,13 @@
 ;; (setq gnus-cache-remove-articles nil)
 (setq gnus-large-newsgroup nil)
 (setq gnus-check-new-newsgroups nil)
-(add-to-list 'mail-sources '(pop :server "localhost"
-                                  :user "wei.sun@spreadtrum.com"
-				  :password "78ghGH"
-				  :port 1110
-				  ))
+
+(setq mail-sources '((directory :path "~/.mail" :suffix ".spool")))
+;; (add-to-list 'mail-sources '(pop :server "localhost"
+;;                                   :user "wei.sun@spreadtrum.com"
+;; 				  :password "78ghGH"
+;; 				  :port 1110
+;; 				  ))
 
 (setq gnus-select-method '(nnml ""))
 ;; (setq gnus-select-method '(nnimap "spreadtrum"
