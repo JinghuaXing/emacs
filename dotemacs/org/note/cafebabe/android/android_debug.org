@@ -269,3 +269,66 @@ abort() 是 libc 中的一个函数, 它的实现大约是这样的:
 abort 与 segment fault 不同的地方在于:
 1. 第七步中, debugger.cpp 会再发一次 SIG_ABRT, 这个信号的作用相当于第二次 SIG_SEGV
 2. 第十四步中, abort 函数会发出第二次 SIG_ABRT (相当于第三次 SIG_SEGV), 导致进程退出.
+** valgrind
+android 中可以使用 valgrind 启动 apk 应用, 进而检查 memory leak, call
+graph 等.
+
+但是 apk 应用都是通过 zygote 启动的, valgrind 如何能起作用? 
+
+答案就是当 zygote 收到 apk 启动的请求后, 会直接用 exec 启动 valgrind,
+然后在 valgrind 中再启动一个新的 app_process 来启动 apk 应用. 
+
+所以通过 valgrind 启动的应用实际上与 zygote 没有任何关联了, 也无法利用
+zygote 带来的好处, 例如 preload.
+
+*** WrapperInit
+
+上面提到的逻辑主要包含在 WrapperInit.java 及 ZygoteConnection.java 中,
+这两个配合以解决 apk 应用由 zygote fork 导致无法启动 valgrind 的问题. 
+
+如果要测试的程序完全是一个可以通过 dalvikvm 或 app_process 启动的 java
+程序, 则直接在 shell 中通过 valgrind 启动就行了, 不用麻烦 WrapperInit
+和 ZygoteConnection.
+
+*** 脚本
+
+start_valgrind.sh
+
+#+BEGIN_SRC sh
+#!/system/bin/sh
+
+PACKAGE="com.android.calendar"
+
+# Callgrind tool
+VGPARAMS='-v --error-limit=no --trace-children=yes --log-file=/sdcard/valgrind.log.%p --tool=callgrind --callgrind-out-file=/sdcard/callgrind.out.%p'
+
+# Memcheck tool
+# VGPARAMS='-v --error-limit=no --trace-children=yes --log-file=/sdcard/valgrind.log.%p --tool=memcheck --leak-check=full --show-reachable=yes'
+
+export TMPDIR=/data/data/$PACKAGE
+
+exec /system/bin/valgrind $VGPARAMS $* 
+
+#+END_SRC
+
+valgrind_calendar.sh
+#+BEGIN_SRC sh
+#!/usr/bin/env bash
+
+PACKAGE="com.android.calendar"
+
+adb push start_valgrind.sh /data/local/
+adb shell chmod 777 /data/local/start_valgrind.sh 
+
+adb root
+adb shell setprop wrap.$PACKAGE "/data/local/start_valgrind.sh"
+
+echo "wrap.$PACKAGE: $(adb shell getprop wrap.$PACKAGE)"
+
+adb shell am force-stop $PACKAGE
+adb shell am start -a android.intent.action.MAIN -n $PACKAGE/.AllInOneActivity
+
+#+END_SRC
+
+测试是执行 valgrind_calendar.sh 来测试 com.android.calendar 这个
+apk. 
