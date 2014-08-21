@@ -20,6 +20,7 @@ so injection 是其它形式的 hook 的第一步:
 ** 梆梆加固
 对 apk 进行加壳
 [[http://mobile.51cto.com/aprogram-400933_1.htm][Andorid APK反逆向解决方案：梆梆加固原理探寻]]
+[[https://github.com/mmin18/AndroidDynamicLoader][AndroidDynamicLoader]]
 
 原理: 
 
