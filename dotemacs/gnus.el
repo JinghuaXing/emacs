@@ -47,11 +47,8 @@
       )
 
 ;;排序
-(setq gnus-thread-sort-functions
-      '(
-	gnus-thread-sort-by-most-recent-date
-	;; gnus-thread-sort-by-number
-	))
+(setq gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
+      gnus-sort-gathered-threads-function 'gnus-thread-sort-by-date)
 
 (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
 ;;中文设置
@@ -438,5 +435,20 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
     (if (string-match ".*(\\(.*\\)).*" from)
 	(format " %s" (match-string 1 from))
       (gnus-user-format-function-B header)
-      )
-))
+      )))
+
+(setq message-subject-re-regexp
+      (concat
+       "^[ \t]*"
+       "\\("
+       "\\("
+       "[Ff][Ww][Dd]?\\|"
+       "[Rr][Ee]\\|"
+       "答复\\|"
+       "转发"
+       "\\)"
+       "\\(\\[[0-9]*\\]\\)"
+       "*:[ \t]*"
+       "\\)"
+       "*[ \t]*"
+       ))
