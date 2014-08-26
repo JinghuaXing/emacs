@@ -522,7 +522,7 @@ With prefix ARG non-nil, insert the result at the end of region."
   (setq foo (read-from-minibuffer
 	       (format "join with: ")
 	       nil nil nil nil))
-  (replace-regexp "\\(.*?\\)\n" (concat "\\1" foo) nil beg end))
+  (replace-regexp "[ \t]*\\(.*?\\)[ \t]*\n" (concat "\\1" foo) nil beg end))
 
 (defun sw/split-line(beg end)
   (interactive "r")
