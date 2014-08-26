@@ -87,7 +87,7 @@
 ["游万灿" nil ("Wancan You") nil nil nil ("Wancan.You@spreadtrum.com") ((creation-date . "2014-02-10") (timestamp . "2014-02-24")) nil]
 ["王明国" nil ("Mingguo Wang") nil nil nil ("Mingguo.Wang@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-03-03")) nil]
 ["王星星" nil ("Xingxing Wang") nil nil nil ("Xingxing.Wang@spreadtrum.com") ((creation-date . "2014-02-12") (timestamp . "2014-02-25")) nil]
-["王浩" nil ("Hill Wang") nil nil nil ("Hill.Wang@spreadtrum.com") ((creation-date . "2014-03-14") (timestamp . "2014-03-14")) nil]
+["王浩" nil (#("Hill Wang (王皓)" 0 14 (fontified nil)) "Hill Wang") nil nil nil ("Hill.Wang@spreadtrum.com") ((creation-date . "2014-03-14") (timestamp . "2014-08-26")) nil]
 ["王淞" nil ("Song Wang") nil nil nil ("Song.Wang@spreadtrum.com") ((creation-date . "2014-02-26") (timestamp . "2014-02-26")) nil]
 ["王金超" nil ("Jinchao Wang") nil nil nil ("Jinchao.Wang@spreadtrum.com") ((creation-date . "2014-03-04") (timestamp . "2014-03-04")) nil]
 ["王霞" "" nil nil nil nil ("wangxia@spreadst.com") ((creation-date . "2014-02-11") (timestamp . "2014-02-11")) nil]

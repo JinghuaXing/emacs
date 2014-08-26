@@ -113,7 +113,11 @@
 (global-set-key (kbd "<M-up>") 'sw/move-line-up)
 (global-set-key (kbd "<M-down>") 'sw/move-line-down)
 (global-set-key (kbd "M-T") 'sw/transporse-region)
-(global-set-key (kbd "M-^") 'sw/join-line)
+(global-set-key (kbd "M-^") '(lambda()
+			       (interactive)
+			       (if current-prefix-arg
+				   (call-interactively 'sw/split-line)
+				 (call-interactively 'sw/join-line))))
 
 ;; (global-set-key (kbd "<C-mouse-4>") 'sw/increase-font-size)
 ;; (global-set-key (kbd "<C-mouse-5>") 'sw/decrease-font-size)

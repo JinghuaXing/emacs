@@ -219,16 +219,6 @@
 				" ")))
     (insert sentence)))
 
-(defun sw/join-line ()
-  (interactive)
-  (save-excursion
-    (let ((start (point-at-eol))
-          (end (progn
-                (next-line)
-                (back-to-indentation)
-                (point))))
-         (delete-region start end))))
-
 (defun sw/increase-font-size ()
   (interactive)
   (set-face-attribute 'default
@@ -527,3 +517,16 @@ With prefix ARG non-nil, insert the result at the end of region."
     (goto-char end)
     (insert (concat " = " result))))
 
+(defun sw/join-line(beg end)
+  (interactive "r")
+  (setq foo (read-from-minibuffer
+	       (format "join with: ")
+	       nil nil nil nil))
+  (replace-regexp "\\(.*?\\)\n" (concat "\\1" foo) nil beg end))
+
+(defun sw/split-line(beg end)
+  (interactive "r")
+  (setq foo (read-from-minibuffer
+	     (format "split with: ")
+	     nil nil nil nil))
+  (replace-regexp foo "\n" nil beg end))
