@@ -67,6 +67,35 @@ libffi 可以用 portable C 的方式实现 bridge, 但速度较慢, 所以 andr
 每一个支持的 arch 都用 asm 实现了一个 bridge. JNI Call Bridge 的入口函
 数是 dvmCallJNIMethod
 
+** InternalNative
+大部分 native 函数都是在 dvmRegisterJNIMethod 时被设置为通过
+dvmCallJNIMethod 来调用的, 但若 class 没有实现 JNI_OnLoad 函数, 则
+native 函数会被设置为通过 dvmRegisterJNIMethod 在运行时 lazy 的执行,
+但这些函数在 lazy 执行后还是会被设置为通过 dvmCallJNIMethod 来调用. 
+
+除此之外, 有一些称为 InternalNative 的函数也会通过
+dvmRegisterJNIMethod 来 lazy 执行, 这些函数一般都一些系统的内部类, 例
+如 Runtime.gc, 这些函数通过 dvmRegisterJNIMethod 在运行时 lazy 的找到,
+而且以后也不再 dvmCallJNIMethod 来执行: 它们是直接被执行的 (可能是和效
+率有关吧)
+
+#+BEGIN_SRC text
+  dvmResolveNativeMethod
+    // dvmLookupInternalNativeMethod 是通过查找一个内部的表来确定 method
+    // 是否有 native 实现
+    DalvikNativeFunc infunc = dvmLookupInternalNativeMethod(method);
+    if (infunc != NULL):
+      // 这里的 dfunc 并没有使用 dvmCallJNIMethod, 而且使用 infunc 自身
+      DalvikBridgeFunc dfunc = (DalvikBridgeFunc) infunc;
+      dvmSetNativeFunc((Method*) method, dfunc, NULL);
+      return;
+    // 这里对应于那些没有实现 JNI_OnLoad 的类的 native 函数
+    void* func = lookupSharedLibMethod(method);
+    if (func != NULL):
+      /* found it, point it at the JNI bridge and then call it */
+      dvmUseJNIBridge((Method*) method, func);
+#+END_SRC
+
 ** JNI Calling Conventions
 - dvmCallMethodV
 - dvmCallJNIMethod
