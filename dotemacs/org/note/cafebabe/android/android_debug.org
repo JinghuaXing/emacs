@@ -31,6 +31,7 @@ adb shell setprop log.tag.mytag verbose
 *** input
 *** procrank
 *** procmem
+*** librank
 *** getprop
 *** dumpstate
 *** setprop

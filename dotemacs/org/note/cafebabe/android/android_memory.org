@@ -7,6 +7,7 @@
 *** cat /proc/pid/smaps
 *** procmem
 *** procrank
+*** librank
 ** xss
 - vss
   虚拟地址
@@ -236,6 +237,10 @@ optimization ?
 But if we fill the memory will `random', both linux and android will
 consume 50MB rss.
 
+可能和 zram 有关系吧...
+** Kernel feature
+*** zram
+*** ksm
 ** Reference
 - [[http://stackoverflow.com/questions/2298208/how-to-discover-memory-usage-of-my-application-in-android][how-to-discover-memory-usage-of-my-application-in-android]]
 - [[http://stackoverflow.com/questions/131303/linux-how-to-measure-actual-memory-usage-of-an-application-or-process][linux-how-to-measure-actual-memory-usage-of-an-application-or-process]]
