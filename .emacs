@@ -341,9 +341,6 @@
 (require 'awk-it)
 (require 'ascii)
 
-(require 'autopair)
-(autopair-global-mode)
-
 (setq default-mode-line-format (append default-mode-line-format '((:eval (luna-date (calendar-current-date))))))
 
 (require 'switch-window)
@@ -383,3 +380,7 @@
 (require 'zeal-at-point)
 (add-to-list 'zeal-at-point-mode-alist '(java-mode . "android"))
 (global-set-key (kbd "C-c C-d") 'zeal-at-point)
+
+(add-to-list 'load-path "~/.elisp/smartparens")
+(require 'smartparens-config)
+(smartparens-global-mode t)
