@@ -2,3 +2,6 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Factory
+** Simple Factory
+** Factory Method
+** Abstract Factory

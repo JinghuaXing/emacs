@@ -1,0 +1,17 @@
+#+TITLE: Builder
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Builder
+
+若构造一个对象时需要传入太多的参数, 可以考虑使用 Builder Pattern. 
+
+#+BEGIN_SRC java
+  Notification noti = new Notification.Builder(mContext)
+      .setContentTitle("New mail from " + sender.toString())
+      .setContentText(subject)
+      .setSmallIcon(R.drawable.new_mail)
+      .setLargeIcon(aBitmap)
+      .build();
+#+END_SRC
+
+

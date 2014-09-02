@@ -1,0 +1,43 @@
+#+TITLE: Object Pool
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Object Pool
+Object Pool 是以空间换时间的典型: 不用的资源暂时不释放而是放到一个
+pool, 后续要获取资源时不重新生成而是从 pool 中去获取. 
+
+各种 cache, thread pool, connection pool 等都可以归入 Object Pool
+pattern 中, 例如:
+
+1. Android ListView 中的 ConvertView
+   当 ListView 中的某一个 View 因为滑出屏幕而不再显示时, 这个 View 会
+   做为 ConvertView 放到一个 pool, 下次 ListView 调用 obtainView 时会
+   先从这个 pool 中获取一个 ConvertView 避免重新生成. 所以应用的代码在
+   重写 getView 时应用尽量重用 ConvertView
+
+2. SqliteDatabase 中的 ConnectionPool
+   每个进程要访问数据库时会先尝试从 ConnectionPool 获得一个 Sqlite
+   Connection.
+
+3. 各种各样的 cache
+   例如 linux kernel 的 page_cache, dentry_cache; sqlite 中的 pcache
+
+4. thread / process pool
+   由于创建 thread/process 时的开销, 有时我们会使用 thread/process
+   pool 来加快 thread/process 的创建, 这种情况在高并发的网络服务器上尤
+   其常见.
+
+5. 内存管理
+   内存管理程序为了应对对相同大小的内存的反复分配与释放, 通常都会使用
+   memory pool 的方式把许多分配好的 (或已释放的) 内存块保存起来, 已加
+   快分配/释放的速度, 并减少内存碎片. 具体可以考虑 dlmalloc 库以及
+   slab, buddy 算法.
+
+
+** Object Pool 的问题
+1. Object Pool 中的对象维持了一些旧的数据, 需要小心的确保每次使用时重
+   置这些数据
+2. Object Pool 可以会泄露敏感数据
+3. Object Pool 可能会导致大量无用的对象存在, 这在 Java 语言中会拖慢 GC
+   的速度. 
+   
+
