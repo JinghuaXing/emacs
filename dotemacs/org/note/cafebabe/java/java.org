@@ -471,16 +471,15 @@ it can't define static members or methods.
 **** Stop and copy
 *** GC root
 ** CG (code generation / 代码生成 )
-   see also [[CGLIB]]
-   see also [[ASM]]
-   see also [[Proxy]]
+ 1. [[CGLIB]]
+ 2. [[ASM]]
+ 3. [[Proxy]]
+ 4. dexmaker
 ** GP
 see also [[Java Criticism]]
 google: “这可不是泛型”-Bruce Eckel眼中的Java泛型..
 ** DONE JDK Dynamic Proxy & CGLIB
-   SCHEDULED: <2011-08-30 Tue> CLOSED: [2011-09-07 Wed 10:32]
-   - State "DONE"       from "DOING"      [2011-09-07 Wed 10:32]
-   see also [[Proxy]]
+see also [[Proxy]]
 ** JNI
 *** tools
 **** javah

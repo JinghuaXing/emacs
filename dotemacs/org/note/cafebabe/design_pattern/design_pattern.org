@@ -1,0 +1,5 @@
+#+TITLE: Design Pattern
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Design Pattern
+http://en.wikipedia.org/wiki/Software_design_pattern
