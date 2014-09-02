@@ -1,5 +1,6 @@
 * TODO 给父母打电话                                              :life:habit:
-DEADLINE: <2014-08-30 Sat +7d -1d>
+DEADLINE: <2014-09-06 Sat +7d -1d>
+- State "DONE"       from "TODO"       [2014-09-02 Tue 11:41]
 - State "DONE"       from "TODO"       [2014-08-27 Wed 09:42]
 - State "DONE"       from "TODO"       [2014-08-20 周三 04:20]
 - State "DONE"       from "TODO"       [2014-08-13 Wed 14:31]
@@ -59,11 +60,12 @@ DEADLINE: <2014-08-30 Sat +7d -1d>
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 - State "DONE"       from "TODO"       [2013-07-27 Sat 09:30]
 :PROPERTIES:
-:LAST_REPEAT: [2014-08-27 Wed 09:42]
+:LAST_REPEAT: [2014-09-02 Tue 11:41]
 :ID:       ef1ba461-c0d6-461e-b229-ef4de704ace4
 :END:
 * TODO 建行信用卡还款日                                          :life:habit:
-DEADLINE:  <2014-09-03 Wed +1m -10d>
+DEADLINE:  <2014-10-03 Fri +1m -10d>
+- State "DONE"       from "TODO"       [2014-09-02 Tue 11:41]
 - State "DONE"       from "TODO"       [2014-07-28 Mon 18:34]
 - State "DONE"       from "TODO"       [2014-07-02 Wed 15:30]
 - State "DONE"       from "TODO"       [2014-06-09 Mon 10:41]
@@ -90,7 +92,7 @@ DEADLINE:  <2014-09-03 Wed +1m -10d>
 :PROPERTIES:
 :STYLE: habit
 :REPEAT_TO_STATE: TODO
-:LAST_REPEAT: [2014-07-28 Mon 18:34]
+:LAST_REPEAT: [2014-09-02 Tue 11:41]
 :ID:       3bc05d4e-7815-452d-a5e7-a8c9a88b7846
 :END:
 * TODO 招行信用卡还款日                                          :life:habit:
