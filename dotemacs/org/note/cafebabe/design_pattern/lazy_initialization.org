@@ -1,0 +1,24 @@
+#+TITLE: Lazy Initialization / evaluation
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Lazy Initialization / evaluation
+Lazy initialization / evaluation 是一类通用的优化技术, 用来尽可能的延迟
+某些动作的执行, 因为有可能这些动作是永远不会被执行的, 例如:
+
+1. Singleton with lazy initialization
+   当对象需要被使用时才初始化
+
+2. Copy On Write
+   当内存需要被修改时才分配新的物理页
+
+3. Demand Paging
+   当内存需要被使用时才分配物理页
+
+4. dalvik 中的 dvmResolveNativeMethod
+   当 native 方法需要被调用时才去查找对应的 native 实现
+
+5. ld.so
+   当需要调用 so 中引用的外部函数时, ld.so 才会负责去解析该函数
+   
+
+   

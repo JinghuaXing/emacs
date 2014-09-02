@@ -2,3 +2,85 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Singleton
+Singleton (单例) 模式必须满足两个特性:
+
+1. single instance
+2. global access
+   
+因此 singletons 通常用来表示全局对象, 且一般会通过 lazy initialization
+来避免过早初始化这些对象. 
+
+在 java 中,  singleton 有多少不同的写法:
+** Eager initialization
+#+BEGIN_SRC java
+  Classs Singleton {
+      private static Singleton sInstance=new Singleton();
+      private Singleton() {
+          
+      }
+  
+      public static Singleton getInstance() {
+          return sInstance;
+      }
+  }
+#+END_SRC
+** Lazy initialization
+#+BEGIN_SRC java
+  class Singleton {
+      private static Singleton sInstance;
+      private Singleton() {
+  
+      }
+  
+      synchronized public static Singleton getInstance() {
+          if (sInstance==null) {
+              sInstance=new Singleton();
+          }
+          return sInstance;
+      }
+  }
+#+END_SRC
+** Lazy initialization with double-checked locking
+#+BEGIN_SRC java
+  class Singleton {
+      private static volatile Singleton sInstance;
+      private Singleton() {
+      }
+    
+      public static Singleton getInstance() {
+          if (sInstance==null) {
+              synchronized (this) {
+                  if (sInstance==null) {
+                      sInstance=new Singleton();
+                  } 
+              }
+          }
+          return sInstance;
+      }
+  }
+#+END_SRC
+
+需要注意的是, 在 JDK5 之前, 上述代码无法正常工作:
+http://www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
+
+** Holder
+#+BEGIN_SRC java
+  class Singleton {
+      private static class Holder {
+          public static Singleton sInstance=new Singleton();
+      }
+      private Singleton() {
+      
+      }
+      
+      public static Singleton getInstance() {
+          return Holder.sInstance;
+      }
+  }
+#+END_SRC
+** 总结
+以上写法各有利弊, 有时考虑到程序启动时的性能, 会考虑 lazy
+initialization, 有些考虑到程序运行时的性能, 会考虑 Eager
+initialization.
+
+如果不太清楚到底要用哪种, 那还是用 Lazy 的版本吧.

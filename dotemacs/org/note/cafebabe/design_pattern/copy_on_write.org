@@ -1,0 +1,30 @@
+#+TITLE: Copy On Write
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Copy On Write
+** 使用 COW 进行内存管理
+Copy-on-write (写时复制, COW) 最主要的应用是在操作系统的内存管理部分.
+
+当父进程执行 fork 后, 子进程的虚拟地址空间是完全从父进程复制过来的, 即
+两者具体相同的页表. 此时两者看到的地址是完全一样的, 但是若任一方 A 要修
+改某个地址 X 时 (Write), 操作系统会负责申请一块新的物理页 (Copy) 然后修
+改 A 的页表使它对于地址 X 使用新的物理页.
+
+具体实现上, 操作系统在 fork 完子进程之后, 会将父进程当前使用的所有物理
+页都标记为只读, 后续 MMU 要修改这些物理页时, 会触发一个硬件异常, 操作
+系统捕捉这个异常后就可以 Copy 新的页的. 
+
+从 COW 的角度考虑, fork 后应该哪个线程先执行呢? 父进程还是子进程? 一般
+来说操作系统会优先调度子进程先执行, 因为一般情况下子进程 fork 返回后会
+通过 exec 载入一个新的可执行程序, 也就会重新分配页表. 这种情况下如果让
+父进程先执行的话, 父进程随后如果有 COW 动作的话是完全浪费的: 因为子进
+程一会儿就 exec 了.
+** 应用程序使用 COW
+应用程序中使用 COW 一般是比较少的, stdc++ 中的 string 类使用了 COW:
+
+#+BEGIN_SRC c++
+  std::string x("Hello");
+  std::string y = x;  // x and y use the same buffer
+  y += ", World!";    // now y uses a different buffer
+                      // x still uses the same old buffer
+#+END_SRC

@@ -1,0 +1,40 @@
+#+TITLE: Flyweight
+#+AUTHOR: Wei Sun (孙伟)
+#+EMAIL: wei.sun@spreadtrum.com
+* Flyweight
+flyweight 原意是拳击运动中的`次最轻量级`, 即比 lightweight 更轻量级, 这
+个词也翻译为`蝇量级`...
+
+在 flyweight 模式中, 许多看似不同的对象的一些内部数据实际上共享的, 以
+降低内存开销, 并且构造起来更快.
+
+为了确保共享数据访问时不会遇到多线程问题, flyweight 一般要求对象是
+immutable (不可变的), 因为不可变对象肯定是线程安全的. 
+
+由于涉及到数据共享, 所以 flyweight 和 copy-on-write (写时复制) 有一定的
+相似性, 不过后者不要求对象是 immutable.
+
+** Java String with flyweight
+
+在 java 的 String 类的内部, 有一个 `private final char[] value` 类型的
+成员, 这个成员称之为 baking array. 由于 String 类是 immutable 的, 所以许多 String 相关的算法会尽可能的使用相同的 baking
+array. 比如:
+
+#+BEGIN_SRC java
+  public String substring(int start) {
+      if (start == 0) {
+          return this;
+      }
+      if (start >= 0 && start <= count) {
+          return new String(offset + start, count - start, value);
+      }
+  }
+  
+  String(int offset, int charCount, char[] chars) {
+      this.value = chars;
+      this.offset = offset;
+      this.count = charCount;
+  }
+#+END_SRC
+
+
