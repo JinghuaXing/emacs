@@ -126,15 +126,17 @@
 
 (setq org-capture-templates
       (quote (("w" "work" entry (file "~/.elisp/dotemacs/org/gtd/work.org")
-               "* TODO %?  :work:\n%U\n\n")
+               "* TODO %?  :work:\n%T\n\n")
 	      ("l" "life" entry (file "~/.elisp/dotemacs/org/gtd/life.org")
                "* TODO %? :life:\n%U\n\n")
               ("j" "joke" entry (file "~/.elisp/dotemacs/org/joke.org")
                "* %? :joke:\n%U\n\n")
 	      ("n" "note" entry (file "~/.elisp/dotemacs/org/note.org")
                "* %? :note:\n%U\n\n")
-	      ("m" "Gnus" entry (file "~/.elisp/dotemacs/org/gtd/work.org")
-	       "* TODO Gnus: %a :work:\n%U\n\n")
+	      ("a" "appt" entry (file "~/.elisp/dotemacs/org/gtd/appt.org")
+	       "* %?\nDEADLINE: %T\n\n")
+	      ("m" "appt" entry (file "~/.elisp/dotemacs/org/gtd/appt.org")
+	       "* %a%?\nDEADLINE: %T\n\n")
               ("h" "life habit" entry (file "~/.elisp/dotemacs/org/gtd/life.org")
                "* TODO %? :life:habit:\n%U\n\nSCHEDULED: <%<%Y-%m-%d %a .+1d/2d>> \n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: TODO\n:END:\n"))))
 
@@ -173,3 +175,32 @@
 (require 'org-gnus)
 
 (add-hook 'org-src-mode-hook '(lambda() (auto-fill-mode -1)))
+
+(require 'appt)
+(setq appt-time-msg-list nil)
+(org-agenda-to-appt)
+
+(defadvice  org-agenda-redo (after org-agenda-redo-add-appts)
+  "Pressing `r' on the agenda will also add appointments."
+  (progn 
+    (setq appt-time-msg-list nil)
+    (org-agenda-to-appt)))
+
+(add-hook 'org-capture-after-finalize-hook '(lambda()
+					      (org-agenda-to-appt)
+					      ))
+(ad-activate 'org-agenda-redo)
+(run-at-time "24:01" 3600 'org-agenda-to-appt)
+(add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt)
+
+(appt-activate 1)
+(setq appt-display-mode-line nil)
+(setq appt-display-format 'window)
+
+(defun my-appt-display (min-to-app new-time msg)
+  (shell-command (concat "notify-send -u critical" " '" msg "'"))
+  )
+
+(setq appt-disp-window-function (function my-appt-display))
+
+
