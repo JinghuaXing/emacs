@@ -406,10 +406,14 @@ dvmHeapSourceAlloc 的代码:
       dvmSignalCond(&gHs->gcThreadCond);
   
 #+END_SRC
+
 所以, 如果当前已经发配的内存大于 heap->concurrentStartBytes 时 (默认的
-配置是 freeBytes - CONCURRENT_START(128KB), 即当可用内存少于 128KB 时),
-HeapWorker 会开始工作, 并且周期性的 (HEAP_TRIM_IDLE_TIME_MS) 执行
-dvmCollectGarbageInternal
+配置是 freeBytes - CONCURRENT_START(128KB), 即当可用内存 (相对于
+softLimit) 少于 128KB 时), HeapWorker 会开始工作, 并且若最近
+(HEAP_TRIM_IDLE_TIME_MS) 没有执行过ConcurrentGc, 则执行 trimHeaps 使
+dlmalloc 尽量释放内存给操作系统 (例如通过 sbrk, munmap 或通过自定义的
+morecore, 对 dalvik 来说, 实际是通过自定义的 morecore 最终调用
+mprotect)
 
 ** Concurrent GC
 HeapWorker 实际上就是实现了 Concurrent Mark Sweep (CMS), 说它是
