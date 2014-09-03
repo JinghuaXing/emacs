@@ -108,7 +108,7 @@ wei.sun(孙伟)
       )
 ;; (setq message-default-mail-headers "Cc: \n")
 
-(setq gnus-visible-headers "^From:\\|^Subject:\\|^To:\\|^Date:")
+(setq gnus-visible-headers "^From:\\|^Subject:")
 (setq gnus-message-archive-group
       '("nnml:inbox"))
 
@@ -255,9 +255,9 @@ wei.sun(孙伟)
       gnus-sum-thread-tree-single-leaf "└─▶ ")
 
 
-(add-to-list 'load-path "~/.elisp/bbdb")
-(require 'bbdb)
-(bbdb-initialize 'gnus 'message)
+;; (add-to-list 'load-path "~/.elisp/bbdb")
+;; (require 'bbdb)
+;; (bbdb-initialize 'gnus 'message)
 ;;(bbdb-insinuate-gnus)
 
 (setq bbdb-user-mail-names
@@ -434,7 +434,8 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 	  )
     (if (string-match ".*(\\(.*\\)).*" from)
 	(format " %s" (match-string 1 from))
-      (gnus-user-format-function-B header)
+      (concat " " from)
+      ;; (gnus-user-format-function-B header)
       )))
 
 (setq message-subject-re-regexp
@@ -452,3 +453,5 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
        "\\)"
        "*[ \t]*"
        ))
+
+(setq mail-source-ignore-errors t)
