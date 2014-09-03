@@ -31,7 +31,8 @@
           // countAllocation 会将 hs->liveBits 对应的置 1
           countAllocation(heap, ptr);
         if (ptr != NULL): return ptr;
-        // 第三次 ...
+        // 第三次 ... 前两次的 alloc 会受 softLimit 的影响导致分配失败
+        // 这一次会首先尝试去掉 softLimit, 若还不行, 则去掉 footprint 的限制
         ptr = dvmHeapSourceAllocAndGrow(size);
         if (ptr != NULL): return ptr;
         // 即使 Heap Grow 了还是不行, 再次 GC, true 表示 SoftReferences 也被 GC
@@ -48,60 +49,64 @@
 
 ** dvmCollectGarbageInternal
 #+BEGIN_SRC text
-  dvmCollectGarbageInternal(spec)
-    // 一共有四种类型的 GC:
-    // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
-    // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
-    // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
-    // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
-    if (spec == GC_FOR_MALLOC):
-      ATRACE_BEGIN("GC (Alic)");
-    else if (spec == GC_CONCURRENT):
-      ATRACE_BEGIN("GC (concurrent)");
-    else if (spec == GC_EXPLICIT):
-      ATRACE_BEGIN("GC (explicit)");
-    else if (spec == GC_BEFORE_OOM):
-      ATRACE_BEGIN("GC (before OOM)");
-    else:
-      ATRACE_BEGIN("GC (unknown)");
-    // 参考: dalvik thread dvmSuspendAllThreads
-    dvmSuspendAllThreads(SUSPEND_FOR_GC);
-    // mark 阶段
-    /* Mark the set of objects that are strongly reachable from the roots.
-    ,*/
-    dvmHeapMarkRootSet();
-    // 若 spec 表明该 gc 由 HeapWorker 发起, 则 dvmHeapScanMarkedObjects
-    // 时并不 stop the world. 这也是 Concurrent GC 的本意.
-    if (spec->isConcurrent):
-      dvmClearCardTable();
-      dvmResumeAllThreads(SUSPEND_FOR_GC);
-    /* Recursively mark any objects that marked objects point to strongly.
-    ,* If we're not collecting soft references, soft-reachable
-    ,* objects will also be marked.
-    ,*/
-    dvmHeapScanMarkedObjects();
-    if (spec->isConcurrent):
+    dvmCollectGarbageInternal(spec)
+      // 一共有四种类型的 GC:
+      // 1. GC_FOR_MALLOC, 对应于 dvmMalloc 时的第一次 GC (不清理 SoftReferences)
+      // 2. GC_CONCURRENT, 由 HeapWorker 发起的 GC
+      // 3. GC_EXPLICIT, 由 System.gc() 发起的 GC
+      // 4. GC_BEFORE_OOM, 对应于 dvmMalloc 时第二次 GC (清理 SoftReferences)
+      if (spec == GC_FOR_MALLOC):
+        ATRACE_BEGIN("GC (Alic)");
+      else if (spec == GC_CONCURRENT):
+        ATRACE_BEGIN("GC (concurrent)");
+      else if (spec == GC_EXPLICIT):
+        ATRACE_BEGIN("GC (explicit)");
+      else if (spec == GC_BEFORE_OOM):
+        ATRACE_BEGIN("GC (before OOM)");
+      else:
+        ATRACE_BEGIN("GC (unknown)");
+      // 参考: dalvik thread dvmSuspendAllThreads
       dvmSuspendAllThreads(SUSPEND_FOR_GC);
-      dvmHeapReMarkRootSet();
-      dvmHeapReScanMarkedObjects();
-    /*
-    ,* All strongly-reachable objects have now been marked.  Process
-    ,* weakly-reachable objects discovered while tracing.
-    ,*/
-    dvmHeapProcessReferences();
-    // sweep 阶段
-    dvmHeapSweepSystemWeaks();
-    /*
-    ,* Live objects have a bit set in the mark bitmap, swap the mark
-    ,* and live bitmaps.  The sweep can proceed concurrently viewing
-    ,* the new live bitmap as the old mark bitmap, and vice versa.
-    ,*/
-    dvmHeapSourceSwapBitmaps();
-    dvmHeapSweepUnmarkedObjects();
-    // 将本次 GC 产生的 white reference 和 finalizer reference 通知给
-    // java 层的 ReferenceQueueDaemon
-    dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
-    
+      // mark 阶段
+      /* Mark the set of objects that are strongly reachable from the roots.
+      ,*/
+      dvmHeapMarkRootSet();
+      // 若 spec 表明该 gc 由 HeapWorker 发起, 则 dvmHeapScanMarkedObjects
+      // 时并不 stop the world. 这也是 Concurrent GC 的本意.
+      if (spec->isConcurrent):
+        dvmClearCardTable();
+        dvmResumeAllThreads(SUSPEND_FOR_GC);
+      /* Recursively mark any objects that marked objects point to strongly.
+      ,* If we're not collecting soft references, soft-reachable
+      ,* objects will also be marked.
+      ,*/
+      dvmHeapScanMarkedObjects();
+      if (spec->isConcurrent):
+        dvmSuspendAllThreads(SUSPEND_FOR_GC);
+        dvmHeapReMarkRootSet();
+        dvmHeapReScanMarkedObjects();
+      /*
+      ,* All strongly-reachable objects have now been marked.  Process
+      ,* weakly-reachable objects discovered while tracing.
+      ,*/
+      dvmHeapProcessReferences();
+      // sweep 阶段
+      dvmHeapSweepSystemWeaks();
+      /*
+      ,* Live objects have a bit set in the mark bitmap, swap the mark
+      ,* and live bitmaps.  The sweep can proceed concurrently viewing
+      ,* the new live bitmap as the old mark bitmap, and vice versa.
+      ,*/
+      dvmHeapSourceSwapBitmaps();
+      dvmHeapSweepUnmarkedObjects();
+  
+      // 根据 utilization, maxFree, minFree 的值重新设置 softLimit
+      dvmHeapSourceGrowForUtilization();
+
+      // 将本次 GC 产生的 white reference 和 finalizer reference 通知给
+      // java 层的 ReferenceQueueDaemon
+      dvmEnqueueClearedReferences(&gDvm.gcHeap->clearedReferences);
+      
 #+END_SRC
 
 *** dvmHeapMarkRootSet
@@ -485,7 +490,6 @@ card 被标记为 dirty. 如此一来, 重新标记时只需要考虑这些 dirt
           ++card;
 #+END_SRC
 
-
 ** Copying GC
 上面提到的都是关于 MarkSweep GC 的, 包含 markBits, liveBits,
 Concurrent GC 等都是和 MarkSweep GC 相关. 因为 android 默认的就是
@@ -718,3 +722,35 @@ getForward, isForward, setForward 这三个函数是用来实现对象移动后�
       toObj->lock |= LW_HASH_STATE_HASHED_AND_MOVED << LW_HASH_STATE_SHIFT;
   
 #+END_SRC
+
+** softLimit 与 footprint
+softLimit 总是和 utilization 对应的, 每次 GC 结束时都会通过
+dvmHeapSourceGrowForUtilization 将 softLimit 设置为一个稍微大于
+bytesAllocated 的值, 以防止有过多的垃圾被保留. 
+
+footprint 在 softLimit 去掉后仍不能分配成功时会临时性的增长为
+growthLimit, 待分配完毕后会被设为 bytesAllocated, 但是当
+dvmHeapSourceGrowForUtilization 时 dalvik 会保证 footprint 一定不小于
+softLimit.
+
+#+BEGIN_SRC text
+  setSoftLimit()
+    size_t currentHeapSize = mspace_footprint(msp);
+    if (softLimit < currentHeapSize):
+      /* Don't let the heap grow any more, and impose a soft limit.
+      ,*/
+      mspace_set_footprint_limit(msp, currentHeapSize);
+      hs->softLimit = softLimit;
+    else:
+      /* Let the heap grow to the requested max, and remove any
+      ,* soft limit, if set.
+      ,*/
+      mspace_set_footprint_limit(msp, softLimit);
+      hs->softLimit = SIZE_MAX;
+#+END_SRC
+
+所以这种情况是可能的:
+因为不停的分配而不释放, footprint 被增长到很大. 后来大批垃圾被 GC,
+footprint 仍会保留为原先那个较大的值 (代码中没有看到 footprint 会在 GC
+后被缩小), 此时 heap 可能显示有大量的剩余, 但因为 softLimit 总是维持在
+一个比较小的范围, 所以此时进行内存分配时还是可能发生 GC.

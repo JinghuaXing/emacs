@@ -6,16 +6,19 @@ http://en.wikipedia.org/wiki/Software_design_pattern
 
 - Design Pattern (设计模式) 的概念概念源自于建筑学, 是指 `对于常见问题
   的通用解决方案`.
-- 软件设计模式是由 GOF 提出的, 他们写了一本书 <设计模式：可复用面向对象
-  软件的基础>, 其中总结了 23 个软件设计模式
-- 实际上软件开发过程中的种种思想和方法都可以称之为软件设计模式的一部分.
-- 使用设计软件可以更快更好的解决常见问题, 但设计模式不是万能的, 特殊问
-  题还是要特殊分析, 避免死记硬套和过度设计.
+
+- 软件设计模式是由 GOF 提出的, 他们在 <设计模式：可复用面向对象软件的基
+  础> 一书中总结了 23 个软件设计模式
+
+- 个人认为软件开发过程中的种种思想和方法都可以称之为软件设计模式的一部
+  分.
+
+- 使用设计模式可以更快更好的解决常见问题, 但设计模式不是万能的, 特殊问
+  题还是要特殊分析, 要避免硬搬和过度设计.
 
 ** Creational patterns
 - Singleton
-- Factory method
-- Abstract factory
+- Factory
 - Builder
 - Lazy initialization
 - Object pool
@@ -39,6 +42,7 @@ http://en.wikipedia.org/wiki/Software_design_pattern
 - Mediator
 - Observer
 - State
+- Strategy
 - Visitor
 
 ** Concurrency patterns
@@ -46,7 +50,7 @@ http://en.wikipedia.org/wiki/Software_design_pattern
 - Double-checked locking
 - Compare-And-Swap
 - Guarded suspension
-- Reactor
+- Reactor / Proactor
 - Read-write lock
 - Thread pool
 - Thread-specific storage

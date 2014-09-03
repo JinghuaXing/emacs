@@ -251,7 +251,6 @@ instanceof 是有一个 cache 的...
 #+BEGIN_SRC text
   dvmInitAfterZygote
     dvmGcStartupAfterZygote()
-      // 启动 alloc 中的 HeapWorker
     dvmSignalCatcherStartup()
     if (gDvm.logStdio):
       dvmStdioConverterStartup()
