@@ -12,7 +12,7 @@
 		(define-key eim-mode-map "=" 'eim-next-page)))))
 (register-input-method
  "eim-wb" "euc-cn" 'eim-use-package
- "五笔" "EIM Chinese Wubi Input Method" "wb.txt"
+ "WuBi/" "EIM Chinese Wubi Input Method" "wb.txt"
  'my-eim-py-activate-function)
 (set-input-method "eim-wb")             ; use Pinyin input method
 (setq activate-input-method t)          ; active input method

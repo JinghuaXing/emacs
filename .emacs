@@ -19,7 +19,6 @@
 
 (load-file "~/.elisp/dotemacs/eshell.el")
 ;; (load-file "~/.elisp/dotemacs/abbrev.el")
-(load-file "~/.elisp/dotemacs/w32.el")
 (load-file "~/.elisp/dotemacs/buffer.el")
 (load-file "~/.elisp/dotemacs/dired.el")
 (load-file "~/.elisp/dotemacs/my.el")
@@ -230,7 +229,6 @@
 
 (require 'quack)
 
-;; (prefer-coding-system 'gb18030)
 (prefer-coding-system 'utf-8-unix)
 ;; (setq coding-system-for-read 'utf-8-unix)
 ;; (setq coding-system-for-write 'utf-8-unix)
@@ -384,3 +382,5 @@
 (add-to-list 'load-path "~/.elisp/smartparens")
 (require 'smartparens-config)
 (smartparens-global-mode t)
+
+(load-file "~/.elisp/dotemacs/w32.el")
