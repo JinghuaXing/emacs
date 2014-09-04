@@ -177,7 +177,14 @@
 (add-hook 'org-src-mode-hook '(lambda() (auto-fill-mode -1)))
 
 (require 'appt)
-(setq appt-time-msg-list nil)
+(defun my-appt-display (min-to-app new-time msg)
+  (shell-command (concat "notify-send -u critical" " '" msg "'")))
+(setq appt-time-msg-list nil
+      appt-display-mode-line nil
+      appt-display-format 'window
+      appt-disp-window-function (function my-appt-display)
+      appt-message-warning-time 15
+      appt-display-interval 5)
 (org-agenda-to-appt)
 
 (defadvice  org-agenda-redo (after org-agenda-redo-add-appts)
@@ -192,15 +199,4 @@
 (ad-activate 'org-agenda-redo)
 (run-at-time "24:01" 3600 'org-agenda-to-appt)
 (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt)
-
 (appt-activate 1)
-(setq appt-display-mode-line nil)
-(setq appt-display-format 'window)
-
-(defun my-appt-display (min-to-app new-time msg)
-  (shell-command (concat "notify-send -u critical" " '" msg "'"))
-  )
-
-(setq appt-disp-window-function (function my-appt-display))
-
-
