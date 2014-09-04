@@ -257,10 +257,10 @@ wei.sun(孙伟)
       gnus-sum-thread-tree-single-leaf "└─▶ ")
 
 
-;; (add-to-list 'load-path "~/.elisp/bbdb")
-;; (require 'bbdb)
-;; (bbdb-initialize 'gnus 'message)
-;;(bbdb-insinuate-gnus)
+(add-to-list 'load-path "~/.elisp/bbdb")
+(require 'bbdb)
+(bbdb-initialize 'gnus 'message)
+(bbdb-insinuate-gnus)
 
 (setq bbdb-user-mail-names
       (regexp-opt '("wei.sun@spreadtrum.com"
@@ -485,9 +485,4 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
 	      (org-agenda-redo t)
 	      )	    
 	    )
-	(message "not an appt")
-	)
-      )
-    )
-  )
-
+	(message "not an appt")))))
