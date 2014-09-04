@@ -1,7 +1,1 @@
-#+TITLE: Appt
-#+AUTHOR: Wei Sun (孙伟)
-#+EMAIL: wei.sun@spreadtrum.com
-* Appt
-* [[gnus:inbox#8931d5998368471eae4c75645283d176@SHMBX01.spreadtrum.com][Email from Derrick Chen: bug332295问题 讨论]]
-DEADLINE: <2014-09-04 Thu 10:30>
 

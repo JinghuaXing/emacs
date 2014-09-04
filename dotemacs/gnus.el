@@ -218,6 +218,7 @@ wei.sun(孙伟)
 					       (gnus-summary-mail-forward 3)
 					       ))
 (define-key gnus-article-mode-map (kbd "S-SPC") 'gnus-article-goto-prev-page)
+(define-key gnus-article-mode-map (kbd "A") 'gnus-add-appt)
 (define-key gnus-summary-mode-map (kbd "S-SPC") 'gnus-summary-prev-page)
 (define-key gnus-summary-mode-map (kbd "C-k") 'gnus-summary-delete-article)
 (define-key gnus-summary-mode-map (kbd "o") 'gnus-summary-move-article)
@@ -455,3 +456,33 @@ You need to add `Content-Type' to `nnmail-extra-headers' and
        ))
 
 (setq mail-source-ignore-errors t)
+
+
+(defun gnus-add-appt nil
+  (interactive)
+  (save-excursion
+    (message-goto-body)
+    (call-interactively 'org-store-link)
+    (if (search-forward-regexp "^时间: \\([0-9]+\\)年\\([0-9]+\\)月\\([0-9]+\\)日.*? \\(.*?\\)-" nil t nil)
+	(progn
+	  (write-appt (match-string 1) (match-string 2) (match-string 3) (match-string 4))
+	  )
+      (message "not an appt")
+      )))
+
+(defun write-appt (y m d time)
+  (with-temp-buffer
+    (insert "\n")
+    (insert (format "* [[%s][%s]]" (car (car org-stored-links)) (cadr (car org-stored-links))))
+    (insert "\n")
+    (if (eq (string-width m) 1)
+	(setq m (concat "0" m))
+      )
+    (if (eq (string-width d) 1)
+	(setq d (concat "0" d))
+      )
+    (insert (format "DEADLINE: <%s-%s-%s %s>" y m d time))
+    (append-to-file (point-min) (point-max) "/home/sunway/.elisp/dotemacs/org/gtd/appt.org")
+    (org-agenda-redo t)
+    )
+  )
