@@ -219,6 +219,7 @@
 (require 'auto-highlight-symbol)
 ;;(global-auto-highlight-symbol-mode t)
 (setq ahs-default-range (quote ahs-range-beginning-of-defun))
+
 (require 'popup-ruler)
 (defalias 'ruler 'popup-ruler)
 
@@ -382,5 +383,8 @@
 (add-to-list 'load-path "~/.elisp/smartparens")
 (require 'smartparens-config)
 (smartparens-global-mode t)
+
+(require 'hungry-delete)
+(global-hungry-delete-mode)
 
 (load-file "~/.elisp/dotemacs/w32.el")
