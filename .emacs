@@ -387,4 +387,15 @@
 (require 'hungry-delete)
 (global-hungry-delete-mode)
 
+(add-to-list 'load-path "~/.elisp/helm")
+(require 'helm-config)
+(require 'helm-ls-git)
+(global-set-key (kbd "C-x b") 'helm-mini)
+(global-set-key (kbd "C-x C-f") 'helm-for-files)
+(global-set-key (kbd "M-y") 'helm-show-kill-ring)
+(global-set-key (kbd "C-h i") 'helm-imenu)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x r j") 'helm-register)
+
 (load-file "~/.elisp/dotemacs/w32.el")
+

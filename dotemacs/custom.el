@@ -118,7 +118,6 @@
  '(gnus-demon-timestep 10)
  '(golden-ratio-exclude-modes (quote ("ediff-mode")))
  '(helm-ff-auto-update-initial-value nil)
- '(helm-for-files-preferred-list (quote (helm-source-buffer-not-found helm-source-buffers-list helm-source-recentf helm-source-ls-git helm-source-bookmarks helm-source-files-in-current-dir)))
  '(helm-quick-update t)
  '(helm-reuse-last-window-split-state t)
  '(ibuffer-formats (quote ((mark modified read-only " " (name 60 60 :left :elide) " " (size 9 -1 :right) " " (mode 16 16 :left :elide) " " filename-and-process) (mark " " (name 16 -1) " " filename))))
