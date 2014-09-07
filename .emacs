@@ -390,13 +390,32 @@
 (add-to-list 'load-path "~/.elisp/helm")
 (require 'helm-config)
 (require 'helm-ls-git)
-(global-set-key (kbd "C-x b") 'helm-mini)
-(global-set-key (kbd "C-x C-f") 'helm-for-files)
+(global-set-key (kbd "C-x b") 'helm-for-files)
+;;(global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 (global-set-key (kbd "C-h i") 'helm-imenu)
+(global-set-key (kbd "C-o C-o") 'helm-occur)
+(global-set-key (kbd "C-h C-h") 'helm-resume)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x r j") 'helm-register)
 (global-set-key (kbd "C-x r b") 'helm-bookmarks)
+(global-set-key (kbd "M-.") 'helm-etags-select)
+
+(setq helm-sources-using-default-as-input
+      '(helm-source-imenu
+	helm-source-semantic
+	helm-source-info-elisp
+	helm-source-etags-select
+	helm-source-occur))
+
+(setq helm-for-files-preferred-list
+      '(helm-source-buffers-list
+	helm-source-recentf
+	helm-source-ls-git
+	))
+
+(setq helm-ff-auto-update-initial-value t)
+(helm-adaptive-mode)
 
 (load-file "~/.elisp/dotemacs/w32.el")
 
