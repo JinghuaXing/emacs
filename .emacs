@@ -421,10 +421,4 @@
 (require 'nyan-mode)
 (nyan-mode t)
 
-(add-to-list 'load-path "~/.elisp/evil/")
-(require 'evil)
-(setq evil-default-state 'emacs)
-(evil-mode 1)
-(define-key evil-normal-state-map (kbd "f") 'ace-jump-mode)
-
 (load-file "~/.elisp/dotemacs/w32.el")
