@@ -417,5 +417,7 @@
 (setq helm-ff-auto-update-initial-value t)
 (helm-adaptive-mode)
 
+(add-to-list 'load-path "~/.elisp/nyan-mode")
+(require 'nyan-mode)
 (load-file "~/.elisp/dotemacs/w32.el")
 
