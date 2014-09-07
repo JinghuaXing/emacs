@@ -396,6 +396,7 @@
 (global-set-key (kbd "C-h i") 'helm-imenu)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x r j") 'helm-register)
+(global-set-key (kbd "C-x r b") 'helm-bookmarks)
 
 (load-file "~/.elisp/dotemacs/w32.el")
 
