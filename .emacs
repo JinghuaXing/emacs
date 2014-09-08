@@ -403,7 +403,8 @@
 (global-set-key (kbd "C-x r j") 'helm-register)
 (global-set-key (kbd "C-x r b") 'helm-bookmarks)
 (global-set-key (kbd "M-.") 'helm-etags-select)
-
+(require 'helm-ack)
+(global-set-key (kbd "M-,") 'helm-ack)
 (setq helm-sources-using-default-as-input
       '(helm-source-imenu
 	helm-source-semantic
