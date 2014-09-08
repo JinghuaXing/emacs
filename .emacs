@@ -344,10 +344,13 @@
 
 (require 'switch-window)
 
+(add-to-list 'load-path "~/.elisp/diff-hl")
 (require 'diff-hl)
 (require 'diff-hl-dired)
+(require 'diff-hl-amend)
 (global-diff-hl-mode)
 (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
+(add-hook 'magit-revert-buffer-hook 'diff-hl-update)
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 

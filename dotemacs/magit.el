@@ -13,20 +13,7 @@
 ;; (add-hook 'magit-mode-hook
 ;; 	  'magit-topgit-mode)
 
-
-(defun diff-hl-update-each-buffer ()
-  (interactive)
-  (mapc (lambda (buffer)
-          (condition-case nil
-              (with-current-buffer buffer
-                (diff-hl-update))
-            (buffer-read-only nil)))
-        (buffer-list)))
-(defadvice magit-update-vc-modeline (after my-magit-update-vc-modeline activate)
-  (progn (diff-hl-update-each-buffer)))
-
 (magit-wip-mode 1)
 (global-magit-wip-save-mode 1)
-
 
 (setq magit-repo-dirs '("~/.elisp"))
