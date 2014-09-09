@@ -6,7 +6,7 @@
 Copy-on-write (写时复制, COW) 最主要的应用是在操作系统的内存管理部分.
 
 当父进程执行 fork 后, 子进程的虚拟地址空间是完全从父进程复制过来的, 即
-两者具体相同的页表. 此时两者看到的地址是完全一样的, 但是若任一方 A 要修
+两者页表的内容相同. 此时两者看到的地址是完全一样的, 但是若任一方 A 要修
 改某个地址 X 时 (Write), 操作系统会负责申请一块新的物理页 (Copy) 然后修
 改 A 的页表使它对于地址 X 使用新的物理页.
 
@@ -19,8 +19,11 @@ Copy-on-write (写时复制, COW) 最主要的应用是在操作系统的内存�
 通过 exec 载入一个新的可执行程序, 也就会重新分配页表. 这种情况下如果让
 父进程先执行的话, 父进程随后如果有 COW 动作的话是完全浪费的: 因为子进
 程一会儿就 exec 了.
+
 ** 应用程序使用 COW
-应用程序中使用 COW 一般是比较少的, stdc++ 中的 string 类使用了 COW:
+应用程序中使用 COW 一般是比较少的
+
+*** stdc++ 中的 string 类使用了 COW
 
 #+BEGIN_SRC c++
   std::string x("Hello");
@@ -28,3 +31,5 @@ Copy-on-write (写时复制, COW) 最主要的应用是在操作系统的内存�
   y += ", World!";    // now y uses a different buffer
                       // x still uses the same old buffer
 #+END_SRC
+
+*** java.util.concurrent.CopyOnWriteArrayList
