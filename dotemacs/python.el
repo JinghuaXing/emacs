@@ -10,10 +10,7 @@
 
 (defun my-python-mode-hook()
   (interactive)
-  (c-subword-mode)
   (setq c-subword-mode t)
-  (c-toggle-auto-state -1)
-  (c-toggle-hungry-state t)
   (setq outline-regexp "[ \t]*\\(def\\|class\\) ")
   (setq outline-level 'py-outline-level)
   (outline-minor-mode t)

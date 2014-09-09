@@ -361,9 +361,9 @@
       )
   )
 
-(require 'register-jump)
-(define-key ctl-x-r-map "j" 'register-jump)
-(setq register-preview-delay 0.1)
+;; (require 'register-jump)
+;; (define-key ctl-x-r-map "j" 'register-jump)
+;; (setq register-preview-delay 0.1)
 
 (require 'git-messenger)
 (global-set-key (kbd "C-x v m") 'git-messenger:popup-message)
@@ -379,9 +379,9 @@
 
 (require 'git-timemachine)
 
-(require 'zeal-at-point)
-(add-to-list 'zeal-at-point-mode-alist '(java-mode . "android"))
-(global-set-key (kbd "C-c C-d") 'zeal-at-point)
+;; (require 'zeal-at-point)
+;; (add-to-list 'zeal-at-point-mode-alist '(java-mode . "android"))
+;; (global-set-key (kbd "C-c C-d") 'zeal-at-point)
 
 (add-to-list 'load-path "~/.elisp/smartparens")
 (require 'smartparens-config)
@@ -420,6 +420,18 @@
 
 (setq helm-ff-auto-update-initial-value t)
 (helm-adaptive-mode)
+
+(require 'helm-dash)
+(setq helm-dash-browser-func 'w3m-browse-url)
+(global-set-key (kbd "C-h d") 'helm-dash-at-point)
+(add-hook 'java-mode-hook '(lambda()
+			     (interactive)
+			     (setq-local helm-dash-docsets '("Android"))
+			     ))
+(add-hook 'python-mode-hook '(lambda()
+			       (interactive)
+			       (setq-local helm-dash-docsets '("Python"))
+			     ))
 
 (add-to-list 'load-path "~/.elisp/nyan-mode")
 (require 'nyan-mode)
