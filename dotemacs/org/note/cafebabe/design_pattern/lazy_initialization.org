@@ -20,5 +20,5 @@ Lazy initialization / evaluation 是一类通用的优化技术, 用来尽可能
 5. ld.so
    当需要调用 so 中引用的外部函数时, ld.so 才会负责去解析该函数
    
-
+6. 若些函数式语言通过 lazy evaluation (call-by-need) 构造无穷序列. 
    

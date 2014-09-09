@@ -2,7 +2,7 @@
 #+AUTHOR: Wei Sun (孙伟)
 #+EMAIL: wei.sun@spreadtrum.com
 * Singleton
-Singleton (单例) 模式必须满足两个特性:
+Singleton (单例) 模式有两个特性:
 
 1. single instance
 2. global access
@@ -84,3 +84,12 @@ initialization, 有些考虑到程序运行时的性能, 会考虑 Eager
 initialization.
 
 如果不太清楚到底要用哪种, 那还是用 Lazy 的版本吧.
+* Singleton 与全局变量
+可变的(mutable)全局变量应该避免使用, 主要原因是: 
+
+1. 它们可能被任意的改写而程序的任意代码都可能会使用它.
+2. 可变的全局变量需要加锁
+
+Singleton 的 global access 属性决定了它实际上就是一种全局变量, 如果不能
+保证 singleton 是不可变的 (immutable), 那么尽量为了 single instance 去
+使用 singleton, 避免为了 global access 去使用 singleton.

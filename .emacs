@@ -414,8 +414,8 @@
 
 (setq helm-for-files-preferred-list
       '(helm-source-buffers-list
-	helm-source-recentf
-	helm-source-ls-git
+	;; helm-source-recentf
+	helm-source-file-cache
 	))
 
 (setq helm-ff-auto-update-initial-value t)

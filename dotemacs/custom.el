@@ -117,6 +117,7 @@
  '(gnus-asynchronous t t)
  '(gnus-demon-timestep 10)
  '(golden-ratio-exclude-modes (quote ("ediff-mode")))
+ '(helm-candidate-number-limit 10)
  '(helm-ff-auto-update-initial-value nil)
  '(helm-quick-update t)
  '(helm-reuse-last-window-split-state t)
