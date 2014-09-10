@@ -20,5 +20,36 @@ Lazy initialization / evaluation 是一类通用的优化技术, 用来尽可能
 5. ld.so
    当需要调用 so 中引用的外部函数时, ld.so 才会负责去解析该函数
    
-6. 若些函数式语言通过 lazy evaluation (call-by-need) 构造无穷序列. 
-   
+6. 某些函数式语言通过 lazy evaluation (call-by-need) 构造无穷序列.
+
+7. java 类只有使用时才初始化
+
+8. ...
+
+** lazy initialization sample
+通用的 lazy initialization 通常都是通过设置一个标志将动作延迟, 例如:
+#+BEGIN_SRC java
+  class FileReader {
+      volitle int  fd = -1;
+      public File(String path) {
+          this.path = path;
+          // the fd is left unchanged for lazy initialization
+          // fd = os.open(path);
+      }
+      public char read() {
+          if (fd == -1) {
+              synchronized {
+                  if ((fd == -1)) {
+                      // os.open is deferred here
+                      fd = os.open(path);
+                  }
+              }
+          }
+          return os.read();
+      }
+  }
+#+END_SRC
+
+** 实例
+1. android 主题切换时使用 lazy initialization 避免多个进程同时加载资源时卡顿.
+2. ListView 使用 getView 来避免一次性加载所有 item view.

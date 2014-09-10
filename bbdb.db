@@ -56,7 +56,7 @@
 ["刘志博" nil ("Zhibo Liu") nil nil nil ("Zhibo.Liu@spreadtrum.com") ((creation-date . "2014-02-11") (timestamp . "2014-03-12")) nil]
 ["刘明艳" nil ("Mingyan Liu") nil nil nil ("Mingyan.Liu@spreadtrum.com") ((creation-date . "2014-01-26") (timestamp . "2014-03-14")) nil]
 ["刘迎" nil (#("Anita Liu (刘迎)" 0 14 (fontified nil)) "Anita Liu") nil nil nil ("Anita.Liu@spreadtrum.com") ((creation-date . "2014-01-30") (timestamp . "2014-08-22")) nil]
-["单希明" nil ("Ximing Shan") nil nil nil ("Ximing.Shan@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-17")) nil]
+["单希明" nil (#("Ximing Shan (单希明)" 0 17 (fontified nil)) "Ximing Shan") nil nil nil ("Ximing.Shan@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-09-10")) nil]
 ["周大山" nil ("Dashan Zhou") nil nil nil ("Dashan.Zhou@spreadtrum.com") ((creation-date . "2014-03-06") (timestamp . "2014-03-06")) nil]
 ["周彬" nil (#("Binggo Zhou (周彬)" 0 16 (fontified nil)) "Binggo Zhou") nil nil nil ("Binggo.Zhou@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-07-18")) nil]
 ["奚辰晨" nil ("Chenchen Xi") nil nil nil ("Chenchen.Xi@spreadtrum.com") ((creation-date . "2014-01-24") (timestamp . "2014-02-24")) nil]
